@@ -25,7 +25,7 @@ jobs:
           - recipe-nvidia.yml
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6 # Fixed: v6 does not exist yet, v4 is the latest stable
+        uses: actions/checkout@v6
 
       # Validation: Checks recipe and configuration health before starting the heavy build
       - name: Run Trivy vulnerability scanner (Config)
