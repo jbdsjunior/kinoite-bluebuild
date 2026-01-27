@@ -1,74 +1,52 @@
-# Custom Fedora Kinoite (BlueBuild)
 
 ![Status Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
 ![Status AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
 ![Status NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
+# Custom Fedora Kinoite (BlueBuild)
 
-A custom, immutable **Fedora Kinoite** image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/).
+This project provides a customized, immutable Fedora Kinoite image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is designed for a high-performance KDE Plasma experience with out-of-the-box optimizations for gaming and development.
 
-This project delivers a polished **KDE Plasma** experience with pre-configured optimizations for gaming, development, and content creation, ensuring stability through atomic updates.
+## 💿 Variants
 
-## ✨ Variants
+Choose the image that matches your hardware:
 
-| Image Name         | Hardware Support | Description                                                                   |
-| :----------------- | :--------------- | :---------------------------------------------------------------------------- |
-| **kinoite-amd**    | **AMD / Intel**  | Standard image. Optimized for AMD (P-State) and Intel (Media Driver) GPUs.    |
-| **kinoite-nvidia** | **Nvidia**       | Includes proprietary Nvidia drivers, CUDA, and hardware acceleration patches. |
-
-## 🚀 Key Features
-
-- **⚡ Performance Tuned:** optimized kernel arguments (`amd_pstate`, `BBR` congestion control) and `sysctl` tweaks for low latency.
-- **📦 Fast Updates:** Builds use **OCI Chunking (`zstd:chunked`)**, drastically reducing download sizes for daily updates.
-- **🎬 Multimedia Ready:** Full ffmpeg/codecs support (via Negativo17) and hardware acceleration (VAAPI/VDPAU) for AMD, Intel, and Nvidia.
-- **🛡️ Secure & Atomic:** Signed images with verify-on-boot support. Configured for **Composefs** integration (filesystem integrity).
-- **💻 Developer Friendly:** Includes `distrobox`, `podman`, `topgrade`, and `fastfetch` out of the box.
-- **☁️ Cloud Integration:** Pre-configured `rclone` systemd user service for seamless cloud storage mounting.
+- **kinoite-amd**: Optimized for AMD (P-State) and Intel (Media Driver) GPUs.
+- **kinoite-nvidia**: Includes proprietary Nvidia drivers, CUDA, and hardware acceleration patches.
 
 ---
 
-## 📥 Installation
+## 🚀 Installation
 
-To switch from a standard Fedora Kinoite installation to this custom image, follow the steps below.
+The transition to this custom image is done in two stages to ensure that signing keys are correctly imported and verified.
 
-### 1. Initial Rebase (Import Keys)
-
-First, rebase to the unverified image to import the signing keys.
-
-**For AMD / Intel:**
+### 1. Initial Rebase
+First, switch to the unverified version to import the repository's signing keys.
 
 ```bash
+# For AMD/Intel:
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
 
-```
-
-**For Nvidia:**
-
-```bash
+# For Nvidia:
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 ```
 
-**⚠️ Reboot your system immediately after this step.**
+> **Action Required:** Reboot your system immediately after this step.
 
-### 2. Enable Secure Verification
+### 2. Enable Verification
 
-After rebooting, switch to the signed image to ensure all future updates are verified and secure.
-
-**For AMD / Intel:**
+After rebooting, switch to the signed image to ensure all future updates are cryptographically verified.
 
 ```bash
+# For AMD/Intel:
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 
-```
-
-**For Nvidia:**
-
-```bash
+# For Nvidia:
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 ```
 
-**Reboot one last time** to finalize the installation.
+> **Action Required:** Reboot one last time to finalize the installation.
 
 ---
 
@@ -76,55 +54,50 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia
 
 ### Virtualization (KVM/QEMU)
 
-To enable virtualization and optimize BTRFS performance for VM images (disabling Copy-on-Write), run the included helper:
+To configure virtualization groups and optimize BTRFS performance for VM storage, run the included helper:
 
 ```bash
 kinoite-setup-kvm.sh
 
 ```
 
-_Note: A reboot is required for group permission changes to take effect._
+*Note: This script disables Copy-on-Write (No_COW) for VM directories to improve performance.*
 
 ### Cloud Storage (Rclone)
 
-This image includes a systemd template for Rclone.
+Mount your cloud drives (GDrive, OneDrive, etc.) as local folders:
 
-1. Configure your remote (e.g., GDrive, OneDrive):
-
+1. **Configure:** `rclone config`.
+2. **Enable Mount:**
 ```bash
-rclone config
-
-```
-
-2. Enable the background mount service (replace `remote-name` with the name you chose):
-
-```bash
+# Replace 'remote-name' with your configured remote
 systemctl --user enable --now rclone-mount@remote-name.service
 
 ```
 
-_Mount point:_ `~/Cloud/remote-name`
+
+
+*Your files will be available at `~/Cloud/remote-name`.*
 
 ---
 
-## 🔄 Verification & Maintenance
+## 💻 Local Development
 
-### Manually Verify Image
+If you wish to build or test changes locally using Distrobox:
 
-You can check the image signature against the repository public key:
-
+1. **Create Container:** `distrobox assemble create`.
+2. **Enter Environment:** `distrobox enter bluebuild`.
+3. **Build Image:**
 ```bash
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
+# Build the AMD variant
+bluebuild build recipes/recipe-amd.yml
 
 ```
 
-### Rollback
 
-If you need to return to the official Fedora Kinoite image:
 
-```bash
-rpm-ostree rebase fedora:fedora/$(rpm -E %fedora)/x86_64/kinoite
+## ⚖️ License
+
+This project is licensed under the **Apache License 2.0**.
 
 ```
-
----
