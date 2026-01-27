@@ -1,0 +1,63 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    remove:
+      packages:
+        - firefox
+        - firefox-langpacks
+        - mozilla-filesystem
+        - htop
+        - nvtop
+        - kate
+        - fcitx5-*
+        - kcm-fcitx5
+        - braille-printer-app
+        - ibus-anthy
+        - ibus-anthy-python
+        - ibus-chewing
+        - ibus-hangul
+        - ibus-libpinyin
+        - kasumi-common
+        - kasumi-unicode
+
+    install:
+      packages:
+        # - langpacks-en_GB
+        - langpacks-pt_BR
+        - fastfetch
+        - lm_sensors
+        - rclone
+        - fuse3
+        # - kmodtool
+        # - akmods
+
+        # Drivers de Vídeo (Híbrido AMD/Intel)
+        - mesa-va-drivers # AMD / Intel Antigo / Nouveau
+        - mesa-vdpau-drivers # APIs Antigas
+        # - intel-media-driver   # CRÍTICO: Intel Moderno (Broadwell+)
+
+  - type: dnf
+    install:
+      packages:
+        # Multimedia Codecs
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-ugly
+        - gstreamer1-plugin-openh264
+        - libdvdcss
+        - x264
+        - x265
+        - flac
+        - lame
+        - opus
+
+  - type: dnf
+    repos:
+      cleanup: true
+      copr:
+        - atim/starship
+        - lilay/topgrade
+    install:
+      packages:
+        - starship
+        - topgrade

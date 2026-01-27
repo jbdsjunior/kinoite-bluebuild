@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: kargs
+    kargs:
+      # Disk Optimization (BTRFS)
+      - rootflags=subvol=root,noatime,compress=zstd:1
+
+      # Processor Performance (Ryzen 9 5950X)
+      - transparent_hugepage=madvise
+      - amd_pstate=active
+      - mitigations=auto

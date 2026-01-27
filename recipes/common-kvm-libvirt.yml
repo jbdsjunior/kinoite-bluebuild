@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    install:
+      packages:
+        - "@virtualization"
+      exclude:
+        - virt-viewer
+
+  - type: systemd
+    system:
+      enabled:
+        - libvirtd.service
+        - qemu-guest-agent.service
+
+  - type: files
+    files:
+      - source: scripts/setup-kvm.sh
+        destination: /usr/bin/kinoite-setup-kvm.sh
+
+  - type: kargs
+    kargs:
+      # Virtualization and IOMMU optimizations
+      - amd_iommu=on
+      - iommu=pt
+      - kvm_amd.npt=1
+      - kvm_amd.avic=1
+      - kvm_amd.nested=1
+      - kvm_amd.sev=1

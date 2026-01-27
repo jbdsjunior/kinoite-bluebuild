@@ -1,0 +1,62 @@
+name: Check Updates
+on:
+  # schedule:
+  #   - cron: "0 * * * *" # Executa de hora em hora
+  workflow_dispatch:
+
+jobs:
+  check-and-trigger:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Install Skopeo
+        run: sudo apt-get -y install skopeo
+
+      # --- VERIFICAÇÃO AMD (Baseada na imagem Main) ---
+      - name: Check Main Image (for AMD)
+        id: check_amd
+        run: |
+          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
+          echo "Main Digest: $DIGEST"
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+
+      - name: Check AMD Cache
+        id: cache_amd
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache-amd
+          key: upstream-main-${{ steps.check_amd.outputs.digest }}
+
+      - name: Trigger AMD Build
+        if: steps.cache_amd.outputs.cache-hit != 'true'
+        run: |
+          echo "New Main base detected. Triggering AMD build..."
+          gh workflow run build-amd.yml --ref main --repo ${{ github.repository }}
+          mkdir -p ~/.cache-amd && touch ~/.cache-amd/state
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- VERIFICAÇÃO NVIDIA (Baseada na imagem Nvidia) ---
+      - name: Check Nvidia Image
+        id: check_nvidia
+        run: |
+          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
+          echo "Nvidia Digest: $DIGEST"
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+
+      - name: Check Nvidia Cache
+        id: cache_nvidia
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache-nvidia
+          key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}
+
+      - name: Trigger Nvidia Build
+        if: steps.cache_nvidia.outputs.cache-hit != 'true'
+        run: |
+          echo "New Nvidia base detected. Triggering Nvidia build..."
+          gh workflow run build-nvidia.yml --ref main --repo ${{ github.repository }}
+          mkdir -p ~/.cache-nvidia && touch ~/.cache-nvidia/state
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,24 @@
+name: Cleanup GHCR Images
+on:
+  schedule:
+    - cron: '0 0 * * *' # Executa todo domingo à meia-noite
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  delete-old-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write # Obrigatório para deletar versões
+    strategy:
+      fail-fast: false
+      matrix:
+        image-name: [kinoite-amd, kinoite-nvidia] # Imagens definidas no seu projeto
+    steps:
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.image-name }}
+          package-type: 'container'
+          min-versions-to-keep: 5 # Mantém as 5 últimas para rollback seguro
+          delete-only-untagged-versions: 'false' # Remove tags velhas também
+          # No GitHub, a tag 'latest' é protegida por não ser considerada "velha" comparada a versões sem tag

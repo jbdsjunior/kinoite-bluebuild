@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: kinoite-amd
+description: "Customized Fedora Kinoite image (AMD/Virt/Multimedia)"
+base-image: ghcr.io/ublue-os/kinoite-main
+
+image-version: latest
+
+modules:
+  - from-file: recipe-common.yml
+  - type: signing

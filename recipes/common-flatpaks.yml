@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: default-flatpaks
+    configurations:
+      - scope: user
+        notify: true
+        repo:
+          title: Flathub
+        install:
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
+          - org.kde.kcalc
+          - org.kde.krdc
+          - org.kde.okular
+
+          - com.brave.Browser
+          - com.google.Chrome
+          - com.microsoft.Edge
+          - org.mozilla.firefox
+
+          - com.github.tchx84.Flatseal
+          - io.github.flattool.Warehouse
+
+          - com.ranfdev.DistroShelf
+
+          - com.visualstudio.code
+
+          - io.missioncenter.MissionCenter
+          - it.mijorus.gearlever
+
+          - org.qbittorrent.qBittorrent
+
+          - re.sonny.Eloquent
+
+          - org.freedesktop.Platform.ffmpeg-full
+
+          - org.gtk.Gtk3theme.adw-gtk3
+          - org.gtk.Gtk3theme.adw-gtk3-dark
