@@ -44,7 +44,7 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          build_chunked_oci: false
+          build_chunked_oci: true
           use_cache: true
 
       # # Security Audit: Checks the final Nvidia-specific image for known CVEs
