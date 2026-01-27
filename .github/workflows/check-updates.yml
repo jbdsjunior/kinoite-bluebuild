@@ -1,7 +1,7 @@
 name: Check Updates
 on:
-  # schedule:
-  #   - cron: "0 * * * *" # Executa de hora em hora
+  schedule:
+    - cron: "20 */2 * * *"
   workflow_dispatch:
 
 jobs:
