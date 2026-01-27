@@ -58,26 +58,26 @@ jobs:
           format: spdx-json
           output-file: ./sbom.spdx.json
 
-  build-optimized:
-    name: Build Optimized Image (Chunked)
-    needs: build-standard # Only proceeds if the standard image is successfully published
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
+  # build-optimized:
+  #   name: Build Optimized Image (Chunked)
+  #   needs: build-standard # Only proceeds if the standard image is successfully published
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #     id-token: write
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v6
 
-      # Optimized build: Uses content-addressable chunks for faster user updates
-      - name: Build Optimized Image
-        uses: blue-build/github-action@v1.11
-        with:
-          recipe: recipe-amd.yml
-          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
-          registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
-          maximize_build_space: true
-          build_chunked_oci: true # Enables ZSTD-chunked format for smaller delta downloads
-          use_cache: true
+  #     # Optimized build: Uses content-addressable chunks for faster user updates
+  #     - name: Build Optimized Image
+  #       uses: blue-build/github-action@v1.11
+  #       with:
+  #         recipe: recipe-amd.yml
+  #         cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+  #         registry_token: ${{ github.token }}
+  #         pr_event_number: ${{ github.event.number }}
+  #         maximize_build_space: true
+  #         build_chunked_oci: true # Enables ZSTD-chunked format for smaller delta downloads
+  #         use_cache: true
