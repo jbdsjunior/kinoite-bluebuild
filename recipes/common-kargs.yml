@@ -3,10 +3,11 @@
 modules:
   - type: kargs
     kargs:
-      # Disk Optimization (BTRFS)
+      # File System Optimization (BTRFS)
+      # Sets the root subvolume, disables access time updates, and forces ZSTD compression level 1
       - rootflags=subvol=root,noatime,compress=zstd:1
 
-      # Processor Performance (Ryzen 9 5950X)
-      - transparent_hugepage=madvise
-      - amd_pstate=active
-      - mitigations=auto
+      # Processor Performance (Optimized for modern AMD CPUs like Ryzen 9 5950X)
+      - transparent_hugepage=madvise # Better memory management for performance
+      - amd_pstate=active # Enables the modern AMD P-State driver for better power/perf
+      - mitigations=auto # Balanced security mitigations for CPU vulnerabilities

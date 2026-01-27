@@ -4,43 +4,46 @@ modules:
   - type: dnf
     remove:
       packages:
+        # Removing default packages to keep the image lean and avoid duplication with Flatpaks
         - firefox
         - firefox-langpacks
         - mozilla-filesystem
-        - htop
+        - htop # Replaced by Mission Center or topgrade
         - nvtop
         - kate
         - fcitx5-*
         - kcm-fcitx5
         - braille-printer-app
         - ibus-anthy
-        - ibus-anthy-python
+        - ibus-anthy-python # Japanese input
         - ibus-chewing
         - ibus-hangul
         - ibus-libpinyin
-        - kasumi-common
-        - kasumi-unicode
+        - kasumi-common # Chinese input
+        - kasumi-unicode # Chinese input
 
     install:
       packages:
-        # - langpacks-en_GB
+        # Localization and System Information
         - langpacks-pt_BR
         - fastfetch
-        - lm_sensors
-        - rclone
-        - fuse3
+        - lm_sensors # For hardware temperature and fan monitoring
+
+        # Cloud Storage and File Systems
+        - rclone # Essential for the rclone-mount service
+        - fuse3 # Required for mounting cloud drives
         # - kmodtool
         # - akmods
 
-        # Drivers de Vídeo (Híbrido AMD/Intel)
-        - mesa-va-drivers # AMD / Intel Antigo / Nouveau
-        - mesa-vdpau-drivers # APIs Antigas
-        # - intel-media-driver   # CRÍTICO: Intel Moderno (Broadwell+)
+        # Video Drivers (Hybrid AMD/Intel support)
+        - mesa-va-drivers # Hardware acceleration for AMD and older Intel GPUs
+        - mesa-vdpau-drivers # Legacy video acceleration API support
+        # - intel-media-driver # Hardware acceleration for newer Intel GPUs
 
   - type: dnf
     install:
       packages:
-        # Multimedia Codecs
+        # Multimedia Codecs for broad compatibility
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         - gstreamer1-plugin-openh264
@@ -55,8 +58,8 @@ modules:
     repos:
       cleanup: true
       copr:
-        - atim/starship
-        - lilay/topgrade
+        - atim/starship # Modern shell prompt
+        - lilay/topgrade # Utility to update everything (system, flatpaks, containers)
     install:
       packages:
         - starship

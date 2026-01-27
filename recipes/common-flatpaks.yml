@@ -8,6 +8,7 @@ modules:
         repo:
           title: Flathub
         install:
+          # KDE Multimedia and Productivity tools
           - org.kde.elisa
           - org.kde.gwenview
           - org.kde.haruna
@@ -15,26 +16,25 @@ modules:
           - org.kde.krdc
           - org.kde.okular
 
+          # Browsers
           - com.brave.Browser
           - com.google.Chrome
           - com.microsoft.Edge
           - org.mozilla.firefox
 
-          - com.github.tchx84.Flatseal
-          - io.github.flattool.Warehouse
+          # System Utilities
+          - com.github.tchx84.Flatseal # Permissions management
+          - io.github.flattool.Warehouse # Flatpak management
+          - io.missioncenter.MissionCenter # Modern System Monitor
+          - it.mijorus.gearlever # AppImage manager
 
-          - com.ranfdev.DistroShelf
-
+          # Development
           - com.visualstudio.code
+          - com.ranfdev.DistroShelf # Manage Distrobox containers
 
-          - io.missioncenter.MissionCenter
-          - it.mijorus.gearlever
-
+          # Communication and Others
           - org.qbittorrent.qBittorrent
-
           - re.sonny.Eloquent
-
-          - org.freedesktop.Platform.ffmpeg-full
-
+          - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
           - org.gtk.Gtk3theme.adw-gtk3
           - org.gtk.Gtk3theme.adw-gtk3-dark

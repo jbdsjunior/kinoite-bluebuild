@@ -1,23 +1,24 @@
 name: bluebuild-nvidia
 on:
   pull_request:
-  workflow_dispatch: # allow manually triggering builds
+  workflow_dispatch:
 
 concurrency:
-  # only run one build at a time
+  # Prevents multiple concurrent builds on the same reference to save resources
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  bluebuild:
-    name: Build Custom Image
+  build-standard:
+    name: Build Standard Image (Safety Net)
     runs-on: ubuntu-latest
+    # runs-on: self-hosted
     permissions:
       contents: read
       packages: write
       id-token: write
     strategy:
-      fail-fast: false # stop GH from cancelling all matrix builds if one fails
+      fail-fast: true # stop GH from cancelling all matrix builds if one fails
       matrix:
         recipe:
           - recipe-nvidia.yml
@@ -25,17 +26,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
 
-      # OTIMIZAÇÃO: Scan de segurança nos arquivos antes do build
+      # Validation: Checks recipe and configuration health before starting the heavy build
       - name: Run Trivy vulnerability scanner (Config)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'config'
           hide-progress: true
-          exit-code: '1' # Falha o build se encontrar erros graves de config
+          exit-code: '1'
           severity: 'CRITICAL,HIGH'
 
-          # the build is fully handled by the reusable github action
-      - name: Build Custom Image
+      # Standard build: Ensures an un-chunked image is always available in the registry
+      - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         with:
           recipe: ${{ matrix.recipe }}
@@ -43,5 +44,47 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          # build_chunked_oci: true
-          use_cache: true # OTIMIZAÇÃO: Habilita cache de camadas no registro
+          build_chunked_oci: false
+          use_cache: true
+
+      # # Security Audit: Checks the final Nvidia-specific image for known CVEs
+      # - name: Run Trivy vulnerability scanner (Image)
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-nvidia:latest
+      #     format: 'table'
+      #     exit-code: '0'
+      #     severity: 'CRITICAL,HIGH'
+
+      # # SBOM: Essential for tracking proprietary driver versions and dependencies
+      # - name: Generate SBOM
+      #   uses: anchore/sbom-action@v0
+      #   with:
+      #     image: ghcr.io/${{ github.repository_owner }}/kinoite-nvidia:latest
+      #     format: spdx-json
+      #     output-file: ./sbom.spdx.json
+
+  # build-optimized:
+  #   name: Build Optimized Image (Chunked)
+  #   needs: build-standard
+  #   runs-on: ubuntu-latest
+  #   # runs-on: self-hosted
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #     id-token: write
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v6
+
+  #     # Enhanced Build: Overwrites 'latest' with a chunked version to optimize client-side bandwidth
+  #     - name: Build Optimized Image
+  #       uses: blue-build/github-action@v1.11
+  #       with:
+  #         recipe: ${{ matrix.recipe }}
+  #         cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+  #         registry_token: ${{ github.token }}
+  #         pr_event_number: ${{ github.event.number }}
+  #         maximize_build_space: true
+  #         build_chunked_oci: true
+  #         use_cache: true

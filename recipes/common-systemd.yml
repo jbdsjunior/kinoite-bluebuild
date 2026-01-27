@@ -1,9 +1,13 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-
 modules:
   - type: systemd
     system:
       enabled:
+        # Automated update triggers
         - rpm-ostreed-automatic.timer
         - flatpak-system-update.timer
+
+        # Networking and Security enhancements
+        - firewalld.service # Ensures the firewall is active by default
+        - systemd-resolved.service # Required for DNS over TLS (DoT) functionality
