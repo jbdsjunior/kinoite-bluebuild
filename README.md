@@ -2,6 +2,7 @@
 ![Status Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
 ![Status AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
 ![Status NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
+
 # Custom Fedora Kinoite (BlueBuild)
 
 This project provides a customized, immutable Fedora Kinoite image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is designed for a high-performance KDE Plasma experience with out-of-the-box optimizations for gaming and development.
@@ -22,11 +23,12 @@ The transition to this custom image is done in two stages to ensure that signing
 ### 1. Initial Rebase
 First, switch to the unverified version to import the repository's signing keys.
 
+### For AMD/Intel:
 ```bash
-# For AMD/Intel:
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
-
-# For Nvidia:
+```
+### For Nvidia:
+```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 ```
@@ -36,12 +38,13 @@ rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:l
 ### 2. Enable Verification
 
 After rebooting, switch to the signed image to ensure all future updates are cryptographically verified.
-
+### For AMD/Intel:
 ```bash
-# For AMD/Intel:
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# For Nvidia:
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
+```
+### For Nvidia:
+```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 ```
@@ -69,35 +72,33 @@ Mount your cloud drives (GDrive, OneDrive, etc.) as local folders:
 
 1. **Configure:** `rclone config`.
 2. **Enable Mount:**
+## Replace 'remote-name' with your configured remote
 ```bash
-# Replace 'remote-name' with your configured remote
+
 systemctl --user enable --now rclone-mount@remote-name.service
 
 ```
-
-
 
 *Your files will be available at `~/Cloud/remote-name`.*
 
 ---
 
-## 💻 Local Development
+### 💻 Local Development
 
 If you wish to build or test changes locally using Distrobox:
 
 1. **Create Container:** `distrobox assemble create`.
 2. **Enter Environment:** `distrobox enter bluebuild`.
 3. **Build Image:**
-```bash
+
 # Build the AMD variant
+```bash
 bluebuild build recipes/recipe-amd.yml
 
 ```
-
-
-
-## ⚖️ License
+---
+### ⚖️ License
 
 This project is licensed under the **Apache License 2.0**.
 
-```
+---
