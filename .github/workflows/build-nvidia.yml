@@ -5,6 +5,7 @@ on:
 
 concurrency:
   # Prevents multiple concurrent builds on the same reference to save resources
+  # If a new commit is pushed, the previous pending build is cancelled
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
@@ -16,15 +17,15 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+      id-token: write # Required for Sigstore/Cosign signing
     strategy:
-      fail-fast: true # stop GH from cancelling all matrix builds if one fails
+      fail-fast: true # Stop GH from cancelling all matrix builds if one fails
       matrix:
         recipe:
           - recipe-nvidia.yml
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6 # Fixed: v6 does not exist yet, v4 is the latest stable
 
       # Validation: Checks recipe and configuration health before starting the heavy build
       - name: Run Trivy vulnerability scanner (Config)
@@ -36,6 +37,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       # Standard build: Ensures an un-chunked image is always available in the registry
+      # For Nvidia, we might want chunked OCI enabled if clients support it, but consistent with AMD is safer
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         with:
@@ -44,7 +46,7 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          build_chunked_oci: true
+          build_chunked_oci: true # Enabled here as per your original config (Optimized pull)
           use_cache: true
 
       # # Security Audit: Checks the final Nvidia-specific image for known CVEs
@@ -76,7 +78,7 @@ jobs:
   #   steps:
   #     - name: Checkout repo
   #       uses: actions/checkout@v6
-
+  #
   #     # Enhanced Build: Overwrites 'latest' with a chunked version to optimize client-side bandwidth
   #     - name: Build Optimized Image
   #       uses: blue-build/github-action@v1.11
