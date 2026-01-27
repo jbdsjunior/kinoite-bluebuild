@@ -1,19 +1,34 @@
 ---
+# Schema validation for BlueBuild module lists
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
 modules:
+  # First step: Inject custom configuration files into the root filesystem (/)
   - type: files
     files:
       - source: system
         destination: /
 
+  # Repository management: Enables third-party repos like Negativo17 or RPMFusion
   - from-file: common-repos.yml
+
+  # Package management: Removes bloatware and installs essential system tools/drivers
   - from-file: common-packages.yml
+
+  # User-space applications: Pre-installs a curated list of Flatpaks from Flathub
   - from-file: common-flatpaks.yml
+
+  # Virtualization stack: Sets up KVM/Libvirt and required system groups
   - from-file: common-kvm-libvirt.yml
 
+  # Systemd configuration: Enables automatic update timers and specific services
   - from-file: common-systemd.yml
+
+  # Kernel arguments: Applies hardware optimizations and security flags
   - from-file: common-kargs.yml
 
-  - type: script
-    scripts:
-      - setup-ostreed.sh
+  # Note: The 'setup-ostreed.sh' script was replaced by a static config in /etc/rpm-ostreed.conf
+  # for better predictability in immutable environments.
+  # - type: script
+  #   scripts:
+  #     - setup-ostreed.sh
