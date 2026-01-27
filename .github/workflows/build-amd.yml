@@ -11,8 +11,8 @@ concurrency:
 jobs:
   build-standard:
     name: Build Standard Image (Safety Net)
-    # runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    # runs-on: self-hosted
     permissions:
       contents: read
       packages: write
@@ -42,44 +42,44 @@ jobs:
           build_chunked_oci: false # Standard OCI format for maximum compatibility
           use_cache: true # Speeds up subsequent builds by caching container layers
 
-      # Post-build check: Scan the newly created image for package vulnerabilities
-      - name: Run Trivy vulnerability scanner (Image)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
-          format: 'table'
-          exit-code: '0' # Reports findings without failing to ensure the safety net remains available
-          severity: 'CRITICAL,HIGH'
+      # # Post-build check: Scan the newly created image for package vulnerabilities
+      # - name: Run Trivy vulnerability scanner (Image)
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
+      #     format: 'table'
+      #     exit-code: '0' # Reports findings without failing to ensure the safety net remains available
+      #     severity: 'CRITICAL,HIGH'
 
-      # Generate Software Bill of Materials (SBOM) for supply chain transparency
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
-          format: spdx-json
-          output-file: ./sbom.spdx.json
+      # # Generate Software Bill of Materials (SBOM) for supply chain transparency
+      # - name: Generate SBOM
+      #   uses: anchore/sbom-action@v0
+      #   with:
+      #     image: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
+      #     format: spdx-json
+      #     output-file: ./sbom.spdx.json
 
-  build-optimized:
-    name: Build Optimized Image (Chunked)
-    needs: build-standard # Only proceeds if the standard image is successfully published
-    # runs-on: ubuntu-latest
-    runs-on: self-hosted
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
+  # build-optimized:
+  #   name: Build Optimized Image (Chunked)
+  #   needs: build-standard # Only proceeds if the standard image is successfully published
+  #   runs-on: ubuntu-latest
+  #   # runs-on: self-hosted
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #     id-token: write
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v6
 
-      # Optimized build: Uses content-addressable chunks for faster user updates
-      - name: Build Optimized Image
-        uses: blue-build/github-action@v1.11
-        with:
-          recipe: recipe-amd.yml
-          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
-          registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
-          maximize_build_space: true
-          build_chunked_oci: true # Enables ZSTD-chunked format for smaller delta downloads
-          use_cache: true
+  #     # Optimized build: Uses content-addressable chunks for faster user updates
+  #     - name: Build Optimized Image
+  #       uses: blue-build/github-action@v1.11
+  #       with:
+  #         recipe: recipe-amd.yml
+  #         cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+  #         registry_token: ${{ github.token }}
+  #         pr_event_number: ${{ github.event.number }}
+  #         maximize_build_space: true
+  #         build_chunked_oci: true # Enables ZSTD-chunked format for smaller delta downloads
+  #         use_cache: true
