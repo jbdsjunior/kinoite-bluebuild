@@ -1,11 +1,18 @@
 ---
+# Schema validation for BlueBuild recipes
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-name: kinoite-amd
-description: "Customized Fedora Kinoite image (AMD/Virt/Multimedia)"
-base-image: ghcr.io/ublue-os/kinoite-main
 
+name: kinoite-amd
+description: "Customized Fedora Kinoite image optimized for AMD CPUs/GPUs and Multimedia"
+
+# Base image provided by Universal Blue (ublue-os)
+base-image: ghcr.io/ublue-os/kinoite-main
 image-version: latest
 
 modules:
+  # Pulls all shared configurations from the common recipe file
   - from-file: recipe-common.yml
+
+  # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
+  # after the initial rebase on the client side.
   - type: signing
