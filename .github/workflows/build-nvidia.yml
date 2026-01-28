@@ -16,26 +16,19 @@ jobs:
       packages: write
       id-token: write
     strategy:
-      fail-fast: true
+      fail-fast: true # Stop GH from cancelling all matrix builds if one fails
       matrix:
         recipe:
           - recipe-nvidia.yml
     steps:
-      # Limpeza agressiva para garantir espaço para a imagem Nvidia
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 512
-          swap-size-mb: 2048       # 2GB Swap (Equilíbrio ideal)
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true' # Remove imagens docker cacheadas (+3GB livres)
-
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
+          remove-docker-images: 'true'
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         with:
@@ -43,6 +36,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
-          maximize_build_space: false
-          build_chunked_oci: false     # Mantido false para evitar erro de disco
+          maximize_build_space: true
+          build_chunked_oci: false # Enabled here as per your original config (Optimized pull)
           use_cache: true
+

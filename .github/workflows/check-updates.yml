@@ -23,7 +23,7 @@ jobs:
 
       - name: Check AMD Cache
         id: cache_amd
-        uses: actions/cache@v4 # Corrigido de v5 para v4 (versão estável atual)
+        uses: actions/cache@v5 # Corrigido de v5 para v4 (versão estável atual)
         with:
           path: ~/.cache-amd
           key: upstream-main-${{ steps.check_amd.outputs.digest }}
@@ -47,7 +47,7 @@ jobs:
 
       - name: Check Nvidia Cache
         id: cache_nvidia
-        uses: actions/cache@v4 # Corrigido de v5 para v4
+        uses: actions/cache@v5 # Corrigido de v5 para v4
         with:
           path: ~/.cache-nvidia
           key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}
