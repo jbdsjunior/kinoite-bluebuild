@@ -16,10 +16,6 @@ sudo usermod -aG "$REQUIRED_GROUPS" "$USER"
 sudo mkdir -p "$SYSTEM_IMAGES_DIR"
 sudo chattr +C "$SYSTEM_IMAGES_DIR"
 
-# Setup user-specific images directory with No_COW
-mkdir -p "$USER_IMAGES_DIR"
-sudo chattr +C "$USER_IMAGES_DIR"
-
 # Restart the service to apply changes
 sudo systemctl restart libvirtd
 

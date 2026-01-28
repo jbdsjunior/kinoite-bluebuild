@@ -13,7 +13,7 @@ jobs:
       - name: Install Skopeo
         run: sudo apt-get -y install skopeo
 
-      # --- VERIFICAÇÃO AMD (Baseada na imagem Main) ---
+      # --- AMD VERIFICATION (Based on Main Image) ---
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
@@ -21,6 +21,7 @@ jobs:
           echo "Main Digest: $DIGEST"
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
+      # ... cache step ...
       - name: Check AMD Cache
         id: cache_amd
         uses: actions/cache@v5
@@ -37,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- VERIFICAÇÃO NVIDIA (Baseada na imagem Nvidia) ---
+      # --- NVIDIA VERIFICATION (Based on Nvidia Image) ---
       - name: Check Nvidia Image
         id: check_nvidia
         run: |
