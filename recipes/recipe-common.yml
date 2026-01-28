@@ -1,22 +1,28 @@
 ---
-# Schema validation for BlueBuild module lists
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # 1. Repos e Kernel Args (Mudam raramente)
+  # 1. Repositórios e Configurações de Kernel (Base estável)
   - from-file: common-repos.yml
   - from-file: common-kargs.yml
 
-  # 2. Pacotes do Sistema (Mudam com updates do Fedora)
-  - from-file: common-packages.yml
+  # 2. Camada de Drivers (Pesada - muda com updates do sistema)
+  - from-file: packages-drivers.yml
+
+  # 3. Camada Core (Estável - muda raramente)
+  - from-file: packages-core.yml
   - from-file: common-kvm-libvirt.yml
   - from-file: common-systemd.yml
 
-  # 3. Arquivos de Configuração e Flatpaks (Mudam frequentemente por ajustes do usuário)
-  # Mover 'files' para cá garante que mudar um config não invalide a camada de instalação de pacotes
+  # 4. Camada de Ferramentas (Leve - muda frequentemente)
+  - from-file: packages-tools.yml
+
+  # 5. Configurações (Files) - Mover para o final protege as camadas anteriores
+  # Se você editar um arquivo de config, não precisa reconstruir os drivers!
   - type: files
     files:
       - source: system
         destination: /
 
+  # 6. Flatpaks (Camada final de aplicações)
   - from-file: common-flatpaks.yml

@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    remove:
+      packages:
+        - firefox
+        - firefox-langpacks
+        - mozilla-filesystem
+        - htop
+        - nvtop
+        - kate
+        - fcitx5-*
+        - kcm-fcitx5
+        - braille-printer-app
+        - ibus-anthy
+        - ibus-anthy-python
+        - ibus-chewing
+        - ibus-hangul
+        - ibus-libpinyin
+        - kasumi-common
+        - kasumi-unicode
+
+    install:
+      packages:
+        # Localization & Sensors
+        - langpacks-pt_BR
+        - lm_sensors
+
+        # Cloud Storage & Fuse
+        - rclone
+        - fuse3

@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    install:
+      packages:
+        # Video Drivers (Hybrid AMD/Intel support)
+        - mesa-va-drivers
+        - mesa-vdpau-drivers
+        # - intel-media-driver # Descomente se tiver Intel recente
+
+        # Multimedia Codecs (GStreamer & Libs)
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-ugly
+        - gstreamer1-plugin-openh264
+        - libdvdcss
+        - x264
+        - x265
+        - flac
+        - lame
+        - opus
