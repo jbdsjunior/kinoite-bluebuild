@@ -1,24 +1,38 @@
-name: Cleanup GHCR Images
+name: Cleanup Resources
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch: # Allows manual execution
+    - cron: '0 0 * * *' # Roda todo dia à meia-noite
+  workflow_dispatch:
 
 jobs:
-  delete-old-versions:
+  # 1. Limpa Imagens antigas do Container Registry (GHCR)
+  delete-old-images:
     runs-on: ubuntu-latest
     permissions:
-      packages: write # Obrigatório para deletar versões
+      packages: write
     strategy:
       fail-fast: false
       matrix:
-        image-name: [kinoite-amd, kinoite-nvidia] # Required to delete package versions
+        image-name: [kinoite-amd, kinoite-nvidia]
     steps:
       - name: Delete old package versions
         uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ matrix.image-name }}
           package-type: 'container'
-          min-versions-to-keep: 5 # Keeps the last 5 versions for safe rollback
-          delete-only-untagged-versions: 'false' # Removes old tags as well
-          # On GitHub, 'latest' is protected as it is not considered "old"
+          min-versions-to-keep: 3 # Mantém apenas as 3 últimas (Segurança mínima para rollback)
+          delete-only-untagged-versions: 'false'
+
+  # 2. Limpa Logs de Execuções Antigas (Deixa a aba Actions limpa)
+  delete-old-runs:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 1 # Apaga logs com mais de 1 dia
+          keep_minimum_runs: 3 # Mantém os 3 últimos logs de cada workflow para auditoria

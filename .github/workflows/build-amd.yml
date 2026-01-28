@@ -21,8 +21,6 @@ jobs:
         recipe:
           - recipe-amd.yml
     steps:
-      # 1. MAXIMIZAÇÃO DE RECURSOS (Adicionado conforme sua solicitação)
-      # Remove softwares pré-instalados para liberar espaço e cria swap para evitar erro de memória no rechunk.
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -34,11 +32,9 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
-      # 2. CHECKOUT (Opcional, mas recomendado antes do build)
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 3. BUILD
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         with:
@@ -46,6 +42,6 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
-          maximize_build_space: false # Desativado pois já rodamos o easimon acima
-          build_chunked_oci: false     # OCI Chunking ativado
+          maximize_build_space: false
+          build_chunked_oci: false
           use_cache: true
