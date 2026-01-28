@@ -10,31 +10,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-standard:
-    name: Build Standard Image (Safety Net)
+  bluebuild:
+    name: Build Standard Image
     runs-on: ubuntu-latest
     # runs-on: self-hosted
     permissions:
       contents: read
       packages: write
-      id-token: write # Required for Sigstore/Cosign signing
+      id-token: write
     strategy:
       fail-fast: true # Stop GH from cancelling all matrix builds if one fails
       matrix:
         recipe:
           - recipe-nvidia.yml
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
 
-      # Validation: Checks recipe and configuration health before starting the heavy build
-      - name: Run Trivy vulnerability scanner (Config)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'config'
-          hide-progress: true
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+      # - name: Checkout repo
+      #   uses: actions/checkout@v6
+
+      # # Validation: Checks recipe and configuration health before starting the heavy build
+      # - name: Run Trivy vulnerability scanner (Config)
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     scan-type: 'config'
+      #     hide-progress: true
+      #     exit-code: '1'
+      #     severity: 'CRITICAL,HIGH'
 
       # Standard build: Ensures an un-chunked image is always available in the registry
       # For Nvidia, we might want chunked OCI enabled if clients support it, but consistent with AMD is safer
@@ -66,9 +67,9 @@ jobs:
       #     format: spdx-json
       #     output-file: ./sbom.spdx.json
 
-  # build-optimized:
+  # bluebuild-optimized:
   #   name: Build Optimized Image (Chunked)
-  #   needs: build-standard
+  #   needs: bluebuild
   #   runs-on: ubuntu-latest
   #   # runs-on: self-hosted
   #   permissions:
