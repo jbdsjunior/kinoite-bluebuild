@@ -4,9 +4,8 @@ modules:
   - type: dnf
     install:
       packages:
-        # Video Drivers (Hybrid AMD/Intel support)
         - mesa-va-drivers
-        - mesa-vdpau-drivers
+        # - mesa-vdpau-drivers
         # - intel-media-driver # Descomente se tiver Intel recente
 
         # Multimedia Codecs (GStreamer & Libs)
