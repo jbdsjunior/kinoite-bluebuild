@@ -35,4 +35,4 @@ jobs:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
           retain_days: 1 # Apaga logs com mais de 1 dia
-          keep_minimum_runs: 3 # Mantém os 3 últimos logs de cada workflow para auditoria
+          # keep_minimum_runs: 3 # Mantém os 3 últimos logs de cada workflow para auditoria
