@@ -39,18 +39,8 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
-          root-reserve-mb: 2048 # Garante espaço para logs do sistema
-          swap-size-mb: 1024
-
-      # 3. [CRÍTICO] Move o armazenamento do Podman para o volume maximizado
-      # Isso resolve o erro "min-free-space-percent" definitivamente
-      - name: Move Podman Storage to Maximized Volume
-        run: |
-          sudo systemctl stop podman || true
-          mkdir -p $GITHUB_WORKSPACE/containers-storage
-          sudo rm -rf /var/lib/containers
-          sudo ln -s $GITHUB_WORKSPACE/containers-storage /var/lib/containers
-          ls -la /var/lib/containers
+          # root-reserve-mb: 2048 # Garante espaço para logs do sistema
+          # swap-size-mb: 1024
 
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
@@ -60,7 +50,7 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           # Desativamos aqui pois já rodamos o easimon manualmente acima (evita conflito)
-          maximize_build_space: false
+          maximize_build_space: true
           # Reativamos o Chunked OCI para downloads rápidos
           build_chunked_oci: true
           max_layers: 128
