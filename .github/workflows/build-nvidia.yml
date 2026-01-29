@@ -21,7 +21,7 @@ jobs:
         recipe:
           - recipe-nvidia.yml
     steps:
-      # [Melhoria] Otimização do sistema host para reduzir tempo de build
+      # 1. Limpeza agressiva inicial
       - name: Optimize build times
         shell: bash
         run: |
@@ -30,6 +30,7 @@ jobs:
           sudo rm -f /var/lib/man-db/auto-update
           sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
 
+      # 2. Maximiza o espaço (cria um volume grande em $GITHUB_WORKSPACE)
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -38,6 +39,27 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
+          # Garante que temos espaço no root para logs/tmp, mas a maior parte vai para o workspace
+          root-reserve-mb: 2048
+          swap-size-mb: 1024
+
+      # 3. [CRÍTICO] Move o armazenamento do Podman para o volume maximizado
+      - name: Move Podman Storage to Maximized Volume
+        run: |
+          # Para serviços para evitar erros
+          sudo systemctl stop podman || true
+
+          # Cria diretório no volume gigante (workspace)
+          mkdir -p $GITHUB_WORKSPACE/containers-storage
+
+          # Remove o diretório original (que está na partição pequena)
+          sudo rm -rf /var/lib/containers
+
+          # Cria o link simbólico apontando para o espaço grande
+          sudo ln -s $GITHUB_WORKSPACE/containers-storage /var/lib/containers
+
+          # Verifica se funcionou
+          ls -la /var/lib/containers
 
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
@@ -46,11 +68,10 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
-          maximize_build_space: true
+          maximize_build_space: false # Desativado pois já rodamos o easimon manualmente acima com configurações customizadas
           build_chunked_oci: true
           max_layers: 128
           use_cache: true
-          # [Melhoria] Parâmetros extras extraídos do build.yml de referência
-          squash: true
-          retry_push_count: 3
+          squash: true # Ajuda a reduzir o tamanho final e o processamento
+          retry_push_count: 3 # Evita falhas de rede no upload
           verify_install: true
