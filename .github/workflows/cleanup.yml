@@ -1,7 +1,7 @@
 name: Cleanup Resources
 on:
-  schedule:
-    - cron: '0 0 * * *' # Roda todo dia à meia-noite
+  # schedule:
+    # - cron: '0 0 * * *' # Roda todo dia à meia-noite
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
         with:
           package-name: ${{ matrix.image-name }}
           package-type: 'container'
-          min-versions-to-keep: 3 # Mantém apenas as 3 últimas (Segurança mínima para rollback)
+          min-versions-to-keep: 5 # Mantém apenas as 3 últimas (Segurança mínima para rollback)
           delete-only-untagged-versions: 'false'
 
   # 2. Limpa Logs de Execuções Antigas (Deixa a aba Actions limpa)
