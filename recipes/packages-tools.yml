@@ -13,8 +13,8 @@ modules:
         - starship
         - topgrade
 
-        # Modern CLI Tools
-        - eza # ls replacement
-        - bat # cat replacement
-        - zoxide # cd replacement
-        - fzf # Fuzzy finder (essencial para histórico do shell)
+        # # Modern CLI Tools
+        # - eza # ls replacement
+        # - bat # cat replacement
+        # - zoxide # cd replacement
+        # - fzf # Fuzzy finder (essencial para histórico do shell)

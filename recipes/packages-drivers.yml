@@ -21,4 +21,4 @@ modules:
         # - x265 # Idem
 
         # Ferramenta essencial para manipular mídia via terminal
-        - ffmpeg
+        # - ffmpeg
