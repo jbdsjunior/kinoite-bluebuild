@@ -1,3 +1,5 @@
+---
+
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
@@ -21,7 +23,7 @@ Choose the image that matches your hardware:
 
 ---
 
-# 🚀 Installation
+## 🚀 Installation
 
 The transition to this custom image is done in two stages to ensure that signing keys are correctly imported and verified.
 
