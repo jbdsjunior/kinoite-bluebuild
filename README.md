@@ -1,7 +1,10 @@
+---
 
-![Status Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
-![Status AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
-![Status NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
+![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
+
+![Status-AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
+
+![Status-NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
 
 # Custom Fedora Kinoite (BlueBuild)
 
@@ -16,11 +19,11 @@ Choose the image that matches your hardware:
 
 ---
 
-## 🚀 Installation
+# 🚀 Installation
 
 The transition to this custom image is done in two stages to ensure that signing keys are correctly imported and verified.
 
-### 1. Initial Rebase
+## 1. Initial Rebase
 
 First, switch to the unverified version to import the repository's signing keys.
 
@@ -39,18 +42,18 @@ rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:l
 
 > **Action Required:** Reboot your system immediately after this step.
 
-### 2. Enable Verification
+## 2. Enable Verification
 
 After rebooting, switch to the signed image to ensure all future updates are cryptographically verified.
 
-### For AMD/Intel
+### AMD/Intel
 
 ```bash
 
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-### For Nvidia
+### Nvidia
 
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
@@ -101,7 +104,7 @@ If you wish to build or test changes locally using Distrobox:
 2. **Enter Environment:** `distrobox enter bluebuild`.
 3. **Build Image:**
 
-# Build the AMD variant
+## Build the AMD variant
 
 ```bash
 bluebuild build recipes/recipe-amd.yml
