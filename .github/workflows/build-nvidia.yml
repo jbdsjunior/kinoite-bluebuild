@@ -49,10 +49,8 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
-          # Desativamos aqui pois já rodamos o easimon manualmente acima (evita conflito)
           maximize_build_space: true
-          # Reativamos o Chunked OCI para downloads rápidos
-          build_chunked_oci: true
+          build_chunked_oci: false
           max_layers: 128
           use_cache: true
           squash: true
