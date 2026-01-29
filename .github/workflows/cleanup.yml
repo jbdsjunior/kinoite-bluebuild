@@ -1,4 +1,4 @@
-name: Cleanup Resources
+name: cleanup
 on:
   # schedule:
   #   - cron: '0 0 * * *' # Roda todo dia à meia-noite
