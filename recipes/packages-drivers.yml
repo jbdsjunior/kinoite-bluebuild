@@ -15,7 +15,7 @@ modules:
         # Multimedia Codecs (GStreamer & Libs)
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        - gstreamer1-plugin-openh264
+        # - gstreamer1-plugin-openh264
         - libdvdcss
         # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
         # - x265 # Idem
