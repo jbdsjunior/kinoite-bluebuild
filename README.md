@@ -1,4 +1,7 @@
 ---
+title: Custom Fedora Kinoite (BlueBuild)
+
+This project provides a customized, immutable Fedora Kinoite image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is designed for a high-performance KDE Plasma experience with out-of-the-box optimizations for gaming and development.
 
 <div align="center">
 
@@ -8,11 +11,6 @@
 
 </div>
 
----
-
-# Custom Fedora Kinoite (BlueBuild)
-
-This project provides a customized, immutable Fedora Kinoite image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is designed for a high-performance KDE Plasma experience with out-of-the-box optimizations for gaming and development.
 
 ## 💿 Variants
 
