@@ -1,7 +1,7 @@
 name: Cleanup Resources
 on:
   # schedule:
-    # - cron: '0 0 * * *' # Roda todo dia à meia-noite
+  #   - cron: '0 0 * * *' # Roda todo dia à meia-noite
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     permissions:
       packages: write
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         image-name: [kinoite-amd, kinoite-nvidia]
     steps:
@@ -21,7 +21,7 @@ jobs:
           package-name: ${{ matrix.image-name }}
           package-type: 'container'
           min-versions-to-keep: 5 # Mantém apenas as 3 últimas (Segurança mínima para rollback)
-          delete-only-untagged-versions: 'false'
+          delete-only-untagged-versions: 'true'
 
   # 2. Limpa Logs de Execuções Antigas (Deixa a aba Actions limpa)
   delete-old-runs:

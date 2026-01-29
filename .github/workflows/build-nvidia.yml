@@ -16,11 +16,20 @@ jobs:
       packages: write
       id-token: write
     strategy:
-      fail-fast: true # Stop GH from cancelling all matrix builds if one fails
+      fail-fast: true
       matrix:
         recipe:
           - recipe-nvidia.yml
     steps:
+      # [Melhoria] Otimização do sistema host para reduzir tempo de build
+      - name: Optimize build times
+        shell: bash
+        run: |
+          echo 'set man-db/auto-update false' | sudo debconf-communicate
+          sudo dpkg-reconfigure man-db
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -29,6 +38,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
+
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         with:
@@ -37,6 +47,10 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          build_chunked_oci: false # Enabled here as per your original config (Optimized pull)
+          build_chunked_oci: true
+          max_layers: 128
           use_cache: true
-
+          # [Melhoria] Parâmetros extras extraídos do build.yml de referência
+          squash: true
+          retry_push_count: 3
+          verify_install: true
