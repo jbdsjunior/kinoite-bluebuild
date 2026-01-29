@@ -4,10 +4,10 @@ modules:
   - type: dnf
     install:
       packages:
-        - mesa-va-drivers
+        # - mesa-va-drivers
         # Habilite para garantir aceleração em iGPUs Intel (QuickSync)
         # Não causa conflito em CPUs AMD, apenas ocupa alguns MBs.
-        - intel-media-driver
+        # - intel-media-driver
 
         # Drivers VDPAU legados (Útil para players de vídeo mais antigos)
         - mesa-vdpau-drivers
