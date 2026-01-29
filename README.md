@@ -1,16 +1,10 @@
 ---
+
 title: Custom Fedora Kinoite (BlueBuild)
 
 This project provides a customized, immutable Fedora Kinoite image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is designed for a high-performance KDE Plasma experience with out-of-the-box optimizations for gaming and development.
 
-<div align="center">
-
-![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
-![Status-NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
-
-</div>
-
+![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg) ![Status-AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg) ![Status-NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
 
 ## 💿 Variants
 
@@ -18,8 +12,6 @@ Choose the image that matches your hardware:
 
 - **kinoite-amd**: Optimized for AMD (P-State) and Intel (Media Driver) GPUs.
 - **kinoite-nvidia**: Includes proprietary Nvidia drivers, CUDA, and hardware acceleration patches.
-
----
 
 ## 🚀 Installation
 
