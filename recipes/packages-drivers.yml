@@ -5,16 +5,20 @@ modules:
     install:
       packages:
         - mesa-va-drivers
-        # - mesa-vdpau-drivers
-        # - intel-media-driver # Descomente se tiver Intel recente
+        # Habilite para garantir aceleração em iGPUs Intel (QuickSync)
+        # Não causa conflito em CPUs AMD, apenas ocupa alguns MBs.
+        - intel-media-driver
+
+        # Drivers VDPAU legados (Útil para players de vídeo mais antigos)
+        - mesa-vdpau-drivers
 
         # Multimedia Codecs (GStreamer & Libs)
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         - gstreamer1-plugin-openh264
         - libdvdcss
-        - x264
-        - x265
-        - flac
-        - lame
-        - opus
+        # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
+        # - x265 # Idem
+
+        # Ferramenta essencial para manipular mídia via terminal
+        - ffmpeg

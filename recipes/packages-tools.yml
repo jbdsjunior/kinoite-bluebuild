@@ -1,4 +1,3 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
@@ -7,8 +6,15 @@ modules:
       copr:
         - atim/starship
         - lilay/topgrade
+        # Adicione se necessário, mas 'eza' e 'bat' geralmente estão no repo oficial do Fedora agora
     install:
       packages:
         - fastfetch
         - starship
         - topgrade
+
+        # Modern CLI Tools
+        - eza # ls replacement
+        - bat # cat replacement
+        - zoxide # cd replacement
+        - fzf # Fuzzy finder (essencial para histórico do shell)
