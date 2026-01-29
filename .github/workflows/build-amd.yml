@@ -69,10 +69,10 @@ jobs:
 
           # Habilite 'true' se quiser deltas menores (download apenas do que mudou)
           # Se deixar 'false', o download será maior, mas o cache ainda funciona se nada mudar.
-          build_chunked_oci: true
+          build_chunked_oci: false
 
           max_layers: 128
-          use_cache: true
+          use_cache: false
 
           # Squash ajuda a reduzir o tamanho final da imagem
           squash: true
