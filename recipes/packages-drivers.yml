@@ -17,6 +17,7 @@ modules:
         - gstreamer1-plugins-ugly
         # - gstreamer1-plugin-openh264
         - libdvdcss
+        - noopenh264
         # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
         # - x265 # Idem
 
