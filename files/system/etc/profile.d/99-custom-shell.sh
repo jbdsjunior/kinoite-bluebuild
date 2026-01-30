@@ -1,13 +1,11 @@
-# Configuração global do Shell para Kinoite Bootc
+# Global Shell Configuration for Kinoite
 
-# Inicia o Starship se estiver instalado
+# Initialize Starship if installed
 if command -v starship &> /dev/null; then
     eval "$(starship init bash)"
 fi
 
-# Executa fastfetch no login interativo
-# A verificação extra [ -z "$FASTFETCH_RAN" ] impede que ele rode
-# novamente ao abrir subshells (ex: terminal do VSCode ou tmux)
+# Run fastfetch on interactive login
 if [[ $- == *i* ]] && command -v fastfetch &> /dev/null; then
     if [ -z "$FASTFETCH_RAN" ]; then
         fastfetch
