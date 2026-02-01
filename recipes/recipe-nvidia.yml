@@ -20,7 +20,7 @@ modules:
       - nvidia-drm.modeset=1
       # Note: nouveau/nova_core blacklisting is usually handled by the base image,
       # but can be added here if specialized driver overrides are needed.
-      # - rd.driver.blacklist=nouveau,nova_core
-      # - modprobe.blacklist=nouveau,nova_core
+      - rd.driver.blacklist=nouveau,nova_core
+      - modprobe.blacklist=nouveau,nova_core
   # Digital signing module for image integrity and verified updates
   - type: signing
