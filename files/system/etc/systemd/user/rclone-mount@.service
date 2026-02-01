@@ -1,0 +1,40 @@
+[Unit]
+Description=Rclone Mount (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+# Garante que o diretório existe antes de montar
+ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
+ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
+    --config=%h/.config/rclone/rclone.conf \
+    --cache-dir=%h/.cache/rclone \
+    --vfs-cache-mode=full \
+    --vfs-cache-max-size=50G \
+    --vfs-cache-max-age=24h \
+    --vfs-read-chunk-size=128M \
+    --vfs-read-chunk-size-limit=off \
+    --vfs-write-back=10s \
+    --vfs-fast-fingerprint \
+    --buffer-size=64M \
+    --dir-cache-time=168h \
+    --poll-interval=5m \
+    --transfers=4 \
+    --checkers=4 \
+    --drive-pacer-min-sleep=20ms \
+    --drive-pacer-burst=100 \
+    --drive-skip-gdocs \
+    --drive-server-side-across-configs \
+    --drive-acknowledge-abuse \
+    --drive-stop-on-upload-limit \
+    --umask=022
+
+# Desmonta com lazy unmount (-z) para evitar travamentos se a rede cair
+ExecStop=/bin/fusermount3 -uz %h/Cloud/%i
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=60
+
+[Install]
+WantedBy=default.target

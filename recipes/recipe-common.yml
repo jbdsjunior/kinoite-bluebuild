@@ -3,7 +3,7 @@
 
 modules:
   # 1. Repositories and Kernel Configurations (Stable Base)
-  - from-file: common-repos.yml
+  # - from-file: common-repos.yml
   - from-file: common-kargs.yml
 
   # 2. Driver Layer (Heavy - changes with system updates)
