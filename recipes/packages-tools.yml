@@ -6,7 +6,7 @@ modules:
       copr:
         - atim/starship
         - lilay/topgrade
-        # Adicione se necessário, mas 'eza' e 'bat' geralmente estão no repo oficial do Fedora agora
+
     install:
       packages:
         - fastfetch
