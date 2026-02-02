@@ -76,7 +76,7 @@ jobs:
           # OBSERVAÇÃO SOBRE SQUASH:
           # Com chunked: true, o squash é aceitável.
           # Sem chunked, o squash obriga o download total da imagem.
-          squash: true
+          squash: false
 
           retry_push_count: 3
           verify_install: true
