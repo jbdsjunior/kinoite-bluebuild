@@ -13,11 +13,12 @@ modules:
         - mesa-vdpau-drivers
 
         # Multimedia Codecs (GStreamer & Libs)
-        - gstreamer1-plugins-bad
-        - gstreamer1-plugins-ugly
+        # - gstreamer1-plugins-bad
+        # - gstreamer1-plugins-ugly
         # - gstreamer1-plugin-openh264
         - libdvdcss
-        - noopenh264
+        # - noopenh264
+        - fdk-aac
         # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
         # - x265 # Idem
 
