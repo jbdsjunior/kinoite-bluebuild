@@ -3,6 +3,7 @@
 modules:
   - type: dnf
     remove:
+      auto-remove: true
       packages:
         - firefox
         - firefox-langpacks
