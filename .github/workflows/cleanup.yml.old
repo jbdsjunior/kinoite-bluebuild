@@ -1,17 +1,17 @@
 name: cleanup
 on:
-  # schedule:
-  #   - cron: '0 0 * * *' # Roda todo dia à meia-noite
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight
   workflow_dispatch:
 
 jobs:
-  # 1. Limpa Imagens antigas do Container Registry (GHCR)
+  # 1. Clean old images from GHCR
   delete-old-images:
     runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         image-name: [kinoite-amd, kinoite-nvidia]
     steps:
@@ -20,10 +20,11 @@ jobs:
         with:
           package-name: ${{ matrix.image-name }}
           package-type: 'container'
-          min-versions-to-keep: 5 # Mantém apenas as 3 últimas (Segurança mínima para rollback)
+          # Keep last 7 versions for safe rollbacks (rpm-ostree rollback)
+          min-versions-to-keep: 7
           delete-only-untagged-versions: 'true'
 
-  # 2. Limpa Logs de Execuções Antigas (Deixa a aba Actions limpa)
+  # 2. Clean old workflow run logs
   delete-old-runs:
     runs-on: ubuntu-latest
     permissions:
@@ -34,5 +35,5 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 1 # Apaga logs com mais de 1 dia
-          # keep_minimum_runs: 3 # Mantém os 3 últimos logs de cada workflow para auditoria
+          retain_days: 3 # Increased from 1 to 3 for better debugging window
+          keep_minimum_runs: 5 # Always keep the last 5 runs per workflow
