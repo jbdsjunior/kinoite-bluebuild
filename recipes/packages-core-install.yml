@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    install:
+      packages:
+        # Localization & Sensors
+        - langpacks-pt_BR
+        # - langpacks-en
+        - lm_sensors
+
+        # Cloud Storage & Fuse
+        - rclone
+        - fuse3
