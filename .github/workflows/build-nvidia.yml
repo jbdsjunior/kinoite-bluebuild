@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   bluebuild:
-    name: Build Nvidia Image
+    name: Build Standard Image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,66 +21,62 @@ jobs:
         recipe:
           - recipe-nvidia.yml
     steps:
-      # 1. CHECKOUT
+      # 0. CHECKOUT (Essencial para ler o timestamp do Git)
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Baixa o histórico para pegar a data correta
 
-      # 2. TIMESTAMP (Reproducibility)
+      # 1. TRAVAR TIMESTAMP (A Solução para o Cache)
       - name: Set reproducible build timestamp
         id: timestamp
         run: |
+          # Define a data do build como a data do último commit
           COMMIT_TIME=$(git log -1 --pretty=%ct)
           echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
+          echo "Timestamp travado em: $COMMIT_TIME"
 
-      # 3. LIMPEZA MANUAL AGRESSIVA (Crítico para Nvidia + Chunked)
-      # Removemos componentes inúteis para ganhar GBs preciosos.
-      - name: Free Disk Space (Aggressive)
+      # 2. Otimização de espaço (Mantive o seu original)
+      - name: Optimize build times
         shell: bash
         run: |
-          echo "Cleaning up disk space..."
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/share/swift
-          sudo docker image prune --all --force
+          echo 'set man-db/auto-update false' | sudo debconf-communicate
+          sudo dpkg-reconfigure man-db
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
 
-      # 4. MAXIMIZE BUILD SPACE
-      # Redimensiona partições para dar todo espaço possível ao /var/lib/docker
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
-      # 5. BUILD
-      - name: Build Nvidia Image
+      # 3. BUILD COM CORREÇÕES
+      - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         env:
+          # Garante que o buildah veja a variável de tempo
           SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
+          maximize_build_space: true
 
-          # Desativamos o maximize interno para usar o manual (passo 4) que é mais robusto
-          maximize_build_space: false
-
-          # --- PERFORMANCE DE UPDATE ---
-          # Ativa downloads parciais (Updates muito mais rápidos)
-          build_chunked_oci: true
-
-          # Comprime a imagem final (Economiza espaço no GHCR)
-          squash: true
+          # MUDANÇA CRÍTICA: Habilite isso para ter deltas (Zstd Chunked)
+          build_chunked_oci: false
 
           max_layers: 128
           use_cache: true
+
+          # OBSERVAÇÃO SOBRE SQUASH:
+          # Com chunked: true, o squash é aceitável.
+          # Sem chunked, o squash obriga o download total da imagem.
+          squash: false
+
           retry_push_count: 3
           verify_install: true
