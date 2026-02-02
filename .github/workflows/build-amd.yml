@@ -28,37 +28,38 @@ jobs:
           fetch-depth: 0 # Baixa o histórico para pegar a data correta
 
       # 2. TRAVAR TIMESTAMP (A Solução para o Cache)
-      - name: Set reproducible build timestamp
-        id: timestamp
-        run: |
-          # Define a data do build como a data do último commit
-          COMMIT_TIME=$(git log -1 --pretty=%ct)
-          echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
-          echo "Timestamp travado em: $COMMIT_TIME"
+      # - name: Set reproducible build timestamp
+      #   id: timestamp
+      #   run: |
+      #     # Define a data do build como a data do último commit
+      #     COMMIT_TIME=$(git log -1 --pretty=%ct)
+      #     echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
+      #     echo "Timestamp travado em: $COMMIT_TIME"
 
-      # 3. Otimização de espaço (Igual ao Nvidia)
-      - name: Optimize build times
-        shell: bash
-        run: |
-          echo 'set man-db/auto-update false' | sudo debconf-communicate
-          sudo dpkg-reconfigure man-db
-          sudo rm -f /var/lib/man-db/auto-update
-          sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
+      # # 3. Otimização de espaço (Igual ao Nvidia)
+      # - name: Optimize build times
+      #   shell: bash
+      #   run: |
+      #     echo 'set man-db/auto-update false' | sudo debconf-communicate
+      #     sudo dpkg-reconfigure man-db
+      #     sudo rm -f /var/lib/man-db/auto-update
+      #     sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
 
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
+      # # Expande a partição raiz (Root) usando o espaço limpo acima
+      # - name: Maximize build space
+      #   uses: easimon/maximize-build-space@master
+      #   with:
+      #     root-reserve-mb: 512
+      #     swap-size-mb: 1024
+      #     remove-dotnet: 'true'
+      #     remove-android: 'true'
+      #     remove-haskell: 'true'
+      #     remove-codeql: 'true'
+      #     remove-docker-images: 'true'
 
-      # 4. BUILD
       - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         env:
-          # Garante que o buildah veja a variável de tempo e use o cache corretamente
           SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
         with:
           recipe: ${{ matrix.recipe }}
@@ -67,15 +68,14 @@ jobs:
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
 
-          # Habilite 'true' se quiser deltas menores (download apenas do que mudou)
-          # Se deixar 'false', o download será maior, mas o cache ainda funciona se nada mudar.
+          # MANTENHA TRUE: Updates rápidos para você (o usuário final)
           build_chunked_oci: false
+
+          # MUDE PARA FALSE: O Squash consome muito disco temporário.
+          # Desativar isso é o segredo para o build Nvidia passar.
+          squash: false
 
           max_layers: 128
           use_cache: true
-
-          # Squash ajuda a reduzir o tamanho final da imagem
-          squash: false
-
           retry_push_count: 3
           verify_install: true

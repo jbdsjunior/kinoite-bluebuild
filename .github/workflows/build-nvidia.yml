@@ -26,11 +26,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 2. TRAVAR TIMESTAMP (A Solução para o Cache)
       # - name: Set reproducible build timestamp
       #   id: timestamp
       #   run: |
+      #     # Define a data do build como a data do último commit
       #     COMMIT_TIME=$(git log -1 --pretty=%ct)
       #     echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
+      #     echo "Timestamp travado em: $COMMIT_TIME"
+
+      #     # 3. Otimização de espaço (Igual ao Nvidia)
+      # - name: Optimize build times
+      #   shell: bash
+      #   run: |
+      #     echo 'set man-db/auto-update false' | sudo debconf-communicate
+      #     sudo dpkg-reconfigure man-db
+      #     sudo rm -f /var/lib/man-db/auto-update
+      #     sudo sed -i 's/^update_initramfs=.*/update_initramfs=no/' /etc/initramfs-tools/update-initramfs.conf
 
       # # Expande a partição raiz (Root) usando o espaço limpo acima
       # - name: Maximize build space
@@ -44,7 +56,7 @@ jobs:
       #     remove-codeql: 'true'
       #     remove-docker-images: 'true'
 
-      - name: Build Nvidia Image
+      - name: Build Standard Image
         uses: blue-build/github-action@v1.11
         env:
           SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
