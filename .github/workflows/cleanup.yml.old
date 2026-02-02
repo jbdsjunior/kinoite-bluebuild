@@ -1,11 +1,11 @@
 name: cleanup
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight
+    - cron: '0 0 * * *' # Executa diariamente à meia-noite
   workflow_dispatch:
 
 jobs:
-  # 1. Clean old images from GHCR
+  # 1. Limpa Imagens Antigas do GHCR (Economia de Espaço e Organização)
   delete-old-images:
     runs-on: ubuntu-latest
     permissions:
@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Lista das suas imagens para limpar
         image-name: [kinoite-amd, kinoite-nvidia]
     steps:
       - name: Delete old package versions
@@ -20,11 +21,16 @@ jobs:
         with:
           package-name: ${{ matrix.image-name }}
           package-type: 'container'
-          # Keep last 7 versions for safe rollbacks (rpm-ostree rollback)
-          min-versions-to-keep: 7
-          delete-only-untagged-versions: 'true'
 
-  # 2. Clean old workflow run logs
+          # MELHOR PRÁTICA: Mantenha pelo menos 7 versões (1 semana de histórico)
+          # Isso é CRUCIAL para garantir que o comando 'rpm-ostree rollback' funcione.
+          min-versions-to-keep: 7
+
+          # CORREÇÃO: Deve ser 'false' para apagar tags antigas (ex: builds da semana passada).
+          # Se ficar 'true', ele só apaga imagens quebradas/sem tag, e seu registro vai encher.
+          delete-only-untagged-versions: 'false'
+
+  # 2. Limpa Logs de Execuções Antigas (Reduz ruído na aba Actions)
   delete-old-runs:
     runs-on: ubuntu-latest
     permissions:
@@ -35,5 +41,9 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 3 # Increased from 1 to 3 for better debugging window
-          keep_minimum_runs: 5 # Always keep the last 5 runs per workflow
+
+          # MELHOR PRÁTICA: 3 dias é o ideal para cobrir fins de semana.
+          retain_days: 3
+
+          # Segurança: Mantém sempre os últimos 3 sucessos/falhas mesmo que sejam antigos
+          keep_minimum_runs: 3
