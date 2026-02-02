@@ -70,7 +70,7 @@ jobs:
           # MUDANÇA CRÍTICA: Habilite isso para ter deltas (Zstd Chunked)
           build_chunked_oci: true
 
-          max_layers: 128
+          max_layers: 64
           use_cache: true
 
           # OBSERVAÇÃO SOBRE SQUASH:
