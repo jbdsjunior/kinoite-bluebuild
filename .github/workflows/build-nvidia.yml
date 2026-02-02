@@ -26,11 +26,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set reproducible build timestamp
-        id: timestamp
-        run: |
-          COMMIT_TIME=$(git log -1 --pretty=%ct)
-          echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
+      # - name: Set reproducible build timestamp
+      #   id: timestamp
+      #   run: |
+      #     COMMIT_TIME=$(git log -1 --pretty=%ct)
+      #     echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
 
       # # LIMPEZA CRÍTICA: Remove softwares inúteis para liberar ~20GB+ no /
       # - name: Free Disk Space (Aggressive)
