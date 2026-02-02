@@ -32,17 +32,6 @@ jobs:
       #     COMMIT_TIME=$(git log -1 --pretty=%ct)
       #     echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
 
-      # # LIMPEZA CRÍTICA: Remove softwares inúteis para liberar ~20GB+ no /
-      # - name: Free Disk Space (Aggressive)
-      #   shell: bash
-      #   run: |
-      #     echo "Cleaning up disk space..."
-      #     sudo rm -rf /usr/share/dotnet
-      #     sudo rm -rf /usr/local/lib/android
-      #     sudo rm -rf /opt/ghc
-      #     sudo rm -rf /usr/share/swift
-      #     sudo docker image prune --all --force
-
       # # Expande a partição raiz (Root) usando o espaço limpo acima
       # - name: Maximize build space
       #   uses: easimon/maximize-build-space@master
@@ -67,8 +56,6 @@ jobs:
 
           # Desativa o maximize interno para não conflitar com o easimon acima
           maximize_build_space: true
-
-          # --- CONFIGURAÇÃO DE SEGURANÇA DE ESPAÇO ---
 
           # MANTENHA TRUE: Updates rápidos para você (o usuário final)
           build_chunked_oci: true
