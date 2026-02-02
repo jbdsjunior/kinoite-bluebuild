@@ -32,28 +32,28 @@ jobs:
           COMMIT_TIME=$(git log -1 --pretty=%ct)
           echo "SOURCE_DATE_EPOCH=$COMMIT_TIME" >> $GITHUB_ENV
 
-      # LIMPEZA CRÍTICA: Remove softwares inúteis para liberar ~20GB+ no /
-      - name: Free Disk Space (Aggressive)
-        shell: bash
-        run: |
-          echo "Cleaning up disk space..."
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/share/swift
-          sudo docker image prune --all --force
+      # # LIMPEZA CRÍTICA: Remove softwares inúteis para liberar ~20GB+ no /
+      # - name: Free Disk Space (Aggressive)
+      #   shell: bash
+      #   run: |
+      #     echo "Cleaning up disk space..."
+      #     sudo rm -rf /usr/share/dotnet
+      #     sudo rm -rf /usr/local/lib/android
+      #     sudo rm -rf /opt/ghc
+      #     sudo rm -rf /usr/share/swift
+      #     sudo docker image prune --all --force
 
-      # Expande a partição raiz (Root) usando o espaço limpo acima
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
+      # # Expande a partição raiz (Root) usando o espaço limpo acima
+      # - name: Maximize build space
+      #   uses: easimon/maximize-build-space@master
+      #   with:
+      #     root-reserve-mb: 512
+      #     swap-size-mb: 1024
+      #     remove-dotnet: 'true'
+      #     remove-android: 'true'
+      #     remove-haskell: 'true'
+      #     remove-codeql: 'true'
+      #     remove-docker-images: 'true'
 
       - name: Build Nvidia Image
         uses: blue-build/github-action@v1.11
@@ -66,7 +66,7 @@ jobs:
           pr_event_number: ${{ github.event.number }}
 
           # Desativa o maximize interno para não conflitar com o easimon acima
-          maximize_build_space: false
+          maximize_build_space: true
 
           # --- CONFIGURAÇÃO DE SEGURANÇA DE ESPAÇO ---
 
