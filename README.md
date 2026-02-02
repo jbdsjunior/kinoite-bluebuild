@@ -125,6 +125,33 @@ systemctl --user enable --now rclone-mount@remote-name.service
 
 ---
 
+### ⚡ Kernel Optimization (Manual)
+
+If you want to ensure all performance, filesystem, GPU, and virtualization optimizations are strictly applied (or if you are migrating from another image), run the following command:
+
+```bash
+rpm-ostree kargs \
+  --append-if-missing="rootflags=subvol=root,noatime,compress=zstd:1" \
+  --append-if-missing="transparent_hugepage=madvise" \
+  --append-if-missing="amd_pstate=active" \
+  --append-if-missing="mitigations=auto" \
+  --append-if-missing="nowatchdog" \
+  --append-if-missing="nvidia-drm.modeset=1" \
+  --append-if-missing="rd.driver.blacklist=nouveau,nova_core" \
+  --append-if-missing="modprobe.blacklist=nouveau,nova_core" \
+  --append-if-missing="amd_iommu=on" \
+  --append-if-missing="iommu=pt" \
+  --append-if-missing="kvm_amd.npt=1" \
+  --append-if-missing="kvm_amd.avic=1" \
+  --append-if-missing="kvm_amd.nested=1" \
+  --append-if-missing="kvm_amd.sev=1"
+
+```
+
+> **Note:** A reboot is required after applying kernel arguments.
+
+---
+
 ## 🆘 Troubleshooting
 
 ### 🏨 Public Wi-Fi / Hotels (Captive Portals)
