@@ -18,7 +18,7 @@ modules:
         # - gstreamer1-plugin-openh264
         - libdvdcss
         # - noopenh264
-        - fdk-aac
+        # - fdk-aac
         # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
         # - x265 # Idem
 
