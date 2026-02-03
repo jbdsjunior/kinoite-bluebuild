@@ -12,10 +12,11 @@ modules:
       - amd_pstate=active # Enables the modern AMD P-State driver for better power/perf
       - mitigations=auto # Balanced security mitigations for CPU vulnerabilities
 
+
       # --- GAMING & LATENCY OPTIMIZATIONS ---
       # Força o kernel a ser totalmente preemptivo (Melhor consistência de frametime)
       # Nota: Pode aumentar ligeiramente o uso de CPU em idle, mas melhora resposta.
-      - preempt=full
+      # - preempt=full
 
       # Desativa o watchdog de hardware (Economiza interrupções e um pouco de performance)
-      - nowatchdog
+      # - nowatchdog
