@@ -9,7 +9,14 @@ modules:
 
     install:
       packages:
+        - buildah
         - fastfetch
+        - gh
+        - git
+        - jq
+        - podman
+        - podman-compose
+        - skopeo
         - starship
         - topgrade
 

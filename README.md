@@ -18,10 +18,12 @@ This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** im
 - **Network Optimization:** **BBR** congestion control enabled for faster downloads and reduced bufferbloat.
 - **Hardware Acceleration:** Ready-to-use support for NVIDIA (Proprietary) or AMD (P-State active) + Intel QuickSync enabled for video decoding.
 - **Memory Management:** Aggressive ZRAM and `vm.swappiness` tuning to prevent system lockups under heavy load.
+- **Multimedia Codecs:** GStreamer + FFmpeg stack enabled for wide codec compatibility (including H.264/H.265 and AAC).
+- **DevOps Tooling:** Podman/Buildah/Skopeo and Git/GitHub CLI preinstalled for container-first workflows.
 
 ### 🛡️ Privacy & Security
 
-- **DNS Hardening:** DNS over TLS (DoT) and DNSSEC enabled by default (Cloudflare/Quad9) to prevent ISP snooping.
+- **DNS Hardening:** DNS over TLS (DoT) and DNSSEC enabled by default (Cloudflare/ControlD) to prevent ISP snooping.
 - **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
 - **Firewall:** `firewalld` enabled and configured by default.
 
@@ -33,6 +35,7 @@ Classic GNU tools replaced with modern, faster Rust alternatives:
 - **`bat`** (replaces `cat`): File viewer with syntax highlighting.
 - **`zoxide`** (replaces `cd`): Smarter directory navigation. -->
 - **`fastfetch`** & **`starship`**: Instant system information and a responsive shell prompt.
+- **LLM-Friendly Prompt:** A minimal `starship` layout to keep terminal output clean and easier to parse for assistants.
 
 ---
 
@@ -44,6 +47,8 @@ Choose the image that matches your hardware:
 | :--- | :--- |
 | **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
 | **kinoite-nvidia** | Includes proprietary Nvidia drivers, CUDA, and patches for Wayland/X11 compatibility. |
+
+**Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
 ---
 
@@ -107,6 +112,22 @@ kinoite-setup-kvm.sh
 ```
 
 *Please logout or restart after running this command.*
+
+### 🤖 LLMs com GPU NVIDIA (CUDA)
+
+A imagem **`kinoite-nvidia`** inclui o **`nvidia-container-toolkit`** para acelerar workloads de LLMs via Podman/Distrobox.
+
+Exemplo rápido (uma vez) para registrar o CDI do NVIDIA:
+
+```bash
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+```
+
+Depois, execute containers com GPU:
+
+```bash
+podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+```
 
 ### Cloud Storage (Rclone)
 

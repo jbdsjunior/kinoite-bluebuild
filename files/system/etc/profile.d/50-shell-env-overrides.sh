@@ -2,6 +2,9 @@
 
 # Initialize Starship if installed
 if command -v starship &> /dev/null; then
+    if [ -f /etc/starship.toml ]; then
+        export STARSHIP_CONFIG=/etc/starship.toml
+    fi
     eval "$(starship init bash)"
 fi
 
