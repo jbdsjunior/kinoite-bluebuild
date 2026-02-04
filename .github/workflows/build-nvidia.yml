@@ -68,11 +68,11 @@ jobs:
           maximize_build_space: true
 
           # MANTENHA TRUE: Updates rápidos para você (o usuário final)
-          build_chunked_oci: false
+          build_chunked_oci: true
 
           # MUDE PARA FALSE: O Squash consome muito disco temporário.
           # Desativar isso é o segredo para o build Nvidia passar.
-          squash: false
+          # squash: false
 
           max_layers: 256
           use_cache: true
