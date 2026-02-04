@@ -46,8 +46,9 @@ jobs:
           maximize_build_space: true
 
           # Updates menores
-          # build_chunked_oci: true
-          max_layers: 256
+          build_chunked_oci: true
+          # max_layers: 256
+          max_layers: 192
 
           squash: false
 
