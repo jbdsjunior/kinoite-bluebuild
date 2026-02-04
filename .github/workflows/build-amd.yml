@@ -75,7 +75,7 @@ jobs:
           # Desativar isso é o segredo para o build Nvidia passar.
           squash: false
 
-          max_layers: 128
+          max_layers: 256
           use_cache: true
           retry_push_count: 3
           verify_install: true
