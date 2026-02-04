@@ -1,12 +1,12 @@
 name: build-amd
 on:
-  pull_request:
-    paths:
-      - "recipes/**"
-      - "config/**"
-      - "files/**"
-      - ".github/workflows/build-amd.yml"
-      - ".github/workflows/check-updates.yml"
+  # pull_request:
+  #   paths:
+  #     - "recipes/**"
+  #     - "config/**"
+  #     - "files/**"
+  #     - ".github/workflows/build-amd.yml"
+  #     - ".github/workflows/check-updates.yml"
   workflow_dispatch:
 
 concurrency:

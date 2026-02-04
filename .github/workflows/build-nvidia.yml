@@ -1,12 +1,12 @@
 name: build-nvidia
 on:
-  pull_request:
-    paths:
-      - "recipes/**"
-      - "config/**"
-      - "files/**"
-      - ".github/workflows/build-nvidia.yml"
-      - ".github/workflows/check-updates.yml"
+  # pull_request:
+  #   paths:
+  #     - "recipes/**"
+  #     - "config/**"
+  #     - "files/**"
+  #     - ".github/workflows/build-nvidia.yml"
+  #     - ".github/workflows/check-updates.yml"
   workflow_dispatch:
 
 concurrency:
