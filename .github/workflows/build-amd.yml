@@ -49,7 +49,7 @@ jobs:
           build_chunked_oci: true
           max_layers: 256
 
-          # Não gere uma camada gigante única
+
           squash: false
 
           use_cache: true
