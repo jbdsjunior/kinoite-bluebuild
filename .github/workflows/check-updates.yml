@@ -1,8 +1,8 @@
 name: check-updates
 on:
   schedule:
-    - cron: "00 06 * * *" # 06:00 UTC
-    - cron: "0 */4 * * *" # a cada 4 horas
+    - cron: "00 06 * * *"  # 06:00 UTC
+    - cron: "0 */4 * * *"  # a cada 4 horas
   workflow_dispatch:
 
 concurrency:
@@ -26,13 +26,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # --- AMD VERIFICATION (kinoite-main) ---
+      # AMD base (kinoite-main)
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
           set -euo pipefail
           DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
-          echo "Main Digest: $DIGEST"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check AMD Cache
@@ -46,20 +45,18 @@ jobs:
         if: steps.cache_amd.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          echo "New kinoite-main base detected. Triggering AMD build..."
           gh workflow run build-amd.yml --ref main --repo "${{ github.repository }}"
           mkdir -p ~/.cache-amd
           echo "${{ steps.check_amd.outputs.digest }}" > ~/.cache-amd/upstream-digest.txt
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # --- NVIDIA VERIFICATION (kinoite-nvidia) ---
+      # NVIDIA base (kinoite-nvidia)
       - name: Check Nvidia Base Image
         id: check_nvidia
         run: |
           set -euo pipefail
           DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
-          echo "Nvidia Digest: $DIGEST"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check Nvidia Cache
@@ -73,7 +70,6 @@ jobs:
         if: steps.cache_nvidia.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          echo "New kinoite-nvidia base detected. Triggering NVIDIA build..."
           gh workflow run build-nvidia.yml --ref main --repo "${{ github.repository }}"
           mkdir -p ~/.cache-nvidia
           echo "${{ steps.check_nvidia.outputs.digest }}" > ~/.cache-nvidia/upstream-digest.txt
