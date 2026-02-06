@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   bluebuild:
-    name: Build Custom Image
+    name: Build Custom AMD Image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,7 +32,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Custom Image
+      - name: Build Custom AMD Image
         uses: blue-build/github-action@v1.11
         with:
           recipe: ${{ matrix.recipe }}
