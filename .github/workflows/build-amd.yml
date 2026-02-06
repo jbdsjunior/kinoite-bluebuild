@@ -9,12 +9,12 @@ on:
   #     - ".github/workflows/check-updates.yml"
   workflow_dispatch:
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-#   cancel-in-progress: true
 concurrency:
-  group: bluebuild-${{ github.repository }}
-  cancel-in-progress: false
+   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+   cancel-in-progress: true
+# concurrency:
+#  group: bluebuild-${{ github.repository }}
+#  cancel-in-progress: false
 
 jobs:
   bluebuild:
