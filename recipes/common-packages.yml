@@ -11,3 +11,4 @@ modules:
         - lm_sensors
         - rclone
         - fuse3
+        # - plasma-discover-rpm-ostree
