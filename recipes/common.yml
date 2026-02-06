@@ -3,17 +3,17 @@
 
 modules:
   # 1. Repositories and Kernel Configurations (Stable Base)
-  - from-file: common-system-repos.yml
-  - from-file: common-kernel-args.yml
+  - from-file: common-repos.yml
+  - from-file: common-kargs.yml
 
   # 2. Driver Layer (Heavy - changes with system updates)
   - from-file: packages-drivers.yml
 
   # 3. Core Layer (Stable - changes rarely)
-  - from-file: common-system-debloat.yml
-  - from-file: common-system-packages.yml
-  - from-file: common-virtualization-kvm.yml
-  - from-file: common-systemd-services.yml
+  - from-file: common-debloat.yml
+  - from-file: common-packages.yml
+  - from-file: common-kvm.yml
+  - from-file: common-systemd.yml
 
   # 4. Tooling Layer (Light - changes frequently)
   - from-file: packages-tools.yml
