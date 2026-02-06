@@ -26,5 +26,11 @@ modules:
     kargs:
       - rd.driver.blacklist=nouveau,nova_core
       - modprobe.blacklist=nouveau,nova_core
+
+  # Executar o script de build e assinatura
+  - type: script
+    scripts:
+      - scripts/nvidia/nvidia-sign.sh
+
   # Digital signing module for image integrity and verified updates
   - type: signing
