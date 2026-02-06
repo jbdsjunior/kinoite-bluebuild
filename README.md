@@ -227,7 +227,7 @@ If you wish to build or test changes locally using Distrobox:
 3. **Build Recipe:**
 
 ```bash
-bluebuild build recipes/images/amd.yml
+bluebuild build recipes/recipe-amd.yml
 
 ```
 
