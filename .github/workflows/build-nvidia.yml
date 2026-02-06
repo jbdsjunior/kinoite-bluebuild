@@ -50,3 +50,6 @@ jobs:
           use_cache: true
           retry_push_count: 3
           verify_install: true
+        env:
+          NVIDIA_SIGNING_KEY: ${{ secrets.NVIDIA_SIGNING_KEY }}
+          NVIDIA_SIGNING_CERT: ${{ secrets.NVIDIA_SIGNING_CERT }}

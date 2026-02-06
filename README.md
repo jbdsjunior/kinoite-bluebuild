@@ -129,6 +129,19 @@ Depois, execute containers com GPU:
 podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
+### 🔐 NVIDIA + Secure Boot (MOK)
+
+Na variante **`kinoite-nvidia`**, os módulos NVIDIA são assinados no build (RPM Fusion) quando as secrets de CI estão configuradas.
+Secrets esperadas no GitHub Actions: `NVIDIA_SIGNING_KEY` (chave privada) e `NVIDIA_SIGNING_CERT` (certificado PEM ou DER em base64).
+
+No host, importe a chave pública MOK com:
+
+```bash
+kinoite-setup-nvidia-secureboot.sh
+```
+
+Depois reinicie e conclua o fluxo **Enroll MOK** na tela azul do firmware.
+
 ### Cloud Storage (Rclone)
 
 Mount your cloud drives (GDrive, OneDrive, etc.) as local folders:
