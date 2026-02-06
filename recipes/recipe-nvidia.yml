@@ -24,10 +24,6 @@ modules:
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
     kargs:
-      # Enables Direct Rendering Manager (DRM) kernel mode-setting for Nvidia
-      - nvidia-drm.modeset=1
-      # Note: nouveau/nova_core blacklisting is usually handled by the base image,
-
       - rd.driver.blacklist=nouveau,nova_core
       - modprobe.blacklist=nouveau,nova_core
   # Digital signing module for image integrity and verified updates
