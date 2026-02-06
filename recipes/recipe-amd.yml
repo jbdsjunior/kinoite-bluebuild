@@ -2,11 +2,11 @@
 # Schema validation for BlueBuild recipes
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-name: kinoite-amd
+name: kinoite-amd-fusion
 description: "Customized Fedora Kinoite image optimized for AMD CPUs/GPUs and Multimedia"
 
-# Base image provided by Universal Blue (ublue-os)
-base-image: ghcr.io/ublue-os/kinoite-main
+# base-image: ghcr.io/ublue-os/kinoite-main
+base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 
 modules:

@@ -3,10 +3,11 @@
 modules:
   - type: dnf
     install:
+      allow-erasing: true
       packages:
         # Localization & Sensors
-        - langpacks-pt_BR
         # - langpacks-en
+        - langpacks-pt_BR
         - lm_sensors
 
         # Cloud Storage & Fuse

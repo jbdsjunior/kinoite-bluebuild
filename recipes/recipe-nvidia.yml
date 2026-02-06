@@ -2,10 +2,11 @@
 # Schema validation for BlueBuild recipes
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-name: kinoite-nvidia
+name: kinoite-nvidia-fusion
 description: "Customized Fedora Kinoite image with proprietary Nvidia drivers and CUDA support"
 
 # Base image with Nvidia drivers pre-installed by Universal Blue
+# base-image: ghcr.io/ublue-os/kinoite-nvidia
 base-image: ghcr.io/ublue-os/kinoite-nvidia
 image-version: latest
 
@@ -17,16 +18,19 @@ modules:
   - type: dnf
     install:
       packages:
-        - nvidia-container-toolkit
+        - akmod-nvidia
+        - xorg-x11-drv-nvidia-cuda
 
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
     kargs:
-      # Enables Direct Rendering Manager (DRM) kernel mode-setting for Nvidia
-      - nvidia-drm.modeset=1
-      # Note: nouveau/nova_core blacklisting is usually handled by the base image,
-      # but can be added here if specialized driver overrides are needed.
       - rd.driver.blacklist=nouveau,nova_core
       - modprobe.blacklist=nouveau,nova_core
+
+  # Executar o script de build e assinatura
+  - type: script
+    scripts:
+      - scripts/nvidia/nvidia-sign.sh
+
   # Digital signing module for image integrity and verified updates
   - type: signing

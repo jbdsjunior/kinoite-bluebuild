@@ -10,8 +10,8 @@ modules:
   - from-file: packages-drivers.yml
 
   # 3. Core Layer (Stable - changes rarely)
-  - from-file: core-debloat.yml
-  - from-file: core-install.yml
+  - from-file: common-debloat.yml
+  - from-file: common-packages.yml
   - from-file: common-kvm-libvirt.yml
   - from-file: common-systemd.yml
 
