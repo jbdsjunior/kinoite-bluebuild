@@ -1,24 +1,21 @@
 name: build-amd
 on:
-  # pull_request:
+  pull_request:
   #   paths:
   #     - "recipes/**"
   #     - "config/**"
   #     - "files/**"
-  #     - ".github/workflows/build-amd.yml"
+  #     - ".github/workflows/build-nvidia.yml"
   #     - ".github/workflows/check-updates.yml"
   workflow_dispatch:
 
 concurrency:
-   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-   cancel-in-progress: true
-# concurrency:
-#  group: bluebuild-${{ github.repository }}
-#  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   bluebuild:
-    name: Build AMD Image
+    name: Build Custom Image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,8 +32,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build AMD Image
-        uses: blue-build/github-action@v1.11.0
+      - name: Build Custom Image
+        uses: blue-build/github-action@v1.11
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}

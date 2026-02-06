@@ -9,19 +9,10 @@ modules:
 
     install:
       packages:
-        - fastfetch
         - starship
         - topgrade
-        # - buildah
-        # - gh
-        # - git
-        # - jq
-        # - podman
-        # - podman-compose
-        # - skopeo
 
-        # # Modern CLI Tools
-        # - eza # ls replacement
-        # - bat # cat replacement
-        # - zoxide # cd replacement
-        # - fzf # Fuzzy finder (essencial para histórico do shell)
+  - type: dnf
+    install:
+      packages:
+        - fastfetch

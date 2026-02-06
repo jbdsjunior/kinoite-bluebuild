@@ -3,24 +3,17 @@
 modules:
   - type: dnf
     install:
+      allow-erasing: true
       packages:
-        # - mesa-va-drivers
-        # Habilite para garantir aceleração em iGPUs Intel (QuickSync)
-        # Não causa conflito em CPUs AMD, apenas ocupa alguns MBs.
-        # - intel-media-driver
-
-        # Drivers VDPAU legados (Útil para players de vídeo mais antigos)
-        - mesa-vdpau-drivers
+        - mesa-va-drivers-freeworld
+        - mesa-vdpau-drivers-freeworld
 
         # Multimedia Codecs (GStreamer & Libs)
-        # - gstreamer1-plugin-openh264
-        # - gstreamer1-plugins-bad-free
-        # - gstreamer1-plugins-ugly
-        - libdvdcss
-        - noopenh264
-        # - fdk-aac
-        # - x264 # Geralmente já vem nas dependências ou flatpak, remova se der conflito
-        # - x265 # Idem
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
+        - gstreamer1-vaapi
+        - ffmpeg
 
-        # Ferramenta essencial para manipular mídia via terminal
-        # - ffmpeg
+        - fdk-aac
+        - libdvdcss
