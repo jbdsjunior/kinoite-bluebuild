@@ -3,20 +3,20 @@
 
 modules:
   # 1. Repositories and Kernel Configurations (Stable Base)
-  - from-file: common-repos.yml
-  - from-file: common-kargs.yml
+  - from-file: system-repos.yml
+  - from-file: kernel-args.yml
 
   # 2. Driver Layer (Heavy - changes with system updates)
-  - from-file: packages-drivers.yml
+  - from-file: driver-packages.yml
 
   # 3. Core Layer (Stable - changes rarely)
-  - from-file: common-debloat.yml
-  - from-file: common-packages.yml
-  - from-file: common-kvm-libvirt.yml
-  - from-file: common-systemd.yml
+  - from-file: system-debloat.yml
+  - from-file: system-packages.yml
+  - from-file: virtualization-kvm.yml
+  - from-file: systemd-services.yml
 
   # 4. Tooling Layer (Light - changes frequently)
-  - from-file: packages-tools.yml
+  - from-file: tool-packages.yml
 
   # 5. Configurations (Files) - Placed at the end to protect previous layers
   # Editing a config file won't require a full driver rebuild!
@@ -26,4 +26,4 @@ modules:
         destination: /
 
   # 6. Flatpaks (Final application layer)
-  # - from-file: common-flatpaks.yml
+  # - from-file: user-flatpaks.yml

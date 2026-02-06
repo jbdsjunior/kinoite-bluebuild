@@ -12,7 +12,7 @@ image-version: latest
 
 modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
-  - from-file: recipe-common.yml
+  - from-file: ../modules/common.yml
 
   # NVIDIA container toolkit for CUDA/LLM workloads in Podman/Distrobox
   - type: dnf

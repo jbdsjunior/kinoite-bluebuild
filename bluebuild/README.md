@@ -40,14 +40,14 @@ Inside the `bluebuild` environment, you can compile the recipes to generate OCI 
 ### Compile AMD Recipe
 
 ```bash
-bluebuild build recipes/recipe-amd.yml
+bluebuild build recipes/images/amd.yml
 
 ```
 
 ### Compile Nvidia Recipe
 
 ```bash
-bluebuild build recipes/recipe-nvidia.yml
+bluebuild build recipes/images/nvidia.yml
 
 ```
 
