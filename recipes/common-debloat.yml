@@ -10,7 +10,7 @@ modules:
         # - mozilla-filesystem
         - htop
         - nvtop
-        - kate
+        # - kate
         # - fcitx5-*
         # - kcm-fcitx5
         # - braille-printer-app
@@ -32,6 +32,6 @@ modules:
         - fcitx5-sayura
         - fcitx5-unikey
         - icoutils
-        - kate"
+        - kate
         - kcm-fcitx5
         - ksshaskpass
