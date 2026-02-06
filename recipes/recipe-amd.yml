@@ -5,8 +5,8 @@
 name: kinoite-amd
 description: "Customized Fedora Kinoite image optimized for AMD CPUs/GPUs and Multimedia"
 
-# base-image: ghcr.io/ublue-os/kinoite-main
-base-image: quay.io/fedora/fedora-kinoite
+base-image: ghcr.io/ublue-os/kinoite-main
+# base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 
 modules:

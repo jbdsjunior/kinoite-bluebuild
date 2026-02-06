@@ -3,18 +3,19 @@
 modules:
   - type: dnf
     install:
+      skip-unavailable: true
       allow-erasing: true
       packages:
-        - mesa-va-drivers-freeworld
-        - mesa-vdpau-drivers-freeworld
+        - mesa-va-drivers # mesa-va-drivers-freeworld - rpm-fusion
+        - mesa-vdpau-drivers # mesa-vdpau-drivers-freeworld - rpm-fusion
 
   - type: dnf
     install:
+      skip-unavailable: true
       allow-erasing: true
       packages:
-        # Multimedia Codecs (GStreamer & Libs)
         - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad-freeworld # gstreamer1-plugins-bad-freeworld - rpm-fusion
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
         - ffmpeg

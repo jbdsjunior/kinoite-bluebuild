@@ -26,27 +26,52 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Check Fedora Kinoite Base Digest
-        id: check_base
+      # AMD base (kinoite-main)
+      - name: Check Main Image (for AMD)
+        id: check_amd
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://quay.io/fedora/fedora-kinoite:latest --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check Base Digest Cache
-        id: cache_base
+      - name: Check AMD Cache
+        id: cache_amd
         uses: actions/cache@v5
         with:
-          path: ~/.cache-kinoite-base
-          key: upstream-kinoite-base-${{ steps.check_base.outputs.digest }}
+          path: ~/.cache-amd
+          key: upstream-main-${{ steps.check_amd.outputs.digest }}
 
-      - name: Trigger AMD and NVIDIA Builds
-        if: steps.cache_base.outputs.cache-hit != 'true'
+      - name: Trigger AMD Build
+        if: steps.cache_amd.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           gh workflow run build-amd.yml --ref main --repo "${{ github.repository }}"
+          mkdir -p ~/.cache-amd
+          echo "${{ steps.check_amd.outputs.digest }}" > ~/.cache-amd/upstream-digest.txt
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # NVIDIA base (kinoite-nvidia)
+      - name: Check Nvidia Base Image
+        id: check_nvidia
+        run: |
+          set -euo pipefail
+          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Check Nvidia Cache
+        id: cache_nvidia
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache-nvidia
+          key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}
+
+      - name: Trigger Nvidia Build
+        if: steps.cache_nvidia.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
           gh workflow run build-nvidia.yml --ref main --repo "${{ github.repository }}"
-          mkdir -p ~/.cache-kinoite-base
-          echo "${{ steps.check_base.outputs.digest }}" > ~/.cache-kinoite-base/upstream-digest.txt
+          mkdir -p ~/.cache-nvidia
+          echo "${{ steps.check_nvidia.outputs.digest }}" > ~/.cache-nvidia/upstream-digest.txt
         env:
           GITHUB_TOKEN: ${{ github.token }}

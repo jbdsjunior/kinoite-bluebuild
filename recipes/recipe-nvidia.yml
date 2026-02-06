@@ -6,30 +6,13 @@ name: kinoite-nvidia
 description: "Customized Fedora Kinoite image with proprietary Nvidia drivers and CUDA support"
 
 # Base Fedora Kinoite + camada NVIDIA via RPM Fusion nesta receita
-base-image: quay.io/fedora/fedora-kinoite
+base-image: ghcr.io/ublue-os/kinoite-nvidia
 image-version: latest
 
 modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common.yml
   - from-file: common-nvidia.yml
-
-  # Specific Kernel Arguments for Nvidia hardware
-  - type: kargs
-    kargs:
-      - rd.driver.blacklist=nouveau,nova_core
-      - modprobe.blacklist=nouveau,nova_core
-
-  # Executar o script de build e assinatura
-  - type: script
-    scripts:
-      - scripts/nvidia/nvidia-sign.sh
-
-  # Helper para importar chave MOK no host e habilitar NVIDIA com Secure Boot
-  - type: files
-    files:
-      - source: scripts/nvidia/nvidia-setup.sh
-        destination: /usr/bin/kinoite-setup-nvidia-secureboot.sh
 
   # Digital signing module for image integrity and verified updates
   - type: signing

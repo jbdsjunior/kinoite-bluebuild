@@ -3,12 +3,14 @@
 modules:
   - type: dnf
     install:
+      skip-unavailable: true
       allow-erasing: true
       packages:
-        - akmod-nvidia
-        - xorg-x11-drv-nvidia
-        - xorg-x11-drv-nvidia-cuda
-        - kmodtool
-        - akmods
-        - mokutil
-        - openssl
+        # Userspace extras on top of the akmods module.
+        - nvidia-container-toolkit
+
+  # Recommended kernel args for NVIDIA on rpm-ostree systems.
+  - type: kargs
+    kargs:
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau

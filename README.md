@@ -46,7 +46,7 @@ Choose the image that matches your hardware:
 | Image Name | Description |
 | :--- | :--- |
 | **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
-| **kinoite-nvidia** | Includes proprietary Nvidia drivers, CUDA, and Secure Boot module signing flow (MOK). |
+| **kinoite-nvidia** | Includes proprietary NVIDIA drivers via BlueBuild `akmods`, CUDA userspace, and MOK helper for Secure Boot. |
 
 **Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
@@ -131,8 +131,8 @@ podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 
 
 ### 🔐 NVIDIA + Secure Boot (MOK)
 
-Na variante **`kinoite-nvidia`**, os módulos NVIDIA são assinados no build (RPM Fusion) quando as secrets de CI estão configuradas.
-Secrets esperadas no GitHub Actions: `NVIDIA_SIGNING_KEY` (chave privada) e `NVIDIA_SIGNING_CERT` (certificado PEM ou DER em base64).
+Na variante **`kinoite-nvidia`**, o driver é provisionado pelo módulo oficial **`akmods`** da BlueBuild com **RPM Fusion** habilitado.
+Se o Secure Boot estiver ativo na máquina, importe sua chave MOK no host com o helper abaixo.
 
 No host, importe a chave pública MOK com:
 
@@ -171,8 +171,8 @@ rpm-ostree kargs \
   --append-if-missing="mitigations=auto" \
   --append-if-missing="nowatchdog" \
   --append-if-missing="nvidia-drm.modeset=1" \
-  --append-if-missing="rd.driver.blacklist=nouveau,nova_core" \
-  --append-if-missing="modprobe.blacklist=nouveau,nova_core" \
+  --append-if-missing="rd.driver.blacklist=nouveau" \
+  --append-if-missing="modprobe.blacklist=nouveau" \
   --append-if-missing="amd_iommu=on" \
   --append-if-missing="iommu=pt" \
   --append-if-missing="kvm_amd.npt=1" \
