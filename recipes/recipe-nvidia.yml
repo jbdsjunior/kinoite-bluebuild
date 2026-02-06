@@ -18,7 +18,8 @@ modules:
   - type: dnf
     install:
       packages:
-        - nvidia-container-toolkit
+        - akmod-nvidia
+        - xorg-x11-drv-nvidia-cuda
 
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
@@ -26,7 +27,7 @@ modules:
       # Enables Direct Rendering Manager (DRM) kernel mode-setting for Nvidia
       - nvidia-drm.modeset=1
       # Note: nouveau/nova_core blacklisting is usually handled by the base image,
-      # but can be added here if specialized driver overrides are needed.
+
       - rd.driver.blacklist=nouveau,nova_core
       - modprobe.blacklist=nouveau,nova_core
   # Digital signing module for image integrity and verified updates
