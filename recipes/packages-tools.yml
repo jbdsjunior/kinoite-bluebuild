@@ -16,3 +16,4 @@ modules:
     install:
       packages:
         - fastfetch
+        - distrobox
