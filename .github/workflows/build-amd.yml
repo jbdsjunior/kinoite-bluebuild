@@ -25,7 +25,7 @@ jobs:
       fail-fast: true
       matrix:
         recipe:
-          - recipes/recipe-amd.yml
+          - recipe-amd.yml
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
