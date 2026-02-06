@@ -8,13 +8,13 @@
 
 </div>
 
-This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** image built with [BlueBuild](https://blue-build.org/). It is engineered for a high-performance experience with out-of-the-box optimizations for **Gaming**, **Development**, and **Privacy**.
+This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** image built with [BlueBuild](https://blue-build.org/) for a bootable container workflow (bootc-compatible image delivery). It is engineered for a high-performance experience with out-of-the-box optimizations for **Gaming**, **Development**, and **Privacy**.
 
 ## ✨ Key Features & Highlights
 
 ### 🎮 Performance & Gaming
 
-- **Kernel Tuning:** Full preemption (`preempt=full`) and `nowatchdog` enabled for lower latency and consistent frametimes.
+- **Kernel Tuning:** `amd_pstate=active`, `transparent_hugepage=madvise`, and virtualization-friendly kernel args are applied by recipe.
 - **Network Optimization:** **BBR** congestion control enabled for faster downloads and reduced bufferbloat.
 - **Hardware Acceleration:** Ready-to-use support for NVIDIA (Proprietary) or AMD (P-State active) + Intel QuickSync enabled for video decoding.
 - **Memory Management:** Aggressive ZRAM and `vm.swappiness` tuning to prevent system lockups under heavy load.
@@ -23,7 +23,7 @@ This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** im
 
 ### 🛡️ Privacy & Security
 
-- **DNS Hardening:** DNS over TLS (DoT) and DNSSEC enabled by default (Cloudflare/ControlD) to prevent ISP snooping.
+- **DNS Hardening:** DNS over TLS (DoT) + DNSSEC enabled by default, with Control D (p2) as primary (privacy/ad blocking) and Cloudflare as fallback.
 - **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
 - **Firewall:** `firewalld` enabled and configured by default.
 
@@ -159,17 +159,16 @@ systemctl --user enable --now rclone-mount@remote-name.service
 
 ---
 
-### ⚡ Kernel Optimization (Manual)
+### ⚡ Kernel Arguments (Manual Override)
 
-If you want to ensure all performance, filesystem, GPU, and virtualization optimizations are strictly applied (or if you are migrating from another image), run the following command:
+Most kernel arguments are already declared in recipe modules.  
+Use this command only as a manual override when migrating from a different image or troubleshooting:
 
 ```bash
 rpm-ostree kargs \
-  --append-if-missing="rootflags=subvol=root,noatime,compress=zstd:1" \
   --append-if-missing="transparent_hugepage=madvise" \
   --append-if-missing="amd_pstate=active" \
   --append-if-missing="mitigations=auto" \
-  --append-if-missing="nowatchdog" \
   --append-if-missing="nvidia-drm.modeset=1" \
   --append-if-missing="rd.driver.blacklist=nouveau" \
   --append-if-missing="modprobe.blacklist=nouveau" \
@@ -183,6 +182,7 @@ rpm-ostree kargs \
 ```
 
 > **Note:** A reboot is required after applying kernel arguments.
+> For regular updates/rebases, prefer the standard immutable host workflow (`rpm-ostree`/bootc lifecycle) instead of repeatedly changing manual kargs.
 
 ---
 

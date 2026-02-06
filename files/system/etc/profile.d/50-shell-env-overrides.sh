@@ -1,7 +1,7 @@
 # Global Shell Configuration for Kinoite
 
 # Initialize Starship if installed
-if command -v starship &> /dev/null; then
+if command -v starship >/dev/null 2>&1; then
     if [ -f /etc/starship.toml ]; then
         export STARSHIP_CONFIG=/etc/starship.toml
     fi
@@ -9,7 +9,7 @@ if command -v starship &> /dev/null; then
 fi
 
 # Run fastfetch on interactive login
-if [[ $- == *i* ]] && command -v fastfetch &> /dev/null; then
+if [ -n "${PS1:-}" ] && command -v fastfetch >/dev/null 2>&1; then
     if [ -z "$FASTFETCH_RAN" ]; then
         fastfetch
         export FASTFETCH_RAN=1
