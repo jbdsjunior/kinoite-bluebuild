@@ -18,9 +18,12 @@ modules:
     install:
       packages:
         - akmod-nvidia
+        - xorg-x11-drv-nvidia
         - xorg-x11-drv-nvidia-cuda
-        - nvidia-container-toolkit
+        - kmodtool
+        - akmods
         - mokutil
+        - openssl
 
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
