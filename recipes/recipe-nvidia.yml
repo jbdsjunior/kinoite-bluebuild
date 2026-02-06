@@ -5,7 +5,7 @@
 name: kinoite-nvidia
 description: "Customized Fedora Kinoite image with proprietary Nvidia drivers and CUDA support"
 
-# Base Fedora Kinoite + camada NVIDIA via RPM Fusion nesta receita
+# Base image already includes the NVIDIA stack from Universal Blue
 base-image: ghcr.io/ublue-os/kinoite-nvidia
 image-version: latest
 

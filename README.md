@@ -46,7 +46,7 @@ Choose the image that matches your hardware:
 | Image Name | Description |
 | :--- | :--- |
 | **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
-| **kinoite-nvidia** | Includes proprietary NVIDIA drivers via BlueBuild `akmods`, CUDA userspace, and MOK helper for Secure Boot. |
+| **kinoite-nvidia** | Builds on top of `ghcr.io/ublue-os/kinoite-nvidia`, which already includes proprietary NVIDIA drivers and Secure Boot tooling, plus CUDA userspace extras from this repo. |
 
 **Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
@@ -117,7 +117,7 @@ kinoite-setup-kvm.sh
 
 A imagem **`kinoite-nvidia`** inclui o **`nvidia-container-toolkit`** para acelerar workloads de LLMs via Podman/Distrobox.
 
-Exemplo rápido (uma vez) para registrar o CDI do NVIDIA:
+Exemplo rápido para registrar/atualizar o CDI do NVIDIA manualmente (se necessário):
 
 ```bash
 sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
@@ -131,13 +131,13 @@ podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 
 
 ### 🔐 NVIDIA + Secure Boot (MOK)
 
-Na variante **`kinoite-nvidia`**, o driver é provisionado pelo módulo oficial **`akmods`** da BlueBuild com **RPM Fusion** habilitado.
-Se o Secure Boot estiver ativo na máquina, importe sua chave MOK no host com o helper abaixo.
+Na variante **`kinoite-nvidia`**, os drivers NVIDIA já vêm da imagem base `ghcr.io/ublue-os/kinoite-nvidia`.
+Se o Secure Boot estiver ativo na máquina, execute o helper oficial da Universal Blue no host:
 
 No host, importe a chave pública MOK com:
 
 ```bash
-kinoite-setup-nvidia-secureboot.sh
+ujust enroll-secure-boot-key
 ```
 
 Depois reinicie e conclua o fluxo **Enroll MOK** na tela azul do firmware.

@@ -6,7 +6,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Userspace extras on top of the akmods module.
+        # Userspace extras on top of the NVIDIA-enabled base image.
         - nvidia-container-toolkit
 
   # Recommended kernel args for NVIDIA on rpm-ostree systems.

@@ -26,4 +26,4 @@ modules:
         destination: /
 
   # 6. Flatpaks (Final application layer)
-  # - from-file: common-user-flatpaks.yml
+  # - from-file: common-flatpaks.yml
