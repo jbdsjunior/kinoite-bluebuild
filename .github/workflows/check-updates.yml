@@ -50,28 +50,3 @@ jobs:
           echo "${{ steps.check_amd.outputs.digest }}" > ~/.cache-amd/upstream-digest.txt
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      # # NVIDIA base (kinoite-nvidia)
-      # - name: Check Nvidia Base Image
-      #   id: check_nvidia
-      #   run: |
-      #     set -euo pipefail
-      #     DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
-      #     echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-
-      # - name: Check Nvidia Cache
-      #   id: cache_nvidia
-      #   uses: actions/cache@v5
-      #   with:
-      #     path: ~/.cache-nvidia
-      #     key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}
-
-      # - name: Trigger Nvidia Build
-      #   if: steps.cache_nvidia.outputs.cache-hit != 'true'
-      #   run: |
-      #     set -euo pipefail
-      #     gh workflow run build-nvidia.yml --ref main --repo "${{ github.repository }}"
-      #     mkdir -p ~/.cache-nvidia
-      #     echo "${{ steps.check_nvidia.outputs.digest }}" > ~/.cache-nvidia/upstream-digest.txt
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
