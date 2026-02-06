@@ -12,18 +12,7 @@ image-version: latest
 modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common.yml
-
-  # NVIDIA container toolkit for CUDA/LLM workloads in Podman/Distrobox
-  - type: dnf
-    install:
-      packages:
-        - akmod-nvidia
-        - xorg-x11-drv-nvidia
-        - xorg-x11-drv-nvidia-cuda
-        - kmodtool
-        - akmods
-        - mokutil
-        - openssl
+  - from-file: common-nvidia.yml
 
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
