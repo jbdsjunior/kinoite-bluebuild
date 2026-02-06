@@ -11,7 +11,7 @@ image-version: latest
 
 modules:
   # Pulls all shared configurations from the common recipe file
-  - from-file: recipe-common.yml
+  - from-file: ../modules/common.yml
 
   # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
   # after the initial rebase on the client side.
