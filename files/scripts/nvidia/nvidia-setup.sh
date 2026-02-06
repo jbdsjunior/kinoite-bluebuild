@@ -8,7 +8,7 @@ echo "=== Configuração de Secure Boot para NVIDIA (RPM Fusion) ==="
 
 if [ ! -f "$KEY_PATH" ]; then
     echo "❌ Erro: Chave pública não encontrada."
-    echo "   Verifique se o build no GitHub recebeu as secrets NVIDIA_SIGNING_KEY/CERT."
+    echo "   Verifique se a imagem foi construída com assinatura NVIDIA habilitada."
     exit 1
 fi
 

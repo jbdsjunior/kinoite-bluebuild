@@ -16,12 +16,9 @@ echo "=== Configurando Assinatura NVIDIA (Padrão RPM Fusion) ==="
 # Cria a estrutura de diretórios padrão do RPM Fusion
 mkdir -p "$AKMODS_CERT_DIR" "$AKMODS_PRIV_DIR" "$USER_KEY_DIR"
 
-# 1. Recupera as chaves das Variáveis de Ambiente (GitHub Secrets)
-if [[ -z "${NVIDIA_SIGNING_KEY:-}" ]] || [[ -z "${NVIDIA_SIGNING_CERT:-}" ]]; then
-    echo "⚠️  AVISO: Variáveis NVIDIA_SIGNING_KEY ou NVIDIA_SIGNING_CERT não encontradas."
-    echo "   O driver NVIDIA será instalado SEM assinatura para Secure Boot."
-    exit 0
-fi
+# 1. Recupera as chaves das variáveis de ambiente (GitHub Secrets)
+: "${NVIDIA_SIGNING_KEY:?NVIDIA_SIGNING_KEY não definida}"
+: "${NVIDIA_SIGNING_CERT:?NVIDIA_SIGNING_CERT não definida}"
 
 echo "Injetando chaves de assinatura..."
 printf "%s\n" "$NVIDIA_SIGNING_KEY" > "$PRIVATE_KEY_PATH"

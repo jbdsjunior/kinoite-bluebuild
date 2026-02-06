@@ -8,7 +8,7 @@
 
 </div>
 
-This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** image built with [BlueBuild](https://blue-build.org/) and based on [Universal Blue](https://universal-blue.org/). It is engineered for a high-performance experience with out-of-the-box optimizations for **Gaming**, **Development**, and **Privacy**.
+This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** image built with [BlueBuild](https://blue-build.org/). It is engineered for a high-performance experience with out-of-the-box optimizations for **Gaming**, **Development**, and **Privacy**.
 
 ## ✨ Key Features & Highlights
 
@@ -46,7 +46,7 @@ Choose the image that matches your hardware:
 | Image Name | Description |
 | :--- | :--- |
 | **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
-| **kinoite-nvidia** | Includes proprietary Nvidia drivers, CUDA, and patches for Wayland/X11 compatibility. |
+| **kinoite-nvidia** | Includes proprietary Nvidia drivers, CUDA, and Secure Boot module signing flow (MOK). |
 
 **Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
