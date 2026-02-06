@@ -51,7 +51,7 @@ bluebuild build recipes/recipe-nvidia.yml
 
 ```
 
-For Secure Boot signing in local builds, set `NVIDIA_SIGNING_KEY` and `NVIDIA_SIGNING_CERT` in the shell before running the Nvidia build.
+For NVIDIA builds, the recipe uses BlueBuild's `akmods` module (with RPM Fusion enabled in `common-repos.yml`) instead of manually invoking `akmods` during compose.
 
 After compilation, the OCI image will be available locally in your container storage (Podman/Docker). You can list it with `podman images`.
 

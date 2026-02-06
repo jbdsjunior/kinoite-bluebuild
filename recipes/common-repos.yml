@@ -3,6 +3,6 @@
 modules:
   - type: bling
     install:
-      - rpmfusion # install RPMFusion repos, including tainted repos & disable negativo17 repos if installed
-      # - negativo17 # install negativo17 repos and set priority to 90, uninstall RPMFusion repos if installed
+      - negativo17 # install negativo17 repos and set priority to 90, uninstall RPMFusion repos if installed
+      # - rpmfusion # install RPMFusion repos, including tainted repos & disable negativo17 repos if installed
       # - ublue-update # https://github.com/ublue-os/ublue-update

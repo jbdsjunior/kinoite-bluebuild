@@ -8,9 +8,9 @@ modules:
         - firefox
         - firefox-langpacks
         # - mozilla-filesystem
-        # - htop
-        # - nvtop
-        # - kate
+        - htop
+        - nvtop
+        - kate
         # - fcitx5-*
         # - kcm-fcitx5
         # - braille-printer-app
@@ -21,3 +21,17 @@ modules:
         # - ibus-libpinyin
         # - kasumi-common
         # - kasumi-unicode
+
+        - fcitx5-chinese-addons
+        - fcitx5-configtool
+        - fcitx5-gtk
+        - fcitx5-hangul
+        - fcitx5-libthai
+        - fcitx5-mozc
+        - fcitx5-qt
+        - fcitx5-sayura
+        - fcitx5-unikey
+        - icoutils
+        - kate"
+        - kcm-fcitx5
+        - ksshaskpass

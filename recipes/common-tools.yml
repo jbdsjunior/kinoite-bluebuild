@@ -8,12 +8,16 @@ modules:
         - lilay/topgrade
 
     install:
+      skip-unavailable: true
+      allow-erasing: true
       packages:
         - starship
         - topgrade
 
   - type: dnf
     install:
+      skip-unavailable: true
+      allow-erasing: true
       packages:
         - fastfetch
         - distrobox

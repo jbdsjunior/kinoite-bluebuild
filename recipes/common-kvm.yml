@@ -3,6 +3,8 @@
 modules:
   - type: dnf
     install:
+      skip-unavailable: true
+      allow-erasing: true
       packages:
         - "@virtualization"
       exclude:
