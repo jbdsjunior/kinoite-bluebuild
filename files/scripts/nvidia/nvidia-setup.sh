@@ -13,8 +13,11 @@ if [ ! -f "$KEY_PATH" ]; then
 fi
 
 # Verifica se o Secure Boot está ativo
-SB_STATE=$(mokutil --sb-state)
+SB_STATE="$(mokutil --sb-state || true)"
 echo "Estado atual: $SB_STATE"
+if ! echo "$SB_STATE" | grep -qi "enabled"; then
+    echo "⚠️  Secure Boot parece desativado. A importação MOK não é necessária neste estado."
+fi
 
 echo ""
 echo "Esta etapa irá agendar a importação da chave do driver NVIDIA no MOK (Machine Owner Key)."

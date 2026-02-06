@@ -51,6 +51,8 @@ bluebuild build recipes/images/nvidia.yml
 
 ```
 
+For Secure Boot signing in local builds, set `NVIDIA_SIGNING_KEY` and `NVIDIA_SIGNING_CERT` in the shell before running the Nvidia build.
+
 After compilation, the OCI image will be available locally in your container storage (Podman/Docker). You can list it with `podman images`.
 
 ## ✅ Local Image Testing
