@@ -10,9 +10,6 @@ base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 
 modules:
-  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
-  - from-file: common.yml
-
   # NVIDIA container toolkit for CUDA/LLM workloads in Podman/Distrobox
   - type: dnf
     install:
@@ -21,6 +18,9 @@ modules:
         - xorg-x11-drv-nvidia-cuda
         - nvidia-container-toolkit
         - mokutil
+  
+  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
+  - from-file: common.yml
 
   # Specific Kernel Arguments for Nvidia hardware
   - type: kargs
