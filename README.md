@@ -1,185 +1,238 @@
 <div align="center">
 
-![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
+![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
+![Status-AMD](https://github.com/jbdsjunior/kinoite/actions/workflows/build-amd.yml/badge.svg)
+![Status-NVIDIA](https://github.com/jbdsjunior/kinoite/actions/workflows/build-nvidia.yml/badge.svg)
 
 # Custom Fedora Kinoite (BlueBuild)
 
-Immutable Fedora Kinoite images focused on performance, development workflow, and practical privacy defaults.
-
 </div>
 
-## Overview
+This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** image built with [BlueBuild](https://blue-build.org/) for a bootable container workflow (bootc-compatible image delivery). It is engineered for a high-performance experience with out-of-the-box optimizations for **Gaming**, **Development**, and **Privacy**.
 
-This repository builds two signed Fedora Kinoite images with [BlueBuild](https://blue-build.org/):
+## ✨ Key Features & Highlights
 
-- `kinoite-amd` based on `ghcr.io/ublue-os/kinoite-main`
-- `kinoite-nvidia` based on `ghcr.io/ublue-os/kinoite-nvidia`
+### 🎮 Performance & Gaming
 
-Both variants share a common module stack (`recipes/common.yml`) and include tuned kernel arguments, virtualization support, system updates via timers, and curated CLI tooling.
+- **Kernel Tuning:** `amd_pstate=active`, `transparent_hugepage=madvise`, and virtualization-friendly kernel args are applied by recipe.
+- **Network Optimization:** **BBR** congestion control enabled for faster downloads and reduced bufferbloat.
+- **Hardware Acceleration:** Ready-to-use support for NVIDIA (Proprietary) or AMD (P-State active) + Intel QuickSync enabled for video decoding.
+- **Memory Management:** Aggressive ZRAM and `vm.swappiness` tuning to prevent system lockups under heavy load.
+- **Multimedia Codecs:** GStreamer + FFmpeg stack enabled for wide codec compatibility (including H.264/H.265 and AAC).
+- **DevOps Tooling:** Podman/Buildah/Skopeo and Git/GitHub CLI preinstalled for container-first workflows.
 
-## What Is Included
+### 🛡️ Privacy & Security
 
-### System and performance
+- **DNS Hardening:** DNS over TLS (DoT) + DNSSEC enabled by default, with Control D (p2) as primary (privacy/ad blocking) and Cloudflare as fallback.
+- **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
+- **Firewall:** `firewalld` enabled and configured by default.
 
-- Kernel arguments for transparent huge pages and AMD P-State (`recipes/common-kargs.yml`)
-- KVM/IOMMU kernel arguments and virtualization group (`recipes/common-kvm.yml`)
-- BBR + TCP tuning and memory/sysctl tuning (`files/system/usr/lib/sysctl.d/60-kernel-tuning.conf`)
-- ZRAM policy using zstd with size cap (`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`)
+### 🛠️ Modern CLI Tools (Rust)
 
-### Networking and privacy defaults
+Classic GNU tools replaced with modern, faster Rust alternatives:
 
-- `systemd-resolved` enabled with:
-  - Control D resolvers as primary
-  - Cloudflare as fallback
-  - `DNSSEC=yes`
-  - `DNSOverTLS=opportunistic`
-- NetworkManager privacy settings for MAC randomization and DHCP hostname suppression
+<!-- - **`eza`** (replaces `ls`): File listing with git integration and icons.
+- **`bat`** (replaces `cat`): File viewer with syntax highlighting.
+- **`zoxide`** (replaces `cd`): Smarter directory navigation. -->
+- **`fastfetch`** & **`starship`**: Instant system information and a responsive shell prompt.
+- **LLM-Friendly Prompt:** A minimal `starship` layout to keep terminal output clean and easier to parse for assistants.
 
-### Packages and tooling
+---
 
-- Multimedia stack (GStreamer/FFmpeg and related codecs)
-- Virtualization stack (`@virtualization` plus `libvirtd` service)
-- CLI tools: `starship`, `topgrade`, `fastfetch`, `distrobox`
-- Utility packages: `rclone`, `fuse3`, `lm_sensors`
+## 💿 Variants
 
-### NVIDIA-specific additions
+Choose the image that matches your hardware:
 
-On `kinoite-nvidia`, this repo adds:
-
-- `nvidia-container-toolkit`
-- NVIDIA-related kernel arguments to blacklist Nouveau
-
-The proprietary NVIDIA driver stack itself comes from the base image `ghcr.io/ublue-os/kinoite-nvidia`.
-
-## Image Variants
-
-| Image | Recommended for |
+| Image Name | Description |
 | :--- | :--- |
-| `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD/Intel systems using the `kinoite-main` base |
-| `ghcr.io/jbdsjunior/kinoite-nvidia:latest` | NVIDIA systems that need the Universal Blue NVIDIA base and CUDA container tooling |
+| **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
+| **kinoite-nvidia** | Builds on top of `ghcr.io/ublue-os/kinoite-nvidia`, which already includes proprietary NVIDIA drivers and Secure Boot tooling, plus CUDA userspace extras from this repo. |
 
-## Installation
+**Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
-Use a two-step rebase flow so signing metadata is correctly established.
+---
 
-### 1. Initial rebase (unverified)
+## 🚀 Installation
 
-AMD/Intel:
+The transition to this custom image is done in two stages to ensure that signing keys are correctly imported and verified.
+
+### 1. Initial Rebase (Unverified)
+
+First, switch to the unverified version to import the repository's signing keys.
+
+**For AMD/Intel:**
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
+
 ```
 
-NVIDIA:
+**For Nvidia:**
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
+
 ```
 
-Reboot after this step.
+> ⚠️ **Action Required:** Reboot your system immediately after this step.
 
-### 2. Switch to signed updates
+### 2. Enable Verification (Signed)
 
-AMD/Intel:
+After rebooting, switch to the signed image to ensure all future updates are cryptographically verified.
+
+**For AMD/Intel:**
 
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
+
 ```
 
-NVIDIA:
+**For Nvidia:**
 
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
+
 ```
 
-Reboot again to finalize.
+> ⚠️ **Action Required:** Reboot one last time to finalize the installation.
 
-## Post-install setup
+---
 
-### KVM and libvirt
+## 🛠️ Post-Installation Setup
 
-Run:
+### Virtualization (KVM/QEMU)
+
+The system automatically configures user VM directories with the `No_COW` (+C) attribute for maximum BTRFS performance.
+
+To add your user to the necessary virtualization groups (`libvirt`, `kvm`), simply run:
 
 ```bash
 kinoite-setup-kvm.sh
+
 ```
 
-This helper adds your user to `libvirt,kvm`, prepares libvirt image paths, and restarts `libvirtd`.
-A logout/restart is required for group changes to apply.
+*Please logout or restart after running this command.*
 
-### NVIDIA containers (CUDA)
+### 🤖 LLMs com GPU NVIDIA (CUDA)
 
-`kinoite-nvidia` includes `nvidia-container-toolkit` for Podman/Distrobox GPU workloads.
+A imagem **`kinoite-nvidia`** inclui o **`nvidia-container-toolkit`** para acelerar workloads de LLMs via Podman/Distrobox.
 
-Example:
+Exemplo rápido para registrar/atualizar o CDI do NVIDIA manualmente (se necessário):
 
 ```bash
 sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+```
+
+Depois, execute containers com GPU:
+
+```bash
 podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
-### NVIDIA + Secure Boot
+### 🔐 NVIDIA + Secure Boot (MOK)
 
-If Secure Boot is enabled, enroll the Universal Blue MOK key on the host:
+Na variante **`kinoite-nvidia`**, os drivers NVIDIA já vêm da imagem base `ghcr.io/ublue-os/kinoite-nvidia`.
+Se o Secure Boot estiver ativo na máquina, execute o helper oficial da Universal Blue no host:
+
+No host, importe a chave pública MOK com:
 
 ```bash
 ujust enroll-secure-boot-key
 ```
 
-Then reboot and complete the firmware MOK enrollment flow.
+Depois reinicie e conclua o fluxo **Enroll MOK** na tela azul do firmware.
 
-### Rclone user mount service
+### Cloud Storage (Rclone)
 
-1. Configure remotes: `rclone config`
-2. Enable mount service:
+Mount your cloud drives (GDrive, OneDrive, etc.) as local folders:
+
+1. Configure your remote: `rclone config`
+2. Enable automatic mounting:
 
 ```bash
-systemctl --user enable --now rclone-mount@<remote-name>.service
+# Replace 'remote-name' with the name you configured in step 1
+systemctl --user enable --now rclone-mount@remote-name.service
+
 ```
 
-Mounted path: `~/Cloud/<remote-name>`.
+*Your files will be available at `~/Cloud/remote-name`.*
 
-## Troubleshooting
+---
 
-### Captive portals (hotels, airports, guest Wi-Fi)
+### ⚡ Kernel Arguments (Manual Override)
 
-Default DNS is privacy-focused and uses `DNSOverTLS=opportunistic`. Most networks work without changes, but some captive portals still fail.
-
-Create a temporary relaxed override:
+Most kernel arguments are already declared in recipe modules.  
+Use this command only as a manual override when migrating from a different image or troubleshooting:
 
 ```bash
-sudo mkdir -p /etc/systemd/resolved.conf.d
-sudo tee /etc/systemd/resolved.conf.d/permissive-dns.conf >/dev/null <<'CONF'
+rpm-ostree kargs \
+  --append-if-missing="transparent_hugepage=madvise" \
+  --append-if-missing="amd_pstate=active" \
+  --append-if-missing="mitigations=auto" \
+  --append-if-missing="nvidia-drm.modeset=1" \
+  --append-if-missing="rd.driver.blacklist=nouveau" \
+  --append-if-missing="modprobe.blacklist=nouveau" \
+  --append-if-missing="amd_iommu=on" \
+  --append-if-missing="iommu=pt" \
+  --append-if-missing="kvm_amd.npt=1" \
+  --append-if-missing="kvm_amd.avic=1" \
+  --append-if-missing="kvm_amd.nested=1" \
+  --append-if-missing="kvm_amd.sev=1"
+
+```
+
+> **Note:** A reboot is required after applying kernel arguments.
+> For regular updates/rebases, prefer the standard immutable host workflow (`rpm-ostree`/bootc lifecycle) instead of repeatedly changing manual kargs.
+
+---
+
+## 🆘 Troubleshooting
+
+### 🏨 Public Wi-Fi / Hotels (Captive Portals)
+
+This image enforces **DNS over TLS** for maximum security. This may prevent "Captive Portal" login screens (common in hotels and airports) from appearing.
+
+**Temporary Workaround:**
+If you cannot connect to a public Wi-Fi, run the following command to temporarily relax security settings:
+
+```bash
+# Allow opportunistic TLS and downgrade security for Captive Portals
+sudo mkdir -p /etc/systemd/resolved.conf.d/
+sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf.d/permissive-dns.conf
 [Resolve]
 DNSOverTLS=opportunistic
 DNSSEC=allow-downgrade
-CONF
+EOF'
 sudo systemctl restart systemd-resolved
+
 ```
 
-After leaving that network, remove it:
+**When back home (Secure Network):**
+Re-enable strict security by deleting the override file:
 
 ```bash
 sudo rm /etc/systemd/resolved.conf.d/permissive-dns.conf
 sudo systemctl restart systemd-resolved
+
 ```
 
-## Local development
+---
 
-A Distrobox-based development environment is included in `bluebuild/`.
+## 💻 Local Development
+
+If you wish to build or test changes locally using Distrobox:
+
+1. **Create Container:** `distrobox assemble create`
+2. **Enter Environment:** `distrobox enter bluebuild`
+3. **Build Recipe:**
 
 ```bash
-distrobox assemble create
-distrobox enter bluebuild
 bluebuild build recipes/recipe-amd.yml
-# or
-bluebuild build recipes/recipe-nvidia.yml
+
 ```
 
-See `bluebuild/README.md` for details.
+---
 
-## License
+## ⚖️ License
 
-Licensed under the Apache License 2.0. See `LICENSE`.
+This project is licensed under the **Apache License 2.0**.
