@@ -10,9 +10,8 @@ modules:
         # - mozilla-filesystem
         - htop
         - nvtop
-        # - kate
-        # - fcitx5-*
-        # - kcm-fcitx5
+        - fcitx5-*
+
         # - braille-printer-app
         # - ibus-anthy
         # - ibus-anthy-python
@@ -22,6 +21,7 @@ modules:
         # - kasumi-common
         # - kasumi-unicode
 
+        - fcitx5-chewing
         - fcitx5-chinese-addons
         - fcitx5-configtool
         - fcitx5-gtk
