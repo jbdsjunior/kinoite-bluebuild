@@ -2,27 +2,20 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # Configurations (Files) - Placed at the end to protect previous layers
   - type: files
     files:
       - source: system
         destination: /
 
-  # Repositories and Kernel Configurations (Stable Base)
-  # - from-file: common-repos.yml
+  - from-file: common-repos.yml
 
-  # Driver Layer (Heavy - changes with system updates)
-  - from-file: common-drivers.yml
-
-  # Core Layer (Stable - changes rarely)
   - from-file: common-debloat.yml
+  - from-file: common-drivers.yml
   - from-file: common-packages.yml
   - from-file: common-kvm.yml
 
-  # Tooling Layer (Light - changes frequently)
   - from-file: common-tools.yml
 
-  # Flatpaks (Final application layer)
   # - from-file: common-flatpaks.yml
   - from-file: common-kargs.yml
   - from-file: common-systemd.yml
