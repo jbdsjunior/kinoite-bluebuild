@@ -1,0 +1,13 @@
+[Unit]
+Description=Topgrade User Automatic Update
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/topgrade -cy --no-retry --disable system
+Nice=19
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=default.target
