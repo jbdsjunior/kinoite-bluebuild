@@ -14,5 +14,4 @@ modules:
         - systemd-resolved.service
     user:
       enabled:
-        # --- Serviços de Usuário (Seu Usuário) ---
         - topgrade.timer
