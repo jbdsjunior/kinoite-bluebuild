@@ -6,53 +6,6 @@ if [ -n "${BASH_VERSION:-}" ] && [ -n "${PS1:-}" ] && command -v starship >/dev/
     eval "$(starship init bash)"
 fi
 
-# Bash completion and suggestion quality-of-life defaults
-if [ -n "${BASH_VERSION:-}" ] && [ -n "${PS1:-}" ]; then
-    # Better interactive shell ergonomics
-    shopt -s checkwinsize histappend cmdhist autocd
-
-    # Keep a useful, persistent command history
-    export HISTSIZE=10000
-    export HISTFILESIZE=200000
-    export HISTCONTROL=ignoreboth:erasedups
-    export HISTIGNORE="ls:bg:fg:history:clear:exit"
-    export HISTTIMEFORMAT="%F %T "
-    case ";${PROMPT_COMMAND:-};" in
-        *";history -a;"*) ;;
-        *) PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }history -a" ;;
-    esac
-
-    # Pager defaults for readable output
-    export PAGER=less
-    export LESS='-R -F -X -M -i -J'
-
-    for bash_completion in /usr/share/bash-completion/bash_completion /etc/bash_completion; do
-        if [ -r "$bash_completion" ]; then
-            # shellcheck disable=SC1090
-            . "$bash_completion"
-            break
-        fi
-    done
-
-    bind "set completion-ignore-case on"
-    bind "set show-all-if-ambiguous on"
-    bind "set menu-complete-display-prefix on"
-    bind "set mark-symlinked-directories on"
-
-    # Load alias definitions from dedicated files
-    for alias_file in /etc/profile.d/aliases.d/*.sh; do
-        [ -r "$alias_file" ] || continue
-        # shellcheck disable=SC1090
-        . "$alias_file"
-    done
-
-    # Create and enter a directory in one command
-    mkcd() {
-        [ -n "$1" ] || return 1
-        mkdir -p -- "$1" && cd -- "$1"
-    }
-fi
-
 # Run fastfetch on interactive login
 if [ -n "${PS1:-}" ] && command -v fastfetch >/dev/null 2>&1; then
     if [ -z "$FASTFETCH_RAN" ]; then
