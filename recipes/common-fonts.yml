@@ -9,6 +9,9 @@ modules:
         - SourceCodePro
         - Terminus
         - JetBrainsMono
+        - Iosevka
+        - Meslo
+        - CascadiaCode
         - NerdFontsSymbolsOnly
       google-fonts:
         - Roboto
