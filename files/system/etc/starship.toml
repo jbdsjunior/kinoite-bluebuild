@@ -1,67 +1,45 @@
 add_newline = true
 command_timeout = 1500
 scan_timeout = 30
-palette = "kinoite"
+palette = "kinoite_minimal"
 
-format = "$os$username$hostname$directory$git_branch$git_status$status$cmd_duration$time$line_break$character"
+format = "$directory$git_branch$git_status$cmd_duration$status$line_break$character"
 
-[palettes.kinoite]
-green = "#98c379"
-yellow = "#e5c07b"
-red = "#e06c75"
-cyan = "#56b6c2"
-blue = "#61afef"
-purple = "#c678dd"
-gray = "#7f848e"
-
-[os]
-disabled = false
-style = "bold blue"
-format = "[$symbol]($style) "
-
-[username]
-show_always = true
-style_user = "bold cyan"
-style_root = "bold red"
-
-[hostname]
-ssh_only = false
-trim_at = "."
-style = "bold gray"
-format = "[@$hostname]($style) "
+[palettes.kinoite_minimal]
+fg = "#cdd6f4"
+muted = "#7f849c"
+accent = "#89b4fa"
+ok = "#a6e3a1"
+warn = "#f9e2af"
+err = "#f38ba8"
 
 [directory]
 truncation_length = 3
 truncate_to_repo = true
-style = "bold green"
-read_only = " ro"
+style = "bold accent"
+read_only = " "
 format = "[$path$read_only]($style) "
 
 [git_branch]
 symbol = " "
-style = "bold purple"
+style = "fg"
 format = "[$symbol$branch]($style) "
 
 [git_status]
-style = "yellow"
+style = "warn"
 format = "([$all_status$ahead_behind]($style) )"
+
+[cmd_duration]
+min_time = 2500
+style = "muted"
+format = "[took $duration]($style) "
 
 [status]
 disabled = false
-style = "bold red"
-format = "[exit:$status]($style) "
-
-[cmd_duration]
-min_time = 2000
-style = "bold yellow"
-format = "took [$duration]($style) "
-
-[time]
-disabled = false
-time_format = "%H:%M"
-style = "bold gray"
-format = "[$time]($style) "
+style = "err"
+format = "[✗ $status]($style) "
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
+success_symbol = "[❯](ok)"
+error_symbol = "[❯](err)"
+vimcmd_symbol = "[❮](accent)"
