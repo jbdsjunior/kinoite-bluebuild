@@ -1,13 +1,3 @@
-# Global Shell Configuration for Kinoite
-
-# Locale fallback: keep a bilingual workflow (pt_BR + English docs/messages)
-if [ -z "${LANG:-}" ]; then
-    export LANG=pt_BR.UTF-8
-fi
-if [ -z "${LC_MESSAGES:-}" ]; then
-    export LC_MESSAGES=en_US.UTF-8
-fi
-
 # Initialize Starship if installed
 if [ -n "${BASH_VERSION:-}" ] && [ -n "${PS1:-}" ] && command -v starship >/dev/null 2>&1; then
     if [ -f /etc/starship.toml ]; then
