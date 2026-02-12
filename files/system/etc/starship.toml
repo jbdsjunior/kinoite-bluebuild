@@ -1,7 +1,23 @@
 add_newline = true
-command_timeout = 1000
+command_timeout = 1500
+scan_timeout = 30
+palette = "kinoite"
 
-format = "$username$hostname$directory$git_branch$git_status$cmd_duration$line_break$character"
+format = "$os$username$hostname$directory$git_branch$git_status$status$cmd_duration$time$line_break$character"
+
+[palettes.kinoite]
+green = "#98c379"
+yellow = "#e5c07b"
+red = "#e06c75"
+cyan = "#56b6c2"
+blue = "#61afef"
+purple = "#c678dd"
+gray = "#7f848e"
+
+[os]
+disabled = false
+style = "bold blue"
+format = "[$symbol]($style) "
 
 [username]
 show_always = true
@@ -11,14 +27,15 @@ style_root = "bold red"
 [hostname]
 ssh_only = false
 trim_at = "."
-style = "bold dimmed blue"
+style = "bold gray"
 format = "[@$hostname]($style) "
 
 [directory]
 truncation_length = 3
 truncate_to_repo = true
 style = "bold green"
-format = "[$path]($style) "
+read_only = " ro"
+format = "[$path$read_only]($style) "
 
 [git_branch]
 symbol = " "
@@ -29,10 +46,21 @@ format = "[$symbol$branch]($style) "
 style = "yellow"
 format = "([$all_status$ahead_behind]($style) )"
 
+[status]
+disabled = false
+style = "bold red"
+format = "[exit:$status]($style) "
+
 [cmd_duration]
 min_time = 2000
 style = "bold yellow"
 format = "took [$duration]($style) "
+
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "bold gray"
+format = "[$time]($style) "
 
 [character]
 success_symbol = "[❯](bold green)"
