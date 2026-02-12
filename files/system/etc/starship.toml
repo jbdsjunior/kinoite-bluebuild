@@ -1,45 +1,13 @@
+# Obtém o preenchimento do editor baseado no esquema de configuração
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Insere uma linha branca entre os prompts do shell
 add_newline = true
-command_timeout = 1500
-scan_timeout = 30
-palette = "kinoite_minimal"
 
-format = "$directory$git_branch$git_status$cmd_duration$status$line_break$character"
+# Substitui o símbolo '❯' no prompt por  '➜'
+[character] # O nome do módulo que estamos configurando é  'character'
+success_symbol = '[➜](bold green)' # O 'success_symbol' é definido para  '➜' com a cor 'bold green'
 
-[palettes.kinoite_minimal]
-fg = "#cdd6f4"
-muted = "#7f849c"
-accent = "#89b4fa"
-ok = "#a6e3a1"
-warn = "#f9e2af"
-err = "#f38ba8"
-
-[directory]
-truncation_length = 3
-truncate_to_repo = true
-style = "bold accent"
-read_only = " "
-format = "[$path$read_only]($style) "
-
-[git_branch]
-symbol = " "
-style = "fg"
-format = "[$symbol$branch]($style) "
-
-[git_status]
-style = "warn"
-format = "([$all_status$ahead_behind]($style) )"
-
-[cmd_duration]
-min_time = 2500
-style = "muted"
-format = "[took $duration]($style) "
-
-[status]
-disabled = false
-style = "err"
-format = "[✗ $status]($style) "
-
-[character]
-success_symbol = "[❯](ok)"
-error_symbol = "[❯](err)"
-vimcmd_symbol = "[❮](accent)"
+# Desabilita o módulo package, escondendo completamente ele do prompt
+[package]
+disabled = true
