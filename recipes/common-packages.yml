@@ -6,7 +6,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # - langpacks-en
+        - langpacks-en
         - langpacks-pt_BR
         - lm_sensors
         - rclone
