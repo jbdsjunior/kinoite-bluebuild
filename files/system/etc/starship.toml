@@ -5,7 +5,7 @@ command_timeout = 1200
 palette = "kinoite"
 
 format = """
-$username$hostname$directory$git_branch$git_status$fill$cmd_duration
+$os$username$hostname$directory$git_branch$git_status$fill$cmd_duration
 $character
 """
 
