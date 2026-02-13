@@ -1,23 +1,23 @@
 name: build-amd
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "recipes/**"
-      - "files/**"
-      - ".github/workflows/build-amd.yml"
-      - ".github/workflows/build-nvidia.yml"
-      - ".github/workflows/check-updates.yml"
-      - ".github/workflows/validate.yml"
-  pull_request:
-    paths:
-      - "recipes/**"
-      - "files/**"
-      - ".github/workflows/build-amd.yml"
-      - ".github/workflows/build-nvidia.yml"
-      - ".github/workflows/check-updates.yml"
-      - ".github/workflows/validate.yml"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "recipes/**"
+  #     - "files/**"
+  #     - ".github/workflows/build-amd.yml"
+  #     - ".github/workflows/build-nvidia.yml"
+  #     - ".github/workflows/check-updates.yml"
+  #     - ".github/workflows/validate.yml"
+  # pull_request:
+  #   paths:
+  #     - "recipes/**"
+  #     - "files/**"
+  #     - ".github/workflows/build-amd.yml"
+  #     - ".github/workflows/build-nvidia.yml"
+  #     - ".github/workflows/check-updates.yml"
+  #     - ".github/workflows/validate.yml"
   workflow_dispatch:
 
 concurrency:
