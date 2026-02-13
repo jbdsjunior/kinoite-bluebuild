@@ -1,13 +1,69 @@
-# Obtém o preenchimento do editor baseado no esquema de configuração
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# Insere uma linha branca entre os prompts do shell
 add_newline = true
+command_timeout = 1200
+palette = "kinoite"
 
-# Substitui o símbolo '❯' no prompt por  '➜'
-[character] # O nome do módulo que estamos configurando é  'character'
-success_symbol = '[➜](bold green)' # O 'success_symbol' é definido para  '➜' com a cor 'bold green'
+format = """
+$username$hostname$directory$git_branch$git_status$fill$cmd_duration
+$character
+"""
 
-# Desabilita o módulo package, escondendo completamente ele do prompt
+[palettes.kinoite]
+fg = "#d9e0ee"
+blue = "#7aa2f7"
+green = "#9ece6a"
+yellow = "#e0af68"
+red = "#f7768e"
+gray = "#6c7086"
+
+[os]
+disabled = false
+format = "[$symbol ]($style)"
+style = "bold blue"
+
+[os.symbols]
+Fedora = ""
+
+[username]
+show_always = false
+style_user = "bold green"
+style_root = "bold red"
+format = "[$user ]($style)"
+
+[hostname]
+ssh_only = true
+style = "bold yellow"
+format = "[@$hostname ]($style)"
+
+[directory]
+style = "bold fg"
+truncation_length = 4
+truncate_to_repo = false
+read_only = " 󰌾"
+format = "[$path]($style)[$read_only]($red) "
+
+[git_branch]
+symbol = " "
+style = "bold blue"
+format = "[$symbol$branch ]($style)"
+
+[git_status]
+style = "bold yellow"
+format = "([$all_status$ahead_behind ]($style))"
+
+[fill]
+symbol = " "
+
+[cmd_duration]
+min_time = 800
+style = "gray"
+format = "[${duration}]($style)"
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+vimcmd_symbol = "[❮](bold blue)"
+
 [package]
 disabled = true

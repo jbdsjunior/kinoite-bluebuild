@@ -4,15 +4,7 @@ modules:
   - type: fonts
     fonts:
       nerd-fonts:
-        - FiraCode # don't add spaces or "Nerd Font" suffix
-        - Hack
-        - SourceCodePro
-        - Terminus
+        # Keep a lean set for terminal/editor usage + icon coverage.
         - JetBrainsMono
         - Iosevka
-        - Meslo
-        - CascadiaCode
         - NerdFontsSymbolsOnly
-      google-fonts:
-        - Roboto
-        - Open Sans

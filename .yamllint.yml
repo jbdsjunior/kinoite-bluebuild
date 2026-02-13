@@ -1,0 +1,11 @@
+extends: default
+
+rules:
+  comments:
+    min-spaces-from-content: 1
+  document-start: disable
+  line-length:
+    max: 180
+    allow-non-breakable-words: true
+  truthy:
+    check-keys: false
