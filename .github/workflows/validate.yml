@@ -1,0 +1,44 @@
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - "recipes/**"
+      - "files/**"
+      - ".github/workflows/**"
+      - ".github/*.yml"
+      - ".yamllint.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "recipes/**"
+      - "files/**"
+      - ".github/workflows/**"
+      - ".github/*.yml"
+      - ".yamllint.yml"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint recipes and automation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Lint GitHub workflows
+        uses: rhysd/actionlint@v1
+
+      - name: Install yamllint and shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install yamllint shellcheck
+
+      - name: Lint YAML files
+        run: yamllint .
+
+      - name: Lint shell scripts
+        run: shellcheck files/scripts/*.sh

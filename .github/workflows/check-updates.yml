@@ -1,8 +1,7 @@
 name: check-updates
 on:
   schedule:
-    - cron: "00 06 * * *"  # 06:00 UTC
-    - cron: "0 */4 * * *"  # a cada 4 horas
+    - cron: "0 */4 * * *"  # every 4 hours
   workflow_dispatch:
 
 concurrency:

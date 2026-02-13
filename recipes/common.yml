@@ -20,6 +20,11 @@ modules:
   - from-file: common-kvm.yml
 
   - from-file: common-kargs.yml
+
+  # Required when modules-load/sysctl/kernel-adjacent files are changed.
+  # Ref: https://blue-build.org/reference/modules/initramfs/
+  - type: initramfs
+
   - from-file: common-systemd.yml
 
   # - from-file: common-flatpaks.yml

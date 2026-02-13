@@ -23,7 +23,7 @@ This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** im
 
 ### 🛡️ Privacy & Security
 
-- **DNS Hardening:** DNS over TLS (DoT) + DNSSEC enabled by default, with Control D (p2) as primary (privacy/ad blocking) and Cloudflare as fallback.
+- **DNS Hardening:** DNS over TLS (DoT, opportunistic mode) + DNSSEC (`allow-downgrade`) configured by default, with Control D (p2) as primary and Cloudflare as fallback.
 - **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
 - **Firewall:** `firewalld` enabled and configured by default.
 
@@ -96,6 +96,20 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia
 
 > ⚠️ **Action Required:** Reboot one last time to finalize the installation.
 
+### 3. Ongoing Updates (Bootc-First, 2026+)
+
+This image uses BlueBuild's `kargs` module. On modern Atomic hosts, **use `bootc` for day-2 updates/rebases** so kernel-arg snippets from the image are applied consistently.
+
+```bash
+# Update to the latest deployment from the current image
+sudo bootc upgrade
+
+# Switch to another image/tag when needed (example)
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+```
+
+> You can still recover with `bootc rollback` (or `rpm-ostree rollback`) after reboot if needed.
+
 ---
 
 ## 🛠️ Post-Installation Setup
@@ -159,30 +173,17 @@ systemctl --user enable --now rclone-mount@remote-name.service
 
 ---
 
-### ⚡ Kernel Arguments (Manual Override)
+### ⚡ Kernel Arguments (Recommended Workflow)
 
-Most kernel arguments are already declared in recipe modules.  
-Use this command only as a manual override when migrating from a different image or troubleshooting:
+Most kernel arguments are already managed in recipe modules (`recipes/common-kargs.yml`, `recipes/common-kvm.yml`, `recipes/common-nvidia.yml`).
 
-```bash
-rpm-ostree kargs \
-  --append-if-missing="transparent_hugepage=madvise" \
-  --append-if-missing="amd_pstate=active" \
-  --append-if-missing="mitigations=auto" \
-  --append-if-missing="nvidia-drm.modeset=1" \
-  --append-if-missing="rd.driver.blacklist=nouveau" \
-  --append-if-missing="modprobe.blacklist=nouveau" \
-  --append-if-missing="amd_iommu=on" \
-  --append-if-missing="iommu=pt" \
-  --append-if-missing="kvm_amd.npt=1" \
-  --append-if-missing="kvm_amd.avic=1" \
-  --append-if-missing="kvm_amd.nested=1" \
-  --append-if-missing="kvm_amd.sev=1"
+For permanent changes:
 
-```
+1. Edit the recipe/module in this repo.
+2. Build/publish a new image.
+3. Apply it on host with `bootc upgrade` or `bootc switch`.
 
-> **Note:** A reboot is required after applying kernel arguments.
-> For regular updates/rebases, prefer the standard immutable host workflow (`rpm-ostree`/bootc lifecycle) instead of repeatedly changing manual kargs.
+Use direct host-side `rpm-ostree kargs` only as a temporary troubleshooting override.
 
 ---
 
@@ -190,7 +191,7 @@ rpm-ostree kargs \
 
 ### 🏨 Public Wi-Fi / Hotels (Captive Portals)
 
-This image enforces **DNS over TLS** for maximum security. This may prevent "Captive Portal" login screens (common in hotels and airports) from appearing.
+This image prefers **DNS over TLS** and DNSSEC hardening. Public captive portals (hotels/airports) can still fail in some networks.
 
 **Temporary Workaround:**
 If you cannot connect to a public Wi-Fi, run the following command to temporarily relax security settings:
@@ -208,7 +209,7 @@ sudo systemctl restart systemd-resolved
 ```
 
 **When back home (Secure Network):**
-Re-enable strict security by deleting the override file:
+Re-enable your default profile by deleting the override file:
 
 ```bash
 sudo rm /etc/systemd/resolved.conf.d/permissive-dns.conf
@@ -230,6 +231,14 @@ If you wish to build or test changes locally using Distrobox:
 bluebuild build recipes/recipe-amd.yml
 
 ```
+
+---
+
+## 📚 Project Maintenance
+
+Operational and organizational guidance for long-term upkeep is documented in:
+
+- `docs/MAINTENANCE.md`
 
 ---
 
