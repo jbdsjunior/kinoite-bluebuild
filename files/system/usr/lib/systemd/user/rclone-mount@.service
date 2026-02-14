@@ -1,13 +1,18 @@
 [Unit]
-Description=Rclone Mount (%i)
+Description=Rclone Mount (%I)
+Documentation=https://rclone.org/commands/rclone_mount/
 After=network-online.target
 Wants=network-online.target
+ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
 Type=notify
+EnvironmentFile=-%h/.config/rclone/rclone-mount-%i.env
 # Garante que o diretório existe antes de montar
-ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
-ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
+ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone
+# Limpa montagem antiga/stale sem falhar a unit se não houver mount
+ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
+ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
     --cache-dir=%h/.cache/rclone \
     --vfs-cache-mode=full \
@@ -28,10 +33,13 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
     --drive-server-side-across-configs \
     --drive-acknowledge-abuse \
     --drive-stop-on-upload-limit \
-    --umask=022
+    --umask=022 \
+    $RCLONE_EXTRA_ARGS
 
 # Desmonta com lazy unmount (-z) para evitar travamentos se a rede cair
-ExecStop=/bin/fusermount3 -uz %h/Cloud/%i
+ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
+# Reforço de limpeza para casos em que o processo caiu antes do stop normal
+ExecStopPost=-/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
 TimeoutStopSec=60
