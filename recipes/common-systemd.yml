@@ -12,6 +12,6 @@ modules:
         # Networking and Security enhancements
         - firewalld.service
         - systemd-resolved.service
-    user:
-      enabled:
-        - topgrade.timer
+    # user:
+    #   enabled:
+    #     - topgrade.timer
