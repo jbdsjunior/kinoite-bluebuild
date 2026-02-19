@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - kcm-plasmalogin
+        - plasma-login-manager
+      exclude:
+        - kde-settings-sddm
+        - sddm
+        - sddm-breeze
+        - sddm-kcm
+        - sddm-wayland-plasma
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+modules:
+  - type: systemd
+    system:
+      enabled:
+        - plasmalogin.service

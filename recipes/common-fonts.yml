@@ -8,3 +8,10 @@ modules:
         - JetBrainsMono
         - Iosevka
         - NerdFontsSymbolsOnly
+      google-fonts:
+        - Caladea
+        - Carlito
+        - Fira Mono
+        - Fira Sans
+        - Google Sans Flex
+        - JetBrains Mono
