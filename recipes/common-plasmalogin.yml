@@ -14,9 +14,7 @@ modules:
         - sddm-breeze
         - sddm-kcm
         - sddm-wayland-plasma
----
-# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-modules:
+
   - type: systemd
     system:
       enabled:
