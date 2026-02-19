@@ -8,7 +8,9 @@ modules:
       packages:
         - kcm-plasmalogin
         - plasma-login-manager
-      exclude:
+    remove:
+      auto-remove: true
+      packages:
         - kde-settings-sddm
         - sddm
         - sddm-breeze
