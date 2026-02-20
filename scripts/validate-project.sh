@@ -5,10 +5,23 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 echo "[1/4] Shell syntax checks"
-while IFS= read -r script_file; do
-  bash -n "$script_file"
-  sh -n "$script_file"
-done < <(git ls-files "*.sh")
+git ls-files "*.sh" | while IFS= read -r script_file; do
+  [ -n "$script_file" ] || continue
+  shebang="$(head -n 1 "$script_file" || true)"
+
+  case "$shebang" in
+    '#!'*bash*)
+      bash -n "$script_file"
+      ;;
+    '#!'*sh*)
+      sh -n "$script_file"
+      ;;
+    *)
+      # Default to bash for project scripts without explicit shebang.
+      bash -n "$script_file"
+      ;;
+  esac
+done
 
 echo "[2/4] Linux config and recipe structure checks"
 python3 - <<'PY'
