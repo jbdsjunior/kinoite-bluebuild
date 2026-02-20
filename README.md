@@ -23,7 +23,7 @@ This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** im
 
 ### 🛡️ Privacy & Security
 
-- **DNS Hardening:** DNS over TLS (DoT, opportunistic mode) + DNSSEC (`allow-downgrade`) configured by default, with Control D (p2) as primary and Cloudflare as fallback.
+- **DNS Hardening:** Strict DNS over TLS (DoT, fail-closed) + strict DNSSEC validation configured by default, with Control D (p2) as primary and Cloudflare as fallback.
 - **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
 - **Firewall:** `firewalld` enabled and configured by default.
 
@@ -191,7 +191,7 @@ Use direct host-side `rpm-ostree kargs` only as a temporary troubleshooting over
 
 ### 🏨 Public Wi-Fi / Hotels (Captive Portals)
 
-This image prefers **DNS over TLS** and DNSSEC hardening. Public captive portals (hotels/airports) can still fail in some networks.
+This image uses **strict DNS over TLS** and **strict DNSSEC** by default. Public captive portals (hotels/airports) can still fail in some networks.
 
 **Temporary Workaround:**
 If you cannot connect to a public Wi-Fi, run the following command to temporarily relax security settings:

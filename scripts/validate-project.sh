@@ -139,10 +139,38 @@ def validate_xml_files() -> None:
             add_error(file_path, None, f"invalid xml: {exc}")
 
 
+def validate_security_baseline() -> None:
+    resolved_conf = root / "files/system/etc/systemd/resolved.conf.d/60-dns-overrides.conf"
+    parser = configparser.ConfigParser(strict=False)
+    parser.read_string(resolved_conf.read_text(encoding="utf-8", errors="replace"))
+
+    dns_over_tls = parser.get("Resolve", "DNSOverTLS", fallback="").strip().lower()
+    dnssec = parser.get("Resolve", "DNSSEC", fallback="").strip().lower()
+    if dns_over_tls != "yes":
+        add_error(resolved_conf, None, "DNSOverTLS must be 'yes' (strict baseline)")
+    if dnssec != "yes":
+        add_error(resolved_conf, None, "DNSSEC must be 'yes' (strict baseline)")
+
+    sysctl_file = root / "files/system/usr/lib/sysctl.d/60-kernel-tuning.conf"
+    sysctl_text = sysctl_file.read_text(encoding="utf-8", errors="replace")
+    required_sysctl = [
+        "net.ipv4.conf.all.accept_redirects = 0",
+        "net.ipv4.conf.default.accept_redirects = 0",
+        "net.ipv6.conf.all.accept_redirects = 0",
+        "net.ipv6.conf.default.accept_redirects = 0",
+        "net.ipv4.conf.all.send_redirects = 0",
+        "net.ipv4.conf.default.send_redirects = 0",
+    ]
+    for key in required_sysctl:
+        if key not in sysctl_text:
+            add_error(sysctl_file, None, f"missing security sysctl: {key}")
+
+
 validate_recipes()
 validate_ini_like_files()
 validate_toml_files()
 validate_xml_files()
+validate_security_baseline()
 
 if errors:
     print("Validation failed:")
