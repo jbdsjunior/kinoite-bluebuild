@@ -15,4 +15,5 @@ modules:
   - from-file: common-nvidia.yml
 
   # Digital signing module for image integrity and verified updates
+  - type: initramfs
   - type: signing
