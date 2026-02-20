@@ -15,4 +15,5 @@ modules:
 
   # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
   # after the initial rebase on the client side.
+  - type: initramfs
   - type: signing

@@ -5,6 +5,7 @@ set -euo pipefail
 REQUIRED_GROUPS="libvirt,kvm"
 # Directories for VM images
 SYSTEM_IMAGES_DIR="/var/lib/libvirt/images"
+TARGET_USER="${SUDO_USER:-${USER:-$(id -un)}}"
 
 apply_nocow_if_btrfs() {
   local path="$1"
@@ -22,7 +23,11 @@ apply_nocow_if_btrfs() {
 echo "Configuring KVM and Libvirt..."
 
 # Add current user to necessary groups
-sudo usermod -aG "$REQUIRED_GROUPS" "$USER"
+if [[ "$TARGET_USER" == "root" ]]; then
+  echo "Refusing to change groups for root. Run this script as your regular user (without sudo)."
+  exit 1
+fi
+sudo usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
 
 # Setup system-wide images directory with No_COW (important for BTRFS performance)
 sudo mkdir -p "$SYSTEM_IMAGES_DIR"
@@ -31,4 +36,4 @@ apply_nocow_if_btrfs "$SYSTEM_IMAGES_DIR"
 # Restart the service to apply changes
 sudo systemctl restart libvirtd
 
-echo "Setup complete. Log out and log in again to apply new group permissions."
+echo "Setup complete for user '$TARGET_USER'. Log out and log in again to apply new group permissions."
