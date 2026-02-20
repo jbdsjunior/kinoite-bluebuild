@@ -5,8 +5,8 @@ modules:
     system:
       enabled:
         # Automated update triggers
-        - rpm-ostreed-automatic.timer
-        - flatpak-system-update.timer
+        # - rpm-ostreed-automatic.timer
+        # - flatpak-system-update.timer
         # - flatpak-user-update.timer
 
         # Networking and Security enhancements

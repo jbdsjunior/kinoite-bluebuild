@@ -6,9 +6,11 @@ name: kinoite-nvidia
 description: "Customized Fedora Kinoite image with proprietary Nvidia drivers and CUDA support"
 
 # Base image already includes the NVIDIA stack from Universal Blue
-base-image: ghcr.io/ublue-os/kinoite-nvidia
+# base-image: ghcr.io/ublue-os/kinoite-nvidia
+base-image: ghcr.io/blue-build/base-images/fedora-kinoite-nvidia
 image-version: latest
-
+platforms:
+  - linux/amd64
 modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common.yml
