@@ -6,7 +6,8 @@ Wants=network-online.target
 ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
-Type=notify
+# Keep compatibility across rclone versions that may not emit sd_notify.
+Type=simple
 EnvironmentFile=-%h/.config/rclone/rclone-mount-%i.env
 # Garante que o diretório existe antes de montar
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone

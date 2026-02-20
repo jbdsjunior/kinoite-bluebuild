@@ -232,6 +232,16 @@ bluebuild build recipes/recipe-amd.yml
 
 ```
 
+### ✅ Local Validation
+
+Before publishing new images, validate recipe references and Linux config syntax:
+
+```bash
+./scripts/validate-project.sh
+```
+
+This checks shell scripts, TOML/XML files, systemd/INI-like drop-ins, and BlueBuild recipe references (`from-file` and `source` paths).
+
 ---
 
 <!-- ## 📚 Project Maintenance
