@@ -27,6 +27,7 @@ All optimizations and suggestions MUST align with this specific operational base
 * **Formatting:** Do not use unnecessary preambles or postambles (e.g., skip "Here is the content of the file..." or unrequested action summaries). Answer strictly with the requested information or code.
 * **Autonomy:** Strike a careful balance between taking autonomous actions to solve the user's problem and not surprising the user with unrequested system changes.
 * **Task Tracking:** For complex tasks, use planning or To-Do tracking tools to break down the work. ALWAYS mark tasks as completed immediately after finishing them.
+* **Language Rule:** Repository-facing documentation, comments, and user-visible technical instructions MUST be written in international English.
 
 ## 4. Execution Workflow
 
