@@ -13,6 +13,8 @@ modules:
         # Networking and Security enhancements
         - firewalld.service
         - systemd-resolved.service
-    # user:
-    #   enabled:
-    #     - topgrade.timer
+    user:
+      enabled:
+        - topgrade-system-update.timer
+        - topgrade-flatpak-update.timer
+        - topgrade-maintenance-update.timer

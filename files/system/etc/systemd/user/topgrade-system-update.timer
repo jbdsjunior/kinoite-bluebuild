@@ -1,0 +1,12 @@
+[Unit]
+Description=Run topgrade system update every 4 hours
+
+[Timer]
+OnCalendar=
+OnCalendar=*-*-* 0/4:00:00
+RandomizedDelaySec=5m
+Persistent=true
+Unit=topgrade-system-update.service
+
+[Install]
+WantedBy=timers.target

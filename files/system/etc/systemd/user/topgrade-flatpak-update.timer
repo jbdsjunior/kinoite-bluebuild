@@ -1,11 +1,12 @@
 [Unit]
-Description=Run Topgrade every hour
+Description=Run topgrade flatpak update every hour
 
 [Timer]
-OnBootSec=10m
+OnCalendar=
 OnCalendar=hourly
 RandomizedDelaySec=5m
 Persistent=true
+Unit=topgrade-flatpak-update.service
 
 [Install]
 WantedBy=timers.target
