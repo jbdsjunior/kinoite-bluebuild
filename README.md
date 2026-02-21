@@ -254,15 +254,6 @@ This checks shell script syntax, TOML/XML syntax, systemd unit validity (when `s
 
 ---
 
-<!-- ## 📚 Project Maintenance
-
-Operational and organizational guidance for long-term upkeep is documented in:
-
-- `docs/MAINTENANCE.md`
-- `docs/WORKSTATION-CHECKLIST-2026.md` -->
-
----
-
 ## ⚖️ License
 
 This project is licensed under the **Apache License 2.0**.
