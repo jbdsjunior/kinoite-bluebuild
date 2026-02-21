@@ -92,7 +92,7 @@ sudo loginctl enable-linger "$USER"
 Manual execution (optional):
 
 ```bash
-sudo topgrade -cy --skip-notify --only system
+topgrade -cy --skip-notify --only system
 topgrade -cy --skip-notify --only flatpak
 ```
 
