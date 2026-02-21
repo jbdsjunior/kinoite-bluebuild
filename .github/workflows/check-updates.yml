@@ -26,11 +26,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       # AMD base (kinoite-main)
+      # DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://quay.io/fedora/fedora-kinoite:latest --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check AMD Cache
