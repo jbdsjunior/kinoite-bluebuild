@@ -63,7 +63,7 @@ sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-n
 
 Reboot again.
 
-### 1.3 Day-2 Operation Commands
+### 1.3 Operation Commands
 
 ```bash
 sudo rpm-ostree upgrade
