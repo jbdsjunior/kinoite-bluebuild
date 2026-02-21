@@ -66,5 +66,5 @@ This repository already follows this pattern for most files and should keep it a
 
 For user-level Topgrade automation specifically:
 
-- Base units live in `/usr/lib/systemd/user/topgrade.{service,timer}`.
-- Project tuning lives in `/usr/lib/systemd/user/topgrade.{service,timer}.d/`.
+- Base units live in `/usr/lib/systemd/user/topgrade-*.{service,timer}`.
+- Project tuning lives in `/etc/systemd/user/topgrade-*.{service,timer}.d/`.

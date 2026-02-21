@@ -2,7 +2,8 @@
 Description=Run topgrade complete update shortly after boot
 
 [Timer]
-OnBootSec=10m
+OnStartupSec=10m
+RandomizedDelaySec=5m
 Unit=topgrade-boot-update.service
 
 [Install]
