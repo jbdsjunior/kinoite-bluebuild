@@ -10,17 +10,3 @@ modules:
 
         - plasma-discover-rpm-ostree
         - plasma-welcome-fedora
-
-        # - mozilla-filesystem
-        # - htop
-        # - nvtop
-        # - fcitx5-*
-        # - kcm-fcitx5
-        # - kate
-
-        # - ksshaskpass
-
-        # - google-noto-sans-balinese-fonts
-        # - google-noto-sans-cjk-fonts
-        # - google-noto-sans-javanese-fonts
-        # - google-noto-sans-sundanese-fonts

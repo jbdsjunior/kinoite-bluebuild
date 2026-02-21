@@ -4,14 +4,21 @@ modules:
   - type: fonts
     fonts:
       nerd-fonts:
-        # Keep a lean set for terminal/editor usage + icon coverage.
+        - NerdFontsSymbolsOnly
         - JetBrainsMono
         - Iosevka
-        - NerdFontsSymbolsOnly
-      google-fonts:
-        - Caladea
-        - Carlito
-        - Fira Mono
-        - Fira Sans
-        - Google Sans Flex
-        - JetBrains Mono
+
+      # google-fonts:
+      #   - Google Sans Flex
+      #   - Caladea
+      #   - Carlito
+      #   - Fira Mono
+      #   - Fira Sans
+      #   - JetBrains Mono
+
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - liberation-fonts
