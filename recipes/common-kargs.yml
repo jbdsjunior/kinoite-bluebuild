@@ -6,7 +6,7 @@ modules:
     kargs:
       # File System Optimization (BTRFS)
       # Sets the root subvolume, disables access time updates, and enforces ZSTD compression
-      - rootflags=subvol=root,noatime,compress=zstd:3
+      # - rootflags=subvol=root,noatime,compress=zstd:3
 
       # Generic desktop tuning
       - transparent_hugepage=madvise # Better memory management for mixed workloads
