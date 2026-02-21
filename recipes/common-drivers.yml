@@ -7,6 +7,7 @@ modules:
     replace:
       - from-repo: fedora-multimedia
         skip-unavailable: true
+        allow-erasing: true
         packages:
           - libva
           - mesa-dri-drivers
