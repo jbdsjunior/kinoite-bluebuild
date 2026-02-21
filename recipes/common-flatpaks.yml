@@ -6,6 +6,7 @@ modules:
       - scope: user
         notify: true
         repo:
+          url: https://dl.flathub.org/repo/flathub.flatpakrepo
           title: Flathub
         install:
           # KDE Multimedia and Productivity tools
@@ -38,3 +39,10 @@ modules:
           - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
           - org.gtk.Gtk3theme.adw-gtk3
           - org.gtk.Gtk3theme.adw-gtk3-dark
+
+      - scope: system
+        notify: true
+        repo:
+          url: https://dl.flathub.org/repo/flathub.flatpakrepo
+          name: flathub
+        remove-repo: true

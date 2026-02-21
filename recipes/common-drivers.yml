@@ -11,7 +11,7 @@ modules:
       allow-erasing: true
       packages:
         - mesa-dri-drivers
-        - mesa-filesystem
+        # - mesa-filesystem
         - mesa-libEGL
         - mesa-libGL
         - mesa-libgbm

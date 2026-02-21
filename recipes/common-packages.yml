@@ -6,9 +6,9 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        - plasma-firewall
         - langpacks-en
         - langpacks-pt_BR
         - lm_sensors
         - rclone
         - fuse3
-        - plasma-firewall

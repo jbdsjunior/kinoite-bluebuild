@@ -6,7 +6,6 @@ modules:
       copr:
         - atim/starship
         - lilay/topgrade
-
     install:
       skip-unavailable: true
       allow-erasing: true
@@ -19,7 +18,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - bash-completion
         - fastfetch
         - distrobox
+        - bash-completion
         - bootc
