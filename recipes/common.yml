@@ -23,4 +23,4 @@ modules:
 
   - from-file: common-systemd.yml
 
-  - from-file: common-flatpaks.yml
+  # - from-file: common-flatpaks.yml
