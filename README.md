@@ -10,7 +10,7 @@
 
 Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows.
 
-## Current Status (2026)
+## Current Status
 
 - Two separate images: `kinoite-amd` and `kinoite-nvidia`.
 - Automated build and publishing with GitHub Actions.
