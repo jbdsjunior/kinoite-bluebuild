@@ -8,7 +8,7 @@
 
 </div>
 
-Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, and simple day-2 operations in 2026.
+Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows.
 
 ## Current Status (2026)
 
