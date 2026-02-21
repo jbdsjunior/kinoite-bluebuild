@@ -43,7 +43,7 @@ jobs:
           maximize_build_space: true
 
           build_chunked_oci: true
-          max_layers: 64
+          # max_layers: 64
 
           # squash: false
 
