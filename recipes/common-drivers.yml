@@ -2,25 +2,20 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
-    repos:
-      cleanup: true
-      nonfree: negativo17
-    replace:
-      - from-repo: fedora-multimedia
-        # install:
-        skip-unavailable: true
-        allow-erasing: true
-        packages:
-          - mesa-dri-drivers
-          - mesa-filesystem
-          - mesa-libEGL
-          - mesa-libGL
-          - mesa-libgbm
-          - mesa-va-drivers
-          - mesa-vdpau-drivers
-          - mesa-vulkan-drivers
-          - libva
-          - libheif
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - mesa-dri-drivers
+        - mesa-filesystem
+        - mesa-libEGL
+        - mesa-libGL
+        - mesa-libgbm
+        - mesa-va-drivers
+        - mesa-vdpau-drivers
+        - mesa-vulkan-drivers
+        - libva
+        - libheif
 
   - type: dnf
     install:
