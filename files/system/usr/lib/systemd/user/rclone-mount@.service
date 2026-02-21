@@ -9,9 +9,9 @@ ConditionPathExists=%h/.config/rclone/rclone.conf
 # Keep compatibility across rclone versions that may not emit sd_notify.
 Type=simple
 EnvironmentFile=-%h/.config/rclone/rclone-mount-%i.env
-# Garante que o diretório existe antes de montar
+# Ensure mount and cache directories exist before mount
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone
-# Limpa montagem antiga/stale sem falhar a unit se não houver mount
+# Clear stale mount without failing if nothing is mounted
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
 ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
@@ -37,9 +37,9 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --umask=022 \
     $RCLONE_EXTRA_ARGS
 
-# Desmonta com lazy unmount (-z) para evitar travamentos se a rede cair
+# Use lazy unmount (-z) to avoid hangs if network drops
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
-# Reforço de limpeza para casos em que o processo caiu antes do stop normal
+# Cleanup fallback when the main process exits unexpectedly
 ExecStopPost=-/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10

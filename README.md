@@ -184,7 +184,7 @@ Validacao local antes de publicar:
 ./scripts/validate-project.sh
 ```
 
-Esse script valida referencias BlueBuild (`from-file` e `source`), sintaxe shell/TOML/XML e unit files (quando `systemd-analyze` estiver disponivel).
+Esse script valida referencias BlueBuild (`from-file` e `source`), consistencia entre README/recipes/workflows, sintaxe shell/TOML/XML, unit files (quando `systemd-analyze` estiver disponivel) e lint de shell/YAML quando as ferramentas estiverem instaladas.
 
 ## Estrutura do repositorio
 

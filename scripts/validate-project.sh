@@ -51,6 +51,69 @@ check_recipe_references() {
   fi
 }
 
+check_project_consistency() {
+  checks=$((checks + 1))
+  local missing=0
+  local amd_name
+  local image
+  local nvidia_name
+  local timer
+  local workflow
+
+  amd_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/recipe-amd.yml | head -n 1)"
+  nvidia_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/recipe-nvidia.yml | head -n 1)"
+
+  for image in "$amd_name" "$nvidia_name"; do
+    [ -n "$image" ] || continue
+    if ! rg -q "ghcr\\.io/jbdsjunior/${image}:latest" README.md; then
+      printf '  missing README image reference for: %s\n' "$image"
+      missing=1
+    fi
+  done
+
+  while IFS= read -r workflow; do
+    [ -n "$workflow" ] || continue
+    if [ ! -f ".github/workflows/$workflow" ]; then
+      printf '  missing workflow referenced by README badge: .github/workflows/%s\n' "$workflow"
+      missing=1
+    fi
+  done < <(rg -o 'actions/workflows/[A-Za-z0-9._-]+\.yml' README.md | sed -E 's#actions/workflows/##' | sort -u)
+
+  while IFS= read -r workflow; do
+    [ -n "$workflow" ] || continue
+    if [ ! -f ".github/workflows/$workflow" ]; then
+      printf '  missing workflow triggered by check-updates: .github/workflows/%s\n' "$workflow"
+      missing=1
+    fi
+  done < <(sed -n 's/.*gh workflow run \([^[:space:]]\+\).*/\1/p' .github/workflows/check-updates.yml | sort -u)
+
+  while IFS= read -r timer; do
+    [ -n "$timer" ] || continue
+    if [ ! -f "files/system/usr/lib/systemd/user/$timer" ]; then
+      printf '  missing user timer file for enabled timer: files/system/usr/lib/systemd/user/%s\n' "$timer"
+      missing=1
+    fi
+    if ! rg -q "systemctl --user status ${timer}" README.md; then
+      printf '  missing README timer status command for: %s\n' "$timer"
+      missing=1
+    fi
+  done < <(rg -o 'topgrade-[a-z-]+\.timer' recipes/common-systemd.yml | sort -u)
+
+  while IFS= read -r image; do
+    [ -n "$image" ] || continue
+    if [ ! -f "recipes/recipe-${image#kinoite-}.yml" ]; then
+      printf '  cleanup image has no matching recipe file: %s\n' "$image"
+      missing=1
+    fi
+  done < <(sed -n 's/.*image-name:[[:space:]]*\[\(.*\)\].*/\1/p' .github/workflows/cleanup.yml | tr ',' '\n' | tr -d '[:space:]')
+
+  if [ "$missing" -eq 0 ]; then
+    ok "Cross-file consistency (README/recipes/workflows/timers)"
+  else
+    fail "Cross-file consistency (README/recipes/workflows/timers)"
+  fi
+}
+
 check_shell_syntax() {
   checks=$((checks + 1))
   local missing=0
@@ -151,7 +214,7 @@ check_systemd_units() {
   fi
 }
 
-check_optional_tools() {
+check_yamllint() {
   checks=$((checks + 1))
   if command -v yamllint >/dev/null 2>&1; then
     if yamllint .; then
@@ -164,12 +227,39 @@ check_optional_tools() {
   fi
 }
 
+check_shellcheck() {
+  checks=$((checks + 1))
+  local missing=0
+  local file
+
+  if ! command -v shellcheck >/dev/null 2>&1; then
+    warn "shellcheck not available; skipping shell lint"
+    return 0
+  fi
+
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    if ! shellcheck -x "$file"; then
+      printf '  shellcheck issue: %s\n' "$file"
+      missing=1
+    fi
+  done < <(find files scripts -type f -name '*.sh' 2>/dev/null || true)
+
+  if [ "$missing" -eq 0 ]; then
+    ok "shellcheck"
+  else
+    fail "shellcheck"
+  fi
+}
+
 check_recipe_references
+check_project_consistency
 check_shell_syntax
 check_toml_syntax
 check_xml_syntax
 check_systemd_units
-check_optional_tools
+check_yamllint
+check_shellcheck
 
 printf '\nSummary: %d checks, %d failures\n' "$checks" "$failures"
 
