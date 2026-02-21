@@ -83,11 +83,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Reflect any behavior change in recipes/workflows/systemd/files in `README.md`.
 - Keep wording aligned with real variant scope: AMD-only vs AMD + NVIDIA hybrid.
 
-### Validation
-
-- Require local and CI checks before release/publish.
-- Add lint/validation coverage for every new file format introduced.
-
 ### Backward Safety
 
 - Preserve rollback-friendly behavior (`rpm-ostree rollback`).
@@ -97,7 +92,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 
 - Include documentation-quality checks and conflict/error scans in every change.
 - If implementation and docs/workflows diverge, fix or document the mismatch in the same change.
-- If no bug is found, still propose at least one maintainability improvement.
 
 ## Category: LLM Change Workflow
 
