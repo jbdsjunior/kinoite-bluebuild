@@ -8,6 +8,10 @@ modules:
       packages:
         - mesa-va-drivers # mesa-va-drivers-freeworld - rpm-fusion
         - mesa-vdpau-drivers # mesa-vdpau-drivers-freeworld - rpm-fusion
+        - mesa-vulkan-drivers
+
+        - libva
+        - libheif
 
   - type: dnf
     install:
@@ -18,7 +22,13 @@ modules:
         - gstreamer1-plugins-bad-freeworld # gstreamer1-plugins-bad-freeworld - rpm-fusion
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
+
+        - libdvdcss
+
         - ffmpeg
+        - ffmpeg-libs
 
         - fdk-aac
-        - libdvdcss
+        - libfdk-aac
+
+        - libavcodec
