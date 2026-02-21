@@ -3,6 +3,9 @@ on:
   # schedule:
   #   - cron:
   #       "00 06 * * *" # build at 06:00 UTC every day
+  push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 concurrency:
@@ -34,7 +37,7 @@ jobs:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
+          pr_event_number: ${{ github.event_name == 'pull_request' && github.event.number || '' }}
           verify_install: true
 
           maximize_build_space: true

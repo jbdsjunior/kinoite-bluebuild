@@ -25,13 +25,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # AMD base (kinoite-main)
-      # DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-main:latest --format '{{.Digest}}')
+      # AMD base image used by recipes/recipe-amd.yml
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://quay.io/fedora/fedora-kinoite:latest --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://quay.io/fedora/fedora-kinoite --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check AMD Cache
@@ -51,12 +50,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # NVIDIA base (kinoite-nvidia)
+      # NVIDIA base image used by recipes/recipe-nvidia.yml
       - name: Check Nvidia Base Image
         id: check_nvidia
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://ghcr.io/blue-build/base-images/fedora-kinoite-nvidia:latest --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check Nvidia Cache

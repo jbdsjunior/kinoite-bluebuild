@@ -51,7 +51,7 @@ bluebuild build recipes/recipe-nvidia.yml
 
 ```
 
-For NVIDIA builds, the recipe uses BlueBuild's `akmods` module (with RPM Fusion enabled in `common-repos.yml`) instead of manually invoking `akmods` during compose.
+For NVIDIA builds, the recipe inherits the NVIDIA base image from BlueBuild (`ghcr.io/blue-build/base-images/fedora-kinoite-nvidia`) and applies the shared modules from this repository during compose.
 
 After compilation, the OCI image will be available locally in your container storage (Podman/Docker). You can list it with `podman images`.
 
