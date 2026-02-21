@@ -2,7 +2,6 @@
 Description=Run topgrade flatpak update every hour
 
 [Timer]
-OnCalendar=
 OnCalendar=hourly
 RandomizedDelaySec=5m
 Persistent=true

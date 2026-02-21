@@ -1,0 +1,11 @@
+[Unit]
+Description=Topgrade boot complete update
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flock -E 0 -n /run/topgrade-update.lock /usr/bin/topgrade -cy --no-retry --skip-notify
+Nice=19
+IOSchedulingClass=idle
+CPUSchedulingPolicy=idle

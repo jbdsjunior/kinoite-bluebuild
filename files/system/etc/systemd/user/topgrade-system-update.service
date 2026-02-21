@@ -5,6 +5,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/topgrade -cy --no-retry --only system
+ExecStart=/usr/bin/flock -E 0 -n /run/topgrade-update.lock /usr/bin/topgrade -cy --skip-notify --no-retry --only system
 Nice=19
 IOSchedulingClass=idle
+CPUSchedulingPolicy=idle
