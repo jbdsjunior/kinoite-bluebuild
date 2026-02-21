@@ -1,4 +1,28 @@
+# Secrets and signing material
 cosign.key
 cosign.private
+*.pem
+*.key
+*.p12
+*.pfx
+
+# BlueBuild temporary files
 /.bluebuild-scripts_*
-docs
+
+# Local development/runtime artifacts
+*.log
+*.tmp
+*.cache
+tmp/
+
+# Local documentation build output (keep source docs versioned)
+docs/_build/
+site/
+
+# LLM and AI assistant local state/artifacts
+.llm/
+.llm-cache/
+.prompts/
+.aider*
+*.llm.log
+*.llmtrace
