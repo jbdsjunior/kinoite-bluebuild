@@ -16,14 +16,14 @@ This project provides a customized, immutable **Fedora Kinoite (KDE Plasma)** im
 
 - **Kernel Tuning:** `amd_pstate=active`, `transparent_hugepage=madvise`, and virtualization-friendly kernel args are applied by recipe.
 - **Network Optimization:** **BBR** congestion control enabled for faster downloads and reduced bufferbloat.
-- **Hardware Acceleration:** Ready-to-use support for NVIDIA (Proprietary) or AMD (P-State active) + Intel QuickSync enabled for video decoding.
+- **Hardware Acceleration:** Ready-to-use support for AMD (Radeon stack) and NVIDIA (hybrid AMD+NVIDIA profile with proprietary drivers/CUDA).
 - **Memory Management:** Aggressive ZRAM and `vm.swappiness` tuning to prevent system lockups under heavy load.
 - **Multimedia Codecs:** GStreamer + FFmpeg stack enabled for wide codec compatibility (including H.264/H.265 and AAC).
 - **DevOps Tooling:** Podman/Buildah/Skopeo and Git/GitHub CLI preinstalled for container-first workflows.
 
 ### 🛡️ Privacy & Security
 
-- **DNS Hardening:** Strict DNS over TLS (DoT, fail-closed) + strict DNSSEC validation configured by default, with Control D (p2) as primary and Cloudflare as fallback.
+- **DNS Hardening:** Control D (p2) as primary with Cloudflare fallback, plus privacy-focused defaults (`DNSOverTLS=opportunistic`, `DNSSEC=allow-downgrade`) for better network compatibility.
 - **Anti-Tracking:** Wi-Fi MAC Address randomization and protection against local name leaks (`ResolveUnicastSingleLabel=no`).
 - **Firewall:** `firewalld` enabled and configured by default.
 
@@ -45,8 +45,8 @@ Choose the image that matches your hardware:
 
 | Image Name | Description |
 | :--- | :--- |
-| **kinoite-amd** | Optimized for AMD (P-State) and Intel (Media Driver) GPUs. Ideal for Ryzen/Radeon systems. |
-| **kinoite-nvidia** | Builds on top of `ghcr.io/ublue-os/kinoite-nvidia`, which already includes proprietary NVIDIA drivers and Secure Boot tooling, plus CUDA userspace extras from this repo. |
+| **kinoite-amd** | Optimized for AMD-only systems (CPU/GPU stack and kernel tuning focused on Ryzen/Radeon hosts). |
+| **kinoite-nvidia** | Optimized for AMD + NVIDIA hybrid systems. It uses `ghcr.io/blue-build/base-images/fedora-kinoite-nvidia` as base and adds this repo's shared tuning/tooling modules. |
 
 **Dual-GPU (AMD + NVIDIA) recommendation:** use **`kinoite-nvidia`** to unlock CUDA/LLM acceleration on the 3080 Ti, while the AMD iGPU/dGPU can still be used by the display stack when desired.
 
@@ -60,7 +60,7 @@ The transition to this custom image is done in two stages to ensure that signing
 
 First, switch to the unverified version to import the repository's signing keys.
 
-**For AMD/Intel:**
+**For AMD:**
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
@@ -80,7 +80,7 @@ rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:l
 
 After rebooting, switch to the signed image to ensure all future updates are cryptographically verified.
 
-**For AMD/Intel:**
+**For AMD:**
 
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
@@ -96,19 +96,28 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia
 
 > ⚠️ **Action Required:** Reboot one last time to finalize the installation.
 
-### 3. Ongoing Updates (Bootc-First, 2026+)
+### 3. Ongoing Updates (Topgrade-First, 2026+)
 
-This image uses BlueBuild's `kargs` module. On modern Atomic hosts, **use `bootc` for day-2 updates/rebases** so kernel-arg snippets from the image are applied consistently.
+This image uses `topgrade` as the primary day-2 update workflow:
+
+- `topgrade-system-update.timer` (system scope, daily)
+- `topgrade-boot-update.timer` (system scope, shortly after boot)
+- `topgrade-flatpak-update.timer` (user scope, every 6 hours)
 
 ```bash
-# Update to the latest deployment from the current image
-sudo bootc upgrade
+# Check timers
+systemctl status topgrade-system-update.timer topgrade-boot-update.timer
+systemctl --user status topgrade-flatpak-update.timer
 
-# Switch to another image/tag when needed (example)
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+# Manual run (optional)
+sudo topgrade -cy --skip-notify --only system
+topgrade -cy --skip-notify --only flatpak
+
+# Switch image/tag manually when needed
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-> You can still recover with `bootc rollback` (or `rpm-ostree rollback`) after reboot if needed.
+> You can recover with `rpm-ostree rollback` after reboot if needed.
 
 ---
 
@@ -145,7 +154,7 @@ podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 
 
 ### 🔐 NVIDIA + Secure Boot (MOK)
 
-Na variante **`kinoite-nvidia`**, os drivers NVIDIA já vêm da imagem base `ghcr.io/ublue-os/kinoite-nvidia`.
+Na variante **`kinoite-nvidia`**, os drivers NVIDIA já vêm da imagem base `ghcr.io/blue-build/base-images/fedora-kinoite-nvidia`.
 Se o Secure Boot estiver ativo na máquina, execute o helper oficial da Universal Blue no host:
 
 No host, importe a chave pública MOK com:
@@ -175,13 +184,13 @@ systemctl --user enable --now rclone-mount@remote-name.service
 
 ### ⚡ Kernel Arguments (Recommended Workflow)
 
-Most kernel arguments are already managed in recipe modules (`recipes/common-kargs.yml`, `recipes/common-kvm.yml`, `recipes/common-nvidia.yml`).
+Most kernel arguments are already managed in recipe modules (`recipes/common-kargs.yml` and `recipes/common-kvm.yml`).
 
 For permanent changes:
 
 1. Edit the recipe/module in this repo.
 2. Build/publish a new image.
-3. Apply it on host with `bootc upgrade` or `bootc switch`.
+3. Apply it on host with the regular system update flow (`topgrade --only system`) or a signed `rpm-ostree rebase` when switching image tags/variants.
 
 Use direct host-side `rpm-ostree kargs` only as a temporary troubleshooting override.
 
@@ -191,7 +200,7 @@ Use direct host-side `rpm-ostree kargs` only as a temporary troubleshooting over
 
 ### 🏨 Public Wi-Fi / Hotels (Captive Portals)
 
-This image uses **strict DNS over TLS** and **strict DNSSEC** by default. Public captive portals (hotels/airports) can still fail in some networks.
+This image uses DNS privacy defaults focused on compatibility (`DNSOverTLS=opportunistic` and `DNSSEC=allow-downgrade`). Public captive portals (hotels/airports) can still fail in some networks.
 
 **Temporary Workaround:**
 If you cannot connect to a public Wi-Fi, run the following command to temporarily relax security settings:
@@ -240,7 +249,7 @@ Before publishing new images, validate recipe references and Linux config syntax
 ./scripts/validate-project.sh
 ```
 
-This checks shell scripts, TOML/XML files, systemd/INI-like drop-ins, and BlueBuild recipe references (`from-file` and `source` paths).
+This checks shell script syntax, TOML/XML syntax, systemd unit validity (when `systemd-analyze` is available), and BlueBuild recipe references (`from-file` and `source` paths).
 
 ---
 

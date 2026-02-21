@@ -1,5 +1,5 @@
 [Unit]
-Description=Run topgrade complete update shortly after boot
+Description=Run topgrade system update shortly after boot
 
 [Timer]
 OnStartupSec=10m
