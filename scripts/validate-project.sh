@@ -107,6 +107,16 @@ check_project_consistency() {
     fi
   done < <(sed -n 's/.*image-name:[[:space:]]*\[\(.*\)\].*/\1/p' .github/workflows/cleanup.yml | tr ',' '\n' | tr -d '[:space:]')
 
+  if ! rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/recipe-amd.yml; then
+    printf '  recipe-amd.yml missing AMD kargs include: common-kargs-amd.yml\n'
+    missing=1
+  fi
+
+  if rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/recipe-nvidia.yml; then
+    printf '  recipe-nvidia.yml should not include AMD-only kargs module\n'
+    missing=1
+  fi
+
   if [ "$missing" -eq 0 ]; then
     ok "Cross-file consistency (README/recipes/workflows/timers)"
   else
@@ -193,6 +203,7 @@ check_systemd_units() {
   checks=$((checks + 1))
   local missing=0
   local file
+  local output
 
   if ! command -v systemd-analyze >/dev/null 2>&1; then
     warn "systemd-analyze not available; skipping unit verification"
@@ -201,9 +212,18 @@ check_systemd_units() {
 
   while IFS= read -r file; do
     [ -n "$file" ] || continue
-    if ! systemd-analyze verify "$file" >/dev/null 2>&1; then
+    output="$(systemd-analyze verify "$file" 2>&1 >/dev/null || true)"
+
+    if [ -z "$output" ]; then
+      continue
+    fi
+
+    if printf '%s\n' "$output" | rg -qv 'is not executable: No such file or directory'; then
       printf '  systemd unit issue: %s\n' "$file"
+      printf '%s\n' "$output" | sed 's/^/    /'
       missing=1
+    else
+      warn "systemd verify dependency warning for $file (binary not present in validator environment)"
     fi
   done < <(find files/system/usr/lib/systemd -type f \( -name '*.service' -o -name '*.timer' \) 2>/dev/null || true)
 
