@@ -1,0 +1,10 @@
+[Unit]
+Description=Topgrade maintenance update (without system and flatpak)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/topgrade -cy --no-retry --disable system --disable flatpak
+Nice=19
+IOSchedulingClass=idle

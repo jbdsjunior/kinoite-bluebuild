@@ -1,0 +1,13 @@
+[Unit]
+Description=Run topgrade maintenance update every 8 hours
+
+[Timer]
+OnCalendar=
+OnCalendar=*-*-* 0/8:00:00
+OnBootSec=4h
+RandomizedDelaySec=10m
+Persistent=true
+Unit=topgrade-maintenance-update.service
+
+[Install]
+WantedBy=timers.target

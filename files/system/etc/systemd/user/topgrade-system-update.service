@@ -1,0 +1,10 @@
+[Unit]
+Description=Topgrade update (system only)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/topgrade -cy --no-retry --only system
+Nice=19
+IOSchedulingClass=idle
