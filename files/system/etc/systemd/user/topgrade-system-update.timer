@@ -1,10 +1,9 @@
 [Unit]
-Description=Run topgrade system update every 4 hours
+Description=Run topgrade system update daily
 
 [Timer]
-OnCalendar=
-OnCalendar=*-*-* 0/4:00:00
-RandomizedDelaySec=5m
+OnCalendar=daily
+RandomizedDelaySec=15m
 Persistent=true
 Unit=topgrade-system-update.service
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=Run topgrade complete update shortly after boot
+
+[Timer]
+OnBootSec=10m
+Unit=topgrade-boot-update.service
+
+[Install]
+WantedBy=timers.target

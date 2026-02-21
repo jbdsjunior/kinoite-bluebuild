@@ -8,13 +8,13 @@ modules:
         # - flatpak-system-update.timer
         # - flatpak-user-update.timer
 
-        - bootc-fetch-apply-updates.timer
+        # - bootc-fetch-apply-updates.timer
 
         # Networking and Security enhancements
         - firewalld.service
         - systemd-resolved.service
     user:
       enabled:
-        - topgrade-system-update.timer
+        - topgrade-boot-update.timer
         - topgrade-flatpak-update.timer
-        - topgrade-maintenance-update.timer
+        - topgrade-system-update.timer
