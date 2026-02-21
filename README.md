@@ -100,13 +100,14 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia
 
 This image uses `topgrade` as the primary day-2 update workflow:
 
-- `topgrade-system-update.timer` (system scope, daily)
-- `topgrade-boot-update.timer` (system scope, shortly after boot)
+- `topgrade-system-update.timer` (user scope, daily)
+- `topgrade-boot-update.timer` (user scope, shortly after boot)
 - `topgrade-flatpak-update.timer` (user scope, every 6 hours)
 
 ```bash
 # Check timers
-systemctl status topgrade-system-update.timer topgrade-boot-update.timer
+systemctl --user status topgrade-system-update.timer
+systemctl --user status topgrade-boot-update.timer
 systemctl --user status topgrade-flatpak-update.timer
 
 # Manual run (optional)
