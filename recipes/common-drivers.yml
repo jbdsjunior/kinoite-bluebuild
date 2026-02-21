@@ -2,33 +2,38 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - mesa-va-drivers # mesa-va-drivers-freeworld - rpm-fusion
-        - mesa-vdpau-drivers # mesa-vdpau-drivers-freeworld - rpm-fusion
-        - mesa-vulkan-drivers
-
-        - libva
-        - libheif
+    repos:
+      nonfree: negativo17
+    replace:
+      # Replace restricted Fedora Mesa stack with full versions for AMD 6600XT
+      - from-repo: fedora
+        skip-unavailable: true
+        packages:
+          - libva
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-va-drivers
+          - mesa-vdpau-drivers
+          - mesa-vulkan-drivers
+          - libheif
 
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # Multimedia framework plugins and libraries
         - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad-freeworld # gstreamer1-plugins-bad-freeworld - rpm-fusion
+        - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
-
         - libdvdcss
-
-        - ffmpeg
-        - ffmpeg-libs
-
         - fdk-aac
         - libfdk-aac
-
+        - ffmpeg
+        - ffmpeg-libs
         - libavcodec
+        - ocl-icd # Fix OpenCL package for dual-GPU stability (AMD + NVIDIA compute)
