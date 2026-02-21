@@ -15,6 +15,9 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Always seek current best practices.
 - Always apply documentation best-practice recommendations.
 - Always verify conflicts, possible errors, and improvement opportunities before and after edits.
+- Prefer explicit decisions over implicit assumptions, especially for variant behavior.
+- Always research relevant upstream updates before proposing changes, prioritizing BlueBuild, bootc, Fedora, Linux kernel/systemd, rpm-ostree, and related tooling used in this repository.
+- Treat update discovery as continuous work: compare current repo choices with recent official guidance and incorporate safe improvements when beneficial.
 
 ## Category: Maintainer Baseline
 
@@ -31,6 +34,8 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 ### Architecture
 
 - Two published image variants: `kinoite-amd` (`recipes/recipe-amd.yml`) and `kinoite-nvidia` (`recipes/recipe-nvidia.yml`).
+- `kinoite-amd` targets AMD-only hosts.
+- `kinoite-nvidia` targets AMD + NVIDIA hybrid hosts, not NVIDIA-only assumptions.
 - Shared configuration is centralized in `recipes/common.yml` plus modular includes (`common-*.yml`).
 - Runtime behavior is mostly defined by versioned files under `files/system/...`.
 - Build and publish happen via GitHub Actions (`.github/workflows/build-*.yml`).
@@ -41,15 +46,16 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 
 - Modular recipe layout with reuse.
 - Image signing module present in both recipes.
+- Variant-specific kernel args are explicitly separated (`common-kargs.yml` + `common-kargs-amd.yml`).
 - Timers and systemd services are versioned and reproducible.
-- Local validation script now includes cross-file consistency checks.
+- Local validation script includes cross-file consistency checks.
 - CI validation workflow exists in `.github/workflows/validate.yml`.
 
 ### Gaps and Risks
 
 - Workflows still use tagged actions/versions instead of full commit SHA pinning.
-- `recipes/common-kargs.yml` contains AMD-specific tuning applied to all variants, which may be suboptimal for non-AMD hosts using `kinoite-nvidia`.
 - Some quality gates remain optional locally when tools are missing (`systemd-analyze`, `yamllint`, `shellcheck`).
+- Workflow duplication between AMD and AMD+NVIDIA paths can drift over time.
 
 ## Category: Core Principles
 
@@ -65,7 +71,8 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 
 ### Variant Isolation
 
-- Keep AMD/NVIDIA behavior explicit and easy to reason about.
+- Keep variant behavior explicit and easy to reason about.
+- Treat `kinoite-amd` and `kinoite-nvidia` as distinct outputs with clear hardware intent.
 - Keep shared modules truly shared.
 
 ### Blast Radius Control
@@ -76,6 +83,7 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 ### Documentation Parity
 
 - Reflect any behavior change in recipes/workflows/systemd/files in `README.md`.
+- Keep wording aligned with real variant scope: AMD-only vs AMD + NVIDIA hybrid.
 
 ### Validation
 
@@ -96,6 +104,7 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 ## Category: LLM Change Workflow
 
 - Discovery: read impacted recipe/module/workflow/files before editing.
+- Upstream refresh: review relevant upstream docs/changelogs for BlueBuild, bootc, Fedora/Linux stack, and tools touched by the change.
 - Pre-change scan: verify names, paths, references, and behavior parity.
 - Implementation: apply the smallest safe diff.
 - Validation: run `./scripts/validate-project.sh`.
@@ -108,13 +117,23 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Keep `recipes/common.yml` as orchestrator.
 - Move variant-specific settings to variant modules or recipe-specific includes.
 - Keep generic kernel args in `common-kargs.yml`.
-- Move AMD-only kernel args to AMD-specific modules whenever feasible.
+- Keep AMD-only kernel args in AMD-specific modules.
+- Avoid introducing NVIDIA-only assumptions in the hybrid (`kinoite-nvidia`) variant description.
 
 ## Category: Workflow Standards
 
 - Use least-privilege permissions in every job.
 - Prefer stable and pinned action versions with reviewed upgrades.
 - Keep build and validation workflows aligned with repository checks.
+- Keep AMD and AMD+NVIDIA workflows semantically equivalent where possible.
+
+## Category: Update Intelligence and Source Priority
+
+- Use official documentation as primary source of truth for design and operational decisions.
+- Prioritize review of BlueBuild docs, bootc docs, Fedora docs, Linux kernel/systemd documentation, rpm-ostree guidance, and component-specific upstream references relevant to changed files.
+- Prefer changes backed by upstream release notes, changelogs, or deprecation notices whenever available.
+- When a recommendation is newer but risky for this project context, document tradeoffs and keep a rollback-safe path.
+- Align updates with the maintainer baseline workload (desktop performance, containers, LLM usage, virtualization, and AMD + NVIDIA hybrid operation).
 
 ## Category: System File Standards
 
@@ -135,6 +154,7 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Prefer concise, task-oriented sections (install, operate, troubleshoot, recover).
 - Include impact and rollback notes for behavior changes.
 - Use stable terminology for variants (`kinoite-amd`, `kinoite-nvidia`) across all files.
+- Never describe `kinoite-nvidia` as if it were a pure NVIDIA-only target.
 
 ## Category: Quality Gates
 
@@ -162,8 +182,8 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 
 ### Medium Priority
 
-- Split AMD-specific kernel args into a dedicated AMD module.
 - Replace duplicated AMD/NVIDIA workflow logic with a reusable workflow or matrix strategy.
+- Add a lightweight check to catch variant wording regressions in documentation.
 
 ### Nice to Have
 

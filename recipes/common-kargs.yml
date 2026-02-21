@@ -5,10 +5,9 @@ modules:
     arch: x86_64
     kargs:
       # File System Optimization (BTRFS)
-      # Sets the root subvolume, disables access time updates, and forces ZSTD compression level 1
+      # Sets the root subvolume, disables access time updates, and enforces ZSTD compression
       - rootflags=subvol=root,noatime,compress=zstd:3
 
-      # Processor Performance (Optimized for modern AMD CPUs like Ryzen 9 5950X)
-      - amd_pstate=active # Enables the modern AMD P-State driver for better power/perf
-      - transparent_hugepage=madvise # Better memory management for performance
+      # Generic desktop tuning
+      - transparent_hugepage=madvise # Better memory management for mixed workloads
       - mitigations=auto # Balanced security mitigations for CPU vulnerabilities

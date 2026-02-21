@@ -27,7 +27,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 
 ## Included
 
-- Recipe-level kernel args: `amd_pstate=active`, `transparent_hugepage=madvise`, IOMMU/KVM, BTRFS rootflags.
+- Recipe-level kernel args: shared `transparent_hugepage=madvise` + BTRFS rootflags for all variants, and `amd_pstate=active` only on `kinoite-amd`.
 - System tuning: BBR, high swappiness for ZRAM, increased inotify limits, and `vm.max_map_count`.
 - Extra base packages: `topgrade`, `starship`, `fastfetch`, `distrobox`, multimedia stack (GStreamer/FFmpeg), KVM/libvirt, `rclone`.
 - Default services: `firewalld`, `systemd-resolved`, and update timers guarded by `flock`.
