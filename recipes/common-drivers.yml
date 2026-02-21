@@ -23,24 +23,19 @@ modules:
           - libheif
 
   - type: dnf
-    repos:
-      cleanup: true
-      nonfree: negativo17
-    replace:
-      - from-repo: fedora-multimedia
-        # install:
-        skip-unavailable: true
-        allow-erasing: true
-        packages:
-          # Multimedia framework plugins and libraries
-          - gstreamer1-plugins-bad-free-extras
-          - gstreamer1-plugins-bad
-          - gstreamer1-plugins-ugly
-          - gstreamer1-vaapi
-          - libdvdcss
-          - fdk-aac
-          - libfdk-aac
-          - ffmpeg
-          - ffmpeg-libs
-          - libavcodec
-          - ocl-icd # Fix OpenCL package for dual-GPU stability (AMD + NVIDIA compute)
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        # Multimedia framework plugins and libraries
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-ugly
+        - gstreamer1-vaapi
+        - libdvdcss
+        - fdk-aac
+        - libfdk-aac
+        - ffmpeg
+        - ffmpeg-libs
+        - libavcodec
+        - ocl-icd # Fix OpenCL package for dual-GPU stability (AMD + NVIDIA compute)
