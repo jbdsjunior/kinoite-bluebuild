@@ -8,36 +8,36 @@
 
 </div>
 
-Imagem imutavel do Fedora Kinoite (KDE Plasma) gerada com [BlueBuild](https://blue-build.org/), com foco em desempenho, fluxo container-first e operacao diaria simples em 2026.
+Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, and simple day-2 operations in 2026.
 
-## Estado atual (2026)
+## Current Status (2026)
 
-- Duas imagens separadas: `kinoite-amd` e `kinoite-nvidia` (como voce esta usando hoje).
-- Build e publicacao automatizadas via GitHub Actions.
-- Atualizacao diaria com `topgrade` (system + flatpak) por timers em escopo de usuario.
-- Ajustes de kernel/sysctl para desktop pesado, desenvolvimento e virtualizacao.
-- Privacidade de rede com `systemd-resolved` e NetworkManager hardening.
+- Two separate images: `kinoite-amd` and `kinoite-nvidia`.
+- Automated build and publishing with GitHub Actions.
+- Daily updates via `topgrade` (system + flatpak) through user timers.
+- Kernel/sysctl tuning for heavy desktop usage, development, and virtualization.
+- Network privacy defaults with `systemd-resolved` and NetworkManager hardening.
 
-## Variantes de imagem
+## Image Variants
 
-| Imagem | Base image | Quando usar |
+| Image | Base image | When to use |
 | :--- | :--- | :--- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | Hosts AMD-only (sem NVIDIA dedicada). |
-| `kinoite-nvidia` | `ghcr.io/blue-build/base-images/fedora-kinoite-nvidia` | Hosts com GPU NVIDIA (incluindo AMD + NVIDIA). |
+| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | AMD-only hosts (no dedicated NVIDIA GPU). |
+| `kinoite-nvidia` | `ghcr.io/blue-build/base-images/fedora-kinoite-nvidia` | Hosts with NVIDIA GPU (including AMD + NVIDIA setups). |
 
-## O que esta incluido
+## Included
 
-- Kernel args via receita: `amd_pstate=active`, `transparent_hugepage=madvise`, IOMMU/KVM, BTRFS rootflags.
-- Tunings de sistema: BBR, swappiness alto para ZRAM, limites de inotify e `vm.max_map_count`.
-- Pacotes base extras: `topgrade`, `starship`, `fastfetch`, `distrobox`, stack multimidia (GStreamer/FFmpeg), KVM/libvirt, `rclone`.
-- Servicos padrao: `firewalld`, `systemd-resolved`, timers de update com lock por `flock`.
-- Arquivos de sistema versionados no repo (`files/system/...`) para comportamento reproduzivel.
+- Recipe-level kernel args: `amd_pstate=active`, `transparent_hugepage=madvise`, IOMMU/KVM, BTRFS rootflags.
+- System tuning: BBR, high swappiness for ZRAM, increased inotify limits, and `vm.max_map_count`.
+- Extra base packages: `topgrade`, `starship`, `fastfetch`, `distrobox`, multimedia stack (GStreamer/FFmpeg), KVM/libvirt, `rclone`.
+- Default services: `firewalld`, `systemd-resolved`, and update timers guarded by `flock`.
+- Versioned system files in this repo (`files/system/...`) for reproducible behavior.
 
-## Instalacao (fluxo recomendado)
+## Installation (Recommended Flow)
 
-Use sempre duas etapas: primeiro rebase unverified, depois signed.
+Always use two stages: first unverified rebase, then signed rebase.
 
-### 1) Rebase inicial (unverified)
+### 1) Initial Rebase (Unverified)
 
 AMD:
 
@@ -51,9 +51,9 @@ NVIDIA:
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Reinicie.
+Reboot.
 
-### 2) Rebase assinado (verified)
+### 2) Signed Rebase (Verified)
 
 AMD:
 
@@ -67,15 +67,15 @@ NVIDIA:
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Reinicie novamente.
+Reboot again.
 
-### 3) Operacao diaria
+### 3) Daily Operation
 
-Timers usados no host:
+Timers used on host:
 
-- `topgrade-system-update.timer` (diario)
-- `topgrade-boot-update.timer` (apos boot)
-- `topgrade-flatpak-update.timer` (a cada 6h)
+- `topgrade-system-update.timer` (daily)
+- `topgrade-boot-update.timer` (after boot)
+- `topgrade-flatpak-update.timer` (every 6 hours)
 
 ```bash
 systemctl --user status topgrade-system-update.timer
@@ -83,44 +83,44 @@ systemctl --user status topgrade-boot-update.timer
 systemctl --user status topgrade-flatpak-update.timer
 ```
 
-Para manter timers de usuario ativos mesmo sem sessao grafica aberta:
+To keep user timers active even without an open graphical session:
 
 ```bash
 sudo loginctl enable-linger "$USER"
 ```
 
-Execucao manual (quando quiser):
+Manual execution (optional):
 
 ```bash
 sudo topgrade -cy --skip-notify --only system
 topgrade -cy --skip-notify --only flatpak
 ```
 
-Rollback rapido se necessario:
+Quick rollback if needed:
 
 ```bash
 sudo rpm-ostree rollback
 ```
 
-Checagem rapida da imagem atual:
+Quick check for current image:
 
 ```bash
 rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
 ```
 
-## Pos-instalacao
+## Post-Installation
 
-### Virtualizacao (KVM/libvirt)
+### Virtualization (KVM/libvirt)
 
 ```bash
 kinoite-setup-kvm.sh
 ```
 
-Depois saia e entre na sessao novamente para recarregar grupos (`libvirt`, `kvm`).
+Then log out and log in again to reload group membership (`libvirt`, `kvm`).
 
-### NVIDIA para containers (CUDA/CDI)
+### NVIDIA for Containers (CUDA/CDI)
 
-Na `kinoite-nvidia`, gere CDI manualmente se precisar:
+On `kinoite-nvidia`, generate CDI manually if needed:
 
 ```bash
 sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
@@ -129,28 +129,28 @@ podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 
 
 ### NVIDIA + Secure Boot (MOK)
 
-Se Secure Boot estiver habilitado:
+If Secure Boot is enabled:
 
 ```bash
 ujust enroll-secure-boot-key
 ```
 
-Reinicie e finalize o enroll da MOK na tela de firmware.
+Reboot and complete the MOK enrollment flow in firmware UI.
 
-### Rclone mount como service de usuario
+### Rclone Mount as User Service
 
 ```bash
 rclone config
 systemctl --user enable --now rclone-mount@remote-name.service
 ```
 
-O mount sera criado em `~/Cloud/remote-name`.
+The mount will be available at `~/Cloud/remote-name`.
 
-## Troubleshooting rapido
+## Quick Troubleshooting
 
-### Captive portal (hotel/aeroporto)
+### Captive Portal (Hotel/Airport)
 
-Se o portal nao abrir, desative temporariamente DoT/DNSSEC:
+If the portal does not open, temporarily disable DoT/DNSSEC:
 
 ```bash
 sudo mkdir -p /etc/systemd/resolved.conf.d
@@ -162,14 +162,14 @@ EOF
 sudo systemctl restart systemd-resolved
 ```
 
-Depois, para voltar ao padrao da imagem:
+To return to the image defaults:
 
 ```bash
 sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
 ```
 
-## Desenvolvimento local
+## Local Development
 
 ```bash
 distrobox assemble create
@@ -178,22 +178,22 @@ bluebuild build recipes/recipe-amd.yml
 bluebuild build recipes/recipe-nvidia.yml
 ```
 
-Validacao local antes de publicar:
+Local validation before publishing:
 
 ```bash
 ./scripts/validate-project.sh
 ```
 
-Esse script valida referencias BlueBuild (`from-file` e `source`), consistencia entre README/recipes/workflows, sintaxe shell/TOML/XML, unit files (quando `systemd-analyze` estiver disponivel) e lint de shell/YAML quando as ferramentas estiverem instaladas.
+This script validates BlueBuild references (`from-file` and `source`), consistency across README/recipes/workflows, shell/TOML/XML syntax, systemd units (when `systemd-analyze` is available), and shell/YAML lint when tools are installed.
 
-## Estrutura do repositorio
+## Repository Structure
 
-- `recipes/`: receitas BlueBuild e modulos compartilhados.
-- `files/system/`: configuracoes copiadas para a imagem final.
-- `files/scripts/`: utilitarios instalados na imagem (ex.: setup KVM).
-- `scripts/validate-project.sh`: sanity check local para CI/manual.
-- `.github/workflows/`: build AMD/NVIDIA, monitor de updates de base e cleanup.
+- `recipes/`: BlueBuild recipes and shared modules.
+- `files/system/`: system configuration copied into the final image.
+- `files/scripts/`: utilities installed in the image (for example KVM setup).
+- `scripts/validate-project.sh`: local validation entrypoint for CI/manual usage.
+- `.github/workflows/`: AMD/NVIDIA builds, base update checks, cleanup, and validation.
 
-## Licenca
+## License
 
-Projeto licenciado sob **Apache License 2.0**.
+Licensed under the **Apache License 2.0**.
