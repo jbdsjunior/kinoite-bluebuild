@@ -44,5 +44,5 @@ modules:
         notify: true
         repo:
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          name: Flathub
-        remove-repo: true
+          title: Flathub
+        remove-repo: false
