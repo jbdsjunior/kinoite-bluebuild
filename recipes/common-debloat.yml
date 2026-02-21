@@ -8,8 +8,8 @@ modules:
         - firefox
         - firefox-langpacks
 
-        # - plasma-discover-rpm-ostree
-        # - plasma-welcome-fedora
+        - plasma-discover-rpm-ostree
+        - plasma-welcome-fedora
 
         # - mozilla-filesystem
         # - htop
