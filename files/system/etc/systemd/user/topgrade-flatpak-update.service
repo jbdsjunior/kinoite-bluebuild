@@ -5,6 +5,6 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/topgrade -y --no-retry --only flatpak
+ExecStart=/usr/bin/topgrade -cy --no-retry --only flatpak
 Nice=19
 IOSchedulingClass=idle
