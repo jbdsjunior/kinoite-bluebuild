@@ -3,38 +3,32 @@
 Version: 2026-02-21
 Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`, `README.md`)
 
-## 1) Objective
+## Category: Mission
 
-Define how LLM agents and maintainers should evolve this repository with:
+- Keep regression risk low.
+- Keep image behavior reproducible.
+- Keep rpm-ostree/bootc delivery secure by default.
+- Drive continuous improvement through measurable quality gates.
 
-- low regression risk,
-- reproducible image behavior,
-- secure-by-default delivery for rpm-ostree/bootc workflows,
-- continuous improvement based on measurable quality gates.
+## Category: Global Directives
 
-## 1.1) Mandatory Global Directive
+- Always seek current best practices.
+- Always apply documentation best-practice recommendations.
+- Always verify conflicts, possible errors, and improvement opportunities before and after edits.
 
-For every task, LLM agents must:
+## Category: Maintainer Baseline
 
-- always seek current best practices,
-- always apply documentation best-practice recommendations,
-- always verify conflicts, possible errors, and improvement opportunities before and after edits.
+- CPU: AMD Ryzen 9 5959X.
+- Primary GPU: AMD Radeon RX 6600 XT.
+- Secondary GPU: NVIDIA RTX 3080 Ti.
+- RAM: 64 GB.
+- Storage: NVMe 1 TB.
+- Workload: heavy browser video usage (Chrome and Brave), local/containers LLM usage.
+- OS context: Fedora Linux and Fedora Linux Kinoite, continuously updated.
 
-## 1.2) Maintainer Workstation Baseline (2026)
+## Category: Project Snapshot
 
-Treat this hardware/software profile as the primary optimization reference:
-
-- CPU: AMD Ryzen 9 5959X
-- Primary GPU: AMD Radeon RX 6600 XT
-- Secondary GPU: NVIDIA RTX 3080 Ti
-- RAM: 64 GB
-- Storage: NVMe 1 TB
-- Workload: heavy browser video usage (Chrome and Brave), local/containers LLM usage
-- OS context: Fedora Linux and Fedora Linux Kinoite, continuously updated
-
-## 2) Project Analysis (Current State)
-
-### 2.1 Architecture Summary
+### Architecture
 
 - Two published image variants: `kinoite-amd` (`recipes/recipe-amd.yml`) and `kinoite-nvidia` (`recipes/recipe-nvidia.yml`).
 - Shared configuration is centralized in `recipes/common.yml` plus modular includes (`common-*.yml`).
@@ -43,168 +37,159 @@ Treat this hardware/software profile as the primary optimization reference:
 - Upstream image digest monitoring and trigger logic exist in `.github/workflows/check-updates.yml`.
 - Local validation exists in `scripts/validate-project.sh`.
 
-### 2.2 Strengths
+### Strengths
 
-- Good modular recipe layout with reuse.
-- Image signing module already present in both recipes.
+- Modular recipe layout with reuse.
+- Image signing module present in both recipes.
 - Timers and systemd services are versioned and reproducible.
-- Local validation script checks references and syntax for several file types.
+- Local validation script now includes cross-file consistency checks.
+- CI validation workflow exists in `.github/workflows/validate.yml`.
 
-### 2.3 Gaps and Risks
+### Gaps and Risks
 
-- CI does not currently enforce `scripts/validate-project.sh` on every PR via a dedicated validation workflow.
-- Workflows use tagged actions/versions (for example `blue-build/github-action@v1.11`) instead of full commit SHA pinning.
-- `use_unstable_cli: true` in build workflows increases upgrade risk.
-- `recipes/common-kargs.yml` contains AMD-specific tuning applied to all variants; this may be suboptimal for non-AMD hosts running `kinoite-nvidia`.
-- Language and style are mixed across files (Portuguese/English), which increases maintenance cost over time.
-- `systemd-analyze` and `yamllint` are optional locally; missing tools can hide quality issues until runtime.
-- There is no explicit conflict-check matrix linking recipes, unit names, workflow references, and README commands.
+- Workflows still use tagged actions/versions instead of full commit SHA pinning.
+- `recipes/common-kargs.yml` contains AMD-specific tuning applied to all variants, which may be suboptimal for non-AMD hosts using `kinoite-nvidia`.
+- Some quality gates remain optional locally when tools are missing (`systemd-analyze`, `yamllint`, `shellcheck`).
 
-## 3) Non-Negotiable Principles
+## Category: Core Principles
 
-1. Security first
+### Security
 
 - Never commit secrets, private keys, tokens, or host-specific credentials.
-- Preserve signed-image flow; any change that weakens verification must be rejected.
+- Preserve signed-image flow; reject changes that weaken verification.
 
-1. Reproducibility first
+### Reproducibility
 
 - Prefer deterministic inputs and explicit behavior over implicit defaults.
-- Keep configuration in repo-managed files/modules, not host-side manual drift.
+- Keep configuration in repo-managed files/modules, not host-side drift.
 
-1. Variant isolation
+### Variant Isolation
 
-- AMD/NVIDIA specific behavior must remain explicit and easy to reason about.
-- Shared modules should only contain truly shared logic.
+- Keep AMD/NVIDIA behavior explicit and easy to reason about.
+- Keep shared modules truly shared.
 
-1. Small blast radius
+### Blast Radius Control
 
 - Prefer small, isolated changes over broad refactors.
-- Touch only the minimal set of files needed for each objective.
+- Touch the minimal set of files needed for each objective.
 
-1. Documentation parity
+### Documentation Parity
 
-- Any behavior change in recipes/workflows/systemd/files must be reflected in `README.md`.
+- Reflect any behavior change in recipes/workflows/systemd/files in `README.md`.
 
-1. Validation before merge
+### Validation
 
-- Local and CI checks must pass before release/publish.
-- New file formats require corresponding lint/validation coverage.
+- Require local and CI checks before release/publish.
+- Add lint/validation coverage for every new file format introduced.
 
-1. Backward safety
+### Backward Safety
 
-- Preserve rollback-friendly behavior (`rpm-ostree rollback`) and avoid disruptive migration steps without clear fallback.
+- Preserve rollback-friendly behavior (`rpm-ostree rollback`).
+- Avoid disruptive migration steps without a clear fallback.
 
-1. Documentation quality and conflict detection
+### Conflict and Quality Detection
 
-- Every change must include a documentation-quality check and a conflict/error scan.
-- If a mismatch is found between implementation and docs/workflows, fix or explicitly document it in the same change.
-- When no bug is found, still propose at least one concrete improvement for maintainability.
+- Include documentation-quality checks and conflict/error scans in every change.
+- If implementation and docs/workflows diverge, fix or document the mismatch in the same change.
+- If no bug is found, still propose at least one maintainability improvement.
 
-## 4) LLM Change Rules
+## Category: LLM Change Workflow
 
-### 4.1 Allowed Change Pattern
+- Discovery: read impacted recipe/module/workflow/files before editing.
+- Pre-change scan: verify names, paths, references, and behavior parity.
+- Implementation: apply the smallest safe diff.
+- Validation: run `./scripts/validate-project.sh`.
+- Documentation sync: update docs when behavior changes.
+- Post-change scan: re-check cross-file consistency after edits.
+- Delivery: summarize risks, checks, and improvement opportunities in PR/commit description.
 
-- Step 1: Read impacted recipe/module/workflow/files.
-- Step 2: Run conflict scan (names, paths, references, behavior parity) before editing.
-- Step 3: Implement smallest safe diff.
-- Step 4: Run local validation (`./scripts/validate-project.sh`).
-- Step 5: Update docs when behavior changed.
-- Step 6: Re-run conflict scan after editing.
-- Step 7: Summarize risks, checks, and improvement opportunities in PR/commit message.
+## Category: Recipe Standards
 
-### 4.2 Recipe Rules
+- Keep `recipes/common.yml` as orchestrator.
+- Move variant-specific settings to variant modules or recipe-specific includes.
+- Keep generic kernel args in `common-kargs.yml`.
+- Move AMD-only kernel args to AMD-specific modules whenever feasible.
 
-- Keep `recipes/common.yml` as orchestrator only.
-- Put variant-specific settings in variant modules (or recipe-specific includes).
-- For kernel args, keep generic args in `common-kargs.yml`.
-- For kernel args, move AMD-only args to an AMD-specific module when possible.
+## Category: Workflow Standards
 
-### 4.3 Workflow Rules
+- Use least-privilege permissions in every job.
+- Prefer stable and pinned action versions with reviewed upgrades.
+- Keep build and validation workflows aligned with repository checks.
 
-- Prefer least-privilege permissions in every job.
-- Prefer stable/pinned actions and reviewed upgrades.
-- Treat `use_unstable_cli` as temporary and documented exception.
+## Category: System File Standards
 
-### 4.4 System File Rules
+- Keep systemd unit/timer descriptions clear and restart behavior safe.
+- Document network/security compatibility tradeoffs.
+- Keep scripts and unit helpers explicit and failure-aware.
 
-- systemd unit/timer changes must keep clear unit descriptions and safe restart semantics.
-- Network/security defaults must document compatibility tradeoffs.
-- Scripts must keep `set -euo pipefail` and clear failure messages.
-
-### 4.5 Shell Script Style Rules
+## Category: Shell Script Standards
 
 - Prefer linear shell scripts with straightforward control flow.
 - Avoid unnecessary comments.
-- If comments are required, write comments in international English only.
-- Keep scripts easy to diff and easy to debug in production logs.
+- When comments are necessary, use international English.
+- Keep scripts easy to diff and debug from logs.
 
-### 4.6 Documentation Best-Practice Rules
+## Category: Documentation Standards
 
 - Keep docs close to executable reality (commands, service names, paths, image names).
 - Prefer concise, task-oriented sections (install, operate, troubleshoot, recover).
-- For every behavior change, include impact and rollback note.
-- Prefer stable terminology for variants (`kinoite-amd`, `kinoite-nvidia`) across all files.
+- Include impact and rollback notes for behavior changes.
+- Use stable terminology for variants (`kinoite-amd`, `kinoite-nvidia`) across all files.
 
-## 5) Quality Gates (Required)
+## Category: Quality Gates
 
-Minimum required before publish:
+### Required Baseline
 
 ```bash
 ./scripts/validate-project.sh
 ```
 
-Recommended additional gates:
+### Recommended Tooling
 
 - `yamllint .`
-- `systemd-analyze verify` for changed unit/timer files
-- `shellcheck` for `*.sh`
-- schema checks for BlueBuild recipes
-- consistency checks between README commands and current recipes/workflows
-- consistency checks between enabled timers in recipes and unit files in `files/system/...`
+- `systemd-analyze verify` for changed unit/timer files.
+- `shellcheck` for `*.sh`.
+- Schema checks for BlueBuild recipes.
+- Consistency checks between README commands and current recipes/workflows.
+- Consistency checks between enabled timers in recipes and unit files in `files/system/...`.
 
-## 6) Continuous Improvement Backlog
+## Category: Continuous Improvement
 
-### P0 (High Priority)
+### High Priority
 
-- Add a dedicated PR workflow to run `./scripts/validate-project.sh`.
-- Add `yamllint` and `shellcheck` to CI so failures are not tool-availability dependent.
 - Pin critical GitHub Actions to commit SHA.
-- Add automated conflict checks for workflow names vs README badges/commands.
-- Add automated conflict checks for recipe names vs published image names.
-- Add automated conflict checks for enabled timers/services vs existing unit files.
+- Expand automated consistency checks as workflows and variants evolve.
 
-### P1 (Medium Priority)
+### Medium Priority
 
 - Split AMD-specific kernel args into a dedicated AMD module.
-- Standardize repository language (choose PT-BR or EN) for comments/docs/messages.
 - Replace duplicated AMD/NVIDIA workflow logic with a reusable workflow or matrix strategy.
 
-### P2 (Nice-to-have)
+### Nice to Have
 
-- Add automated checks ensuring `README.md` references match actual workflow/recipe names.
-- Add release notes template for image behavior changes and rollback notes.
-- Add a lightweight "performance profile" note per variant for the 5959X + 6600 XT + 3080 Ti baseline.
+- Add automated checks to verify README references against live workflow and recipe names.
+- Add a release notes template for behavior changes and rollback notes.
+- Add a lightweight performance profile note per variant for the 5959X + 6600 XT + 3080 Ti baseline.
 
-## 7) Gitignore Policy
+## Category: Gitignore Policy
 
-Tracked by design:
+### Must Be Tracked
 
 - Source recipes/workflows/docs/scripts/configs required for reproducible builds.
 
-Ignored by design:
+### Must Be Ignored
 
 - Secrets and signing private material.
 - Local LLM/assistant state and temporary artifacts.
-- Generated documentation output only (not documentation source).
+- Generated documentation output only, not documentation source.
 
-Any ignore rule that hides source-of-truth project files must be rejected.
+### Rejection Rule
 
-## 8) Editing and Evolution Model
+- Reject any ignore rule that hides source-of-truth project files.
 
-To keep the spec maintainable over time:
+## Category: Spec Evolution
 
-- Keep rules atomic (one intent per bullet).
-- Prefer adding new rules to the most specific section instead of broad rewrites.
-- When changing a rule, update rationale in the same commit/PR description.
-- Keep section numbering stable to reduce reference churn in issues/PRs.
+- Keep rules atomic, one intent per bullet.
+- Add new rules in the most specific category instead of broad rewrites.
+- When changing a rule, update rationale in the same commit or PR description.
+- Preserve stable category names to reduce churn in references.
