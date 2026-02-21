@@ -178,21 +178,12 @@ bluebuild build recipes/recipe-amd.yml
 bluebuild build recipes/recipe-nvidia.yml
 ```
 
-Local validation before publishing:
-
-```bash
-./scripts/validate-project.sh
-```
-
-This script validates BlueBuild references (`from-file` and `source`), consistency across README/recipes/workflows, shell/TOML/XML syntax, systemd units (when `systemd-analyze` is available), and shell/YAML lint when tools are installed.
-
 ## Repository Structure
 
 - `recipes/`: BlueBuild recipes and shared modules.
 - `files/system/`: system configuration copied into the final image.
 - `files/scripts/`: utilities installed in the image (for example KVM setup).
-- `scripts/validate-project.sh`: local validation entrypoint for CI/manual usage.
-- `.github/workflows/`: AMD/NVIDIA builds, base update checks, cleanup, and validation.
+- `.github/workflows/`: AMD/NVIDIA builds, base update checks, and cleanup.
 
 ## License
 
