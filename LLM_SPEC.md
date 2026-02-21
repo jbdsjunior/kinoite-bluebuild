@@ -40,7 +40,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Runtime behavior is mostly defined by versioned files under `files/system/...`.
 - Build and publish happen via GitHub Actions (`.github/workflows/build-*.yml`).
 - Upstream image digest monitoring and trigger logic exist in `.github/workflows/check-updates.yml`.
-- Local validation exists in `scripts/validate-project.sh`.
 
 ### Strengths
 
@@ -49,7 +48,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Variant-specific kernel args are explicitly separated (`common-kargs.yml` + `common-kargs-amd.yml`).
 - Timers and systemd services are versioned and reproducible.
 - Local validation script includes cross-file consistency checks.
-- CI validation workflow exists in `.github/workflows/validate.yml`.
 
 ### Gaps and Risks
 
@@ -107,7 +105,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Upstream refresh: review relevant upstream docs/changelogs for BlueBuild, bootc, Fedora/Linux stack, and tools touched by the change.
 - Pre-change scan: verify names, paths, references, and behavior parity.
 - Implementation: apply the smallest safe diff.
-- Validation: run `./scripts/validate-project.sh`.
 - Documentation sync: update docs when behavior changes.
 - Post-change scan: re-check cross-file consistency after edits.
 - Delivery: summarize risks, checks, and improvement opportunities in PR/commit description.
@@ -155,14 +152,6 @@ Scope: Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`
 - Include impact and rollback notes for behavior changes.
 - Use stable terminology for variants (`kinoite-amd`, `kinoite-nvidia`) across all files.
 - Never describe `kinoite-nvidia` as if it were a pure NVIDIA-only target.
-
-## Category: Quality Gates
-
-### Required Baseline
-
-```bash
-./scripts/validate-project.sh
-```
 
 ### Recommended Tooling
 
