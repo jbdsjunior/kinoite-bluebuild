@@ -15,6 +15,9 @@ modules:
   # Pulls all shared configurations from the common recipe file
   - from-file: common.yml
 
+  # AMD-only kernel arguments
+  - from-file: common-kargs-amd.yml
+
   # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
   # after the initial rebase on the client side.
   - type: initramfs
