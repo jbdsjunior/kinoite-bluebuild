@@ -1,0 +1,12 @@
+[Unit]
+Description=Topgrade update (flatpak only)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+SuccessExitStatus=75
+ExecStart=/usr/bin/flock -E 75 -n %t/topgrade-update.lock /usr/bin/topgrade -cy --skip-notify --no-retry --only flatpak
+Nice=19
+IOSchedulingClass=idle
+CPUSchedulingPolicy=idle

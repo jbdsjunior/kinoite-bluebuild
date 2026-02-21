@@ -1,0 +1,11 @@
+[Unit]
+Description=Run topgrade flatpak update every 6 hours
+
+[Timer]
+OnStartupSec=2h
+OnUnitInactiveSec=6h
+RandomizedDelaySec=10m
+Unit=topgrade-flatpak-update.service
+
+[Install]
+WantedBy=timers.target
