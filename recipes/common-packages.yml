@@ -12,5 +12,3 @@ modules:
         - rclone
         - fuse3
         - plasma-firewall
-        - liberation-fonts
-        # - plasma-discover-rpm-ostree

@@ -14,7 +14,6 @@ modules:
 
   - from-file: common-drivers.yml
   - from-file: common-packages.yml
-  # - from-file: common-plasmalogin.yml
 
   - from-file: common-tools.yml
 
