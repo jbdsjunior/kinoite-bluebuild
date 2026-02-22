@@ -10,7 +10,7 @@ modules:
         - langpacks-en
         - langpacks-pt_BR
         - hunspell-pt-BR
-        - aspell-pt
+        - aspell-pt_BR
         - lm_sensors
         - rclone
         - fuse3
