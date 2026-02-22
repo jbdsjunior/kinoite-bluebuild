@@ -10,7 +10,9 @@ modules:
         - langpacks-en
         - langpacks-pt_BR
         - hunspell-pt-BR
+        - hyphen-pt-BR
         - aspell-pt_BR
+        - man-pages-pt_BR
         - lm_sensors
         - rclone
         - fuse3
