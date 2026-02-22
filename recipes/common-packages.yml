@@ -9,6 +9,8 @@ modules:
         - plasma-firewall
         - langpacks-en
         - langpacks-pt_BR
+        - hunspell-pt-BR
+        - aspell-pt
         - lm_sensors
         - rclone
         - fuse3
