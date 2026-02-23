@@ -6,14 +6,18 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        - amd-gpu-firmware
+        - amd-ucode-firmware
         - mesa-dri-drivers
         - mesa-filesystem
         - mesa-libEGL
         - mesa-libGL
+        - mesa-libOpenCL
         - mesa-libgbm
         - mesa-va-drivers
         - mesa-vdpau-drivers
         - mesa-vulkan-drivers
+        - vulkan-loader
         - libva
         - libheif
 
@@ -33,4 +37,7 @@ modules:
         - ffmpeg
         - ffmpeg-libs
         - libavcodec
-        - ocl-icd # Fix OpenCL package for dual-GPU stability (AMD + NVIDIA compute)
+        - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
+        - clinfo # Quick OpenCL runtime validation.
+        - libva-utils # Provides vainfo for VA-API validation.
+        - vulkan-tools # Provides vulkaninfo for Vulkan validation.

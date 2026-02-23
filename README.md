@@ -90,6 +90,11 @@ systemctl status systemd-resolved
 # Kernel/swap/network tuning signals
 sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control
 cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
+
+# AMD media/compute runtime checks
+vainfo
+vulkaninfo --summary
+clinfo
 ```
 
 To keep user timers active even when no graphical session is open:
