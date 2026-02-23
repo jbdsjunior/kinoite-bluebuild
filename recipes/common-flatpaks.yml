@@ -5,44 +5,44 @@ modules:
     configurations:
       - scope: user
         notify: true
-        repo:
-          url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          title: Flathub
-        install:
-          # KDE Multimedia and Productivity tools
-          - org.kde.elisa
-          - org.kde.gwenview
-          - org.kde.haruna
-          - org.kde.kcalc
-          - org.kde.krdc
-          - org.kde.okular
+        # repo:
+        #   url: https://dl.flathub.org/repo/flathub.flatpakrepo
+        #   title: Flathub
+        # install:
+        #   # KDE Multimedia and Productivity tools
+        #   - org.kde.elisa
+        #   - org.kde.gwenview
+        #   - org.kde.haruna
+        #   - org.kde.kcalc
+        #   - org.kde.krdc
+        #   - org.kde.okular
 
-          # Browsers
-          - com.brave.Browser
-          - com.google.Chrome
-          - com.microsoft.Edge
-          - org.mozilla.firefox
+        #   # Browsers
+        #   - com.brave.Browser
+        #   - com.google.Chrome
+        #   - com.microsoft.Edge
+        #   - org.mozilla.firefox
 
-          # System Utilities
-          - com.github.tchx84.Flatseal # Permissions management
-          - io.github.flattool.Warehouse # Flatpak management
-          - io.missioncenter.MissionCenter # Modern System Monitor
-          - it.mijorus.gearlever # AppImage manager
+        #   # System Utilities
+        #   - com.github.tchx84.Flatseal # Permissions management
+        #   - io.github.flattool.Warehouse # Flatpak management
+        #   - io.missioncenter.MissionCenter # Modern System Monitor
+        #   - it.mijorus.gearlever # AppImage manager
 
-          # Development
-          - com.visualstudio.code
-          - com.ranfdev.DistroShelf # Manage Distrobox containers
+        #   # Development
+        #   - com.visualstudio.code
+        #   - com.ranfdev.DistroShelf # Manage Distrobox containers
 
-          # Communication and Others
-          - org.qbittorrent.qBittorrent
-          - re.sonny.Eloquent
-          - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
-          - org.gtk.Gtk3theme.adw-gtk3
-          - org.gtk.Gtk3theme.adw-gtk3-dark
+        #   # Communication and Others
+        #   - org.qbittorrent.qBittorrent
+        #   - re.sonny.Eloquent
+        #   - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
+        #   - org.gtk.Gtk3theme.adw-gtk3
+        #   - org.gtk.Gtk3theme.adw-gtk3-dark
 
       - scope: system
         notify: true
-        repo:
-          url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          title: Flathub
+        # repo:
+        #   url: https://dl.flathub.org/repo/flathub.flatpakrepo
+        #   title: Flathub
         remove-repo: false
