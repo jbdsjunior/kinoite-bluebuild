@@ -26,3 +26,5 @@ site/
 .aider*
 *.llm.log
 *.llmtrace
+
+build.txt

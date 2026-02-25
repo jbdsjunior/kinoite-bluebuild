@@ -6,20 +6,21 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - amd-gpu-firmware
-        - amd-ucode-firmware
+        # Already installed (build log)
+        # - amd-gpu-firmware
+        # - amd-ucode-firmware
         # - mesa-dri-drivers
-        - mesa-filesystem
-        - mesa-libEGL
-        - mesa-libGL
+        # - mesa-filesystem
+        # - mesa-libEGL
+        # - mesa-libGL
         - mesa-libOpenCL
-        - mesa-libgbm
-        - mesa-va-drivers
+        # - mesa-libgbm
+        # - mesa-va-drivers
         - mesa-vdpau-drivers
-        - mesa-vulkan-drivers
-        - vulkan-loader
-        - libva
-        - libheif
+        # - mesa-vulkan-drivers
+        # - vulkan-loader
+        # - libva
+        # - libheif
 
   - type: dnf
     install:
@@ -38,6 +39,6 @@ modules:
         - ffmpeg-libs
         - libavcodec
         - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
-        - clinfo # Quick OpenCL runtime validation.
+        # - clinfo # Quick OpenCL runtime validation.
         - libva-utils # Provides vainfo for VA-API validation.
-        - vulkan-tools # Provides vulkaninfo for Vulkan validation.
+        # - vulkan-tools # Provides vulkaninfo for Vulkan validation.

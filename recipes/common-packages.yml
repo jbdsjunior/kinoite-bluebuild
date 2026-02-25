@@ -7,7 +7,8 @@ modules:
       allow-erasing: true
       packages:
         - plasma-firewall
-        - langpacks-en
+        # Already installed (build log)
+        # - langpacks-en
         - langpacks-pt_BR
         - hunspell-pt-BR
         - hyphen-pt-BR
@@ -15,4 +16,4 @@ modules:
         - man-pages-pt_BR
         - lm_sensors
         - rclone
-        - fuse3
+        # - fuse3
