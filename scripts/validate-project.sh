@@ -117,6 +117,16 @@ check_project_consistency() {
     missing=1
   fi
 
+  if [ ! -x scripts/maintenance.sh ]; then
+    printf '  maintenance script should exist and be executable: scripts/maintenance.sh\n'
+    missing=1
+  fi
+
+  if [ ! -f docs/OPERACAO.md ]; then
+    printf '  missing operations guide: docs/OPERACAO.md\n'
+    missing=1
+  fi
+
   if [ "$missing" -eq 0 ]; then
     ok "Cross-file consistency (README/recipes/workflows/timers)"
   else
