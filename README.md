@@ -192,6 +192,12 @@ Local cross-check script (README/recipes/workflows/timers + lint/syntax checks):
 bash scripts/validate-project.sh
 ```
 
+Manutenção operacional sugerida:
+
+```bash
+bash scripts/maintenance.sh --dry-run
+```
+
 Useful manual checks:
 
 ```bash
@@ -232,6 +238,8 @@ bluebuild build recipes/recipe-nvidia.yml
 - `files/system/`: system configuration copied into the final image.
 - `files/scripts/`: utilities installed in the image.
 - `scripts/validate-project.sh`: local project consistency validation.
+- `scripts/maintenance.sh`: routine host maintenance workflow (rpm-ostree, Flatpak, journal, tmpfiles).
+- `docs/OPERACAO.md`: day-2 operation guide with recommended routines.
 - `.github/workflows/`: build pipelines and automation.
 
 ## License
