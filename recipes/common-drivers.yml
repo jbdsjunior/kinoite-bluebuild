@@ -21,6 +21,8 @@ modules:
         # - vulkan-loader
         # - libva
         # - libheif
+        - rocm-hip
+        - rocm-opencl
 
   - type: dnf
     install:
