@@ -8,7 +8,7 @@ modules:
       packages:
         - amd-gpu-firmware
         - amd-ucode-firmware
-        - mesa-dri-drivers
+        # - mesa-dri-drivers
         - mesa-filesystem
         - mesa-libEGL
         - mesa-libGL
