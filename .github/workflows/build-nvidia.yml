@@ -11,6 +11,10 @@ on:
 
 jobs:
   build-nvidia:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     uses: ./.github/workflows/build-image.yml
     with:
       workflow_name: build-nvidia
