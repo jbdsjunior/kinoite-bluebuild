@@ -1,4 +1,4 @@
-name: build-amd
+name: image-build-nvidia
 on:
   # schedule:
   #   - cron:
@@ -10,14 +10,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-amd:
+  build-nvidia:
     permissions:
       contents: read
       packages: write
       id-token: write
-    uses: ./.github/workflows/build-image.yml
+    uses: ./.github/workflows/reusable-image-build.yml
     with:
-      workflow_name: build-amd
-      display_name: AMD
-      recipe: recipe-amd.yml
+      workflow_name: image-build-nvidia
+      display_name: NVIDIA
+      recipe: recipe-nvidia.yml
     secrets: inherit

@@ -1,8 +1,8 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
+![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/image-build-amd.yml/badge.svg)
+![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/image-build-nvidia.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
