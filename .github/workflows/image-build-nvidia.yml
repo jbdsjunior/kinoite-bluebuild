@@ -19,5 +19,5 @@ jobs:
     with:
       workflow_name: image-build-nvidia
       display_name: NVIDIA
-      recipe: recipe-nvidia.yml
+      recipe: image-recipe-nvidia.yml
     secrets: inherit
