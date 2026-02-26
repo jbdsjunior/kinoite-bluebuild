@@ -1,0 +1,23 @@
+name: image-build-nvidia
+on:
+  # schedule:
+  #   - cron:
+  #       "00 06 * * *" # build at 06:00 UTC every day
+  # push:
+  #   branches:
+  #     - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-nvidia:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/reusable-image-build.yml
+    with:
+      workflow_name: image-build-nvidia
+      display_name: NVIDIA
+      recipe: image-recipe-nvidia.yml
+    secrets: inherit

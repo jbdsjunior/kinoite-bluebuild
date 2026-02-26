@@ -1,8 +1,8 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
+![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/image-build-amd.yml/badge.svg)
+![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/image-build-nvidia.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -226,8 +226,8 @@ distrobox enter bluebuild
 Inside the `bluebuild` container:
 
 ```bash
-bluebuild build recipes/recipe-amd.yml
-bluebuild build recipes/recipe-nvidia.yml
+bluebuild build recipes/image-recipe-amd.yml
+bluebuild build recipes/image-recipe-nvidia.yml
 ```
 
 ---
