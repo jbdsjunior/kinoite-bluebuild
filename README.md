@@ -226,8 +226,8 @@ distrobox enter bluebuild
 Inside the `bluebuild` container:
 
 ```bash
-bluebuild build recipes/recipe-amd.yml
-bluebuild build recipes/recipe-nvidia.yml
+bluebuild build recipes/image-recipe-amd.yml
+bluebuild build recipes/image-recipe-nvidia.yml
 ```
 
 ---

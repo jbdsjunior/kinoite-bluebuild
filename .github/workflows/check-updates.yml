@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # AMD base image used by recipes/recipe-amd.yml
+      # AMD base image used by recipes/image-recipe-amd.yml
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # NVIDIA base image used by recipes/recipe-nvidia.yml
+      # NVIDIA base image used by recipes/image-recipe-nvidia.yml
       - name: Check Nvidia Base Image
         id: check_nvidia
         run: |

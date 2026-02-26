@@ -19,5 +19,5 @@ jobs:
     with:
       workflow_name: image-build-amd
       display_name: AMD
-      recipe: recipe-amd.yml
+      recipe: image-recipe-amd.yml
     secrets: inherit
