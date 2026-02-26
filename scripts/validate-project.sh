@@ -60,8 +60,8 @@ check_project_consistency() {
   local timer
   local workflow
 
-  amd_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/recipe-amd.yml | head -n 1)"
-  nvidia_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/recipe-nvidia.yml | head -n 1)"
+  amd_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-recipe-amd.yml | head -n 1)"
+  nvidia_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-recipe-nvidia.yml | head -n 1)"
 
   for image in "$amd_name" "$nvidia_name"; do
     [ -n "$image" ] || continue
@@ -101,19 +101,19 @@ check_project_consistency() {
 
   while IFS= read -r image; do
     [ -n "$image" ] || continue
-    if [ ! -f "recipes/recipe-${image#kinoite-}.yml" ]; then
+    if [ ! -f "recipes/image-recipe-${image#kinoite-}.yml" ]; then
       printf '  cleanup image has no matching recipe file: %s\n' "$image"
       missing=1
     fi
   done < <(sed -n 's/.*image-name:[[:space:]]*\[\(.*\)\].*/\1/p' .github/workflows/cleanup.yml | tr ',' '\n' | tr -d '[:space:]')
 
-  if ! rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/recipe-amd.yml; then
-    printf '  recipe-amd.yml missing AMD kargs include: common-kargs-amd.yml\n'
+  if ! rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/image-recipe-amd.yml; then
+    printf '  image-recipe-amd.yml missing AMD kargs include: common-kargs-amd.yml\n'
     missing=1
   fi
 
-  if rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/recipe-nvidia.yml; then
-    printf '  recipe-nvidia.yml should not include AMD-only kargs module\n'
+  if rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/image-recipe-nvidia.yml; then
+    printf '  image-recipe-nvidia.yml should not include AMD-only kargs module\n'
     missing=1
   fi
 

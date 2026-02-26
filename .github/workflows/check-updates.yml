@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # AMD base image used by recipes/recipe-amd.yml
+      # AMD base image used by recipes/image-recipe-amd.yml
       - name: Check Main Image (for AMD)
         id: check_amd
         run: |
@@ -47,13 +47,13 @@ jobs:
         if: steps.cache_amd.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          gh workflow run build-amd.yml --ref main --repo "${{ github.repository }}"
+          gh workflow run image-build-amd.yml --ref main --repo "${{ github.repository }}"
           mkdir -p ~/.cache-amd
           echo "${{ steps.check_amd.outputs.digest }}" > ~/.cache-amd/upstream-digest.txt
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # NVIDIA base image used by recipes/recipe-nvidia.yml
+      # NVIDIA base image used by recipes/image-recipe-nvidia.yml
       - name: Check Nvidia Base Image
         id: check_nvidia
         run: |
@@ -72,7 +72,7 @@ jobs:
         if: steps.cache_nvidia.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          gh workflow run build-nvidia.yml --ref main --repo "${{ github.repository }}"
+          gh workflow run image-build-nvidia.yml --ref main --repo "${{ github.repository }}"
           mkdir -p ~/.cache-nvidia
           echo "${{ steps.check_nvidia.outputs.digest }}" > ~/.cache-nvidia/upstream-digest.txt
         env:
