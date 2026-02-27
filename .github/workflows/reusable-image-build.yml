@@ -12,6 +12,20 @@ on:
       recipe:
         required: true
         type: string
+  workflow_dispatch:
+    inputs:
+      workflow_name:
+        description: "Workflow identifier used for concurrency grouping"
+        required: true
+        type: string
+      display_name:
+        description: "Display name used in job titles"
+        required: true
+        type: string
+      recipe:
+        description: "Recipe file name to build"
+        required: true
+        type: string
 
 concurrency:
   group: ${{ inputs.workflow_name }}-${{ github.ref || github.run_id }}
