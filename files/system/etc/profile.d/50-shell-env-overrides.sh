@@ -1,5 +1,10 @@
 # Bash interactive UX: autocomplete + history-based suggestions
 if [ -n "${BASH_VERSION:-}" ] && [ -n "${PS1:-}" ]; then
+    # Open new interactive shells in ~/Downloads by default when started in $HOME.
+    if [ "${PWD:-}" = "${HOME:-}" ] && [ -d "${HOME:-}/Downloads" ]; then
+        cd "${HOME}/Downloads" || true
+    fi
+
     if [ -r /usr/share/bash-completion/bash_completion ] && [ -z "${BASH_COMPLETION_VERSINFO:-}" ]; then
         # shellcheck source=/usr/share/bash-completion/bash_completion
         . /usr/share/bash-completion/bash_completion
