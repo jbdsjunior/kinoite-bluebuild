@@ -6,7 +6,10 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # Core system
         - plasma-firewall
+
+        # Locale and dictionaries
         # Already installed (build log)
         # - langpacks-en
         - langpacks-pt_BR
@@ -14,6 +17,54 @@ modules:
         - hyphen-pt-BR
         - aspell-pt_BR
         - man-pages-pt_BR
+
+        # Utilities
         - lm_sensors
         - rclone
         # - fuse3
+
+        # Native apps mapped from list-apps.txt (when available)
+        # Browsers
+        # - firefox
+        # External repos required (configured under files/system/etc/yum.repos.d)
+        - brave-browser
+        - google-chrome-stable
+        - microsoft-edge-stable
+
+        # Development
+        # External repo required (configured under files/system/etc/yum.repos.d)
+        - code
+        # - zed # no native repository configured in this image yet
+
+        # KDE apps
+        - elisa-player
+        - gwenview
+        - haruna
+        - kate
+        - kcalc
+        - krdc
+        - okular
+
+        # GNOME and desktop utilities
+        - flatseal
+        - gearlever
+        - mission-center
+        - pika-backup
+        - showtime
+        - warehouse
+
+        # Media and downloads
+        # May require external/non-default repos depending on base image
+        # - obsidian
+        - qbittorrent
+        # - stremio
+
+        # Other apps (native package name may vary by repository)
+        # - anytype
+
+        # Flatpaks from list-apps.txt without a clear native RPM mapping
+        # - com.cherry_ai.CherryStudio
+        # - com.ranfdev.DistroShelf
+        # - dev.fredol.open-tv
+        # - io.github.DenysMb.Kontainer
+        # - io.github.nacho.mecalin
