@@ -45,18 +45,18 @@ modules:
         - krdc
         - okular
 
-        # GNOME and desktop utilities
-        - flatseal
-        - gearlever
-        - mission-center
-        - pika-backup
-        - showtime
-        - warehouse
+        # # GNOME and desktop utilities
+        # - flatseal
+        # - gearlever
+        # - mission-center
+        # - pika-backup
+        # - showtime
+        # - warehouse
 
         # Media and downloads
         # May require external/non-default repos depending on base image
         # - obsidian
-        - qbittorrent
+        # - qbittorrent
         # - stremio
 
         # Other apps (native package name may vary by repository)
