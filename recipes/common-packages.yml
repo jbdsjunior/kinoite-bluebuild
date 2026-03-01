@@ -27,13 +27,13 @@ modules:
         # Browsers
         # - firefox
         # External repos required (configured under files/system/etc/yum.repos.d)
-        - brave-browser
-        - google-chrome-stable
-        - microsoft-edge-stable
+        # - brave-browser
+        # - google-chrome-stable
+        # - microsoft-edge-stable
 
         # Development
         # External repo required (configured under files/system/etc/yum.repos.d)
-        - code
+        # - code
         # - zed # no native repository configured in this image yet
 
         # KDE apps
