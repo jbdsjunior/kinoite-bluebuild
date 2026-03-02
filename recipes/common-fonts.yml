@@ -1,24 +1,26 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
-  - type: fonts
-    fonts:
-      nerd-fonts:
-        - NerdFontsSymbolsOnly
-        - JetBrainsMono
-        - Iosevka
-
-      # google-fonts:
-      #   - Google Sans Flex
-      #   - Caladea
-      #   - Carlito
-      #   - Fira Mono
-      #   - Fira Sans
-      #   - JetBrains Mono
-
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
+        - nerdfontssymbolsonly-nerd-fonts
         - liberation-fonts
+
+  # - type: fonts
+  #   fonts:
+  #     nerd-fonts:
+  #       - NerdFontsSymbolsOnly
+  #       - JetBrainsMono
+  #       - Iosevka
+
+  #     # google-fonts:
+  #     #   - Google Sans Flex
+  #     #   - Caladea
+  #     #   - Carlito
+  #     #   - Fira Mono
+  #     #   - Fira Sans
+  #     #   - JetBrains Mono
