@@ -21,24 +21,6 @@ modules:
         # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
         - nerdfontssymbolsonly-nerd-fonts
 
-        # Utilities
-        - lm_sensors
-        - rclone
-        # - fuse3
-
-        # Native apps mapped from list-apps.txt (when available)
-        # Browsers
-        # - firefox
-        # External repos required (configured under files/system/etc/yum.repos.d)
-        # - brave-browser
-        # - google-chrome-stable
-        # - microsoft-edge-stable
-
-        # Development
-        # External repo required (configured under files/system/etc/yum.repos.d)
-        # - code
-        # - zed # no native repository configured in this image yet
-
         # KDE apps
         - elisa-player
         - gwenview
@@ -47,6 +29,22 @@ modules:
         - kcalc
         - krdc
         - okular
+
+        # Utilities
+        - lm_sensors
+        - rclone
+        # - fuse3
+
+        # Native app mapping from list-apps.txt (when available)
+        # Browsers (external repos required under files/system/etc/yum.repos.d)
+        # - brave-browser
+        # - firefox
+        # - google-chrome-stable
+        # - microsoft-edge-stable
+
+        # Development (external repos required under files/system/etc/yum.repos.d)
+        # - code
+        # - zed # no native repository configured in this image yet
 
         # # GNOME and desktop utilities
         # - flatseal

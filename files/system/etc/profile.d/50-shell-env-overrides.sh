@@ -19,3 +19,8 @@ if command -v starship >/dev/null 2>&1; then
     [ -f /etc/starship.toml ] && export STARSHIP_CONFIG=/etc/starship.toml
     eval "$(starship init bash)"
 fi
+
+if command -v fastfetch >/dev/null 2>&1 && [ -z "${FASTFETCH_SHOWN:-}" ]; then
+    export FASTFETCH_SHOWN=1
+    fastfetch
+fi
