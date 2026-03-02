@@ -1,0 +1,12 @@
+[terra]
+name=Terra $releasever
+baseurl=https://repos.fyralabs.com/terra$releasever
+type=rpm
+skip_if_unavailable=True
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
+priority=120
+includepkgs=nerdfontssymbolsonly-nerd-fonts
+metadata_expire=4h
