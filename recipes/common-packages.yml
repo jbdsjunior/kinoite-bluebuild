@@ -18,9 +18,6 @@ modules:
         - aspell-pt_BR
         - man-pages-pt_BR
 
-        # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
-        - nerdfontssymbolsonly-nerd-fonts
-
         # Utilities
         - lm_sensors
         - rclone
