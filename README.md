@@ -226,8 +226,8 @@ distrobox enter bluebuild
 Inside the `bluebuild` container:
 
 ```bash
-bluebuild build recipes/image-recipe-amd.yml
-bluebuild build recipes/image-recipe-nvidia.yml
+bluebuild build recipes/image-amd.yml
+bluebuild build recipes/image-nvidia.yml
 ```
 
 ---
@@ -239,7 +239,7 @@ bluebuild build recipes/image-recipe-nvidia.yml
 - `files/scripts/`: utilities installed in the image.
 - `scripts/validate-project.sh`: local project consistency validation.
 - `scripts/maintenance.sh`: routine host maintenance workflow (rpm-ostree, Flatpak, journal, tmpfiles).
-- `docs/OPERACAO.md`: day-2 operation guide with recommended routines.
+- `docs/operations.md`: day-2 operation guide with recommended routines.
 - `.github/workflows/`: build pipelines and automation.
 
 ## License

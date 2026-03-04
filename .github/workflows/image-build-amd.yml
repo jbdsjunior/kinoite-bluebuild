@@ -30,7 +30,7 @@ jobs:
       - name: Build Custom AMD Image
         uses: blue-build/github-action@v1.11
         with:
-          recipe: image-recipe-amd.yml
+          recipe: image-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event_name == 'pull_request' && github.event.number || '' }}

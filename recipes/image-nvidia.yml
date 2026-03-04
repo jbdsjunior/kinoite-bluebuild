@@ -12,7 +12,7 @@ platforms:
   - linux/amd64
 modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
-  - from-file: common.yml
+  - from-file: base.yml
 
   # Digital signing module for image integrity and verified updates
   - type: initramfs

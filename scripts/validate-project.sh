@@ -60,8 +60,8 @@ check_project_consistency() {
   local timer
   local workflow
 
-  amd_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-recipe-amd.yml | head -n 1)"
-  nvidia_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-recipe-nvidia.yml | head -n 1)"
+  amd_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-amd.yml | head -n 1)"
+  nvidia_name="$(sed -n 's/^name:[[:space:]]*//p' recipes/image-nvidia.yml | head -n 1)"
 
   for image in "$amd_name" "$nvidia_name"; do
     [ -n "$image" ] || continue
@@ -97,23 +97,23 @@ check_project_consistency() {
       printf '  missing README timer status command for: %s\n' "$timer"
       missing=1
     fi
-  done < <(rg -o 'topgrade-[a-z-]+\.timer' recipes/common-systemd.yml | sort -u)
+  done < <(rg -o 'topgrade-[a-z-]+\.timer' recipes/systemd.yml | sort -u)
 
   while IFS= read -r image; do
     [ -n "$image" ] || continue
-    if [ ! -f "recipes/image-recipe-${image#kinoite-}.yml" ]; then
+    if [ ! -f "recipes/image-${image#kinoite-}.yml" ]; then
       printf '  cleanup image has no matching recipe file: %s\n' "$image"
       missing=1
     fi
   done < <(sed -n 's/.*image-name:[[:space:]]*\[\(.*\)\].*/\1/p' .github/workflows/cleanup.yml | tr ',' '\n' | tr -d '[:space:]')
 
-  if ! rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/image-recipe-amd.yml; then
-    printf '  image-recipe-amd.yml missing AMD kargs include: common-kargs-amd.yml\n'
+  if ! rg -q 'from-file:[[:space:]]*kargs-amd.yml' recipes/image-amd.yml; then
+    printf '  image-amd.yml missing AMD kargs include: kargs-amd.yml\n'
     missing=1
   fi
 
-  if rg -q 'from-file:[[:space:]]*common-kargs-amd.yml' recipes/image-recipe-nvidia.yml; then
-    printf '  image-recipe-nvidia.yml should not include AMD-only kargs module\n'
+  if rg -q 'from-file:[[:space:]]*kargs-amd.yml' recipes/image-nvidia.yml; then
+    printf '  image-nvidia.yml should not include AMD-only kargs module\n'
     missing=1
   fi
 
@@ -122,8 +122,8 @@ check_project_consistency() {
     missing=1
   fi
 
-  if [ ! -f docs/OPERACAO.md ]; then
-    printf '  missing operations guide: docs/OPERACAO.md\n'
+  if [ ! -f docs/operations.md ]; then
+    printf '  missing operations guide: docs/operations.md\n'
     missing=1
   fi
 
