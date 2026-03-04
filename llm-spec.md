@@ -54,7 +54,7 @@ You MUST follow this sequence when modifying the codebase:
 
 ### Recipe & System File Standards
 
-* **Orchestration:** Use `recipes/common.yml` as the central orchestrator. Move variant-specific settings strictly to their respective variant modules.
+* **Orchestration:** Use `recipes/base.yml` as the central orchestrator. Move variant-specific settings strictly to their respective variant modules.
 * **Systemd:** Keep unit/timer descriptions clear and restart behaviors safe.
 * **Modularity:** Shared modules must be truly shared. Variant behaviors (e.g., kernel args) must be explicitly separated.
 

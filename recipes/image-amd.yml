@@ -12,11 +12,11 @@ image-version: latest
 platforms:
   - linux/amd64
 modules:
-  # Pulls all shared configurations from the common recipe file
-  - from-file: common.yml
+  # Pulls all shared configurations from the base recipe file
+  - from-file: base.yml
 
   # AMD-only kernel arguments
-  - from-file: common-kargs-amd.yml
+  - from-file: kargs-amd.yml
 
   # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
   # after the initial rebase on the client side.
