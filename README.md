@@ -184,20 +184,6 @@ sudo systemctl restart systemd-resolved
 
 ---
 
-## 5) Repository Validation (Before Commit/PR)
-
-Local cross-check script (README/recipes/workflows/timers + lint/syntax checks):
-
-```bash
-bash scripts/validate-project.sh
-```
-
-Manutenção operacional sugerida:
-
-```bash
-bash scripts/maintenance.sh --dry-run
-```
-
 Useful manual checks:
 
 ```bash
@@ -241,7 +227,3 @@ bluebuild build recipes/image-nvidia.yml
 - `scripts/maintenance.sh`: routine host maintenance workflow (rpm-ostree, Flatpak, journal, tmpfiles).
 - `docs/operations.md`: day-2 operation guide with recommended routines.
 - `.github/workflows/`: build pipelines and automation.
-
-## License
-
-Licensed under the **Apache License 2.0**.

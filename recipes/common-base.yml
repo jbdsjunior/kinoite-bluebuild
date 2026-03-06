@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  - from-file: common-debloat.yml
+
+  - from-file: common-repos.yml
+  - from-file: common-fonts.yml
+
+  - from-file: common-drivers.yml
+  - from-file: common-packages.yml
+
+  - from-file: common-tools.yml
+
+  - from-file: common-kvm.yml
+
+  - from-file: common-kargs.yml
+
+  - from-file: common-systemd.yml
+
+  # - from-file: flatpaks.yml
