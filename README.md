@@ -200,7 +200,7 @@ rg -n "DNS|privacy|resolved" files/system/etc/systemd/resolved.conf.d/60-dns-ove
 
 ---
 
-## 6) Local Development with Distrobox
+## 5) Local Development with Distrobox
 
 From the repository root:
 
@@ -212,8 +212,8 @@ distrobox enter bluebuild
 Inside the `bluebuild` container:
 
 ```bash
-bluebuild build recipes/image-amd.yml
-bluebuild build recipes/image-nvidia.yml
+bluebuild build recipes/recipe-amd.yml
+bluebuild build recipes/recipe-nvidia.yml
 ```
 
 ---
