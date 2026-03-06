@@ -1,9 +1,5 @@
 [ -z "${BASH_VERSION:-}" ] || [ -z "${PS1:-}" ] && return
 
-if [ "${PWD:-}" = "${HOME:-}" ] && [ -d "${HOME}/Downloads" ]; then
-    cd "${HOME}/Downloads" || return 1
-fi
-
 if [ -r /usr/share/bash-completion/bash_completion ] && [ -z "${BASH_COMPLETION_VERSINFO:-}" ]; then
     # shellcheck disable=SC1091
     source /usr/share/bash-completion/bash_completion
