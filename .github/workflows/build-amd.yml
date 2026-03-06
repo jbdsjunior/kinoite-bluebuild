@@ -1,10 +1,10 @@
-name: image-build-amd
+name: build-amd
 on:
   pull_request:
   workflow_dispatch:
 
 concurrency:
-  group: image-build-amd-${{ github.ref || github.run_id }}
+  group: build-amd-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
