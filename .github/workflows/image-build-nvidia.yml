@@ -1,11 +1,5 @@
 name: image-build-nvidia
 on:
-  # schedule:
-  #   - cron:
-  #       "00 06 * * *" # build at 06:00 UTC every day
-  # push:
-  #   branches:
-  #     - main
   pull_request:
   workflow_dispatch:
 
@@ -36,7 +30,7 @@ jobs:
           pr_event_number: ${{ github.event_name == 'pull_request' && github.event.number || '' }}
           verify_install: true
           maximize_build_space: true
-          max_layers: 256
+          # max_layers: 256
           use_cache: true
           retry_push_count: 3
           use_unstable_cli: false
