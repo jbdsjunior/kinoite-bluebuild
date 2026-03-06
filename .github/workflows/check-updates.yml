@@ -4,6 +4,7 @@ on:
     branches:
       - main
   schedule:
+    - cron: "00 06 * * *"
     - cron: "0 */2 * * *"  # every 2 hours
   workflow_dispatch:
 
