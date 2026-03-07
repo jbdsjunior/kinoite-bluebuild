@@ -195,7 +195,7 @@ rg --files files/system/usr/lib/systemd | sort
 
 # sysctl and network tuning
 rg -n "swappiness|max_map_count|inotify|tcp" files/system/usr/lib/sysctl.d/60-kernel-tuning.conf
-rg -n "DNS|privacy|resolved" files/system/etc/systemd/resolved.conf.d/60-dns-overrides.conf files/system/usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
+rg -n "DNS|privacy|resolved" files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf files/system/usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
 ```
 
 ---
