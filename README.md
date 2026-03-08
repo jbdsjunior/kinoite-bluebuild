@@ -218,6 +218,25 @@ bluebuild build recipes/recipe-nvidia.yml
 
 ---
 
+
+## 6) ISO Installer Generation
+
+This repository includes a dedicated workflow to generate live installer ISOs using BlueBuild.
+
+- Workflow: `.github/workflows/build-iso.yml`
+- Guide: `docs/iso.md`
+
+Manual CLI examples:
+
+```bash
+bluebuild generate-iso --iso-name kinoite-amd.iso recipe recipes/recipe-amd.yml
+bluebuild generate-iso --iso-name kinoite-amd.iso image ghcr.io/jbdsjunior/kinoite-amd:latest
+```
+
+For reproducible releases, prefer `image` with a pinned digest instead of a floating tag.
+
+---
+
 ## Repository Structure
 
 - `recipes/`: BlueBuild recipes and shared modules.

@@ -1,0 +1,121 @@
+name: build-iso
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "ISO source (recipe or image)"
+        required: true
+        default: recipe
+        type: choice
+        options:
+          - recipe
+          - image
+      variant:
+        description: "Recipe variant to use when source=recipe"
+        required: true
+        default: amd
+        type: choice
+        options:
+          - amd
+          - nvidia
+      image_ref:
+        description: "Container image reference when source=image (ex: ghcr.io/org/image:latest)"
+        required: false
+        type: string
+      iso_name:
+        description: "Optional ISO output name"
+        required: false
+        type: string
+
+concurrency:
+  group: build-iso-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  generate-iso:
+    name: Generate installer ISO
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      BLUEBUILD_CLI_IMAGE: ghcr.io/blue-build/cli:latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Prepare ISO build parameters
+        id: params
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          source_input="${{ github.event.inputs.source }}"
+          variant_input="${{ github.event.inputs.variant }}"
+          image_input="${{ github.event.inputs.image_ref }}"
+          iso_input="${{ github.event.inputs.iso_name }}"
+
+          if [[ "$source_input" == "recipe" ]]; then
+            case "$variant_input" in
+              amd)
+                recipe_path="recipes/recipe-amd.yml"
+                default_iso="kinoite-amd-${GITHUB_RUN_NUMBER}.iso"
+                ;;
+              nvidia)
+                recipe_path="recipes/recipe-nvidia.yml"
+                default_iso="kinoite-nvidia-${GITHUB_RUN_NUMBER}.iso"
+                ;;
+              *)
+                echo "Unsupported variant: $variant_input" >&2
+                exit 1
+                ;;
+            esac
+            target_arg="recipe ${recipe_path}"
+          else
+            if [[ -z "$image_input" ]]; then
+              echo "image_ref is required when source=image" >&2
+              exit 1
+            fi
+            sanitized_image="$(echo "$image_input" | tr '/:@' '-')"
+            default_iso="${sanitized_image}-${GITHUB_RUN_NUMBER}.iso"
+            target_arg="image ${image_input}"
+          fi
+
+          iso_name="${iso_input:-$default_iso}"
+
+          {
+            echo "iso_name=$iso_name"
+            echo "target_arg=$target_arg"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate ISO with BlueBuild CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+
+          docker run --rm \
+            --pull always \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            "$BLUEBUILD_CLI_IMAGE" \
+            bluebuild generate-iso \
+            --iso-name "${{ steps.params.outputs.iso_name }}" \
+            ${{ steps.params.outputs.target_arg }}
+
+          iso_path="$(find . -maxdepth 4 -type f -name "${{ steps.params.outputs.iso_name }}" | head -n 1)"
+          if [[ -z "$iso_path" ]]; then
+            echo "ISO not found after generate-iso run" >&2
+            exit 1
+          fi
+
+          mv "$iso_path" "artifacts/${{ steps.params.outputs.iso_name }}"
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.params.outputs.iso_name }}
+          path: artifacts/${{ steps.params.outputs.iso_name }}
+          if-no-files-found: error
+          retention-days: 7
