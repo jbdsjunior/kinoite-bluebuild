@@ -9,6 +9,7 @@ modules:
         - firefox-langpacks
 
         - plasma-discover
+        - plasma-discover-notifier
         - plasma-discover-rpm-ostree
 
         - plasma-welcome-fedora
