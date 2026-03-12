@@ -59,7 +59,7 @@ jobs:
         id: check_nvidia
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia:latest --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check Nvidia Cache
