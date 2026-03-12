@@ -10,3 +10,4 @@ modules:
 
         - plasma-discover-rpm-ostree
         - plasma-welcome-fedora
+        - fedora-flathub-remote
