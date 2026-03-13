@@ -12,7 +12,7 @@ bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
 
 if command -v starship >/dev/null 2>&1; then
-    [ -f /etc/starship.toml ] && export STARSHIP_CONFIG=/etc/starship.toml
+    [ -f /usr/share/starship/starship.toml ] && export STARSHIP_CONFIG=/usr/share/starship/starship.toml
     eval "$(starship init bash)"
 fi
 
