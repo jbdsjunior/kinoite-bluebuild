@@ -19,6 +19,7 @@ modules:
 
   - from-file: common-kvm.yml
 
+  - from-file: common-kargs-amd.yml
   - from-file: common-kargs.yml
 
   - from-file: common-systemd.yml
