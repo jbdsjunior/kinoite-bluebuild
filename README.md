@@ -223,7 +223,4 @@ bluebuild build recipes/recipe-nvidia.yml
 - `recipes/`: BlueBuild recipes and shared modules.
 - `files/system/`: system configuration copied into the final image.
 - `files/scripts/`: utilities installed in the image.
-- `scripts/validate-project.sh`: local project consistency validation.
-- `scripts/maintenance.sh`: routine host maintenance workflow (rpm-ostree, Flatpak, journal, tmpfiles).
-- `docs/operations.md`: day-2 operation guide with recommended routines.
 - `.github/workflows/`: build pipelines and automation.
