@@ -1,20 +1,18 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
-  # - type: dnf
-  #   remove:
-  #     auto-remove: true
-  #     packages:
-  - type: rpm-ostree
+  - type: dnf
     remove:
-      - firefox
-      - firefox-langpacks
+      auto-remove: true
+      packages:
+        - firefox
+        - firefox-langpacks
 
-      - plasma-discover
-      - plasma-discover-notifier
-      - plasma-discover-kns
-      - plasma-discover-flatpak
-      - plasma-discover-rpm-ostree
+        - plasma-discover
+        - plasma-discover-notifier
+        - plasma-discover-kns
+        - plasma-discover-flatpak
+        - plasma-discover-rpm-ostree
 
-      - plasma-welcome-fedora
-      - fedora-flathub-remote
+        - plasma-welcome-fedora
+        - fedora-flathub-remote
