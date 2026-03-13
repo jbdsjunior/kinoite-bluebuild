@@ -1,46 +1,50 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
-  - type: dnf
+  # - type: dnf
+  #   install:
+  #     skip-unavailable: true
+  #     allow-erasing: true
+  #     packages:
+  - type: rpm-ostree
     install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        # Already installed (build log)
-        # - amd-gpu-firmware
-        # - amd-ucode-firmware
-        # - mesa-dri-drivers
-        # - mesa-filesystem
-        # - mesa-libEGL
-        # - mesa-libGL
-        - mesa-libOpenCL
-        # - mesa-libgbm
-        # - mesa-va-drivers
-        - mesa-vdpau-drivers
-        # - mesa-vulkan-drivers
-        # - vulkan-loader
-        # - libva
-        # - libheif
-        - rocm-hip
-        - rocm-opencl
+      # Already installed (build log)
+      # - amd-gpu-firmware
+      # - amd-ucode-firmware
+      # - mesa-dri-drivers
+      # - mesa-filesystem
+      # - mesa-libEGL
+      # - mesa-libGL
+      - mesa-libOpenCL
+      # - mesa-libgbm
+      # - mesa-va-drivers
+      - mesa-vdpau-drivers
+      # - mesa-vulkan-drivers
+      # - vulkan-loader
+      # - libva
+      # - libheif
+      - rocm-hip
+      - rocm-opencl
 
-  - type: dnf
+  - type: rpm-ostree
     install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        # Multimedia framework plugins and libraries
-        - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad
-        - gstreamer1-plugins-ugly
-        - gstreamer1-vaapi
-        - libdvdcss
-        - fdk-aac
-        - libfdk-aac
-        - ffmpeg
-        - ffmpeg-libs
-        - libavcodec
-        - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
-        # - clinfo # Quick OpenCL runtime validation.
-        - libva-utils # Provides vainfo for VA-API validation.
-        # - vulkan-tools # Provides vulkaninfo for Vulkan validation.
+      # - type: dnf
+      #   install:
+      #     skip-unavailable: true
+      #     allow-erasing: true
+      #     packages:
+      # Multimedia framework plugins and libraries
+      - gstreamer1-plugins-bad-free-extras
+      - gstreamer1-plugins-bad
+      - gstreamer1-plugins-ugly
+      - gstreamer1-vaapi
+      - libdvdcss
+      - fdk-aac
+      - libfdk-aac
+      - ffmpeg
+      - ffmpeg-libs
+      - libavcodec
+      - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
+      # - clinfo # Quick OpenCL runtime validation.
+      - libva-utils # Provides vainfo for VA-API validation.
+      # - vulkan-tools # Provides vulkaninfo for Vulkan validation.

@@ -1,13 +1,15 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
-  - type: dnf
+  - type: rpm-ostree
     install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - nerdfontssymbolsonly-nerd-fonts # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
-        - liberation-fonts
+      # - type: dnf
+      #   install:
+      #     skip-unavailable: true
+      #     allow-erasing: true
+      #     packages:
+      - nerdfontssymbolsonly-nerd-fonts # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
+      - liberation-fonts
 
   # - type: fonts
   #   fonts:
