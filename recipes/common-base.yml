@@ -1,27 +1,40 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-
 modules:
+  # 1. FILES AND REPOSITORIES
+  # Deploy static files first. This ensures custom .repo files inside /etc/yum.repos.d/
+  # are available before any rpm-ostree module attempts to use them.
   - type: files
     files:
       - source: system
         destination: /
 
+  # 2. THIRD-PARTY REPOS
+  # Adds external repositories (like Negativo17 via bling) required for subsequent packages.
+  - from-file: common-repos.yml
+
+  # 3. DEBLOAT (REMOVALS)
+  # Remove unwanted base packages first to prevent dependency conflicts with incoming packages.
   - from-file: common-debloat.yml
 
-  - from-file: common-repos.yml
-  - from-file: common-fonts.yml
-
+  # 4. PACKAGE INSTALLATIONS (rpm-ostree)
+  # Safe to group together. They rely on the repos and files injected in steps 1 and 2.
   - from-file: common-drivers.yml
+  - from-file: common-fonts.yml
   - from-file: common-packages.yml
-
   - from-file: common-tools.yml
-
   - from-file: common-kvm.yml
 
-  - from-file: common-kargs-amd.yml
-  - from-file: common-kargs.yml
-
+  # 5. SYSTEM CONFIGURATION
+  # Enable services. This MUST happen after packages and files are installed,
+  # otherwise systemd will fail to find the unit files.
   - from-file: common-systemd.yml
 
+  # 6. KERNEL ARGUMENTS (GLOBAL)
+  # Kernel args are written to the ostree deployment tree. Keep global kargs here.
+  - from-file: common-kargs.yml
+  - from-file: common-kargs-amd.yml
+  # 7. FLATPAKS
+  # Declarative flatpak setup. Generally placed last as it operates at the user/app level
+  # rather than the core OS layer.
   - from-file: common-flatpaks.yml
