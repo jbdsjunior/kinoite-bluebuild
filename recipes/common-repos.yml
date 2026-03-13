@@ -5,3 +5,11 @@ modules:
     install:
       - negativo17 # install negativo17 repos and set priority to 90, uninstall RPMFusion repos if installed
       # - rpmfusion # install RPMFusion repos, including tainted repos & disable negativo17 repos if installed
+
+  - type: rpm-ostree
+    repos:
+      - brave-browser.repo
+      - google-chrome.repo
+      - microsoft-edge.repo
+      - terra.repo
+      - vscode.repo
