@@ -14,7 +14,7 @@ modules:
     system:
       enabled:
         - libvirtd.service
-        - qemu-guest-agent.service
+        # - qemu-guest-agent.service
 
   - type: files
     files:
