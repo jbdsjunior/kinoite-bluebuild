@@ -37,4 +37,4 @@ modules:
   # 7. FLATPAKS
   # Declarative flatpak setup. Generally placed last as it operates at the user/app level
   # rather than the core OS layer.
-  - from-file: common-flatpaks.yml
+  # - from-file: common-flatpaks.yml
