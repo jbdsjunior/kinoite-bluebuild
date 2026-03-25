@@ -1,5 +1,5 @@
 [Unit]
-Description=Run topgrade update (misc/containers only)
+Description=Run topgrade update (misc/containers)
 
 [Timer]
 OnStartupSec=30m
