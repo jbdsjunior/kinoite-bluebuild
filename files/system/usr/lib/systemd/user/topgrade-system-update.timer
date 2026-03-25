@@ -1,5 +1,5 @@
 [Unit]
-Description=Run topgrade system update daily
+Description=Run topgrade system update
 
 [Timer]
 OnStartupSec=30m
