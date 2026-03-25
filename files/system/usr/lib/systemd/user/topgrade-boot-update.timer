@@ -3,7 +3,7 @@ Description=Run topgrade system update shortly after boot
 
 [Timer]
 OnStartupSec=10m
-OnUnitInactiveSec=12h
+OnUnitInactiveSec=6h
 RandomizedDelaySec=5m
 Unit=topgrade-boot-update.service
 
