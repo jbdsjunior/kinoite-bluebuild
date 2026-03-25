@@ -1,5 +1,5 @@
 [Unit]
-Description=Topgrade boot update (system only)
+Description=Topgrade boot update (misc/containers only)
 Wants=network-online.target
 After=network-online.target
 
