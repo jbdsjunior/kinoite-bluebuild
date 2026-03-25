@@ -37,6 +37,7 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
+TimeoutStopSec=60
 
 [Install]
 WantedBy=default.target

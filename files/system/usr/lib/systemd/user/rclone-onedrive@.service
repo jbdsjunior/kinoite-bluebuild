@@ -6,10 +6,14 @@ Wants=network-online.target
 ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
-Type=simple
+# Notify systemd when the mount is fully ready
+Type=notify
+
+# Prepare directories and unmount stale endpoints silently
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone/%I
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
 
+# Main mount process with VFS caching and multi-thread optimizations
 ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
     --cache-dir=%h/.cache/rclone/%I \
@@ -24,15 +28,18 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --transfers 6 \
     --checkers 12 \
     --multi-thread-streams 6 \
+    --multi-thread-chunk-size 128M \
+    --fast-list \
     --umask 022 \
     --log-level INFO \
-    --log-file %h/.cache/rclone/rclone-%I.log
+    --log-file %h/.cache/rclone/rclone-%I.log \
+    --log-file-max-age 7d \
+    --log-file-compress
 
-# Desmontagem limpa
+# Ensure clean unmount on exit
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
-# Evita que o sistema mate o processo rclone antes do unmount terminar
 TimeoutStopSec=60
 
 [Install]
