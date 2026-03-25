@@ -5,6 +5,7 @@ Description=Run topgrade system update shortly after boot
 OnStartupSec=10m
 OnUnitInactiveSec=6h
 RandomizedDelaySec=5m
+Persistent=true
 Unit=topgrade-boot-update.service
 
 [Install]
