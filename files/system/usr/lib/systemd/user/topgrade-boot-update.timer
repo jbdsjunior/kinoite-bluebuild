@@ -3,7 +3,8 @@ Description=Run topgrade update (misc/containers)
 
 [Timer]
 OnStartupSec=30m
-OnUnitInactiveSec=6h
+# OnUnitInactiveSec=6h
+OnCalendar=daily
 RandomizedDelaySec=15m
 Persistent=true
 Unit=topgrade-boot-update.service
