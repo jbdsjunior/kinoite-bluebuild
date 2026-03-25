@@ -28,9 +28,12 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --log-level INFO \
     --log-file %h/.cache/rclone/rclone-%I.log
 
+# Desmontagem limpa
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
+# Evita que o sistema mate o processo rclone antes do unmount terminar
+TimeoutStopSec=60
 
 [Install]
 WantedBy=default.target
