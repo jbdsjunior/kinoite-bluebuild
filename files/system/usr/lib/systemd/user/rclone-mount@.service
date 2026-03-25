@@ -13,6 +13,7 @@ EnvironmentFile=-%h/.config/rclone/rclone-mount-%i.env
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone
 # Clear stale mount without failing if nothing is mounted
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
+
 ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
     --cache-dir=%h/.cache/rclone \
@@ -28,9 +29,12 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --poll-interval=5m \
     --transfers=4 \
     --checkers=4 \
-    --drive-pacer-min-sleep=20ms \
+    --drive-pacer-min-sleep=100ms \
     --drive-pacer-burst=100 \
+    --drive-chunk-size=128M \
     --drive-skip-gdocs \
+    --drive-skip-shortcuts \
+    --drive-skip-dangling-shortcuts \
     --drive-server-side-across-configs \
     --drive-acknowledge-abuse \
     --drive-stop-on-upload-limit \
