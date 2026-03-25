@@ -2,8 +2,8 @@
 Description=Run topgrade flatpak update every 6 hours
 
 [Timer]
-OnStartupSec=2h
-OnUnitInactiveSec=6h
+OnStartupSec=10m
+OnUnitInactiveSec=2h
 RandomizedDelaySec=10m
 Unit=topgrade-flatpak-update.service
 
