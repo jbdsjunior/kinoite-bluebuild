@@ -150,9 +150,17 @@ Reboot and complete the MOK enrollment flow in firmware UI.
 ### 3.4 Rclone Mount as User Service
 
 ```bash
+# 1. Configure your remotes (e.g., 'gdrive_pessoal' or 'work_onedrive')
 rclone config
-systemctl --user enable --now rclone-mount@remote-name.service
-systemctl --user status rclone-mount@remote-name.service
+
+# 2. Enable for Google Drive remotes
+systemctl --user enable --now rclone-gdrive@remote-name.service
+
+# 3. Enable for OneDrive remotes
+systemctl --user enable --now rclone-onedrive@remote-name.service
+
+# Check status
+systemctl --user status rclone-gdrive@remote-name.service
 ```
 
 Expected mount path: `~/Cloud/remote-name`.
