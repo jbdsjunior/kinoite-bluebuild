@@ -51,7 +51,7 @@ bluebuild build recipes/recipe-nvidia.yml
 
 ```
 
-For NVIDIA builds, the recipe inherits the NVIDIA base image from BlueBuild (`ghcr.io/blue-build/base-images/fedora-kinoite-nvidia`) and applies the shared modules from this repository during compose.
+For NVIDIA builds, the recipe currently uses `ghcr.io/ublue-os/kinoite-nvidia` as the base image and applies the shared modules from this repository during compose.
 
 After compilation, the OCI image will be available locally in your container storage (Podman/Docker). You can list it with `podman images`.
 
@@ -67,3 +67,5 @@ rpm-ostree rebase ostree-unverified-image:oci-archive:/path/to/your/repo/build/i
 ```
 
 ---
+
+For project-level installation, variants, and runtime validation guidance, see the repository root `README.md`.
