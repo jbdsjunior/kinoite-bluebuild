@@ -8,11 +8,11 @@ modules:
         - firefox
         - firefox-langpacks
 
-        - plasma-discover
+        # - plasma-discover
         # - plasma-discover-notifier
         # - plasma-discover-kns
         # - plasma-discover-flatpak
-        # - plasma-discover-rpm-ostree
+        - plasma-discover-rpm-ostree
 
         - plasma-welcome-fedora
         - fedora-flathub-remote
