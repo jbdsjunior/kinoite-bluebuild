@@ -49,6 +49,9 @@ Reboot.
 
 ### 1.2 Signed Rebase (Verified)
 
+Before using signed rebases, ensure your host trust policy is configured for this repository signing key (`cosign.pub`).
+If signature verification fails, keep using the unverified image temporarily and validate your host policy/key setup before retrying.
+
 **AMD**
 
 ```bash
@@ -75,7 +78,14 @@ sudo rpm-ostree rollback
 
 ## 2) Quick System Validation (Post-Install)
 
-Use this block to quickly verify expected runtime components:
+Use the common block first, then run only the variant-specific checks for your image.
+You can detect your current image with:
+
+```bash
+rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
+```
+
+### 2.1 Common checks
 
 ```bash
 # Update timers
@@ -90,11 +100,21 @@ systemctl status systemd-resolved
 # Kernel/swap/network tuning signals
 sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control
 cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
+```
 
-# AMD media/compute runtime checks
+### 2.2 AMD checks (`kinoite-amd`)
+
+```bash
 vainfo
 vulkaninfo --summary
 clinfo
+```
+
+### 2.3 NVIDIA checks (`kinoite-nvidia`)
+
+```bash
+nvidia-smi
+sudo nvidia-ctk cdi list 2>/dev/null || echo "CDI not generated yet"
 ```
 
 To keep user timers active even when no graphical session is open:
@@ -141,8 +161,6 @@ lsmod | grep kvm
 systemctl status libvirtd
 lsattr -d ~/.local/share/gnome-boxes/images
 ```
-
-Then log out and log back in to refresh group membership (`libvirt`, `kvm`).
 
 ### 3.2 NVIDIA for Containers (CUDA/CDI)
 
@@ -237,6 +255,8 @@ Inside the `bluebuild` container:
 bluebuild build recipes/recipe-amd.yml
 bluebuild build recipes/recipe-nvidia.yml
 ```
+
+For full local development and testing details, see `bluebuild/README.md`.
 
 ---
 
