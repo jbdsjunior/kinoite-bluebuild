@@ -21,7 +21,7 @@ modules:
         # KDE apps
         - elisa-player
         - gwenview
-        - haruna
+        # - haruna
         - kate
         - kcalc
         - krdc
