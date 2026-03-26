@@ -129,8 +129,8 @@ BTRFS `No_COW` (`+C`) attributes are automatically applied to VM image directori
 To apply these attributes immediately without rebooting, run:
 
 ```bash
-sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-kvm-system-tmpfiles.conf
-systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-kvm-user-tmpfiles.conf
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
+systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
 Useful checks:
