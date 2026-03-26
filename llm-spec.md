@@ -64,7 +64,6 @@ You MUST follow this exact sequence when modifying the codebase:
 ## 7. CI/CD & Git Workflow Standards
 
 * **Security:** Use least-privilege permissions (`permissions: contents: read`, etc.) in every GitHub Action job.
-* **Versioning:** Pin critical GitHub Actions strictly to their commit SHA, not generic tags (`@v4`).
 * **Efficiency:** Keep AMD and AMD+NVIDIA workflows semantically equivalent. Replace duplicated workflow logic with reusable matrix strategies where applicable.
 * **Commits:** Follow Conventional Commits format (`feat:`, `fix:`, `chore:`, `refactor:`). Keep descriptions imperative and concise.
 
