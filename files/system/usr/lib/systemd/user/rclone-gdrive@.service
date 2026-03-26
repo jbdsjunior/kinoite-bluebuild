@@ -30,7 +30,7 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --checkers 16 \
     --multi-thread-streams 8 \
     --umask 022 \
-    --log-level INFO \
+    --log-level ERROR \
     --log-file %h/.cache/rclone/rclone-%I.log \
     --log-file-max-age 7d \
     --log-file-compress \
