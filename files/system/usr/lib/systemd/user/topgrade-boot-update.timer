@@ -2,7 +2,7 @@
 Description=Run topgrade update (misc/containers)
 
 [Timer]
-OnStartupSec=30m
+OnStartupSec=1h
 # OnUnitInactiveSec=6h
 OnCalendar=daily
 RandomizedDelaySec=15m

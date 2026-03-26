@@ -23,7 +23,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 | Image | Base image | When to use |
 | :--- | :--- | :--- |
 | `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | AMD hosts without a dedicated NVIDIA GPU. |
-| `kinoite-nvidia` | `ghcr.io/blue-build/base-images/fedora-kinoite-nvidia` | Hosts with NVIDIA GPU (including AMD + NVIDIA). |
+| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | Hosts with NVIDIA GPU (including AMD + NVIDIA). |
 
 ---
 
@@ -114,7 +114,9 @@ topgrade -cy --skip-notify --only flatpak
 
 ## 3) Scenario-Based Configuration
 
-### 3.1 Virtualization (KVM/libvirt)
+### 3.1 Virtualization (KVM/libvirt & GNOME Boxes)
+
+Run the setup script to configure user groups:
 
 ```bash
 kinoite-setup-kvm.sh
@@ -122,13 +124,25 @@ kinoite-setup-kvm.sh
 
 Then log out and log back in to refresh group membership (`libvirt`, `kvm`).
 
+BTRFS `No_COW` (`+C`) attributes are automatically applied to VM image directories (`/var/lib/libvirt/images`, `~/.local/share/libvirt/images`, and `~/.local/share/gnome-boxes/images`) via `systemd-tmpfiles`.
+
+To apply these attributes immediately without rebooting, run:
+
+```bash
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-kvm-system-tmpfiles.conf
+systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-kvm-user-tmpfiles.conf
+```
+
 Useful checks:
 
 ```bash
 id | grep -E "libvirt|kvm"
 lsmod | grep kvm
 systemctl status libvirtd
+lsattr -d ~/.local/share/gnome-boxes/images
 ```
+
+Then log out and log back in to refresh group membership (`libvirt`, `kvm`).
 
 ### 3.2 NVIDIA for Containers (CUDA/CDI)
 
