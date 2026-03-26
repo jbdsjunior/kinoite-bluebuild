@@ -7,10 +7,8 @@ ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
 Type=notify
-
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone/%I
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
-
 ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
     --cache-dir=%h/.cache/rclone/%I \
@@ -27,7 +25,7 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --drive-skip-gdocs \
     --drive-acknowledge-abuse \
     --drive-stop-on-upload-limit \
-    --drive-server-side-across-configs \
+    --server-side-across-configs \
     --transfers 8 \
     --checkers 16 \
     --multi-thread-streams 8 \
@@ -36,7 +34,6 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --log-file %h/.cache/rclone/rclone-%I.log \
     --log-file-max-age 7d \
     --log-file-compress
-
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
