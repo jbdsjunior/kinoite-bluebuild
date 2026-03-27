@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-nvidia:
-    uses: ./.github/build-image.yml
+    uses: ./.github/workflows/build-image.yml
     permissions:
       contents: read
       packages: write
