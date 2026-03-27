@@ -4,10 +4,12 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=oneshot
+Type=exec
 SuccessExitStatus=75
 TimeoutStartSec=3600
 ExecStart=/usr/bin/flock -E 75 -w 900 %t/topgrade-update.lock /usr/bin/topgrade -cy --no-ask-retry --auto-retry 2 --notify-end on_failure --only system
 Nice=19
 IOSchedulingClass=idle
 CPUSchedulingPolicy=idle
+Restart=on-failure
+RestartSec=30
