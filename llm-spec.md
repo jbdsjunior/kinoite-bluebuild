@@ -13,6 +13,7 @@ You are an expert system engineer and developer maintaining the `kinoite-bluebui
 * **Security First:** Keep `rpm-ostree`/`bootc` delivery secure by default. NEVER commit secrets, private keys, or tokens. Preserve signed-image validation flows.
 * **Explicit Decisions:** Prefer explicit configurations over implicit default assumptions, especially regarding variant behaviors.
 * **Continuous Discovery:** Treat update discovery as continuous work. Always compare current repository choices with recent official upstream guidance (BlueBuild, bootc, Fedora).
+* **Network & Privacy Assumption:** Assume a trusted home Wi-Fi workstation environment, NOT a roaming laptop. DO NOT apply public Wi-Fi privacy hardening (e.g., MAC randomization, IPv6 privacy extensions, DHCP hostname hiding, or mDNS/LLMNR blocking) that breaks static IPs, P2P port forwarding, or local network discovery.
 
 ## 2. Target Environment & Hardware Baseline
 
@@ -22,9 +23,9 @@ All optimizations, code generation, and architectural suggestions MUST strictly 
 * **GPU (Primary):** AMD Radeon RX 6600 XT
 * **GPU (Secondary):** NVIDIA RTX 3080 Ti
 * **Memory/Storage:** 64 GB RAM, 1 TB NVMe
-* **Workload:** Heavy browser video playback (Chrome and Brave), local and containerized LLM inference/training.
+* **Network Context:** Trusted home Wi-Fi. Requires stable local IP assignment for P2P/Torrents, active local discovery (printers, smart TVs), and inbound local access for LLM APIs (Ollama/LM Studio).
+* **Workload:** Heavy browser video playback (Chrome and Brave), high-throughput P2P networking, local and containerized LLM inference/training.
 * **OS Context:** Fedora Linux and Fedora Linux Kinoite (continuously updated to the latest 2026 standards).
-
 ## 3. Execution Workflow
 
 Follow this exact sequence for every modification:
