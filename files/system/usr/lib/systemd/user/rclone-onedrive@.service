@@ -26,12 +26,15 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --multi-thread-streams 6 \
     --multi-thread-chunk-size 250M \
     --umask 022 \
+    --rc \
+    --rc-addr unix://%h/.cache/rclone/%I.sock \
+    --rc-no-auth \
     --log-level NOTICE \
     --log-file %h/.cache/rclone/rclone-%I.log \
     --log-file-max-age 7d \
     --log-file-compress
 
-# Ensure proper unmount on stop
+ExecStartPost=/usr/bin/rclone rc vfs/refresh recursive=true _async=true --rc-addr unix://%h/.cache/rclone/%I.sock
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
 Restart=on-failure
 RestartSec=10
