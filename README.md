@@ -14,7 +14,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 
 - Ready-to-use variants: `kinoite-amd` and `kinoite-nvidia`.
 - Automated build and publishing with GitHub Actions.
-- Automatic updates through `topgrade` user timers.
+- Automatic updates through `topgrade` user timers with serialized execution and frequent cadences (flatpak: 90 min, system: 3 h, misc/containers: 6 h).
 - Kernel/sysctl/network tuning versioned under `files/system`.
 - Local development workflow with Distrobox + BlueBuild CLI.
 
@@ -92,6 +92,7 @@ rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
 systemctl --user status topgrade-system-update.timer
 systemctl --user status topgrade-boot-update.timer
 systemctl --user status topgrade-flatpak-update.timer
+systemctl --user list-timers "topgrade-*.timer"
 
 # Core host daemons
 systemctl status firewalld
