@@ -98,8 +98,8 @@ systemctl --user list-timers "topgrade-*.timer"
 systemctl status firewalld
 systemctl status systemd-resolved
 
-# Kernel/swap/network tuning signals
-sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control
+# Kernel/swap/network tuning signals (Updated for LLM/P2P performance)
+sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control net.ipv4.tcp_keepalive_time
 cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
 
 # Kernel arguments baked into the deployment
