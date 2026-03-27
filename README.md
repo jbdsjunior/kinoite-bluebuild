@@ -101,6 +101,16 @@ systemctl status systemd-resolved
 # Kernel/swap/network tuning signals
 sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control
 cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
+
+# Kernel arguments baked into the deployment
+rpm-ostree kargs | tr ' ' '\n' | grep -E "amd_pstate|transparent_hugepage|mitigations|pcie_aspm"
+
+# NetworkManager profile shipped by the image (home-workstation defaults)
+sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-home-network.conf
+
+# Rclone/FUSE dependencies expected by user services
+rpm -q rclone fuse3
+command -v fusermount3
 ```
 
 ### 2.2 AMD checks (`kinoite-amd`)
@@ -223,6 +233,31 @@ sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
 ```
 
+### Optional: Enable privacy-hardening profile (advanced)
+
+`60-home-network.conf` is the default profile for stable LAN behavior.
+If you need stricter privacy behavior, you can create a host override from the template below:
+
+```bash
+sudo install -d -m 0755 /etc/NetworkManager/conf.d
+sudo cp /usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf /etc/NetworkManager/conf.d/60-privacy-hardening.conf
+sudoedit /etc/NetworkManager/conf.d/60-privacy-hardening.conf
+sudo systemctl restart NetworkManager
+```
+
+Check active NetworkManager settings:
+
+```bash
+sudo NetworkManager --print-config | sed -n '/^\[device\]/,/^$/p;/^\[connection\]/,/^$/p'
+```
+
+Rollback to image defaults:
+
+```bash
+sudo rm -f /etc/NetworkManager/conf.d/60-privacy-hardening.conf
+sudo systemctl restart NetworkManager
+```
+
 ---
 
 Useful manual checks:
@@ -236,7 +271,7 @@ rg --files files/system/usr/lib/systemd | sort
 
 # sysctl and network tuning
 rg -n "swappiness|max_map_count|inotify|tcp" files/system/usr/lib/sysctl.d/60-kernel-tuning.conf
-rg -n "DNS|privacy|resolved" files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf files/system/usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
+rg -n "DNS|privacy|resolved" files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf files/system/usr/lib/NetworkManager/conf.d/60-home-network.conf files/system/usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
 ```
 
 ---
