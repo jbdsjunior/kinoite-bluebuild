@@ -1,18 +1,20 @@
 [Unit]
-Description=Rclone Google Drive Mount - %i
+Description=Rclone Mount - %i
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=notify
+EnvironmentFile=-%h/.config/rclone/env/%i.env
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
     --vfs-cache-mode full \
-    --vfs-cache-max-size 50G \
-    --vfs-cache-max-age 24h \
+    --vfs-cache-max-size 100G \
+    --vfs-cache-max-age 48h \
     --dir-cache-time 1h \
     --poll-interval 1m \
-    --log-level INFO
+    --log-level INFO \
+    $RCLONE_EXTRA_OPTS
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 Restart=on-failure
 RestartSec=10
