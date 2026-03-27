@@ -25,7 +25,7 @@ modules:
         - kate
         - kcalc
         - krdc
-        - okular
+        # - okular
 
         # Utilities
         - lm_sensors
