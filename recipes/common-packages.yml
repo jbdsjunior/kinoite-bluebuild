@@ -19,12 +19,12 @@ modules:
         - man-pages-pt_BR
 
         # KDE apps
-        - elisa-player
-        - gwenview
+        # - elisa-player
+        # - gwenview
         # - haruna
-        - kate
-        - kcalc
-        - krdc
+        # - kate
+        # - kcalc
+        # - krdc
         # - okular
 
         # Utilities
