@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-amd:
-    uses: ./.github/workflows/build-image.yml
+    uses: ./.github/workflows/base/build-image.yml
     permissions:
       contents: read
       packages: write
