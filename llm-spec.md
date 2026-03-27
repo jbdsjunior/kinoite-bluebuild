@@ -1,6 +1,5 @@
 # LLM System Specification - kinoite-bluebuild
 
-**Version:** 2026-03-26
 **Scope:** Entire repository (`recipes/`, `files/`, `scripts/`, `.github/workflows/`, `README.md`)
 
 ## 1. System Role & Global Directives
