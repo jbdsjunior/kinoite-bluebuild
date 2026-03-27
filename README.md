@@ -192,19 +192,26 @@ Reboot and complete the MOK enrollment flow in firmware UI.
 
 ### 3.4 Rclone Mount as User Service
 
+O mapeamento utiliza um serviço unificado que permite a injeção de parâmetros via variáveis de ambiente.
+
 ```bash
-# 1. Configure your remotes (e.g., 'gdrive_pessoal' or 'work_onedrive')
+# 1. Configurar os remotes (ex: 'gdrive_pessoal' ou 'onedrive_work')
 rclone config
-
-# 2. Enable for Google Drive remotes
-systemctl --user enable --now rclone-gdrive@remote-name.service
-
-# 3. Enable for OneDrive remotes
-systemctl --user enable --now rclone-onedrive@remote-name.service
-
-# Check status
-systemctl --user status rclone-gdrive@remote-name.service
 ```
+
+# 2. Opcional: Criar arquivo de ambiente para o OneDrive (otimização de chunks)
+
+mkdir -p ~/.config/rclone/env/
+echo 'RCLONE_EXTRA_OPTS="--vfs-read-chunk-size 128M --vfs-read-chunk-size-limit off"' > ~/.config/rclone/env/onedrive_work.env
+
+# 3. Ativar os mapeamentos
+
+systemctl --user enable --now <rclone@gdrive_pessoal.service>
+systemctl --user enable --now <rclone@onedrive_work.service>
+
+# Verificar status
+
+systemctl --user status <rclone@gdrive_pessoal.service>
 
 Expected mount path: `~/Cloud/remote-name`.
 
