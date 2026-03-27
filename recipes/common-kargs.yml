@@ -11,3 +11,4 @@ modules:
       # Generic desktop tuning
       - transparent_hugepage=madvise # Better memory management for mixed workloads
       - mitigations=auto # Balanced security mitigations for CPU vulnerabilities
+      - pcie_aspm=off # Maximize PCIe link performance for NVMe and GPUs
