@@ -30,7 +30,7 @@ modules:
         # Utilities
         - lm_sensors
         - rclone
-        # - fuse3
+        - fuse3
 
         # Native app mapping from list-apps.txt (when available)
         # Browsers (external repos required under files/system/etc/yum.repos.d)
