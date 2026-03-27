@@ -9,6 +9,7 @@ ConditionPathExists=%h/.config/rclone/rclone.conf
 Type=notify
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%I %h/.cache/rclone/%I
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/Cloud/%I
+ExecStartPre=-/usr/bin/rm -f %h/.cache/rclone/%I.sock
 
 ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --config=%h/.config/rclone/rclone.conf \
@@ -36,7 +37,10 @@ ExecStart=/usr/bin/rclone mount %I: %h/Cloud/%I \
     --log-file-compress
 
 ExecStartPost=/usr/bin/rclone rc vfs/refresh recursive=true _async=true --rc-addr unix://%h/.cache/rclone/%I.sock
+
 ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%I
+ExecStopPost=-/usr/bin/rm -f %h/.cache/rclone/%I.sock
+
 Restart=on-failure
 RestartSec=10
 
