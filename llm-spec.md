@@ -61,7 +61,7 @@ Follow this exact sequence for every modification:
 ## 6. CI/CD & Git Workflow Standards
 
 * **Security:** Use least-privilege permissions (`permissions: contents: read`) in every GitHub Action job.
-* **Efficiency:** Keep AMD and AMD+NVIDIA workflows semantically equivalent. Replace duplicated logic with reusable matrix strategies.
+* **Workflow Separation (CRITICAL):** The workflows `build-amd.yml` and `build-nvidia.yml` MUST remain as completely separate files. DO NOT attempt to unify or merge them into a single file using matrix strategies. They must remain isolated to ensure independent caching, triggering, and easier targeted debugging.
 * **Commits:** Follow Conventional Commits format (`feat:`, `fix:`, `chore:`, `refactor:`). Keep descriptions imperative and concise.
 
 ## 7. Repository Policies
