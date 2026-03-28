@@ -20,3 +20,4 @@ if command -v fastfetch >/dev/null 2>&1 && [ -z "${FASTFETCH_SHOWN:-}" ]; then
     export FASTFETCH_SHOWN=1
     fastfetch
 fi
+systemctl list-unit-files | grep -q '^virtqemud\.socket' && sudo systemctl restart virtqemud.socket virtnetworkd.socket virtnodedevd.socket || true
