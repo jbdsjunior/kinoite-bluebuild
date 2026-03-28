@@ -1,4 +1,4 @@
-# Target Audience & Hardware Baseline
+# Hardware Baseline
 
 **Disclaimer:** This image is heavily opinionated and optimized for a specific high-performance workstation baseline. Applying this image to low-spec hardware (e.g., laptops with 8GB/16GB RAM) may cause system instability, out-of-memory (OOM) kills, or network stutters.
 
