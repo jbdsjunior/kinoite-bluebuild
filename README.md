@@ -37,7 +37,7 @@ Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
 # or
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
-````
+```
 
 Reboot.
 
@@ -75,3 +75,11 @@ The Distrobox-based local development and build flow is documented in:
 - [`files/system/`](files/system/): system configuration copied into the final image.
 - [`files/scripts/`](files/scripts/): utilities installed in the image.
 - [`.github/workflows/`](.github/workflows/): build pipelines and automation.
+
+## Documentation Map
+
+- Main project and install flow: [`README.md`](README.md)
+- Hardware assumptions and limits: [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)
+- Shared post-install runtime validation: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
+- NVIDIA/hybrid post-install extensions: [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md)
+- Local build workflow with Distrobox: [`bluebuild/README.md`](bluebuild/README.md)
