@@ -19,7 +19,6 @@ modules:
         - virtqemud.socket
         - virtnetworkd.socket
         - virtnodedevd.socket
-        - virtstoragedevd.socket
 
   - type: files
     files:
