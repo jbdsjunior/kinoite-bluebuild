@@ -41,16 +41,6 @@ Reboot.
 
 ### Signed Rebase (Verified)
 
-Before using signed rebases, ensure your host trust policy is configured for this repository's signing key. 
-
-**(Optional)** If you haven't imported the key yet, download it to your system's container PKI directory first:
-
-```bash
-sudo curl -o /etc/pki/containers/kinoite-bluebuild.pub [https://raw.githubusercontent.com/jbdsjunior/kinoite-bluebuild/main/cosign.pub](https://raw.githubusercontent.com/jbdsjunior/kinoite-bluebuild/main/cosign.pub)
-```
-
-Then, perform the verified rebase:
-
 ```bash
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 # or
