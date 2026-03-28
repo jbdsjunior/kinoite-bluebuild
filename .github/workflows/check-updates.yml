@@ -15,6 +15,7 @@ concurrency:
 jobs:
   check-and-trigger:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       actions: write
       contents: read
