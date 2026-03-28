@@ -25,6 +25,8 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 | `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | AMD hosts without a dedicated NVIDIA GPU. |
 | `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | Hosts with an NVIDIA GPU (including AMD + NVIDIA hybrid setups). |
 
+> ⚠️ **Important:** This image is heavily tuned for high-end workstations (64GB RAM) and local AI workloads. Please read the [Hardware Baseline & Warnings](HARDWARE_BASELINE.md) before installing on standard hardware or laptops.
+
 ## Quick Start (Install)
 
 Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final state).
