@@ -29,7 +29,7 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 Validate the container integration by running a temporary CUDA container:
 
 ```bash
-podman run --rm --device [nvidia.com/gpu=all](https://nvidia.com/gpu=all) nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+podman run --rm --device nvidia.com/gpu=all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
 ## 3) Secure Boot (MOK Enrollment)
