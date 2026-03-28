@@ -2,6 +2,8 @@
 Description=Topgrade update (system only)
 Wants=network-online.target
 After=network-online.target
+StartLimitIntervalSec=10min
+StartLimitBurst=3
 
 [Service]
 Type=exec
