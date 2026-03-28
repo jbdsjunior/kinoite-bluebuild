@@ -14,9 +14,11 @@ modules:
         # - langpacks-en
         - langpacks-pt_BR
         - hunspell-pt-BR
-        - hyphen-pt-BR
-        # - aspell-pt_BR
-        # - man-pages-pt_BR
+
+        # Utilities
+        - lm_sensors
+        - rclone
+        # - fuse3
 
         # KDE apps
         # - elisa-player
@@ -27,11 +29,6 @@ modules:
         # - krdc
         # - okular
 
-        # Utilities
-        - lm_sensors
-        - rclone
-        # - fuse3
-
         # Native app mapping from list-apps.txt (when available)
         # Browsers (external repos required under files/system/etc/yum.repos.d)
         # - brave-browser
@@ -41,7 +38,6 @@ modules:
 
         # Development (external repos required under files/system/etc/yum.repos.d)
         # - code
-        # - zed # no native repository configured in this image yet
 
         # # GNOME and desktop utilities
         # - flatseal
@@ -56,13 +52,3 @@ modules:
         # - obsidian
         # - qbittorrent
         # - stremio
-
-        # Other apps (native package name may vary by repository)
-        # - anytype
-
-        # Flatpaks from list-apps.txt without a clear native RPM mapping
-        # - com.cherry_ai.CherryStudio
-        # - com.ranfdev.DistroShelf
-        # - dev.fredol.open-tv
-        # - io.github.DenysMb.Kontainer
-        # - io.github.nacho.mecalin
