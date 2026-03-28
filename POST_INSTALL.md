@@ -53,7 +53,7 @@ clinfo
 
 ### NVIDIA (`kinoite-nvidia`)
 
-Use [`POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=POST_INSTALL_NVIDIA.md) for full NVIDIA validation and container stack checks.
+Use [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) for full NVIDIA validation and container stack checks.
 
 ## 4\) Post-Install Operational Steps
 

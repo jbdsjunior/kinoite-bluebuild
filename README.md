@@ -55,18 +55,18 @@ Reboot again.
 
 All post-install configuration, runtime validation checks, and troubleshooting steps are consolidated in:
 
-- [`POST_INSTALL.md`](https://www.google.com/search?q=POST_INSTALL.md) (common post-install, validation, and troubleshooting)
-- [`POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=POST_INSTALL_NVIDIA.md) (NVIDIA/hybrid-specific complement)
+- [`POST_INSTALL.md`](POST_INSTALL.md) (common post-install, validation, and troubleshooting)
+- [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) (NVIDIA/hybrid-specific complement)
 
 ## Local Development
 
 The Distrobox-based local development and build flow is documented in:
 
-- [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md)
+- [`bluebuild/README.md`](bluebuild/README.md)
 
 ## Repository Structure
 
-- [`recipes/`](https://www.google.com/search?q=recipes/): BlueBuild recipes and shared modules.
-- [`files/system/`](https://www.google.com/search?q=files/system/): system configuration copied into the final image.
-- [`files/scripts/`](https://www.google.com/search?q=files/scripts/): utilities installed in the image.
-- [`.github/workflows/`](https://www.google.com/search?q=.github/workflows/): build pipelines and automation.
+- [`recipes/`](recipes/): BlueBuild recipes and shared modules.
+- [`files/system/`](files/system/): system configuration copied into the final image.
+- [`files/scripts/`](files/scripts/): utilities installed in the image.
+- [`.github/workflows/`](.github/workflows/): build pipelines and automation.
