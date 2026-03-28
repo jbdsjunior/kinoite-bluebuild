@@ -3,15 +3,15 @@
 This guide is the canonical post-installation reference for the project.
 It covers shared validation, operational checks, and baseline post-install tasks for all users.
 
-> If you are on `kinoite-nvidia` (or hybrid AMD+NVIDIA), also follow [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
+> **Note for NVIDIA/Hybrid users:** Please complete this general guide first, then apply the specific steps in [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
 
 ## 1) Confirm Installed Image Variant
 
 ```bash
 rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
-````
+```
 
-## 2\) Core Runtime Validation (All Variants)
+## 2) Core Runtime Validation
 
 Run this block after first boot and after major updates.
 
@@ -35,15 +35,11 @@ rpm-ostree kargs | tr ' ' '\n' | grep -E "amd_pstate|transparent_hugepage|mitiga
 
 # NetworkManager profile shipped by the image
 sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-home-network.conf
-
-# Rclone/FUSE dependencies expected by user services
-rpm -q rclone fuse3
-command -v fusermount3
 ```
 
-## 3\) Variant Validation Quick Checks
+## 3) Baseline GPU Validation (Mesa/AMD)
 
-### AMD (`kinoite-amd`)
+*NVIDIA users should run these to validate the integrated/primary AMD GPU, then proceed to the NVIDIA guide for discrete GPU validation.*
 
 ```bash
 vainfo
@@ -51,11 +47,7 @@ vulkaninfo --summary
 clinfo
 ```
 
-### NVIDIA (`kinoite-nvidia`)
-
-Use [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) for full NVIDIA validation and container stack checks.
-
-## 4\) Post-Install Operational Steps
+## 4) Post-Install Operational Steps
 
 ### Keep User Timers Active Without Graphical Session
 
@@ -80,15 +72,6 @@ sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
-Validation helpers:
-
-```bash
-id | grep -E "libvirt|kvm"
-lsmod | grep kvm
-systemctl status libvirtd
-lsattr -d ~/.local/share/gnome-boxes/images
-```
-
 ### Rclone Mount as User Service
 
 ```bash
@@ -100,23 +83,10 @@ mkdir -p ~/.config/rclone/env/
 echo 'RCLONE_EXTRA_OPTS="--vfs-read-chunk-size 128M --vfs-read-chunk-size-limit off"' > ~/.config/rclone/env/onedrive_work.env
 
 # 3. Enable mappings
-systemctl --user enable --now rclone@gdrive_personal.service
 systemctl --user enable --now rclone@onedrive_work.service
-
-# Verify status
-systemctl --user status rclone@gdrive_personal.service
 ```
 
-Expected mount path: `~/Cloud/remote-name`.
-
-### Optional Manual Update Triggers
-
-```bash
-topgrade -cy --skip-notify --only system
-topgrade -cy --skip-notify --only flatpak
-```
-
-## 5\) Troubleshooting (All Variants)
+## 5) Troubleshooting
 
 ### Captive Portal (Hotel/Airport)
 
