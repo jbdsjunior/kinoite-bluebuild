@@ -1,71 +1,66 @@
 # Test and Validation Environment with Distrobox
 
-This directory contains the configuration for a local development and testing environment using [Distrobox](https://distrobox.it/).
+> Last reviewed: 2026-03-28
 
-The `distrobox.ini` file defines a container with the `ghcr.io/blue-build/cli:latest-distrobox` image, which includes the `bluebuild` CLI and all necessary dependencies to build the custom OCI image locally.
+This directory contains the canonical workflow for local development and testing using [Distrobox](https://distrobox.it/).
+
+The `distrobox.ini` file defines a container with the `ghcr.io/blue-build/cli:latest-distrobox` image, which includes the `bluebuild` CLI and dependencies needed to build the custom OCI image locally.
 
 ## Requirements
 
-- **Distrobox**: Ensure Distrobox is installed on your system.
-- **Podman** or **Docker**: A container runtime is required.
+- **Distrobox** installed on the host.
+- **Podman** or **Docker** runtime available.
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 ### 1. Create the Container
 
-`distrobox` uses the `distrobox.ini` file to configure and create the environment. To do this, run the following command in the project root:
+From the project root:
 
 ```bash
 distrobox assemble create
-
 ```
 
-This command will download the `bluebuild` image, create the container named `bluebuild`, and configure it.
+This downloads the BlueBuild image, creates the `bluebuild` container, and applies the declared config.
 
 ### 2. Enter the Container
 
-After creation, access the `distrobox` environment with the command:
-
 ```bash
 distrobox enter bluebuild
-
 ```
 
-You will be directed to the shell inside the container, where the `bluebuild` CLI is available.
+You will enter a shell where `bluebuild` CLI is available.
 
-## 🛠️ Building the Image Locally
+## Build Images Locally
 
-Inside the `bluebuild` environment, you can compile the recipes to generate OCI images.
+Inside the `bluebuild` environment:
 
-### Compile AMD Recipe
+### Build AMD Recipe
 
 ```bash
 bluebuild build recipes/recipe-amd.yml
-
 ```
 
-### Compile Nvidia Recipe
+### Build NVIDIA Recipe
 
 ```bash
 bluebuild build recipes/recipe-nvidia.yml
-
 ```
 
-For NVIDIA builds, the recipe currently uses `ghcr.io/ublue-os/kinoite-nvidia` as the base image and applies the shared modules from this repository during compose.
+For NVIDIA builds, the recipe uses `ghcr.io/ublue-os/kinoite-nvidia` as the base and composes shared modules from this repository.
 
-After compilation, the OCI image will be available locally in your container storage (Podman/Docker). You can list it with `podman images`.
+After compilation, the OCI image is available in local container storage. You can list images with `podman images`.
 
-## ✅ Local Image Testing
+## Local Rebase Test
 
-After building the image, you can rebase your system to the local version to test changes before pushing them to the remote registry.
-
-Use the following command to rebase to the local image:
+Use local image output to validate changes before publishing:
 
 ```bash
 rpm-ostree rebase ostree-unverified-image:oci-archive:/path/to/your/repo/build/image.oci
-
 ```
 
----
+## Related Documents
 
-For project-level installation, variants, and runtime validation guidance, see the repository root `README.md`.
+- Project overview and install quickstart: `../README.md`
+- Post-install common guide: `../POST_INSTALL.md`
+- NVIDIA/hybrid-specific guide: `../POST_INSTALL_NVIDIA.md`
