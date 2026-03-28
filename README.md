@@ -25,7 +25,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 | `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | AMD hosts without a dedicated NVIDIA GPU. |
 | `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | Hosts with an NVIDIA GPU (including AMD + NVIDIA hybrid setups). |
 
-> ⚠️ **Important:** This image is heavily tuned for high-end workstations (64GB RAM) and local AI workloads. Please read the [Hardware Baseline & Warnings](HARDWARE_BASELINE.md) before installing on standard hardware or laptops.
+> ⚠️ **Important:** This image is heavily tuned for high-end workstations (64GB RAM) and local AI workloads. Please read the [Hardware Baseline & Warnings](docs/HARDWARE_BASELINE.md) before installing on standard hardware or laptops.
 
 ## Quick Start (Install)
 
@@ -55,13 +55,13 @@ Reboot again.
 
 All post-install configuration, runtime validation checks, and troubleshooting steps are consolidated in our guides.
 
-**The general guide first:**
+**Everyone must follow the general guide first:**
 
-- [`POST_INSTALL.md`](POST_INSTALL.md) (General post-install operations, tuning, and validation for ALL variants)
+- [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) (General post-install operations, tuning, and validation for ALL variants)
 
 **If you installed the NVIDIA variant, proceed to the specific guide afterward:**
 
-- [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) (Container GPU access, Secure Boot, and NVIDIA-specific validation)
+- [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (Container GPU access, Secure Boot, and NVIDIA-specific validation)
 
 ## Local Development
 
