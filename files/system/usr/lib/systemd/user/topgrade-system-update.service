@@ -2,6 +2,7 @@
 Description=Topgrade update (system only)
 Wants=network-online.target
 After=network-online.target
+ConditionACPower=true
 StartLimitIntervalSec=10min
 StartLimitBurst=3
 
@@ -13,6 +14,5 @@ ExecStart=/usr/bin/flock -E 75 -w 900 %t/topgrade-update.lock /usr/bin/topgrade 
 Nice=19
 IOSchedulingClass=idle
 CPUSchedulingPolicy=idle
-ConditionACPower=true
 Restart=on-failure
 RestartSec=30

@@ -17,11 +17,11 @@ From the project root:
 
 ```bash
 distrobox assemble create
-````
+```
 
 This downloads the BlueBuild image, creates the `bluebuild` container, and applies the declared config.
 
-### 2\. Enter the Container
+### 2. Enter the Container
 
 ```bash
 distrobox enter bluebuild
