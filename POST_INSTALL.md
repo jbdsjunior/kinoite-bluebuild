@@ -1,19 +1,17 @@
 # Post-Installation Guide (All Variants)
 
-> Last reviewed: 2026-03-28
-
 This guide is the canonical post-installation reference for the project.
 It covers shared validation, operational checks, and baseline post-install tasks for all users.
 
-> If you are on `kinoite-nvidia` (or hybrid AMD+NVIDIA), also follow `POST_INSTALL_NVIDIA.md`.
+> If you are on `kinoite-nvidia` (or hybrid AMD+NVIDIA), also follow [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
 
 ## 1) Confirm Installed Image Variant
 
 ```bash
 rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
-```
+````
 
-## 2) Core Runtime Validation (All Variants)
+## 2\) Core Runtime Validation (All Variants)
 
 Run this block after first boot and after major updates.
 
@@ -43,7 +41,7 @@ rpm -q rclone fuse3
 command -v fusermount3
 ```
 
-## 3) Variant Validation Quick Checks
+## 3\) Variant Validation Quick Checks
 
 ### AMD (`kinoite-amd`)
 
@@ -55,9 +53,9 @@ clinfo
 
 ### NVIDIA (`kinoite-nvidia`)
 
-Use `POST_INSTALL_NVIDIA.md` for full NVIDIA validation and container stack checks.
+Use [`POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=POST_INSTALL_NVIDIA.md) for full NVIDIA validation and container stack checks.
 
-## 4) Post-Install Operational Steps
+## 4\) Post-Install Operational Steps
 
 ### Keep User Timers Active Without Graphical Session
 
@@ -118,7 +116,7 @@ topgrade -cy --skip-notify --only system
 topgrade -cy --skip-notify --only flatpak
 ```
 
-## 5) Troubleshooting (All Variants)
+## 5\) Troubleshooting (All Variants)
 
 ### Captive Portal (Hotel/Airport)
 
@@ -139,28 +137,4 @@ Restore defaults:
 ```bash
 sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
-```
-
-### Optional Privacy-Hardening Profile (Advanced)
-
-`60-home-network.conf` is the default profile for stable LAN behavior.
-
-```bash
-sudo install -d -m 0755 /etc/NetworkManager/conf.d
-sudo cp /usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf /etc/NetworkManager/conf.d/60-privacy-hardening.conf
-sudoedit /etc/NetworkManager/conf.d/60-privacy-hardening.conf
-sudo systemctl restart NetworkManager
-```
-
-Check active settings:
-
-```bash
-sudo NetworkManager --print-config | sed -n '/^\[device\]/,/^$/p;/^\[connection\]/,/^$/p'
-```
-
-Rollback:
-
-```bash
-sudo rm -f /etc/NetworkManager/conf.d/60-privacy-hardening.conf
-sudo systemctl restart NetworkManager
 ```

@@ -10,8 +10,6 @@
 
 Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, automatic updates, and reproducible system tuning.
 
-> Last reviewed: 2026-03-28
-
 ## Quick Overview
 
 - Ready-to-use variants: `kinoite-amd` and `kinoite-nvidia`.
@@ -37,7 +35,7 @@ Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
 # or
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
+````
 
 Reboot.
 
@@ -57,18 +55,18 @@ Reboot again.
 
 All post-install configuration, runtime validation checks, and troubleshooting steps are consolidated in:
 
-- `POST_INSTALL.md` (common post-install, validation, and troubleshooting)
-- `POST_INSTALL_NVIDIA.md` (NVIDIA/hybrid-specific complement)
+- [`POST_INSTALL.md`](https://www.google.com/search?q=POST_INSTALL.md) (common post-install, validation, and troubleshooting)
+- [`POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=POST_INSTALL_NVIDIA.md) (NVIDIA/hybrid-specific complement)
 
 ## Local Development
 
 The Distrobox-based local development and build flow is documented in:
 
-- `bluebuild/README.md`
+- [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md)
 
 ## Repository Structure
 
-- `recipes/`: BlueBuild recipes and shared modules.
-- `files/system/`: system configuration copied into the final image.
-- `files/scripts/`: utilities installed in the image.
-- `.github/workflows/`: build pipelines and automation.
+- [`recipes/`](https://www.google.com/search?q=recipes/): BlueBuild recipes and shared modules.
+- [`files/system/`](https://www.google.com/search?q=files/system/): system configuration copied into the final image.
+- [`files/scripts/`](https://www.google.com/search?q=files/scripts/): utilities installed in the image.
+- [`.github/workflows/`](https://www.google.com/search?q=.github/workflows/): build pipelines and automation.
