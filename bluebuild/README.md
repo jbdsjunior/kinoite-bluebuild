@@ -60,5 +60,5 @@ rpm-ostree rebase ostree-unverified-image:oci-archive:/path/to/your/repo/build/i
 ## Related Documents
 
 - Project overview and install quickstart: [`../README.md`](../README.md)
-- Post-install common guide: [`../POST_INSTALL.md`](../POST_INSTALL.md)
-- NVIDIA/hybrid-specific guide: [`../POST_INSTALL_NVIDIA.md`](../POST_INSTALL_NVIDIA.md)
+- Post-install common guide: [`../docs/POST_INSTALL.md`](../docs/POST_INSTALL.md)
+- NVIDIA/hybrid-specific guide: [`../docs/POST_INSTALL_NVIDIA.md`](../docs/POST_INSTALL_NVIDIA.md)
