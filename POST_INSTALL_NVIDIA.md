@@ -62,7 +62,7 @@ Expected mount path: `~/Cloud/remote-name`.
 
 ## 6\) When to Return to the Common Guide
 
-Use [`POST_INSTALL.md`](https://www.google.com/search?q=POST_INSTALL.md) for:
+Use [`POST_INSTALL.md`](POST_INSTALL.md) for:
 
 - shared troubleshooting (captive portal and NetworkManager profile overrides),
 - cross-variant baseline checks,
@@ -139,6 +139,6 @@ rpm-ostree rebase ostree-unverified-image:oci-archive:/path/to/your/repo/build/i
 
 ## Related Documents
 
-- Project overview and install quickstart: [`../README.md`](https://www.google.com/search?q=../README.md)
-- Post-install common guide: [`../POST_INSTALL.md`](https://www.google.com/search?q=../POST_INSTALL.md)
-- NVIDIA/hybrid-specific guide: [`../POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=../POST_INSTALL_NVIDIA.md)
+- Project overview and install quickstart: [`../README.md`](../README.md)
+- Post-install common guide: [`../POST_INSTALL.md`](../POST_INSTALL.md)
+- NVIDIA/hybrid-specific guide: [`../POST_INSTALL_NVIDIA.md`](../POST_INSTALL_NVIDIA.md)
