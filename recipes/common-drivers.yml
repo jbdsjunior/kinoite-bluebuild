@@ -6,7 +6,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Already installed (build log)
+        # Already installed
         # - amd-gpu-firmware
         # - amd-ucode-firmware
         # - mesa-dri-drivers
