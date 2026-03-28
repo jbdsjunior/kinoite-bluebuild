@@ -1,6 +1,6 @@
 name: build-amd
 on:
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 concurrency:
