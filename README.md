@@ -36,7 +36,7 @@ Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final
 ```bash
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-# or
+### or
 ```bash
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
@@ -48,7 +48,7 @@ Reboot.
 ```bash
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-# or
+### or
 ```bash
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
