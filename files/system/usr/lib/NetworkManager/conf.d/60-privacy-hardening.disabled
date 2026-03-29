@@ -1,8 +1,4 @@
 # /usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
-# Optional profile kept as a template for future use.
-#
-# To enable this profile, uncomment the keys below and adjust values as needed.
-# Home-workstation defaults remain in 60-home-network.conf.
 
 [device]
 wifi.scan-rand-mac-address=yes
