@@ -108,3 +108,9 @@ Restore defaults:
 sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
 ```
+### Inspecting Configuration Changes (`/etc`)
+
+To see which system configuration files have been locally modified or differ from the default base image state, use:
+
+```bash
+sudo ostree admin config-diff
