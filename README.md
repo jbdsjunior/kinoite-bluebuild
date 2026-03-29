@@ -32,7 +32,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final state).
 
 ### Initial Rebase (Unverified)
->
+
 ```bash
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
