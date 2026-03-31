@@ -43,4 +43,4 @@ modules:
         - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
         # - clinfo # Quick OpenCL runtime validation.
         - libva-utils # Provides vainfo for VA-API validation.
-      # - vulkan-tools # Provides vulkaninfo for Vulkan validation.
+        # - vulkan-tools # Provides vulkaninfo for Vulkan validation.
