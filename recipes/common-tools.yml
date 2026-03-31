@@ -20,6 +20,6 @@ modules:
       packages:
         - fastfetch
         - distrobox
-        # Already installed (build log)
+        # Already installed
         # - bash-completion
         # - bootc
