@@ -16,10 +16,10 @@ modules:
   #       - JetBrainsMono
   #       - Iosevka
 
-  #     # google-fonts:
-  #     #   - Google Sans Flex
-  #     #   - Caladea
-  #     #   - Carlito
-  #     #   - Fira Mono
-  #     #   - Fira Sans
-  #     #   - JetBrains Mono
+  #     google-fonts:
+  #       - Google Sans Flex
+  #       - Caladea
+  #       - Carlito
+  #       - Fira Mono
+  #       - Fira Sans
+  #       - JetBrains Mono
