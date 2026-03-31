@@ -35,8 +35,8 @@ modules:
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
         - libdvdcss
-        - fdk-aac
-        - libfdk-aac
+        # - fdk-aac
+        # - libfdk-aac
         - ffmpeg
         - ffmpeg-libs
         - libavcodec
