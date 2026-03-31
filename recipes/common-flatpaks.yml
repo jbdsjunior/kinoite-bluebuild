@@ -12,7 +12,7 @@ modules:
         #   - io.github.kolunmi.Bazaar
         #   - com.brave.Browser
 
-        # # KDE Multimedia and Productivity tools
+        # KDE Multimedia and Productivity tools
         # - org.kde.elisa
         # - org.kde.gwenview
         # - org.kde.haruna
@@ -20,23 +20,23 @@ modules:
         # - org.kde.krdc
         # - org.kde.okular
 
-        # # Browsers
-        # # - com.brave.Browser
+        # Browsers
+        # - com.brave.Browser
         # - com.google.Chrome
         # - com.microsoft.Edge
         # - org.mozilla.firefox
 
-        # # System Utilities
+        # System Utilities
         # - com.github.tchx84.Flatseal # Permissions management
         # - io.github.flattool.Warehouse # Flatpak management
         # - io.missioncenter.MissionCenter # Modern System Monitor
         # - it.mijorus.gearlever # AppImage manager
 
-        # # Development
+        # Development
         # - com.visualstudio.code
         # - com.ranfdev.DistroShelf # Manage Distrobox containers
 
-        # # Communication and Others
+        # Communication and Others
         # - org.qbittorrent.qBittorrent
         # - re.sonny.Eloquent
         # - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
