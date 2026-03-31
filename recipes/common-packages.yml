@@ -27,7 +27,6 @@ modules:
         # - okular
 
         # Native app mapping from list-apps.txt (when available)
-        # Browsers (external repos required under files/system/etc/yum.repos.d)
         # - brave-browser
         # - firefox
         # - google-chrome-stable
@@ -36,7 +35,7 @@ modules:
         # Development (external repos required under files/system/etc/yum.repos.d)
         # - code
 
-        # # GNOME and desktop utilities
+        # GNOME and desktop utilities
         # - flatseal
         # - gearlever
         # - mission-center
@@ -45,7 +44,6 @@ modules:
         # - warehouse
 
         # Media and downloads
-        # May require external/non-default repos depending on base image
         # - obsidian
         # - qbittorrent
         # - stremio
