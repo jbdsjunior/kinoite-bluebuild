@@ -24,7 +24,7 @@ modules:
         - rocm-hip
         - rocm-opencl
         - mesa-libRusticl
-        - nvtop
+        # - nvtop
 
   - type: dnf
     install:
