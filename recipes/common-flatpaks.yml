@@ -4,9 +4,9 @@ modules:
   - type: default-flatpaks
     configurations:
       - scope: user
-        notify: true
+        notify: false
       - scope: system
-        notify: true
+        notify: false
         install:
         # Core multimedia libraries
           - org.freedesktop.Platform.ffmpeg-full//24.08
