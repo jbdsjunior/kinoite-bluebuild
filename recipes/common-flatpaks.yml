@@ -3,11 +3,10 @@
 modules:
   - type: default-flatpaks
     configurations:
+      - scope: user
+        notify: true
       - scope: system
         notify: true
-        repo:
-          url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          title: Flathub
         install:
         # Core multimedia libraries
           - org.freedesktop.Platform.ffmpeg-full//24.08
@@ -30,21 +29,14 @@ modules:
         # - org.mozilla.firefox
 
         # System Utilities
-        # - com.github.tchx84.Flatseal # Permissions management
-        # - io.github.flattool.Warehouse # Flatpak management
-        # - io.missioncenter.MissionCenter # Modern System Monitor
-        # - it.mijorus.gearlever # AppImage manager
+        # - com.github.tchx84.Flatseal
+        # - io.github.flattool.Warehouse
+        # - io.missioncenter.MissionCenter
+        # - it.mijorus.gearlever
 
         # Development
         # - com.visualstudio.code
-        # - com.ranfdev.DistroShelf # Manage Distrobox containers
+        # - com.ranfdev.DistroShelf
 
         # Communication and Others
         # - org.qbittorrent.qBittorrent
-
-
-      - scope: user
-        notify: true
-        # repo:
-        #   url: https://dl.flathub.org/repo/flathub.flatpakrepo
-        #   title: Flathub
