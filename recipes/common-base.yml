@@ -19,4 +19,4 @@ modules:
 
   - from-file: common-kargs.yml
 
-  # - from-file: common-flatpaks.yml
+  - from-file: common-flatpaks.yml
