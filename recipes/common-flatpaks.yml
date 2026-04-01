@@ -5,12 +5,15 @@ modules:
     configurations:
       - scope: system
         notify: true
-        # repo:
-        #   url: https://dl.flathub.org/repo/flathub.flatpakrepo
-        #   title: Flathub
-        # install:
-        #   - io.github.kolunmi.Bazaar
-        #   - com.brave.Browser
+        repo:
+          url: https://dl.flathub.org/repo/flathub.flatpakrepo
+          title: Flathub
+        install:
+        # Core multimedia libraries
+          - org.freedesktop.Platform.ffmpeg-full//24.08
+          - org.freedesktop.Platform.ffmpeg-full//23.08
+          - org.gtk.Gtk3theme.adw-gtk3
+          - org.gtk.Gtk3theme.adw-gtk3-dark
 
         # KDE Multimedia and Productivity tools
         # - org.kde.elisa
@@ -38,10 +41,7 @@ modules:
 
         # Communication and Others
         # - org.qbittorrent.qBittorrent
-        # - re.sonny.Eloquent
-        # - org.freedesktop.Platform.ffmpeg-full # Core multimedia libraries
-        # - org.gtk.Gtk3theme.adw-gtk3
-        # - org.gtk.Gtk3theme.adw-gtk3-dark
+
 
       - scope: user
         notify: true
