@@ -31,7 +31,7 @@ All optimizations, code generation, and architectural suggestions MUST strictly 
 
 Follow this exact sequence for every modification:
 
-1. **Context Discovery:** Read [`README.md`](README.md) and [`recipes/common-base.yml`](recipes/common-base.yml) first. Trace symbols to their definitions.
+1. **Context Discovery:** Read [`README.md`](README.md) and [`recipes/`](recipes/) first. Trace symbols to their definitions.
 2. **Upstream Refresh:** Review relevant upstream docs/changelogs (Fedora, BlueBuild) if system-level packages are involved.
 3. **Implementation:** Apply the smallest safe diff.
 4. **Verification:** Upon task completion, run lint and typecheck commands (`yamllint`, `shellcheck`, `systemd-analyze`) to ensure correct code structure.
