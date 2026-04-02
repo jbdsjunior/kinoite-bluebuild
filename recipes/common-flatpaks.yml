@@ -3,8 +3,8 @@
 modules:
   - type: default-flatpaks
     configurations:
-      - scope: user
-        notify: false
+      # - scope: user
+      #   notify: false
       - scope: system
         notify: false
         install:
