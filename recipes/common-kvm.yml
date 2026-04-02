@@ -23,7 +23,7 @@ modules:
   - type: files
     files:
       - source: scripts/setup-kvm.sh
-        destination: /usr/bin/kinoite-setup-kvm.sh
+        destination: /usr/bin/setup-kvm.sh
 
   - type: kargs
     kargs:
