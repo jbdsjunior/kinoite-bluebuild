@@ -7,7 +7,7 @@ modules:
       allow-erasing: true
       packages:
         - nerdfontssymbolsonly-nerd-fonts # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
-        - liberation-fonts
+        # - liberation-fonts
 
   # - type: fonts
   #   fonts:
