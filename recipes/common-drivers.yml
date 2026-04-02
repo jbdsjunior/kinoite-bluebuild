@@ -14,7 +14,7 @@ modules:
         # - mesa-libGL
         # - mesa-libOpenCL
         # - mesa-libgbm
-        # - mesa-va-drivers
+        - mesa-va-drivers
         # - mesa-vdpau-drivers
         # - mesa-vulkan-drivers
         # - vulkan-loader
@@ -22,7 +22,7 @@ modules:
         # - libheif
         - rocm-hip
         - rocm-opencl
-        - mesa-libRusticl
+        # - mesa-libRusticl
 
   - type: dnf
     install:
@@ -34,7 +34,7 @@ modules:
         # - gstreamer1-vaapi
         - libdvdcss
         - fdk-aac
-        - libfdk-aac
+        # - libfdk-aac
         - ffmpeg
         - ffmpeg-libs
         # - libavcodec
