@@ -30,13 +30,12 @@ modules:
       packages:
         - gstreamer1-plugins-base
         - gstreamer1-plugins-good
-        - gstreamer1-plugins-bad-free
-        # - gstreamer1-plugins-bad
+        - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         - gstreamer1-plugin-libav
         - gstreamer1-vaapi
         - libdvdcss
-        - fdk-aac
+        # - fdk-aac
         # - libfdk-aac
         - ffmpeg
         - ffmpeg-libs
