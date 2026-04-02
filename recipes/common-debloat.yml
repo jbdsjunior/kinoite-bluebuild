@@ -6,7 +6,6 @@ modules:
       auto-remove: true
       packages:
         - firefox
-        - firefox-langpacks
 
         - plasma-discover-rpm-ostree
 
