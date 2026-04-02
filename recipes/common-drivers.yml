@@ -6,7 +6,6 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Already installed
         # - amd-gpu-firmware
         # - amd-ucode-firmware
         # - mesa-dri-drivers
@@ -24,14 +23,11 @@ modules:
         - rocm-hip
         - rocm-opencl
         - mesa-libRusticl
-        # - nvtop
 
   - type: dnf
     install:
-      skip-unavailable: true
       allow-erasing: true
       packages:
-        # Multimedia framework plugins and libraries
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
@@ -42,8 +38,7 @@ modules:
         - ffmpeg
         - ffmpeg-libs
         # - libavcodec
-        - ocl-icd # OpenCL ICD loader, required for any OpenCL runtime backend.
-        - libva-utils # Provides vainfo for VA-API validation.
-        # - clinfo # Quick OpenCL runtime validation.
-        # - vulkan-tools # Provides vulkaninfo for Vulkan validation.
-        
+        - ocl-icd
+        - libva-utils
+        # - clinfo
+        # - vulkan-tools        
