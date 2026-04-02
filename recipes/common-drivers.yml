@@ -12,33 +12,36 @@ modules:
         # - mesa-filesystem
         # - mesa-libEGL
         # - mesa-libGL
-        # - mesa-libOpenCL
+        - mesa-libOpenCL
         # - mesa-libgbm
         - mesa-va-drivers
         # - mesa-vdpau-drivers
-        # - mesa-vulkan-drivers
+        - mesa-vulkan-drivers
         # - vulkan-loader
         # - libva
         # - libheif
-        - rocm-hip
-        - rocm-opencl
+        # - rocm-hip
+        # - rocm-opencl
         # - mesa-libRusticl
 
   - type: dnf
     install:
       allow-erasing: true
       packages:
-        - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-base
+        - gstreamer1-plugins-good
+        - gstreamer1-plugins-bad-free
+        # - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        # - gstreamer1-vaapi
+        - gstreamer1-plugin-libav
+        - gstreamer1-vaapi
         - libdvdcss
         - fdk-aac
         # - libfdk-aac
         - ffmpeg
         - ffmpeg-libs
         # - libavcodec
-        - ocl-icd
-        - libva-utils
+        # - ocl-icd
+        # - libva-utils
         # - clinfo
         # - vulkan-tools        
