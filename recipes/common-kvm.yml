@@ -27,7 +27,6 @@ modules:
 
   - type: kargs
     kargs:
-      # Virtualization and IOMMU optimizations
       - amd_iommu=on
       - iommu=pt
       - kvm_amd.npt=1
