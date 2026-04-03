@@ -2,21 +2,21 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
+# Manually install dependency for `libheif`, as Negativo upstreamed it
+
+  - type: dnf
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - libopenjph # Manually install dependency for `libheif`, as Negativo upstreamed it
-
-  - type: dnf
-    install:
-      packages:
+        - libopenjph 
         - repo: fedora-multimedia
           allow-erasing: true
           skip-unavailable: true
           packages:
             - libva
             - libva-utils
+            - libheif
             - mesa-dri-drivers
             - mesa-filesystem
             - mesa-libEGL
@@ -24,24 +24,21 @@ modules:
             - mesa-libgbm
             - mesa-va-drivers
             - mesa-vulkan-drivers
-            - libheif
 
   - type: dnf
     install:
+      allow-erasing: true
+      skip-unavailable: true
       packages:
-        - repo: fedora-multimedia
-          allow-erasing: true
-          skip-unavailable: true
-          packages:
-            - gstreamer1-plugins-bad
-            - gstreamer1-plugins-ugly
-            - gstreamer1-vaapi
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-ugly
+        # - gstreamer1-vaapi
 
-            - ffmpeg
-            - ffmpeg-libs
+        - ffmpeg
+        - ffmpeg-libs
 
-            - libfdk-aac
-            - libavcodec
+        - libfdk-aac
+        - libavcodec
 
-            - pipewire-libs-extra
-            - heif-pixbuf-loader
+        - pipewire-libs-extra
+        - heif-pixbuf-loader
