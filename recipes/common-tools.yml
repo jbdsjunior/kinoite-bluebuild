@@ -12,11 +12,5 @@ modules:
       packages:
         - starship
         - topgrade
-
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
         - fastfetch
         - distrobox
