@@ -2,12 +2,12 @@
 
 This directory contains the canonical workflow for local development and testing using [Distrobox](https://distrobox.it/).
 
-The `distrobox.ini` file defines a container with the `ghcr.io/blue-build/cli:latest-distrobox` image, which includes the `bluebuild` CLI and dependencies needed to build the custom OCI image locally.
+The `distrobox.ini` file defines a container with the `ghcr.io/blue-build/cli:latest-distrobox` image, which includes the BlueBuild CLI and dependencies needed to build the custom OCI image locally.
 
 ## Requirements
 
-- **Distrobox** installed on the host.
-- **Podman** or **Docker** runtime available.
+- **Distrobox** installed on the host
+- **Podman** or **Docker** runtime available
 
 ## Environment Configuration
 
@@ -19,7 +19,7 @@ From the project root:
 distrobox assemble create
 ```
 
-This downloads the BlueBuild image, creates the `bluebuild` container, and applies the declared config.
+This downloads the BlueBuild image, creates the `bluebuild` container, and applies the declared configuration.
 
 ### 2. Enter the Container
 
@@ -27,7 +27,7 @@ This downloads the BlueBuild image, creates the `bluebuild` container, and appli
 distrobox enter bluebuild
 ```
 
-You will enter a shell where `bluebuild` CLI is available.
+You will enter a shell where the BlueBuild CLI is available.
 
 ## Build Images Locally
 
@@ -47,11 +47,15 @@ bluebuild build recipes/recipe-nvidia.yml
 
 For NVIDIA builds, the recipe uses `ghcr.io/ublue-os/kinoite-nvidia` as the base and composes shared modules from this repository.
 
-After compilation, the OCI image is available in local container storage. You can list images with `podman images`.
+After compilation, the OCI image is available in local container storage. List images with:
+
+```bash
+podman images
+```
 
 ## Local Rebase Test
 
-Use local image output to validate changes before publishing:
+Use the local image output to validate changes before publishing:
 
 ```bash
 rpm-ostree rebase ostree-unverified-image:oci-archive:/path/to/your/repo/build/image.oci
