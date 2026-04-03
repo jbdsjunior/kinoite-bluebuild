@@ -2,22 +2,37 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
-    install:
-      allow-erasing: true
-      packages:
-        - mesa-va-drivers
-        - mesa-vulkan-drivers
+    repos:
+      nonfree: negativo17
+    replace:
+      - from-repo: fedora-multimedia
+        skip-unavailable: true
+        packages:
+          - libva
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-va-drivers
+          - mesa-vulkan-drivers
+          - libheif
 
-  - type: dnf
-    install:
-      allow-erasing: true
-      packages:
-        - ffmpeg
-        # - gstreamer1-plugins-base # is already installed
-        # - gstreamer1-plugins-good  # is already installed
+- type: dnf
+  install:
+    packages:
+      - repo: fedora-multimedia
+        packages:
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        # - gstreamer1-plugin-libav  # is already installed
         - gstreamer1-vaapi
+
+        - ffmpeg
+        - ffmpeg-libs
+
+        - libfdk-aac
         - libavcodec
 
+        - libva-utils
+        - pipewire-libs-extra
+        - heif-pixbuf-loader
