@@ -7,21 +7,25 @@ modules:
       skip-unavailable: true
       packages:
         - libopenjph
-        - ocl-icd
         - repo: fedora-multimedia
-          allow-erasing: true
-          skip-unavailable: true
           packages:
-            - libva
             - libva-utils
-            - libheif
-            - mesa-dri-drivers
-            - mesa-filesystem
-            - mesa-libEGL
-            - mesa-libGL
-            - mesa-libgbm
-            - mesa-va-drivers
-            - mesa-vulkan-drivers
+            - pipewire-libs-extra
+            - heif-pixbuf-loader
+
+    replace:
+      - from-repo: fedora-multimedia
+        skip-unavailable: true
+        packages:
+          - libva
+          - libheif
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-va-drivers
+          - mesa-vulkan-drivers
 
   - type: dnf
     install:
@@ -35,8 +39,6 @@ modules:
         - ffmpeg
         - ffmpeg-libs
 
+        # - fdk-aac
         - libfdk-aac
         - libavcodec
-
-        - pipewire-libs-extra
-        - heif-pixbuf-loader
