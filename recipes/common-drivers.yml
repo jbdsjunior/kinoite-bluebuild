@@ -33,9 +33,11 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - gstreamer1-plugins-bad-free
-        - gstreamer1-plugins-ugly-free
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-ugly
+        # - gstreamer1-vaapi
         - ffmpeg
         - ffmpeg-libs
+        # - fdk-aac
         - libfdk-aac
-        - libavcodec-free
+        - libavcodec
