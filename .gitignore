@@ -1,49 +1,16 @@
-# Secrets and signing material
-cosign.key
-cosign.private
-*.pem
-*.key
-*.p12
-*.pfx
+# Examples
+Input:
+### Added files:
+['README.md', 'bluebuild/README.md', 'docs/HARDWARE_BASELINE.md', 'docs/POST_INSTALL.md', 'docs/POST_INSTALL_NVIDIA.md']
 
-# BlueBuild temporary files
-/.bluebuild-scripts_*
+### Deleted files:
+[]
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.cache
-tmp/
+### Modified files:
+['README.md', 'bluebuild/README.md', 'docs/HARDWARE_BASELINE.md', 'docs/POST_INSTALL.md', 'docs/POST_INSTALL_NVIDIA.md']
 
-# Editor/IDE files
-.vscode/
-.idea/
+###current .gitignore Content
+(empty)
 
-# System files
-.DS_Store
-Thumbs.db
-
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+Expected Output:
+(empty — output nothing)
