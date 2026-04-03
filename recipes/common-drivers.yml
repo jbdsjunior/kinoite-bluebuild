@@ -14,9 +14,9 @@ modules:
         # - mesa-libGL
         - mesa-libOpenCL
         # - mesa-libgbm
-        - mesa-va-drivers
+        # - mesa-va-drivers
         # - mesa-vdpau-drivers
-        - mesa-vulkan-drivers
+        # - mesa-vulkan-drivers
         # - vulkan-loader
         # - libva
         # - libheif
@@ -28,11 +28,11 @@ modules:
     install:
       allow-erasing: true
       packages:
-        - gstreamer1-plugins-base
-        - gstreamer1-plugins-good
+        # - gstreamer1-plugins-base
+        # - gstreamer1-plugins-good
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        - gstreamer1-plugin-libav
+        # - gstreamer1-plugin-libav
         - gstreamer1-vaapi
         - libdvdcss
         # - fdk-aac
