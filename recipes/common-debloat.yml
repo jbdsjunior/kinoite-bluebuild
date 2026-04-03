@@ -11,3 +11,7 @@ modules:
 
         - plasma-welcome-fedora
         - fedora-flathub-remote
+
+        - fedora-flathub-remote
+        - fedora-third-party
+        - fedora-workstation-repositories
