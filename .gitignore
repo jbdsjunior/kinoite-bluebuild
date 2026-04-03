@@ -1,13 +1,20 @@
-```
+# Secrets and signing material
+cosign.key
+cosign.private
+*.pem
+*.key
+*.p12
+*.pfx
+
+# BlueBuild temporary files
+/.bluebuild-scripts_*
+
 # Logs and temp files
 *.log
 *.tmp
 *.swp
-
-# Environment files
-.env
-.env.local
-*.env.*
+*.cache
+tmp/
 
 # Editor/IDE files
 .vscode/
@@ -40,4 +47,3 @@ Thumbs.db
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-```
