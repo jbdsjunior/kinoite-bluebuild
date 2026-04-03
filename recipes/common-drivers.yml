@@ -3,27 +3,14 @@
 modules:
   - type: dnf
     install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - amd-gpu-firmware
-        - mesa-dri-drivers
-        - mesa-libEGL
-        - mesa-libGL
-        - mesa-va-drivers
-        - mesa-vulkan-drivers
-        - mesa-libRusticl
-
-  - type: dnf
-    install:
       allow-erasing: true
       packages:
         - ffmpeg
-        - gstreamer1-plugins-base
-        - gstreamer1-plugins-good
+        # - gstreamer1-plugins-base # is already installed
+        # - gstreamer1-plugins-good  # is already installed
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        - gstreamer1-plugin-libav
+        # - gstreamer1-plugin-libav  # is already installed
         - gstreamer1-vaapi
         - libavcodec
 
