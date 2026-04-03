@@ -16,6 +16,8 @@ modules:
         - qt6-qtimageformats
         - flatpak-spawn
 
+        - adw-gtk3-theme
+
         # Locale and dictionaries
         - langpacks-pt_BR
 
