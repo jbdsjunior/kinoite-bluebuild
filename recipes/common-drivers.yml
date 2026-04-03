@@ -2,9 +2,6 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 modules:
   - type: dnf
-# Manually install dependency for `libheif`, as Negativo upstreamed it
-
-  - type: dnf
     install:
       allow-erasing: true
       skip-unavailable: true
