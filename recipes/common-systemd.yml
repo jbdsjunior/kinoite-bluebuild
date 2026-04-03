@@ -4,13 +4,13 @@ modules:
   - type: systemd
     system:
       enabled:
+        # Update timers (uncomment to enable automatic updates)
         # - rpm-ostreed-automatic.timer
         # - flatpak-system-update.timer
         # - flatpak-user-update.timer
-
         # - bootc-fetch-apply-updates.timer
 
-        # Networking and Security enhancements
+        # Networking and Security
         - firewalld.service
         - systemd-resolved.service
 
