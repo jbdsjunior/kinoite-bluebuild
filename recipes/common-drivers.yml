@@ -5,6 +5,13 @@ modules:
     install:
       allow-erasing: true
       packages:
+        - mesa-va-drivers
+        - mesa-vulkan-drivers
+
+  - type: dnf
+    install:
+      allow-erasing: true
+      packages:
         - ffmpeg
         # - gstreamer1-plugins-base # is already installed
         # - gstreamer1-plugins-good  # is already installed
