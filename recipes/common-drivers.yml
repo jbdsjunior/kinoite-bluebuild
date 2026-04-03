@@ -4,30 +4,32 @@ modules:
   - type: dnf
     install:
       allow-erasing: true
+      skip-unavailable: true
       packages:
         - libopenjph # Manually install dependency for `libheif`, as Negativo upstreamed it
-
-  - type: dnf
-    repos:
-      nonfree: negativo17
-    replace:
-      - from-repo: fedora-multimedia
-        skip-unavailable: true
-        packages:
-          - libva
-          - mesa-dri-drivers
-          - mesa-filesystem
-          - mesa-libEGL
-          - mesa-libGL
-          - mesa-libgbm
-          - mesa-va-drivers
-          - mesa-vulkan-drivers
-          - libheif
 
   - type: dnf
     install:
       packages:
         - repo: fedora-multimedia
+          skip-unavailable: true
+          packages:
+            - libva
+            - libva-utils
+            - mesa-dri-drivers
+            - mesa-filesystem
+            - mesa-libEGL
+            - mesa-libGL
+            - mesa-libgbm
+            - mesa-va-drivers
+            - mesa-vulkan-drivers
+            - libheif
+
+  - type: dnf
+    install:
+      packages:
+        - repo: fedora-multimedia
+          skip-unavailable: true
           packages:
             - gstreamer1-plugins-bad
             - gstreamer1-plugins-ugly
@@ -39,6 +41,5 @@ modules:
             - libfdk-aac
             - libavcodec
 
-            - libva-utils
             - pipewire-libs-extra
             - heif-pixbuf-loader
