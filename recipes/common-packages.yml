@@ -8,6 +8,7 @@ modules:
       packages:
         # Core system
         - plasma-firewall
+        - flatpak-spawn
 
         # Locale and dictionaries
         - langpacks-pt_BR
