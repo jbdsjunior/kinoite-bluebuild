@@ -12,6 +12,7 @@ modules:
     install:
       packages:
         - repo: fedora-multimedia
+          allow-erasing: true
           skip-unavailable: true
           packages:
             - libva
@@ -29,6 +30,7 @@ modules:
     install:
       packages:
         - repo: fedora-multimedia
+          allow-erasing: true
           skip-unavailable: true
           packages:
             - gstreamer1-plugins-bad
