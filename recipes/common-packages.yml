@@ -6,9 +6,12 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # Locale and dictionaries
+        - langpacks-pt_BR
+
         # Core system
         - plasma-firewall
- 
+
         - icoutils
         - kf6-kimageformats
         - kio-admin
@@ -17,9 +20,6 @@ modules:
         - flatpak-spawn
 
         - adw-gtk3-theme
-
-        # Locale and dictionaries
-        - langpacks-pt_BR
 
         # Utilities
         - lm_sensors
