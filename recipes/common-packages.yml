@@ -24,9 +24,8 @@ modules:
         # Utilities
         - lm_sensors
         - rclone
-        # - fuse3
 
-        # KDE apps
+        # KDE apps (commented out - enable as needed)
         # - elisa-player
         # - gwenview
         # - haruna

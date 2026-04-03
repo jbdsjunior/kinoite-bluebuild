@@ -6,16 +6,19 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - nerdfontssymbolsonly-nerd-fonts # Fonts (external repo pinned in files/system/etc/yum.repos.d/terra.repo)
+        # Nerd Fonts (from Terra repository, pinned in terra.repo)
+        - nerdfontssymbolsonly-nerd-fonts
+        
+        # Alternative fonts (uncomment to enable)
         # - liberation-fonts
 
+  # Alternative font installation method (commented out)
   # - type: fonts
   #   fonts:
   #     nerd-fonts:
   #       - NerdFontsSymbolsOnly
   #       - JetBrainsMono
   #       - Iosevka
-
   #     google-fonts:
   #       - Google Sans Flex
   #       - Caladea

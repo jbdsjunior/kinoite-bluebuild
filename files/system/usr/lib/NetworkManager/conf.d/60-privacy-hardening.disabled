@@ -1,10 +1,14 @@
 # /usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
+# Note: Rename this file to 60-privacy-hardening.conf to enable privacy hardening
 
 [device]
+# Enable MAC address randomization during WiFi scanning for privacy
 wifi.scan-rand-mac-address=yes
 
 [connection]
+# Use stable MAC addresses for Ethernet and WiFi (predictable for home networks)
 ethernet.cloned-mac-address=stable
 wifi.cloned-mac-address=stable
+# Disable hostname disclosure in DHCP requests for privacy
 ipv4.dhcp-send-hostname=false
 ipv6.dhcp-send-hostname=false

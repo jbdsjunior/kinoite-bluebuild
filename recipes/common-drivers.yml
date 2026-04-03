@@ -1,5 +1,5 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+---
 modules:
   - type: dnf
     install:
@@ -36,10 +36,8 @@ modules:
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         # - gstreamer1-vaapi
-
         - ffmpeg
         - ffmpeg-libs
-
         # - fdk-aac
         - libfdk-aac
         - libavcodec
