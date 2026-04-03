@@ -1,19 +1,20 @@
 # Post-Installation Guide (All Variants)
 
-This guide is the canonical post-installation reference for the project.
-It covers shared validation, operational checks, and baseline post-install tasks for all users.
+This guide is the canonical post-installation reference for the project. It covers shared validation, operational checks, and baseline post-install tasks for all users.
 
-> **Note for NVIDIA/Hybrid users:** Please complete this general guide first, then apply the specific steps in [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
+> **Note for NVIDIA/Hybrid users:** Complete this general guide first, then apply the specific steps in [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
 
-## 1) Confirm Installed Image Variant
+## 1. Confirm Installed Image Variant
+
+Verify which image variant is currently active:
 
 ```bash
 rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
 ```
 
-## 2) Core Runtime Validation
+## 2. Core Runtime Validation
 
-Run this block after first boot and after major updates.
+Run this validation block after first boot and after major updates:
 
 ```bash
 # Update timers
@@ -37,9 +38,9 @@ rpm-ostree kargs | tr ' ' '\n' | grep -E "amd_pstate|transparent_hugepage|mitiga
 sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-home-network.conf
 ```
 
-## 3) Baseline GPU Validation (Mesa/AMD)
+## 3. Baseline GPU Validation (Mesa/AMD)
 
-*NVIDIA users should run these to validate the integrated/primary AMD GPU, then proceed to the NVIDIA guide for discrete GPU validation.*
+*NVIDIA users should run these commands to validate the integrated/primary AMD GPU, then proceed to the NVIDIA guide for discrete GPU validation.*
 
 ```bash
 vainfo
@@ -47,9 +48,11 @@ vulkaninfo --summary
 clinfo
 ```
 
-## 4) Post-Install Operational Steps
+## 4. Post-Install Operational Steps
 
 ### Keep User Timers Active Without Graphical Session
+
+Enable linger to allow user services to run without an active graphical session:
 
 ```bash
 sudo loginctl enable-linger "$USER"
@@ -57,13 +60,13 @@ sudo loginctl enable-linger "$USER"
 
 ### Virtualization (KVM/libvirt and GNOME Boxes)
 
-Configure groups:
+Configure KVM groups and permissions:
 
 ```bash
 kinoite-setup-kvm.sh
 ```
 
-Log out and log back in to refresh `libvirt` and `kvm` membership.
+Log out and log back in to refresh `libvirt` and `kvm` group membership.
 
 Apply BTRFS `No_COW` (`+C`) attributes immediately if needed:
 
@@ -73,6 +76,8 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 ```
 
 ### Rclone Mount as User Service
+
+Configure cloud storage mounts:
 
 ```bash
 # 1. Configure remotes
@@ -86,11 +91,11 @@ echo 'RCLONE_EXTRA_OPTS="--vfs-read-chunk-size 128M --vfs-read-chunk-size-limit 
 systemctl --user enable --now rclone@onedrive_work.service
 ```
 
-## 5) Troubleshooting
+## 5. Troubleshooting
 
-### Captive Portal (Hotel/Airport)
+### Captive Portal (Hotel/Airport Wi-Fi)
 
-If the portal does not open, temporarily disable DoT/DNSSEC:
+If the captive portal does not open, temporarily disable DoT/DNSSEC:
 
 ```bash
 sudo mkdir -p /etc/systemd/resolved.conf.d
@@ -102,15 +107,17 @@ EOF2
 sudo systemctl restart systemd-resolved
 ```
 
-Restore defaults:
+Restore defaults after passing through the captive portal:
 
 ```bash
 sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
 ```
+
 ### Inspecting Configuration Changes (`/etc`)
 
-To see which system configuration files have been locally modified or differ from the default base image state, use:
+To see which system configuration files have been locally modified or differ from the default base image state:
 
 ```bash
 sudo ostree admin config-diff
+```
