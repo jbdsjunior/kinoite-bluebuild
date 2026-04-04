@@ -4,14 +4,17 @@ set -euo pipefail
 readonly REQUIRED_GROUPS="libvirt,kvm"
 readonly TARGET_USER="${SUDO_USER:-${USER:-$(id -un)}}"
 
-for cmd in sudo usermod stat chattr lsattr systemctl; do
-    command -v "$cmd" >/dev/null 2>&1 || { echo "Error: $cmd not found"; exit 1; }
-done
-
-if [ "$TARGET_USER" = "root" ]; then
-    echo "Error: Run as regular user, not root."
+if [[ "$TARGET_USER" == "root" ]]; then
+    echo "Error: Run as regular user, not root." >&2
     exit 1
 fi
+
+for cmd in usermod systemctl; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: $cmd not found" >&2
+        exit 1
+    fi
+done
 
 sudo usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
 
