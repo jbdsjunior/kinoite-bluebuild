@@ -1,28 +1,28 @@
 ---
-# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# yaml-language-server: $schema=https://schema.blue-build.org/schema
 modules:
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Nerd Fonts (from Terra repository, pinned in terra.repo)
+        # Nerd Fonts (from Terra repository)
         - nerdfontssymbolsonly-nerd-fonts
-        
+
         # Alternative fonts (uncomment to enable)
         # - liberation-fonts
 
-  # Alternative font installation method (commented out)
-  # - type: fonts
-  #   fonts:
-  #     nerd-fonts:
-  #       - NerdFontsSymbolsOnly
-  #       - JetBrainsMono
-  #       - Iosevka
-  #     google-fonts:
-  #       - Google Sans Flex
-  #       - Caladea
-  #       - Carlito
-  #       - Fira Mono
-  #       - Fira Sans
-  #       - JetBrains Mono
+      # Alternative font installation method (commented out)
+      # - type: fonts
+      #   fonts:
+      #     nerd-fonts:
+      #       - NerdFontsSymbolsOnly
+      #       - JetBrainsMono
+      #       - Iosevka
+      #     google-fonts:
+      #       - Google Sans Flex
+      #       - Caladea
+      #       - Carlito
+      #       - Fira Mono
+      #       - Fira Sans
+      #       - JetBrains Mono

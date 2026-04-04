@@ -3,7 +3,7 @@ Description=Run topgrade flatpak update
 
 [Timer]
 OnStartupSec=15m
-OnUnitInactiveSec=240m
+OnUnitInactiveSec=24h
 RandomizedDelaySec=10m
 AccuracySec=1m
 Persistent=true
