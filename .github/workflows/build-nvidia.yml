@@ -34,6 +34,6 @@ jobs:
           max_layers: 256
           use_cache: true
           retry_push_count: 3
-          use_unstable_cli: true
+          use_unstable_cli: false
           skip_checkout: true
           build_chunked_oci: false
