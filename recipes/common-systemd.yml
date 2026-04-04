@@ -15,7 +15,7 @@ modules:
         - systemd-resolved.service
       
       masked:
-        # Previne atrasos de boot aguardando alocação DHCP
+        # Prevent boot delays waiting for DHCP allocation
         - NetworkManager-wait-online.service
 
     user:
