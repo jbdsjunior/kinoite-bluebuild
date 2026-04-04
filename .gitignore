@@ -1,9 +1,3 @@
-# Secrets and signing material
-cosign.key
-*.pem
-*.key
-*.p12
-*.pfx
-
-# BlueBuild temporary files
-/.bluebuild-scripts_*
+```
+# Configuration and system files - no build artifacts or dependencies detected
+```
