@@ -3,9 +3,14 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
+      # AMD CPU power management (AMD only, ignored on Intel)
       - amd_pstate=active
+      # Transparent hugepages: defer for better memory allocation latency
       - transparent_hugepage=madvise
+      # Security mitigations: auto (balanced security/performance)
       - mitigations=auto
-      - pcie_aspm=off
+      # PCIe ASPM: policy_performance for desktop/workstation stability
+      - pcie_aspm=policy_performance
+      # Boot verbosity
       - quiet
       - rhgb

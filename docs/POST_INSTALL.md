@@ -63,7 +63,7 @@ sudo loginctl enable-linger "$USER"
 Configure KVM groups and permissions:
 
 ```bash
-kinoite-setup-kvm.sh
+setup-kvm.sh
 ```
 
 Log out and log back in to refresh `libvirt` and `kvm` group membership.
