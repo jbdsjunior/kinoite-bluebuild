@@ -35,9 +35,10 @@ modules:
       packages:
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        # - gstreamer1-vaapi
         - ffmpeg
         - ffmpeg-libs
+        - pipewire-codec-aptx
         # - fdk-aac
-        - libfdk-aac
-        - libavcodec
+        # - libfdk-aac
+        # - libavcodec
+
