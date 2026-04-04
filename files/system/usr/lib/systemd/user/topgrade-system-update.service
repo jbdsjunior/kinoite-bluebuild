@@ -2,7 +2,7 @@
 Description=Topgrade update (system only)
 Wants=network-online.target
 After=network-online.target
-ConditionACPower=true
+# ConditionACPower=true removed for desktop workstation compatibility
 StartLimitIntervalSec=10min
 StartLimitBurst=3
 

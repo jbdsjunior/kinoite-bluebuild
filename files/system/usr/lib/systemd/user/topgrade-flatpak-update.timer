@@ -2,8 +2,9 @@
 Description=Run topgrade flatpak update
 
 [Timer]
-OnStartupSec=15m
-OnUnitInactiveSec=240m
+# Start 5 minutes after user session begins, then every 1 hours
+OnStartupSec=5m
+OnUnitInactiveSec=1h
 RandomizedDelaySec=10m
 AccuracySec=1m
 Persistent=true
