@@ -1,5 +1,5 @@
 [Context]
 filesystems=xdg-config/gtk-3.0:ro;xdg-config/gtk-4.0:ro;
-sockets=wayland;fallback-x11
+sockets=wayland;x11;fallback-x11;pulseaudio;pipewire
 devices=dri
 shared=ipc
