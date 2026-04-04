@@ -1,0 +1,4 @@
+[Environment]
+OZONE_PLATFORM=wayland
+DISABLE_WAYLAND=0
+LIBVA_DRIVER_NAME=radeonsi
