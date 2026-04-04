@@ -9,9 +9,13 @@ for cmd in sudo usermod stat chattr lsattr systemctl; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "Error: $cmd not found"; exit 1; }
 done
 
-[ "$TARGET_USER" = "root" ] && { echo "Error: Run as regular user, not root."; exit 1; }
+if [ "$TARGET_USER" = "root" ]; then
+    echo "Error: Run as regular user, not root."
+    exit 1
+fi
 
 sudo usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
+
 sudo mkdir -p "$SYSTEM_IMAGES_DIR"
 
 if [ "$(stat -f -c %T "$SYSTEM_IMAGES_DIR")" = "btrfs" ]; then
@@ -25,3 +29,4 @@ if systemctl list-unit-files --quiet virtqemud.socket 2>/dev/null; then
 fi
 
 echo "KVM setup completed for user: $TARGET_USER"
+echo "Note: Please log out and back in for group changes to take effect."

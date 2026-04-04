@@ -88,6 +88,21 @@ The Distrobox-based local development and build flow is documented in:
 | [`files/scripts/`](files/scripts/) | Utilities installed in the image |
 | [`.github/workflows/`](.github/workflows/) | Build pipelines and automation |
 
+## Emergency Rollback
+
+If a rebase causes boot failures or instability, rollback immediately:
+
+```bash
+# Boot into the previous deployment from GRUB menu, OR
+# From a working system, revert to the last known good state:
+sudo rpm-ostree rollback
+
+# To revert to Fedora's official Kinoite image:
+sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/fedora/fedora-kinoite:latest
+```
+
+After rollback, reboot and verify stability before attempting another rebase.
+
 ## Documentation Map
 
 | Document | Description |
@@ -96,4 +111,5 @@ The Distrobox-based local development and build flow is documented in:
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware assumptions and limits |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Shared post-install runtime validation |
 | [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
+| [`docs/OPTIONAL_PACKAGES.md`](docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
 | [`bluebuild/README.md`](bluebuild/README.md) | Local build workflow with Distrobox |
