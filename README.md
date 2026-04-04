@@ -69,12 +69,13 @@ The Distrobox-based local development and build flow is documented in:
 
 If a switch causes boot failures or instability, rollback immediately:
 
+## Boot into the previous deployment from GRUB menu, OR
+### From a working system, revert to the last known good state:
 ```bash
-# Boot into the previous deployment from GRUB menu, OR
-# From a working system, revert to the last known good state:
 sudo bootc rollback
-
-# To revert to Fedora's official Kinoite image:
+```
+### To revert to Fedora's official Kinoite image:
+```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 ```
 
