@@ -29,37 +29,23 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 
 ## Quick Start (Install)
 
-Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final state).
+Recommended flow: apply the custom image via `bootc switch`.
 
-### Initial Rebase (Unverified)
+### System Switch
 
-```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
-```
-
-Or for NVIDIA variant:
+For the AMD variant:
 
 ```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+````
 
-Reboot after the rebase completes.
-
-### Signed Rebase (Verified)
-
-After confirming system stability, switch to the signed image:
+For the NVIDIA variant:
 
 ```bash
-sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Or for NVIDIA variant:
-
-```bash
-sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
-
-Reboot again to complete the transition.
+Reboot after the process completes. Cryptographic signatures are validated automatically via container policies injected by the image.
 
 ## Post-Installation, Validation, and Troubleshooting
 
@@ -67,49 +53,42 @@ All post-install configuration, runtime validation checks, and troubleshooting s
 
 **Everyone must follow the general guide first:**
 
-- [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) — General post-install operations, tuning, and validation for ALL variants
+  - [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md) — General post-install operations, tuning, and validation for ALL variants
 
 **If you installed the NVIDIA variant, proceed to the specific guide afterward:**
 
-- [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) — Container GPU access, Secure Boot, and NVIDIA-specific validation
+  - [`docs/POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=docs/POST_INSTALL_NVIDIA.md) — Container GPU access, Secure Boot, and NVIDIA-specific validation
 
 ## Local Development
 
 The Distrobox-based local development and build flow is documented in:
 
-- [`bluebuild/README.md`](bluebuild/README.md)
-
-## Repository Structure
-
-| Directory | Purpose |
-| :--- | :--- |
-| [`recipes/`](recipes/) | BlueBuild recipes and shared modules |
-| [`files/system/`](files/system/) | System configuration copied into the final image |
-| [`files/scripts/`](files/scripts/) | Utilities installed in the image |
-| [`.github/workflows/`](.github/workflows/) | Build pipelines and automation |
+  - [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md)
 
 ## Emergency Rollback
 
-If a rebase causes boot failures or instability, rollback immediately:
+If a switch causes boot failures or instability, rollback immediately:
 
 ```bash
 # Boot into the previous deployment from GRUB menu, OR
 # From a working system, revert to the last known good state:
-sudo rpm-ostree rollback
+sudo bootc rollback
 
 # To revert to Fedora's official Kinoite image:
-sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/fedora/fedora-kinoite:latest
+sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 ```
 
-After rollback, reboot and verify stability before attempting another rebase.
+After rollback, reboot and verify stability before attempting another switch.
 
 ## Documentation Map
 
 | Document | Description |
 | :--- | :--- |
 | [`README.md`](README.md) | Main project overview and install flow |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware assumptions and limits |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Shared post-install runtime validation |
-| [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
-| [`docs/OPTIONAL_PACKAGES.md`](docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
-| [`bluebuild/README.md`](bluebuild/README.md) | Local build workflow with Distrobox |
+| [`docs/HARDWARE_BASELINE.md`](https://www.google.com/search?q=docs/HARDWARE_BASELINE.md) | Hardware assumptions and limits |
+| [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md) | Shared post-install runtime validation |
+| [`docs/POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
+| [`docs/OPTIONAL_PACKAGES.md`](https://www.google.com/search?q=docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
+| [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md) | Local build workflow with Distrobox |
+
+```
