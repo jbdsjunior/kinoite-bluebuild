@@ -15,15 +15,12 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-max-size 50G \
   --vfs-cache-max-age 24h \
   --dir-cache-time 1h \
-  --log-file=%h/.local/log/rclone-%i.log \
   --log-level INFO \
   $RCLONE_FLAGS
 
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
-
 Restart=on-failure
 RestartSec=10
-
 MemoryMax=4G
 LimitNOFILE=1048576
 
