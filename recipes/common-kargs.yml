@@ -8,6 +8,6 @@ modules:
       # Transparent hugepages: defer for better memory allocation latency
       - transparent_hugepage=madvise
       # Security mitigations: auto (balanced security/performance)
-      - mitigations=auto
+      - mitigations=off
       # PCIe ASPM: policy_performance for desktop/workstation stability
       - pcie_aspm=policy_performance
