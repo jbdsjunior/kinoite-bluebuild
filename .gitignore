@@ -7,3 +7,9 @@ cosign.key
 
 # BlueBuild temporary files
 /.bluebuild-scripts_*
+
+# Local development/runtime artifacts
+*.log
+*.tmp
+*.cache
+tmp/
