@@ -5,4 +5,5 @@ enabled=1
 gpgcheck=1
 repo_gpgcheck=0
 gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+priority=150
 
