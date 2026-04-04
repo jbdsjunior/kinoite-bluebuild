@@ -11,6 +11,4 @@ modules:
       - mitigations=auto
       # PCIe ASPM: policy_performance for desktop/workstation stability
       - pcie_aspm=policy_performance
-      # Boot verbosity
-      - quiet
-      - rhgb
+      # - pcie_aspm=off
