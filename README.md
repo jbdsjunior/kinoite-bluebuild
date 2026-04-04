@@ -91,5 +91,3 @@ After rollback, reboot and verify stability before attempting another switch.
 | [`docs/POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
 | [`docs/OPTIONAL_PACKAGES.md`](https://www.google.com/search?q=docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
 | [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md) | Local build workflow with Distrobox |
-
-```
