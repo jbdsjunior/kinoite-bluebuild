@@ -3,3 +3,7 @@ name=Antigravity RPM Repository
 baseurl=https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm
 enabled=1
 gpgcheck=0
+# WARNING: gpgcheck disabled - repository does not provide GPG signatures
+# Security risk: packages are not cryptographically verified
+# TODO: Enable gpgcheck=1 and add gpgkey when repository supports signing
+priority=100

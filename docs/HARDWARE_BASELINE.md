@@ -18,4 +18,14 @@ The system tuning (sysctl, zram, and network buffers) assumes the following mini
 - `files/system/usr/lib/sysctl.d/60-kernel-tuning.conf` — Kernel and memory tuning parameters
 - `files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf` — ZRAM compression swap policy
 
+### Suggested Values for Lower RAM Configurations
+
+| Parameter | 64GB (Baseline) | 32GB | 16GB |
+| :--- | :--- | :--- | :--- |
+| `net.core.rmem_max` / `wmem_max` | 33554432 | 16777216 | 8388608 |
+| `net.ipv4.tcp_rmem` (max) | 33554432 | 16777216 | 8388608 |
+| `net.ipv4.tcp_wmem` (max) | 33554432 | 16777216 | 8388608 |
+| ZRAM max (zram-generator) | 32768 MB | 16384 MB | 8192 MB |
+| `vm.swappiness` | 10 | 20 | 40 |
+
 Reduce TCP buffer sizes, ZRAM allocation, and swappiness values to match your available RAM.
