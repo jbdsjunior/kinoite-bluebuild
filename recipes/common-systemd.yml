@@ -13,6 +13,10 @@ modules:
         # Networking and Security
         - firewalld.service
         - systemd-resolved.service
+      
+      masked:
+        # Previne atrasos de boot aguardando alocação DHCP
+        - NetworkManager-wait-online.service
 
     user:
       enabled:
