@@ -6,10 +6,7 @@ Wants=network-online.target
 [Service]
 Type=notify
 EnvironmentFile=-%h/.config/rclone/env/%i.env
-
-# Mantido o padrão original do projeto (~/Cloud/)
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
-
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-mode full \
   --vfs-cache-max-size 50G \
