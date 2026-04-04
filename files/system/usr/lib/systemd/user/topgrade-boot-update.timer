@@ -3,7 +3,7 @@ Description=Run topgrade update (misc/containers)
 
 [Timer]
 OnStartupSec=20m
-OnUnitInactiveSec=12h
+OnUnitInactiveSec=6h
 RandomizedDelaySec=20m
 AccuracySec=1m
 Persistent=true
