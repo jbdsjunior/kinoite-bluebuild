@@ -35,7 +35,9 @@ cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
 rpm-ostree kargs | tr ' ' '\n' | grep -E "amd_pstate|transparent_hugepage|mitigations|pcie_aspm"
 
 # NetworkManager profile shipped by the image
-sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-home-network.conf
+# Note: Privacy hardening is disabled by default for home network use
+# See /usr/lib/NetworkManager/conf.d/60-privacy-hardening.disabled
+sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-privacy-hardening.disabled
 ```
 
 ## 3. Baseline GPU Validation (Mesa/AMD)
