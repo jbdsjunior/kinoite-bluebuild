@@ -5,14 +5,12 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-# Carrega as variáveis do provedor
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
-# Cria o ponto de montagem automaticamente
-ExecStartPre=/usr/bin/mkdir -p %h/mnt/%i
+# Mantido o padrão original do projeto (~/Cloud/)
+ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
 
-# Execução nativa (sem --daemon) suportando notificações do systemd
-ExecStart=/usr/bin/rclone mount %i: %h/mnt/%i \
+ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-mode full \
   --vfs-cache-max-size 50G \
   --vfs-cache-max-age 24h \
@@ -21,13 +19,11 @@ ExecStart=/usr/bin/rclone mount %i: %h/mnt/%i \
   --log-level INFO \
   $RCLONE_FLAGS
 
-# Fedora Kinoite utiliza fusermount3
-ExecStop=/usr/bin/fusermount3 -u %h/mnt/%i
+ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 
 Restart=on-failure
 RestartSec=10
 
-# Limites adequados para 64GB de RAM e CPU de 32 threads
 MemoryMax=4G
 LimitNOFILE=1048576
 
