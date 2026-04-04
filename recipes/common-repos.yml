@@ -5,12 +5,12 @@
 #   120 - terra (additional packages)
 #   150 - vendor repos (chrome, brave, edge, vscode)
 modules:
-  # - type: bling
-  #   install:
-  #     # Install negativo17 repos with priority 90, removes RPMFusion if present
-  #     - negativo17
-  #     # Alternative: install RPMFusion repos (including tainted) & disable negativo17
-  #     # - rpmfusion
+  - type: bling
+    install:
+      # Install negativo17 repos with priority 90, removes RPMFusion if present
+      - negativo17
+      # Alternative: install RPMFusion repos (including tainted) & disable negativo17
+      # - rpmfusion
 
   - type: rpm-ostree
     repos:
