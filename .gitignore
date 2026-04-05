@@ -1,4 +1,15 @@
-```
-# System configuration files
-files/system/usr/lib/sysctl.d/60-kernel-tuning.conf
-```
+# Secrets and signing material
+cosign.key
+*.pem
+*.key
+*.p12
+*.pfx
+
+# BlueBuild temporary files
+/.bluebuild-scripts_*
+
+# Local development/runtime artifacts
+*.log
+*.tmp
+*.cache
+tmp/
