@@ -88,6 +88,7 @@ When user sends `/evolve` or asks for architecture review, execute in order:
 - Keep hardening/tuning values justified by workload and baseline.
 - Avoid "max everything" tuning that assumes infinite resources.
 - Prefer explicit service/timer behavior and safe restart semantics.
+- Do not pin kernel networking knobs that have changed semantics across kernel releases unless benchmark evidence and version rationale are documented in-repo.
 
 ## 7) Documentation and Language Policy
 

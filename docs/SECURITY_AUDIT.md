@@ -2,7 +2,7 @@
 
 This document tracks all security-related configuration decisions, trade-offs, and accepted risks for the kinoite-bluebuild project.
 
-**Last Updated:** 2025-04-05  
+**Last Updated:** 2026-04-05  
 **Context:** Trusted home workstation (not roaming laptop, not hostile network environment)
 
 ---
@@ -32,6 +32,7 @@ This document tracks all security-related configuration decisions, trade-offs, a
 | **Secret Management** | GitHub Secrets only (`SIGNING_SECRET`, registry tokens) | Build-time credentials | ✅ No secrets in repo |
 | **ICMP Rate Limiting** | `icmp_ratelimit` (kernel default) | Ping flood mitigation | ✅ Default kernel behavior |
 | **Connection Tracking** | `nf_conntrack_max=2097152` | High-connection workload support (P2P, containers) | ✅ Tuned for workload |
+| **TIME-WAIT Reuse Policy** | Kernel default (not forced in sysctl) | Avoids cross-version semantic drift in TCP reuse behavior | ✅ Explicitly kept at kernel-managed default |
 
 ---
 
@@ -94,7 +95,7 @@ This document MUST be reviewed and updated:
 - **Immediately** when any security-relevant configuration is modified
 - **Before** major version bumps or base image changes
 
-Next scheduled review: **2025-07-05**
+Next scheduled review: **2026-07-05**
 
 ---
 
