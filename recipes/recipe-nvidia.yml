@@ -8,7 +8,7 @@ description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems wi
 # Base image maintained by BlueBuild (already includes NVIDIA stack)
 # base-image: ghcr.io/blue-build/base-images/fedora-kinoite-nvidia
 base-image: ghcr.io/ublue-os/kinoite-nvidia
-image-version: latest
+image-version: latest  # Consider pinning to a specific version (e.g., '41') for reproducible builds
 platforms:
   - linux/amd64
 modules:

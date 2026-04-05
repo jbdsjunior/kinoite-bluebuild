@@ -1,5 +1,8 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Starship prompt configuration
+# Users can override this by creating ~/.config/starship.toml
+
 add_newline = true
 command_timeout = 1200
 palette = "kinoite"

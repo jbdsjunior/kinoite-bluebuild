@@ -53,17 +53,17 @@ All post-install configuration, runtime validation checks, and troubleshooting s
 
 **Everyone must follow the general guide first:**
 
-  - [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md) — General post-install operations, tuning, and validation for ALL variants
+  - [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) — General post-install operations, tuning, and validation for ALL variants
 
 **If you installed the NVIDIA variant, proceed to the specific guide afterward:**
 
-  - [`docs/POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=docs/POST_INSTALL_NVIDIA.md) — Container GPU access, Secure Boot, and NVIDIA-specific validation
+  - [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) — Container GPU access, Secure Boot, and NVIDIA-specific validation
 
 ## Local Development
 
 The Distrobox-based local development and build flow is documented in:
 
-  - [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md)
+  - [`bluebuild/README.md`](bluebuild/README.md)
 
 ## Emergency Rollback
 
@@ -86,9 +86,9 @@ After rollback, reboot and verify stability before attempting another switch.
 | Document | Description |
 | :--- | :--- |
 | [`README.md`](README.md) | Main project overview and install flow |
-| [`docs/HARDWARE_BASELINE.md`](https://www.google.com/search?q=docs/HARDWARE_BASELINE.md) | Hardware assumptions and limits |
-| [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md) | Shared post-install runtime validation |
-| [`docs/POST_INSTALL_NVIDIA.md`](https://www.google.com/search?q=docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
-| [`docs/OPTIONAL_PACKAGES.md`](https://www.google.com/search?q=docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
-| [`bluebuild/README.md`](https://www.google.com/search?q=bluebuild/README.md) | Local build workflow with Distrobox |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware assumptions and limits |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Shared post-install runtime validation |
+| [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
+| [`docs/OPTIONAL_PACKAGES.md`](docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
+| [`bluebuild/README.md`](bluebuild/README.md) | Local build workflow with Distrobox |
 

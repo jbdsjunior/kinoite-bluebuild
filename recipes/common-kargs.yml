@@ -3,7 +3,8 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
-      # AMD CPU power management (AMD only, ignored on Intel)
+      # AMD CPU power management (AMD only, ignored on Intel systems)
+      # Note: This parameter is safely ignored on Intel CPUs
       - amd_pstate=active
       # Transparent hugepages: defer for better memory allocation latency
       - transparent_hugepage=madvise

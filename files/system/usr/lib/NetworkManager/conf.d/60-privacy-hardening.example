@@ -1,5 +1,6 @@
 # /usr/lib/NetworkManager/conf.d/60-privacy-hardening.conf
-# Note: Rename this file to 60-privacy-hardening.conf to enable privacy hardening
+# Note: Copy this file to 60-privacy-hardening.conf in /etc/NetworkManager/conf.d/ to enable privacy hardening
+# Example: sudo cp /usr/lib/NetworkManager/conf.d/60-privacy-hardening.example /etc/NetworkManager/conf.d/60-privacy-hardening.conf
 
 [device]
 # Enable MAC address randomization during WiFi scanning for privacy

@@ -6,8 +6,9 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Locale and dictionaries
-        - langpacks-pt_BR
+        # Locale and dictionaries (English US)
+        # Note: Changed from langpacks-pt_BR to langpacks-en for consistent English locale
+        - langpacks-en
 
         # Core system
         - plasma-firewall
