@@ -4,8 +4,8 @@
 # Ambiente global (aplicado a todos os logins, incluindo root)
 export EDITOR=nano
 export VISUAL=nano
-export LANG="pt_BR.UTF-8"
-export LC_ALL="pt_BR.UTF-8"
+# export LANG="pt_BR.UTF-8"
+# export LC_ALL="pt_BR.UTF-8"
 
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
 [ -z "${PS1:-}" ] && return
