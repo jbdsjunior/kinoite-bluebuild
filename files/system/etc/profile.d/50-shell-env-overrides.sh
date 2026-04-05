@@ -3,6 +3,7 @@
 
 export EDITOR=nano
 export VISUAL=nano
+
 # export LANG="pt_BR.UTF-8"
 # export LC_ALL="pt_BR.UTF-8"
 
