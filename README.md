@@ -29,20 +29,34 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 
 ## Quick Start (Install)
 
-Recommended flow: apply the custom image via `bootc switch`.
+Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final state).
 
-### System Switch
-
-For the AMD variant:
+### Initial Rebase (Unverified)
 
 ```bash
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
-````
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
+```
 
-For the NVIDIA variant:
+Or for NVIDIA variant:
 
 ```bash
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
+```
+
+Reboot after the rebase completes.
+
+### Signed Rebase (Verified)
+
+After confirming system stability, switch to the signed image:
+
+```bash
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
+```
+
+Or for NVIDIA variant:
+
+```bash
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
 Reboot after the process completes. Cryptographic signatures are validated automatically via container policies injected by the image.
