@@ -4,8 +4,9 @@ on:
   #   branches:
   #     - main
   schedule:
-    - cron: "00 06 * * *"
-    - cron: "0 */2 * * *"  # every 2 hours
+    - cron: "00 06 * * *"      # Daily at 06:00 UTC
+    # Removed: every-2-hours check to reduce API usage and attack surface
+    # Daily check is sufficient for home workstation use case
   workflow_dispatch:
 
 concurrency:
