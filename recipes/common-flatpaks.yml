@@ -1,12 +1,13 @@
-# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 ---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
 modules:
   - type: default-flatpaks
     configurations:
       # User scope flatpaks (disabled by default)
       # - scope: user
       #   notify: false
-      
+
       # System scope flatpaks
       - scope: system
         notify: false

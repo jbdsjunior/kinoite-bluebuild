@@ -1,9 +1,6 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-# Repository Priority Hierarchy (lower number = higher priority):
-#   90  - negativo17 (multimedia codecs, drivers)
-#   120 - terra (additional packages)
-#   150 - vendor repos (chrome, brave, edge, vscode)
+
 modules:
   - type: bling
     install:

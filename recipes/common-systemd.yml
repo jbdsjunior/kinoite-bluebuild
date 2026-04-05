@@ -1,5 +1,6 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
 modules:
   - type: systemd
     system:
@@ -13,7 +14,7 @@ modules:
         # Networking and Security
         - firewalld.service
         - systemd-resolved.service
-      
+
       masked:
         # Prevent boot delays waiting for DHCP allocation
         - NetworkManager-wait-online.service
