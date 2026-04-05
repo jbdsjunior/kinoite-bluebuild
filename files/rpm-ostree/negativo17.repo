@@ -1,7 +1,2 @@
 [fedora-multimedia]
-name=Negativo17 - Multimedia
-baseurl=https://negativo17.org/repos/multimedia/fedora-$releasever/$basearch/
-enabled=1
-gpgcheck=1
-gpgkey=https://negativo17.org/repos/RPM-GPG-KEY-dawid
 priority=10
