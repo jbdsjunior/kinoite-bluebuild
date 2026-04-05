@@ -28,6 +28,7 @@ This document tracks all security-related configuration decisions, trade-offs, a
 | **Kernel Hardening** | `yama.ptrace_scope=1`, `split_lock_mitigate=1` | Runtime process isolation, DoS prevention | ✅ Enabled |
 | **Network Hardening** | `tcp_syncookies=1`, `accept_redirects=0` (IPv4/IPv6) | DDoS mitigation, redirect attack prevention | ✅ Enabled |
 | **DNS Security** | DNSSEC=yes, DNSOverTLS=yes (strict) | DNS integrity and encrypted transport | ✅ Enabled |
+| **DNS Cache Policy** | `Cache=yes`, `MaxCacheSize=16M` | Improves resolver performance while keeping cache growth bounded | ✅ Enabled |
 | **Workflow Security** | Least-privilege permissions (`contents: read`), no committed secrets | CI/CD pipeline | ✅ Enabled |
 | **Secret Management** | GitHub Secrets only (`SIGNING_SECRET`, registry tokens) | Build-time credentials | ✅ No secrets in repo |
 | **ICMP Rate Limiting** | `icmp_ratelimit` (kernel default) | Ping flood mitigation | ✅ Default kernel behavior |
