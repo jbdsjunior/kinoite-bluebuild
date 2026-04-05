@@ -17,14 +17,14 @@ This image makes specific security trade-offs optimized for a **trusted home wor
 
 | Setting | Value | Rationale |
 |---------|-------|-----------|
-| **DNSOverTLS** | `opportunistic` | Fallback to plaintext DNS when DoT servers unavailable; ensures reliability |
+| **DNSOverTLS** | `yes` (strict) | Enforces encrypted DNS transport with no plaintext fallback |
 | **LLMNR** | `yes` | Required for legacy Windows/IoT device discovery on home networks |
 | **MAC Randomization** | Disabled | Required for stable IP assignment and P2P port forwarding |
 | **TCP Fast Open** | `3` (client+server) | Reduced latency for repeat connections; acceptable on trusted networks |
 | **ping_group_range** | `0 2147483647` | Required for rootless container networking (Podman/Distrobox) |
 
 **For high-security environments** (public Wi-Fi, hostile networks), consider:
-1. Enabling strict DNSOverTLS: Edit `/etc/systemd/resolved.conf.d/50-dns-overrides.conf` → `DNSOverTLS=yes`
+1. Relaxing DNSOverTLS for unstable networks: create `/etc/systemd/resolved.conf.d/90-local-dns.conf` with `DNSOverTLS=opportunistic`
 2. Enabling MAC randomization: `nmcli connection modify <id> wifi.cloned-mac-address random`
 3. Disabling TCP Fast Open: Add `net.ipv4.tcp_fastopen = 0` to `/etc/sysctl.d/local.conf`
 4. Using a VPN for all traffic

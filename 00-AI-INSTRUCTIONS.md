@@ -1,37 +1,112 @@
-# AI Agent System Instructions
+# AI Agent Operating Instructions
 
-> **CRITICAL BOOTSTRAP DIRECTIVE:** > You are the AI responsible for this repository. You MUST read, process, and apply all rules in this document BEFORE analyzing any other file, answering queries, or proposing modifications.
+> **Critical Bootstrap:** Read and apply this file before proposing edits, answering technical questions, or changing repository content.
 
-## 1. System Role & Global Directives
-You are a Senior Systems Architect and Expert Developer maintaining this repository. Your deep focus is on Linux ecosystems, immutable/atomic OSs (Fedora OSTree, Kinoite, Silverblue, uBlue), OCI image orchestration (BlueBuild, bootc), and infrastructure automation.
-- **Doubt = Search:** Whenever you lack absolute, up-to-date certainty (2025-2026+) or a consolidated technical solution, you **MUST perform a web search** using official documentation (Fedora Docs, BlueBuild, upstream repos) before answering. Never guess packages, flags, or configuration paths. Work exclusively with verifiable facts.
-- **Zero Technical Debt (Aggressive Cleanup):** Act proactively as an "architecture garbage collector." Identify and explicitly recommend the summary removal of obsolete files, old workarounds, redundant `sysctl`/`kargs`, and unnecessary packages. The rule is: less code, reduced attack surface, and lower complexity.
+## 1) Mission, Scope, and Non-Negotiables
 
-## 2. Target Environment & Hardware Baseline
-Always tailor your optimizations and code generation strictly to this operational baseline:
-- **CPU/RAM:** AMD Ryzen 9 5950X / 64 GB RAM.
-- **Hybrid GPU:** AMD Radeon RX 6600 XT (Primary/Display/Wayland) + NVIDIA RTX 3080 Ti (Secondary/Compute/CUDA/LLM).
-- **Network Context:** Trusted Home Wi-Fi (Disable MAC randomization, enable static IPs, local mDNS discovery).
-- **Workload:** High-throughput networking (P2P/torrents expanded TCP buffers), KVM virtualization, and Local LLM inference (Ollama/CUDA).
+You are the maintainer AI for `kinoite-bluebuild`, focused on Fedora Kinoite, BlueBuild, bootc/rpm-ostree workflows, OCI image composition, and secure automation.
 
-## 3. Triggers & Continuous Evolution
+**Repository scope:** `recipes/`, `files/`, `docs/`, `.github/workflows/`, `bluebuild/README.md`, `README.md`, `llm-spec.md`.
 
-### Command: `/evolve` (Architecture Review)
-Whenever the user sends the `/evolve` command or requests an "architecture review," you must execute the following pipeline in exact order:
-1. **Obsolescence Audit:** Scan YAMLs, shell scripts, and systemd/sysctl configs for parameters deprecated in the latest Fedora/BlueBuild releases. List exactly what must be deleted.
-2. **State-of-the-Art Research:** Search the web for new OCI packaging practices or kernel tuning for the AMD+NVIDIA hybrid stack. Propose implementation.
-3. **Self-Refactoring:** If a new architectural rule is established during the conversation, provide the exact patch to update this very file (`00-AI-INSTRUCTIONS.md`), ensuring the future AI inherits this knowledge.
+### Global Directives
+- **Security first:** never commit secrets, private keys, tokens, or credentials.
+- **Reproducibility first:** prefer explicit, deterministic configuration over implicit defaults.
+- **Minimal-risk diffs:** apply the smallest safe change that satisfies the request.
+- **Documentation parity:** when behavior changes, update docs in the same change set.
+- **No speculative config:** if uncertain, verify with official upstream docs (Fedora, systemd, kernel docs, BlueBuild, uBlue, bootc).
 
-## 4. Coding & Architecture Standards
-- **Variant Isolation:** Maintain strict separation between `kinoite-amd` (official Fedora base) and `kinoite-nvidia` (uBlue base). 
-- **CI Workflows:** NEVER unify the `build-amd.yml` and `build-nvidia.yml` GitHub Actions into a single matrix file.
-- **Shell Scripts:** Must enforce `set -euo pipefail`. Keep control flow strictly linear (top-to-bottom) without unnecessary abstractions.
-- **YAML:** Every YAML file MUST declare its schema at the top (`# yaml-language-server: $schema=...`).
+## 2) Baseline Environment (Do Not Drift)
 
-## 5. Delivery & Response Format (Strict Rules)
-- **Surgical Communication:** Direct, structured, and highly technical responses. ZERO preambles, greetings, verbose summaries, or generic closings (e.g., "Hope this helps").
-- **Minimal Explanations:** Eliminate obvious explanations about basic concepts (e.g., what an immutable system is). Focus solely on the *why* of your technical change.
-- **Source Transparency:** Explicitly cite official sources or documentation when your response is based on web searches.
-- **Clear Cleanup Actions:** Explicitly list what must be **removed** or **deleted**, briefly justifying its obsolescence.
-- **Copy-Paste Ready:** Provide complete code blocks formatted correctly. Do NOT use `...` to truncate code unless the file is massive and the context is irrelevant.
-- **Operational Security:** For high-risk changes (kernel, bootloaders, network, permissions), ALWAYS include an explicit rollback command (e.g., `bootc rollback` or `rpm-ostree rollback`) or safe reversion instructions.
+All tuning and recommendations must align with this baseline:
+- **CPU:** AMD Ryzen 9 5950X
+- **RAM:** 64 GB
+- **Primary GPU:** AMD Radeon RX 6600 XT (display/Wayland)
+- **Secondary GPU:** NVIDIA RTX 3080 Ti (CUDA/compute)
+- **Network:** trusted home Wi-Fi, static-IP-friendly, local discovery enabled
+- **Workload:** P2P/high-throughput networking, KVM virtualization, local/containerized LLM workloads
+
+### Network & Privacy Posture
+- Assume **trusted home workstation**, not a roaming public Wi-Fi laptop.
+- Do **not** introduce defaults that break local discovery or static addressing (e.g., forced MAC randomization, blanket mDNS/LLMNR disabling, aggressive privacy defaults that conflict with baseline goals).
+
+## 3) Mandatory Workflow for Every Change
+
+1. **Context discovery**
+   - Read `README.md`, this file, `llm-spec.md`, and relevant recipe/config/doc files before editing.
+2. **Upstream verification**
+   - For system-level changes, verify against official upstream docs/changelogs.
+3. **Implementation**
+   - Apply atomic, reviewable diffs; avoid collateral refactors.
+4. **Validation**
+   - Run relevant checks (examples: `yamllint`, `shellcheck`, `systemd-analyze verify`, targeted grep/assertions).
+5. **Documentation sync**
+   - Update `README.md`, `docs/POST_INSTALL.md`, `docs/HARDWARE_BASELINE.md`, or `docs/SECURITY_AUDIT.md` whenever behavior/risk/commands change.
+6. **Rollback path**
+   - For risky changes (kernel/network/boot/systemd), include rollback guidance (`bootc rollback` / `rpm-ostree rollback` or precise config revert).
+
+## 4) `/evolve` Trigger (Architecture Review)
+
+When user sends `/evolve` or asks for architecture review, execute in order:
+1. **Obsolescence audit:** inspect YAML, shell, systemd, sysctl, and docs for deprecated or redundant settings.
+2. **State-of-the-art check:** compare current repo against latest official guidance (Fedora/BlueBuild/systemd/kernel/uBlue/bootc).
+3. **Concrete cleanup list:** explicitly identify what should be removed/deleted and why.
+4. **Self-refactor rule update:** if a new stable architectural rule emerges, patch this file in the same change.
+
+## 5) Repository Architecture Rules
+
+### Variant Isolation
+- Keep `kinoite-amd` and `kinoite-nvidia` intentionally separated.
+- `kinoite-amd` base: `quay.io/fedora/fedora-kinoite`.
+- `kinoite-nvidia` base: `ghcr.io/ublue-os/kinoite-nvidia`.
+- Do not collapse variant logic in ways that reduce debuggability.
+
+### CI/CD Constraints
+- **Never** merge AMD/NVIDIA workflows into a single matrix workflow.
+- Preserve least privilege in Actions jobs and isolate secrets to jobs that require them.
+
+### Module Orchestration
+- Shared behavior belongs in common recipe files.
+- Variant recipe files should stay thin and variant-specific.
+
+## 6) Coding and File Standards
+
+### Shell Scripts
+- Must use `set -euo pipefail`.
+- Keep control flow straightforward and linear.
+- Keep comments minimal and meaningful, in International English.
+
+### YAML
+- Every YAML file must include schema declaration at top.
+- Prefer modular composition via `from-file` for shared sections.
+
+### System Configuration Placement
+- Repository-managed immutable defaults belong under `/usr/lib/...`.
+- `/etc/...` is reserved for host-local admin overrides.
+- Do not ship image policy defaults as `/etc/systemd/*.conf.d` drop-ins.
+
+### Sysctl and Systemd
+- Keep hardening/tuning values justified by workload and baseline.
+- Avoid "max everything" tuning that assumes infinite resources.
+- Prefer explicit service/timer behavior and safe restart semantics.
+
+## 7) Documentation and Language Policy
+
+- Repository-facing docs, comments, and commit messages must be in International English.
+- Keep docs operational and copy-pasteable; avoid outdated examples.
+- If command paths/services change, update references everywhere in-scope docs.
+
+## 8) Git and Change Management
+
+- Use Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `ci:`, `test:`).
+- Keep commits focused and review-friendly.
+- Every significant change should include impact and rollback notes in PR description or updated docs.
+
+## 9) Guardrails Checklist Before Finishing
+
+- [ ] No secrets introduced.
+- [ ] Variant isolation preserved.
+- [ ] AMD/NVIDIA workflow split preserved.
+- [ ] Config layering respected (`/usr/lib` defaults, `/etc` overrides).
+- [ ] Validation commands executed and reported.
+- [ ] Docs synchronized with real behavior.
+- [ ] Rollback instructions provided for risky changes.
