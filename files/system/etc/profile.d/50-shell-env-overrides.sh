@@ -1,11 +1,10 @@
 #!/bin/sh
 # POSIX compliant shell initialization
+# System-wide environment overrides for interactive shells
 
+# Set default editor
 export EDITOR=nano
 export VISUAL=nano
-
-# export LANG="pt_BR.UTF-8"
-# export LC_ALL="pt_BR.UTF-8"
 
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
 [ -z "${PS1:-}" ] && return
@@ -26,6 +25,7 @@ if [ -n "${BASH_VERSION:-}" ]; then
 fi
 
 # Initialize starship prompt
+# Users can override by creating ~/.config/starship.toml
 if command -v starship >/dev/null 2>&1; then
     [ -f /usr/share/starship/starship.toml ] && export STARSHIP_CONFIG=/usr/share/starship/starship.toml
     if [ -n "${BASH_VERSION:-}" ]; then
