@@ -5,9 +5,6 @@ modules:
   - type: kargs
     arch: x86_64
     kargs:
-      # AMD CPU power management (AMD only, ignored on Intel)
-      # Note: This image is optimized for AMD Ryzen CPUs. On Intel systems, this parameter is safely ignored.
-      - amd_pstate=active
       # Transparent hugepages: defer for better memory allocation latency
       - transparent_hugepage=madvise
       # Security mitigations: auto (balanced security/performance)
