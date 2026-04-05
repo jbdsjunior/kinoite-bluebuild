@@ -2,11 +2,8 @@
 Description=Run topgrade system update
 
 [Timer]
-# Wait 7 minutes after startup before first run
 OnStartupSec=7m
-# Check every 6 hours instead of 2 hours to reduce unnecessary network traffic
-# and avoid interfering with long-running workloads (LLM training, torrents)
-OnUnitInactiveSec=6h
+OnUnitInactiveSec=2h
 RandomizedDelaySec=30m
 AccuracySec=1m
 Persistent=true
