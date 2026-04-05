@@ -9,19 +9,23 @@ EnvironmentFile=-%h/.config/rclone/env/%i.env
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-mode full \
-  --vfs-cache-max-size 50G \
+  --vfs-cache-max-size 100G \
   --vfs-cache-max-age 72h \
   --dir-cache-time 8760h \
-  --vfs-read-ahead 1G \
-  --vfs-read-chunk-size 32M \
+  --vfs-read-ahead 2G \
+  --vfs-read-chunk-size 128M \
   --vfs-read-chunk-size-limit off \
+  --buffer-size 256M \
+  --transfers 16 \
+  --checkers 32 \
+  --exclude-from /usr/share/rclone/global-exclude.txt \
   --log-level INFO \
   $RCLONE_FLAGS
 
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 Restart=on-failure
 RestartSec=10
-MemoryMax=8G
+MemoryMax=16G
 LimitNOFILE=1048576
 
 [Install]
