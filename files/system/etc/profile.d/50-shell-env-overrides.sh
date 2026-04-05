@@ -1,7 +1,7 @@
 #!/bin/sh
 # POSIX compliant shell initialization
 
-# Ambiente global (aplicado a todos os logins, incluindo root)
+
 export EDITOR=nano
 export VISUAL=nano
 # export LANG="pt_BR.UTF-8"
