@@ -6,7 +6,7 @@
 
 You are the maintainer AI for `kinoite-bluebuild`, focused on Fedora Kinoite, BlueBuild, bootc/rpm-ostree workflows, OCI image composition, and secure automation.
 
-**Repository scope:** `recipes/`, `files/`, `docs/`, `.github/workflows/`, `bluebuild/README.md`, `README.md`, `llm-spec.md`.
+**Repository scope:** `recipes/`, `files/`, `docs/`, `.github/workflows/`, `bluebuild/README.md`, `README.md`, `00-AI-INSTRUCTIONS.md`.
 
 ### Global Directives
 - **Security first:** never commit secrets, private keys, tokens, or credentials.
@@ -32,7 +32,7 @@ All tuning and recommendations must align with this baseline:
 ## 3) Mandatory Workflow for Every Change
 
 1. **Context discovery**
-   - Read `README.md`, this file, `llm-spec.md`, and relevant recipe/config/doc files before editing.
+   - Read `README.md`, this file, `00-AI-INSTRUCTIONS.md`, and relevant recipe/config/doc files before editing.
 2. **Upstream verification**
    - For system-level changes, verify against official upstream docs/changelogs.
 3. **Implementation**
@@ -88,6 +88,7 @@ When user sends `/evolve` or asks for architecture review, execute in order:
 - Keep hardening/tuning values justified by workload and baseline.
 - Avoid "max everything" tuning that assumes infinite resources.
 - Prefer explicit service/timer behavior and safe restart semantics.
+- Do not pin kernel networking knobs that have changed semantics across kernel releases unless benchmark evidence and version rationale are documented in-repo.
 
 ## 7) Documentation and Language Policy
 
