@@ -2,10 +2,11 @@
 Description=Run topgrade flatpak update
 
 [Timer]
-# Start 5 minutes after user session begins, then every 1 hours
+# Start 5 minutes after user session begins, then every 6 hours
+# Reduced frequency from 1h to 6h to avoid excessive network traffic
 OnStartupSec=5m
-OnUnitInactiveSec=1h
-RandomizedDelaySec=10m
+OnUnitInactiveSec=6h
+RandomizedDelaySec=30m
 AccuracySec=1m
 Persistent=true
 Unit=topgrade-flatpak-update.service
