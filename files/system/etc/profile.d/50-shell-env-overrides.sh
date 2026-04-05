@@ -1,7 +1,6 @@
 #!/bin/sh
 # POSIX compliant shell initialization
 
-
 export EDITOR=nano
 export VISUAL=nano
 # export LANG="pt_BR.UTF-8"
