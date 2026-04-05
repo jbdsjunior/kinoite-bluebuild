@@ -89,6 +89,7 @@ When user sends `/evolve` or asks for architecture review, execute in order:
 - Avoid "max everything" tuning that assumes infinite resources.
 - Prefer explicit service/timer behavior and safe restart semantics.
 - Do not pin kernel networking knobs that have changed semantics across kernel releases unless benchmark evidence and version rationale are documented in-repo.
+- Remove no-op or auto-sized sysctls when upstream kernel docs indicate they are ineffective or already boot-time tuned (e.g., knobs explicitly documented as having no effect).
 
 ## 7) Documentation and Language Policy
 

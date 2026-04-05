@@ -33,6 +33,8 @@ This document tracks all security-related configuration decisions, trade-offs, a
 | **ICMP Rate Limiting** | `icmp_ratelimit` (kernel default) | Ping flood mitigation | ✅ Default kernel behavior |
 | **Connection Tracking** | `nf_conntrack_max=2097152` | High-connection workload support (P2P, containers) | ✅ Tuned for workload |
 | **TIME-WAIT Reuse Policy** | Kernel default (not forced in sysctl) | Avoids cross-version semantic drift in TCP reuse behavior | ✅ Explicitly kept at kernel-managed default |
+| **UDP Global Memory Policy** | Kernel default (`udp_mem` not pinned) | Avoids freezing RAM-scaled defaults into static values | ✅ Explicitly kept at kernel-managed default |
+| **UDP TX Minimum Knob** | Not set (`udp_wmem_min` omitted) | Avoids carrying no-op sysctls across kernel releases | ✅ Removed (documented upstream as no effect) |
 
 ---
 
@@ -105,3 +107,4 @@ Next scheduled review: **2026-07-05**
 - [BlueBuild Security Best Practices](https://blue-build.org/learn/security/)
 - [systemd-resolved Documentation](https://www.freedesktop.org/software/systemd/man/latest/systemd-resolved.service.html)
 - [Kernel Sysctl Parameters](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/)
+- [Linux Kernel IP Sysctl Reference](https://docs.kernel.org/networking/ip-sysctl.html)
