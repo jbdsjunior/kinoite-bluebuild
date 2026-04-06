@@ -48,13 +48,13 @@ Recommended flow: **unverified rebase** (first boot) -> **signed rebase** (final
 ### Initial Rebase (Unverified)
 
 ```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-amd:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
 Or for NVIDIA variant:
 
 ```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/jbdsjunior/kinoite-nvidia:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
 Reboot after the rebase completes.
@@ -64,13 +64,13 @@ Reboot after the rebase completes.
 After confirming system stability, switch to the signed image:
 
 ```bash
-sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-amd:latest
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
 Or for NVIDIA variant:
 
 ```bash
-sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/jbdsjunior/kinoite-nvidia:latest
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
 Reboot after the process completes. Cryptographic signatures are validated automatically via container policies injected by the image.
