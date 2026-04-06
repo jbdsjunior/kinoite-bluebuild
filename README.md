@@ -18,6 +18,12 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 - ✅ Network hardening (`tcp_syncookies`, no ICMP redirects)
 - ⚠️ Optimized for trusted home networks (see [Security Audit](docs/SECURITY_AUDIT.md))
 
+## Repository Configuration
+
+This project uses **RPM Fusion** (free and non-free) as the primary third-party repository for multimedia codecs, proprietary drivers, and additional packages. The RPM Fusion repositories are enabled by default in the `common-repos.yml` module.
+
+> **Note:** The negativo17 repository is disabled by default. If you need to switch repositories, edit `recipes/common-repos.yml` accordingly.
+
 ## Quick Overview
 
 - **Ready-to-use variants:** `kinoite-amd` and `kinoite-nvidia`

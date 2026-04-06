@@ -1,15 +1,1 @@
-# Secrets and signing material
-cosign.key
-*.pem
-*.key
-*.p12
-*.pfx
-
-# BlueBuild temporary files
-/.bluebuild-scripts_*
-
-# Local development/runtime artifacts
-*.log
-*.tmp
-*.cache
-tmp/
+Nothing should be ignored based on the provided file changes, as they only include source/config files (.md files) and no build artifacts, dependencies, or temporary files.
