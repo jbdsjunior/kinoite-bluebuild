@@ -2,44 +2,28 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # - type: dnf
-  #   install:
-  #     allow-erasing: true
-  #     skip-unavailable: true
-  #     packages:
-  #       - libopenjph
-  #       - ocl-icd
-  #       - repo: fedora-multimedia
-  #         packages:
-  #           - libva-utils
-  #           - pipewire-libs-extra
-  #           - heif-pixbuf-loader
-
-  #   replace:
-  #     - from-repo: fedora-multimedia
-  #       skip-unavailable: true
-  #       packages:
-  #         - libva
-  #         - libheif
-  #         - mesa-dri-drivers
-  #         - mesa-filesystem
-  #         - mesa-libEGL
-  #         - mesa-libGL
-  #         - mesa-libgbm
-  #         - mesa-va-drivers
-  #         - mesa-vulkan-drivers
-
   - type: dnf
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - gstreamer1-plugins-bad
-        - gstreamer1-plugins-ugly
+        # Hardware acceleration (Primary AMD GPU)
+        - mesa-va-drivers-freeworld
+        - mesa-vdpau-drivers-freeworld
+        - libva-utils
+        - vdpauinfo
+
+        # GStreamer and FFmpeg codecs (via RPMFusion)
         - ffmpeg
         - ffmpeg-libs
-        - pipewire-codec-aptx
-        # - fdk-aac
-        # - libfdk-aac
-        # - libavcodec
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
 
+        # Image format support (HEIC/HEVC)
+        - libheif-freeworld
+        - heif-pixbuf-loader
+        - libheif-tools
+
+        # High-definition Bluetooth audio codecs
+        - pipewire-codec-aptx
