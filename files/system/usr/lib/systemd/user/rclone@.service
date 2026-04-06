@@ -2,13 +2,20 @@
 Description=Rclone Mount - %i
 After=network-online.target
 Wants=network-online.target
+# Evita falhas de montagem caso o diretório seja apagado ou não possa ser lido
+AssertPathIsDirectory=%h/Cloud/%i
 
 [Service]
 Type=notify
 EnvironmentFile=-%h/.config/rclone/env/%i.env
+
+# Garante que os diretórios de montagem e cache existam antes de iniciar
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
+ExecStartPre=/usr/bin/mkdir -p %h/.cache/rclone/%i
+
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-mode full \
+  --cache-dir %h/.cache/rclone/%i \
   --vfs-cache-max-size 100G \
   --vfs-cache-max-age 72h \
   --dir-cache-time 8760h \
@@ -16,6 +23,7 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-read-chunk-size 128M \
   --vfs-read-chunk-size-limit off \
   --buffer-size 256M \
+  --poll-interval 5s \
   --transfers 16 \
   --checkers 32 \
   --exclude-from /usr/share/rclone/global-exclude.txt \
