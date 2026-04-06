@@ -5,9 +5,9 @@ modules:
   - type: bling
     install:
       # Alternative: install RPMFusion repos (including tainted) & disable negativo17
-      - rpmfusion
+      # - rpmfusion
       # Install negativo17 repos with priority 90, removes RPMFusion if present
-      # - negativo17
+      - negativo17
 
   - type: rpm-ostree
     repos:
