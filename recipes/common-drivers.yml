@@ -16,11 +16,11 @@ modules:
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
         - ffmpeg-libs
-        - gstreamer1-libav
+
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
-        - lame
+        - gstreamer1-libav
 
         # Image format support (HEIC/HEVC/AVIF)
         - libheif-freeworld
@@ -31,3 +31,4 @@ modules:
         - pipewire-codec-aptx
         - libfdk-aac
         - libldac
+        - lame
