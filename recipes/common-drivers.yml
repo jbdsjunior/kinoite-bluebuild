@@ -8,18 +8,15 @@ modules:
       skip-unavailable: true
       packages:
         # Hardware acceleration (Primary AMD RX 6600 XT)
-        - mesa-va-drivers-freeworld
-        - mesa-vdpau-drivers-freeworld
+        - mesa-va-drivers
+        - mesa-vdpau-drivers
   
-        - libva-utils
-        - vdpauinfo
-
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
         - ffmpeg-libs
 
-        - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-bad-extras
         - gstreamer1-plugins-ugly
         - gstreamer1-libav
 
