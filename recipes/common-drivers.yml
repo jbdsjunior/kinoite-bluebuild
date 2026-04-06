@@ -10,6 +10,7 @@ modules:
         # Hardware acceleration (Primary AMD RX 6600 XT)
         - mesa-va-drivers-freeworld
         - mesa-vdpau-drivers-freeworld
+  
         - libva-utils
         - vdpauinfo
 
