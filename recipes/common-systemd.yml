@@ -14,10 +14,12 @@ modules:
         # Networking and Security
         - firewalld.service
         - systemd-resolved.service
-
-      masked:
-        # Prevent boot delays waiting for DHCP allocation
+      disable:
         - NetworkManager-wait-online.service
+
+      # masked:
+      #   # Prevent boot delays waiting for DHCP allocation
+      #   - NetworkManager-wait-online.service
 
     user:
       enabled:
