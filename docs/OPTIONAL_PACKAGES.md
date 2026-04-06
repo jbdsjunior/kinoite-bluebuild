@@ -63,8 +63,10 @@ This document explains which optional packages and Flatpaks are commented out by
 Check `recipes/common-packages.yml` for commented RPM packages. Common patterns:
 
 - **Development tools**: Enable if you do local compilation or container development
-- **Multimedia codecs**: Already covered by negativo17 repository
+- **Multimedia codecs**: Already covered by RPM Fusion repositories
 - **Virtualization tools**: KVM/libvirt already enabled via `common-kvm.yml`
+
+> **Note:** This project uses **RPM Fusion** (free and non-free) as the primary third-party repository for multimedia codecs and proprietary drivers. The negativo17 repository is disabled by default.
 
 ---
 
