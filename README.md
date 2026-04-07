@@ -29,27 +29,33 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 
 ## Quick Start
 
-### Install (Unverified Rebase)
+### Initial Rebase (Unverified)
 
 ```bash
-sudo bootc switch ghcr.io/<your-username>/kinoite-amd:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
 Or for NVIDIA variant:
 
 ```bash
-sudo bootc switch ghcr.io/<your-username>/kinoite-nvidia:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
+
+Reboot after the rebase completes.
 
 ### Signed Rebase (Verified)
 
-After confirming stability:
+After confirming system stability, switch to the signed image:
 
 ```bash
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/<your-username>/kinoite-amd:latest
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-> Replace `<your-username>` with your GitHub username after forking and building this repository.
+Or for NVIDIA variant:
+
+```bash
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
+```
 
 ## Post-Installation
 
@@ -57,20 +63,6 @@ Complete the post-install steps for your variant:
 
 - **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
 - **NVIDIA variant:** [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (after general guide)
-
-## Local Build
-
-```bash
-# Create build environment
-distrobox assemble create
-
-# Enter container
-distrobox enter bluebuild
-
-# Build variants
-bluebuild build recipes/recipe-amd.yml
-bluebuild build recipes/recipe-nvidia.yml
-```
 
 ## Emergency Rollback
 
@@ -80,6 +72,8 @@ sudo bootc rollback
 
 # Revert to stock Fedora Kinoite
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
+sudo bootc switch --enforce-container-sigpolicy quay.io/fedora/fedora-kinoite:latest
+
 ```
 
 Reboot after any rollback.
