@@ -104,4 +104,3 @@ After rollback, reboot and verify stability before attempting another switch.
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Shared post-install runtime validation |
 | [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA/hybrid post-install extensions |
 | [`docs/OPTIONAL_PACKAGES.md`](docs/OPTIONAL_PACKAGES.md) | Guide for optional packages and Flatpaks |
-| [`bluebuild/README.md`](bluebuild/README.md) | Local build workflow with Distrobox |
