@@ -13,7 +13,7 @@ Configure KVM permissions:
 
 ### Run setup script from project files
 ```bash
-./files/scripts/setup-kvm.sh
+setup-kvm.sh
 ```
 
 Log out and back in to refresh group membership.
