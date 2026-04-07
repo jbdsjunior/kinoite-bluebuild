@@ -116,5 +116,3 @@ Next scheduled review: **2026-07-05**
 ## Third-Party Repositories
 
 This project uses **RPM Fusion** (free and non-free) as the primary third-party repository for multimedia codecs, proprietary drivers, and additional packages. The RPM Fusion repositories are enabled by default in `recipes/common-repos.yml`.
-
-> **Note:** The negativo17 repository is disabled by default to avoid conflicts with RPM Fusion. If you need to switch repositories, edit `recipes/common-repos.yml` accordingly.
