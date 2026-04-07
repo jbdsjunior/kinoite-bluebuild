@@ -30,8 +30,6 @@ This image makes specific security trade-offs optimized for a **trusted home wor
 4. Using a VPN for all traffic
 5. Disabling LLMNR: Edit `/etc/systemd/resolved.conf.d/local.conf` → `LLMNR=no`
 
-See [`docs/SECURITY_AUDIT.md`](SECURITY_AUDIT.md) for complete security trade-off documentation.
-
 ## Recommendations for Standard Hardware
 
 **If you are running on standard hardware:** We strongly recommend forking this repository and adjusting the limits in the following files before building your own image:
