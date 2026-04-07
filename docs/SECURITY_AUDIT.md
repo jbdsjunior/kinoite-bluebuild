@@ -2,8 +2,17 @@
 
 This document tracks all security-related configuration decisions, trade-offs, and accepted risks for the kinoite-bluebuild project.
 
-**Last Updated:** 2026-04-05  
+**Last Updated:** 2026-04-07
 **Context:** Trusted home workstation (not roaming laptop, not hostile network environment)
+
+---
+
+## Recent Changes
+
+| Date | Change | Rationale |
+|------|--------|-----------|
+| 2026-04-07 | Removed `kvm_amd.sev=1` kernel arg | SEV is server/EPYC-only; no-op on desktop Ryzen 5950X |
+| 2026-04-07 | Migrated `vm.dirty_bytes` to ratio-based thresholds | Ratios scale automatically across RAM configs; resilient to kernel auto-tuning |
 
 ---
 
@@ -43,7 +52,8 @@ This document tracks all security-related configuration decisions, trade-offs, a
 
 | File | Purpose | Security Impact |
 |------|---------|-----------------|
-| `files/system/usr/lib/sysctl.d/60-kernel-tuning.conf` | Kernel parameter tuning | Network hardening, container support |
+| `files/system/usr/lib/sysctl.d/60-kernel-tuning.conf` | Kernel parameter tuning | Network hardening, container support, VM dirty page ratios |
+| `recipes/common-kvm.yml` | KVM virtualization packages + kargs | IOMMU, AMD KVM features (SEV removed — desktop-only) |
 | `files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf` | DNS configuration | DNSSEC, DoT, local discovery |
 | `files/system/usr/lib/dracut/dracut.conf.d/10-compression.conf` | Initramfs configuration | Microcode updates, compression |
 | `files/system/usr/lib/ostree/prepare-root.conf` | OSTree composefs validation | Image integrity verification |
