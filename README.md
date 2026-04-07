@@ -61,8 +61,6 @@ Complete validation steps:
 
 - **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
 
-For detailed build instructions, see [`bluebuild/README.md`](bluebuild/README.md).
-
 ## Emergency Rollback
 
 ```bash
