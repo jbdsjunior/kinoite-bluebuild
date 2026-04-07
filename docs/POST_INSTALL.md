@@ -1,63 +1,85 @@
-# Post-Installation Guide (All Variants)
+# Guia Pós-Instalação (Todas Variantes)
 
-This guide covers shared validation and operational checks for all users.
+Este guia cobre validação e configuração compartilhada para todos os usuários.
 
-> **Note for NVIDIA/Hybrid users:** Complete this guide first, then follow [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
+> **Usuários NVIDIA/Híbrido:** Complete este guia primeiro, depois siga [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
 
-## Post-Install Operations
+## 1. Virtualização (KVM/libvirt)
 
+### Configurar Permissões
 
-### Virtualization (KVM/libvirt)
+Execute o script de configuração do projeto:
 
-Configure KVM permissions:
-
-### Run setup script from project files
 ```bash
 setup-kvm.sh
 ```
 
-Log out and back in to refresh group membership.
+Saia e entre novamente na sessão para aplicar permissões de grupo.
 
-Apply BTRFS `No_COW` attributes if needed:
+### Aplicar Atributos NoCOW (BTRFS)
+
+Se usar BTRFS, aplique atributos para evitar Copy-on-Write em VMs e containers:
 
 ```bash
+# Sistema
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
-```
-```bash
+
+# User-local
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
-### Rclone Mount (Optional)
+## 2. Montagem de Nuvem (Opcional)
 
-### Configure remotes
+Se usar rclone para sincronização de arquivos:
+
 ```bash
+# Configurar remservices de nuvem
 rclone config
-```
-### Enable user service
-```bash
-systemctl --user enable --now rclone@gdrive.service
-```
-### Enable user service
-```bash
-systemctl --user enable --now rclone@onedrive.service
+
+# Habilitar serviço user (substitua 'remote' pelo nome configurado)
+systemctl --user enable --now rclone@remote.service
 ```
 
-### Inspect Configuration Changes
+## 3. Validar Atualizações Automáticas
 
-View modified system config files:
+Verifique se os timers de atualização estão ativos:
+
+```bash
+systemctl --user status topgrade-boot-update.timer
+systemctl --user status topgrade-system-update.timer
+systemctl --user status topgrade-flatpak-update.timer
+```
+
+Todos devem mostrar `active (waiting)`.
+
+## 4. Validar Argumentos do Kernel
+
+```bash
+# Verificar argumentos atuais
+rpm-ostree kargs
+```
+
+```bash
+sudo rpm-ostree kargs --editor
+```
+
+## 5. Inspeção de Mudanças
+
+Ver arquivos de configuração modificados:
 
 ```bash
 sudo ostree admin config-diff
 ```
-## Core Runtime Validation
+
+## 6. Validação de Serviços
 
 ```bash
-# Update timers
-systemctl --user status topgrade-system-update.timer
-systemctl --user status topgrade-boot-update.timer
-systemctl --user status topgrade-flatpak-update.timer
+# Firewall ativo
+sudo systemctl status firewalld
 
-# Kernel boot arguments
-rpm-ostree kargs 
-sudo rpm-ostree kargs --editor
+# DNS resolvido
+sudo systemctl status systemd-resolved
+
+# Libvirt (se KVM habilitado)
+sudo systemctl status libvirtd
 ```

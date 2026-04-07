@@ -8,34 +8,36 @@
 
 </div>
 
-Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, automatic updates, and reproducible system tuning.
+Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blue-build.org/), focused on performance, automatic updates, and reproducible system tuning.
 
-## Quick Overview
+## Key Features
 
-- **Ready-to-use variants:** `kinoite-amd` and `kinoite-nvidia`
-- **Automated builds:** Publishing via GitHub Actions
-- **Automatic updates:** Managed through `topgrade` user timers
-- **System tuning:** Kernel/sysctl/network configuration versioned under `files/system/`
+- **Two variants:** `kinoite-amd` (AMD only) and `kinoite-nvidia` (AMD + NVIDIA hybrid)
+- **Cryptographic signing:** Images verified with Cosign
+- **Automatic updates:** System, bootloader, and Flatpaks via user-level timers
+- **System tuning:** Kernel, sysctl, network, and performance configs versioned under `files/system/`
+- **Container-first:** Optimized for Podman, Distrobox, KVM, and local workloads
 
+> ⚠️ **Warning:** This image is optimized for **high-performance workstations with 64 GB RAM**. Use on lower-spec hardware may cause instability. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) for details.
 
 ## Image Variants
 
-| Image | Base Image | Use Case |
-| :--- | :--- | :--- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | AMD hosts without dedicated NVIDIA GPU |
-| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | Hosts with NVIDIA GPU (including AMD + NVIDIA hybrid setups) |
-
-> ⚠️ **Important:** This image is heavily tuned for high-performance workstations (64GB RAM).
+| Variant          | Base Image                        | Use Case                                                       |
+| :--------------- | :-------------------------------- | :------------------------------------------------------------- |
+| `kinoite-amd`    | `quay.io/fedora/fedora-kinoite`   | AMD systems without dedicated NVIDIA GPU                       |
+| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | Systems with NVIDIA GPU (including AMD + NVIDIA hybrid setups) |
 
 ## Quick Start
 
-### Initial Rebase (Unverified)
+### 1. Switch to Custom Image
+
+**AMD variant:**
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-Or for NVIDIA variant:
+**NVIDIA variant:**
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
@@ -43,37 +45,58 @@ sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 Reboot after the rebase completes.
 
-### Signed Rebase (Verified)
+### 2. Verify Signature (Recommended)
 
-After confirming system stability, switch to the signed image:
+After confirming system stability, enable signature verification:
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-Or for NVIDIA variant:
+Public verification key is in [`cosign.pub`](cosign.pub).
 
-```bash
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
+### 3. Post-Installation
 
-## Post-Installation
+Complete validation steps:
 
-Complete the post-install steps for your variant:
-
-- **AMD variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
-- **NVIDIA variant:** [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (after general guide)
+- **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
+- **NVIDIA/Hybrid:** [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (after general guide)
 
 ## Emergency Rollback
 
-```bash
+````bash
 # Revert to previous deployment
 sudo bootc rollback
 
-# Revert to stock Fedora Kinoite
+# Return to stock Fedora Kinoite
+```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
-sudo bootc switch --enforce-container-sigpolicy quay.io/fedora/fedora-kinoite:latest
+````
 
+```bash
+sudo bootc switch --enforce-container-sigpolicy quay.io/fedora/fedora-kinoite:latest
 ```
 
 Reboot after any rollback.
+
+## Security
+
+- ✅ Images cryptographically signed with Cosign
+- ✅ No secrets or credentials in repository
+- ✅ Kernel hardening enabled (ptrace_scope, split_lock_mitigate)
+- ✅ Network protected (tcp_syncookies, no ICMP redirects)
+- ✅ Composefs + fs-verity for image integrity
+- ⚠️ Optimized for trusted home networks (see [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md))
+
+## Documentation
+
+| Document                                                     | Purpose                                   |
+| :----------------------------------------------------------- | :---------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)               | Post-install validation (all variants)    |
+| [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA validation and Secure Boot         |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)     | Hardware specs, tuning rationale, scaling |
+| [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md)           | Security trade-offs and audit reference   |
+
+## License
+
+This project is licensed under the terms found in [`LICENSE`](LICENSE).
