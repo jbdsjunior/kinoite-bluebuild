@@ -32,4 +32,3 @@ modules:
       - kvm_amd.npt=1
       - kvm_amd.avic=1
       - kvm_amd.nested=1
-      - kvm_amd.sev=1
