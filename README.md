@@ -16,7 +16,7 @@ Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-
 - **Automated builds:** Publishing via GitHub Actions
 - **Automatic updates:** Managed through `topgrade` user timers
 - **System tuning:** Kernel/sysctl/network configuration versioned under `files/system/`
-- **Local development:** BlueBuild CLI with Distrobox
+
 
 ## Image Variants
 
