@@ -104,7 +104,6 @@ When reporting security-related issues, include:
 ## Review Schedule
 
 This document MUST be reviewed and updated:
-- **Quarterly** (every 3 months) regardless of changes
 - **Immediately** when any security-relevant configuration is modified
 - **Before** major version bumps or base image changes
 
