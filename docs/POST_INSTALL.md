@@ -1,10 +1,6 @@
-# Guia Pós-Instalação (Todas Variantes)
+# Guia Pós-Instalação
 
-Este guia cobre validação e configuração compartilhada para todos os usuários.
-
-> **Usuários NVIDIA/Híbrido:** Complete este guia primeiro, depois siga [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
-
-## 1. Virtualização (KVM/libvirt)
+## Virtualização (KVM/libvirt)
 
 ### Configurar Permissões
 
@@ -28,7 +24,33 @@ sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
-## 2. Montagem de Nuvem (Opcional)
+## Validação de GPU
+
+### AMD GPU
+
+Verifique se os drivers Mesa estão carregados corretamente:
+
+```bash
+# Verificar renderizador Vulkan
+vulkaninfo --summary
+
+# Verificar drivers VA-API (aceleração de vídeo)
+vainfo
+```
+
+Espera-se ver `card0` e `renderD128` (ou similar) listados.
+
+### NVIDIA GPU (Apenas variante nvidia)
+
+## Secure Boot (Enrollment MOK)
+
+Se Secure Boot estiver habilitado, registre a chave para módulos kernel NVIDIA:
+
+```bash
+ujust enroll-secure-boot-key
+```
+
+## Montagem de Nuvem (Opcional)
 
 Se usar rclone para sincronização de arquivos:
 
@@ -40,7 +62,7 @@ rclone config
 systemctl --user enable --now rclone@remote.service
 ```
 
-## 3. Validar Atualizações Automáticas
+## 5. Validar Atualizações Automáticas
 
 Verifique se os timers de atualização estão ativos:
 
@@ -52,18 +74,20 @@ systemctl --user status topgrade-flatpak-update.timer
 
 Todos devem mostrar `active (waiting)`.
 
-## 4. Validar Argumentos do Kernel
+## Validar Argumentos do Kernel
 
 ```bash
 # Verificar argumentos atuais
 rpm-ostree kargs
 ```
 
+Para edição (se necessário):
+
 ```bash
 sudo rpm-ostree kargs --editor
 ```
 
-## 5. Inspeção de Mudanças
+## Inspeção de Mudanças
 
 Ver arquivos de configuração modificados:
 
@@ -71,7 +95,7 @@ Ver arquivos de configuração modificados:
 sudo ostree admin config-diff
 ```
 
-## 6. Validação de Serviços
+## Validação de Serviços
 
 ```bash
 # Firewall ativo

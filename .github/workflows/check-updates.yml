@@ -1,7 +1,7 @@
 name: check-updates
 on:
   schedule:
-    - cron: "00 06 * * *"
+    # Check for upstream base image updates every 2 hours
     - cron: "0 */2 * * *"
   workflow_dispatch:
 
