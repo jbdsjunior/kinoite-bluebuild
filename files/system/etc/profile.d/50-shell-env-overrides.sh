@@ -7,7 +7,10 @@ export EDITOR=nano
 export VISUAL=nano
 
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
-[ -z "${PS1:-}" ] && return
+# Use exit instead of return for POSIX shell compatibility
+if [ -z "${PS1:-}" ]; then
+    return 0 2>/dev/null || exit 0
+fi
 
 # Bash-specific interactive configurations
 if [ -n "${BASH_VERSION:-}" ]; then

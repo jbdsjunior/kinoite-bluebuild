@@ -9,6 +9,14 @@ if [[ "$TARGET_USER" == "root" ]]; then
     exit 1
 fi
 
+# This script must be executed via: sudo setup-kvm.sh
+# It performs privileged operations on behalf of the invoking user.
+if [[ "$(id -u)" -ne 0 ]]; then
+    echo "Error: This script must be run with sudo." >&2
+    echo "Usage: sudo setup-kvm.sh" >&2
+    exit 1
+fi
+
 for cmd in usermod systemctl; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "Error: $cmd not found" >&2
@@ -17,13 +25,12 @@ for cmd in usermod systemctl; do
 done
 
 # Add user to required groups
-sudo usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
+usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
 
 # Restart libvirt-related sockets/services if they exist
-# Use systemctl is-active to check for loaded units
 if systemctl is-active --quiet virtqemud.socket 2>/dev/null || \
    systemctl list-unit-files virtqemud.socket 2>/dev/null | grep -q "virtqemud.socket"; then
-    sudo systemctl restart virtqemud.socket virtnetworkd.socket 2>/dev/null || true
+    systemctl restart virtqemud.socket virtnetworkd.socket 2>/dev/null || true
 fi
 
 echo "KVM setup completed for user: $TARGET_USER"
