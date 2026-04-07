@@ -1,12 +1,12 @@
 # Post-Installation Guide (All Variants)
 
-This guide is the canonical post-installation reference for the project. It covers shared validation, operational checks, and baseline post-install tasks for all users.
+This guide covers shared validation and operational checks for all users.
 
-> **Note for NVIDIA/Hybrid users:** Complete this general guide first, then apply the specific steps in [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
+> **Note for NVIDIA/Hybrid users:** Complete this guide first, then follow [`POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md).
 
 ## 1. Confirm Installed Image Variant
 
-Verify which image variant is currently active:
+Verify which image variant is active:
 
 ```bash
 rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
@@ -14,35 +14,28 @@ rpm-ostree status | grep -E "kinoite-(amd|nvidia)"
 
 ## 2. Core Runtime Validation
 
-Run this validation block after first boot and after major updates:
+Run these checks after first boot:
 
 ```bash
 # Update timers
 systemctl --user status topgrade-system-update.timer
 systemctl --user status topgrade-boot-update.timer
 systemctl --user status topgrade-flatpak-update.timer
-systemctl --user list-timers "topgrade-*.timer"
 
-# Core host daemons
+# Core services
 systemctl status firewalld
 systemctl status systemd-resolved
 
-# Kernel/swap/network tuning signals
+# Kernel/network tuning
 sysctl vm.swappiness vm.max_map_count fs.inotify.max_user_watches net.ipv4.tcp_congestion_control net.ipv4.tcp_keepalive_time
-cat /sys/module/zswap/parameters/enabled 2>/dev/null || true
 
-# Kernel arguments baked into deployment
-rpm-ostree kargs | tr ' ' '\n' | grep -E "amd_pstate|transparent_hugepage|mitigations|pcie_aspm"
-
-# NetworkManager profile shipped by the image
-# Note: Privacy hardening is disabled by default for home network use
-# See /usr/lib/NetworkManager/conf.d/60-privacy-hardening.disabled
-sudo sed -n '1,120p' /usr/lib/NetworkManager/conf.d/60-privacy-hardening.disabled
+# Kernel boot arguments
+rpm-ostree kargs
 ```
 
 ## 3. Baseline GPU Validation (Mesa/AMD)
 
-*NVIDIA users should run these commands to validate the integrated/primary AMD GPU, then proceed to the NVIDIA guide for discrete GPU validation.*
+*NVIDIA users: run these commands for AMD GPU validation, then proceed to the NVIDIA guide.*
 
 ```bash
 vainfo
@@ -50,75 +43,68 @@ vulkaninfo --summary
 clinfo
 ```
 
-## 4. Post-Install Operational Steps
+## 4. Post-Install Operations
 
-### Keep User Timers Active Without Graphical Session
-
-Enable linger to allow user services to run without an active graphical session:
+### Enable User Timers Without Active Session
 
 ```bash
 sudo loginctl enable-linger "$USER"
 ```
 
-### Virtualization (KVM/libvirt and GNOME Boxes)
+### Virtualization (KVM/libvirt)
 
-Configure KVM groups and permissions:
+Configure KVM permissions:
 
 ```bash
-setup-kvm.sh
+# Run setup script from project files
+./files/scripts/setup-kvm.sh
 ```
 
-Log out and log back in to refresh `libvirt` and `kvm` group membership.
+Log out and back in to refresh group membership.
 
-Apply BTRFS `No_COW` (`+C`) attributes immediately if needed:
+Apply BTRFS `No_COW` attributes if needed:
 
 ```bash
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
-### Rclone Mount as User Service
-
-Configure cloud storage mounts:
+### Rclone Mount (Optional)
 
 ```bash
-# 1. Configure remotes
+# Configure remotes
 rclone config
 
-# 2. Optional per-remote environment tuning
-mkdir -p ~/.config/rclone/env/
-echo 'RCLONE_EXTRA_OPTS="--vfs-read-chunk-size 128M --vfs-read-chunk-size-limit off"' > ~/.config/rclone/env/onedrive_work.env
-
-# 3. Enable mappings
-systemctl --user enable --now rclone@onedrive_work.service
+# Enable user service
+systemctl --user enable --now rclone@<remote-name>.service
 ```
 
 ## 5. Troubleshooting
 
 ### Captive Portal (Hotel/Airport Wi-Fi)
 
-If the captive portal does not open, temporarily disable DoT/DNSSEC:
+If captive portal doesn't open, temporarily disable DoT/DNSSEC:
 
 ```bash
 sudo mkdir -p /etc/systemd/resolved.conf.d
-sudo tee /etc/systemd/resolved.conf.d/90-captive-portal.conf >/dev/null <<'EOF2'
+sudo tee /etc/systemd/resolved.conf.d/90-captive-portal.conf >/dev/null <<'EOF'
 [Resolve]
 DNSOverTLS=no
 DNSSEC=no
-EOF2
+EOF
 sudo systemctl restart systemd-resolved
 ```
 
-Restore defaults after passing through the captive portal:
+Restore defaults after:
 
 ```bash
 sudo rm -f /etc/systemd/resolved.conf.d/90-captive-portal.conf
 sudo systemctl restart systemd-resolved
 ```
 
-### Inspecting Configuration Changes (`/etc`)
+### Inspect Configuration Changes
 
-To see which system configuration files have been locally modified or differ from the default base image state:
+View modified system config files:
 
 ```bash
 sudo ostree admin config-diff
