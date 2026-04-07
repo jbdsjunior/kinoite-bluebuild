@@ -61,7 +61,7 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidi
 
 Complete the post-install steps for your variant:
 
-- **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
+- **AMD variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
 - **NVIDIA variant:** [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (after general guide)
 
 ## Emergency Rollback
