@@ -10,10 +10,6 @@
 
 Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, automatic updates, and reproducible system tuning.
 
-## Repository Configuration
-
-This project uses **RPM Fusion** (free and non-free) as the primary third-party repository for multimedia codecs, proprietary drivers, and additional packages. The RPM Fusion repositories are enabled by default in the `common-repos.yml` module.
-
 ## Quick Overview
 
 - **Ready-to-use variants:** `kinoite-amd` and `kinoite-nvidia`
