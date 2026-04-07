@@ -60,18 +60,20 @@ Public verification key is in [`cosign.pub`](cosign.pub).
 Complete validation steps:
 
 - **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
-- **NVIDIA/Hybrid:** [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) (after general guide)
+
+For detailed build instructions, see [`bluebuild/README.md`](bluebuild/README.md).
 
 ## Emergency Rollback
 
-````bash
+```bash
 # Revert to previous deployment
 sudo bootc rollback
 
 # Return to stock Fedora Kinoite
-```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
-````
+```
+
+For signed rollback:
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy quay.io/fedora/fedora-kinoite:latest
