@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup KVM/libvirt permissions for user %i
+After=libvirtd.service
+Wants=libvirtd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/setup-kvm.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -2,9 +2,9 @@
 Description=Run topgrade update (misc/containers)
 
 [Timer]
-OnStartupSec=20m
+OnStartupSec=30m
 OnUnitInactiveSec=6h
-RandomizedDelaySec=20m
+RandomizedDelaySec=10m
 AccuracySec=1m
 Persistent=true
 Unit=topgrade-boot-update.service

@@ -4,7 +4,7 @@ Description=Run topgrade flatpak update
 [Timer]
 OnStartupSec=5m
 OnUnitInactiveSec=1h
-RandomizedDelaySec=30m
+RandomizedDelaySec=5m
 AccuracySec=1m
 Persistent=true
 Unit=topgrade-flatpak-update.service
