@@ -10,14 +10,6 @@
 
 Immutable Fedora Kinoite (KDE Plasma) image built with [BlueBuild](https://blue-build.org/), focused on performance, container-first workflows, automatic updates, and reproducible system tuning.
 
-## Security Posture
-
-- ✅ Images cryptographically signed with Cosign
-- ✅ No secrets or credentials committed
-- ✅ Kernel hardening enabled (`ptrace_scope`, `split_lock_mitigate`)
-- ✅ Network hardening (`tcp_syncookies`, no ICMP redirects)
-- ⚠️ Optimized for trusted home networks (see [Security Audit](docs/SECURITY_AUDIT.md))
-
 ## Repository Configuration
 
 This project uses **RPM Fusion** (free and non-free) as the primary third-party repository for multimedia codecs, proprietary drivers, and additional packages. The RPM Fusion repositories are enabled by default in the `common-repos.yml` module.
