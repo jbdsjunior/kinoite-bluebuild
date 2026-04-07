@@ -1,15 +1,13 @@
-# Post-Installation Guide: NVIDIA & Hybrid (`kinoite-nvidia`)
+# Guia Pós-Instalação: NVIDIA e Híbrido (`kinoite-nvidia`)
 
-Runtime validation, container GPU integration, and Secure Boot for hosts with NVIDIA GPUs.
+Validação de runtime, integração GPU com containers e Secure Boot para sistemas com GPUs NVIDIA.
 
-> **Prerequisite:** Complete the baseline steps in [`POST_INSTALL.md`](POST_INSTALL.md) first.
+> **Pré-requisito:** Complete primeiro os passos em [`POST_INSTALL.md`](POST_INSTALL.md).
 
-## 1. Secure Boot (MOK Enrollment)
+## Secure Boot (Enrollment MOK)
 
-If Secure Boot is enabled, enroll the repository key for out-of-tree NVIDIA kernel modules:
+Se Secure Boot estiver habilitado, registre a chave para módulos kernel NVIDIA:
 
 ```bash
 ujust enroll-secure-boot-key
 ```
-
-Reboot and complete the MOK (Machine Owner Key) enrollment in the firmware UI.
