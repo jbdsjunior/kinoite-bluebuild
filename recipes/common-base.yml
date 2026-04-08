@@ -20,9 +20,4 @@ modules:
 
   - from-file: common-kargs.yml
 
-  # AMD CPU kargs — apply to both variants (NVIDIA image is AMD CPU + NVIDIA GPU)
-  - type: kargs
-    kargs:
-      - amd_iommu=on
-
   - from-file: common-flatpaks.yml
