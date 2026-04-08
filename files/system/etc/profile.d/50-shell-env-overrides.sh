@@ -6,6 +6,9 @@
 export EDITOR=nano
 export VISUAL=nano
 
+# Global alias: update -> topgrade
+alias update='topgrade -cy --no-retry'
+
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
 # Profile.d scripts are sourced, so return is safe; avoid exit which would kill the parent shell
 if [ -z "${PS1:-}" ]; then
