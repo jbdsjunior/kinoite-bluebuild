@@ -14,3 +14,5 @@ cosign.key
 *.cache
 tmp/
 .qwen/
+
+SECURITY_AUDIT.md

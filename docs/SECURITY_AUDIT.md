@@ -4,38 +4,27 @@
 
 ### ✅ Strengths
 
-| Area | Status | Details |
-|---|---|---|
-| **Image Signing** | ✅ Enabled | Cosign signing with key in `cosign.pub` |
-| **Composefs** | ✅ Enabled | fs-verity validation in `prepare-root.conf` |
-| **SELinux** | ✅ Enforcing | Default on Fedora Atomic |
-| **Automatic Updates** | ✅ Configured | Topgrade timers for system, flatpak, bootc |
-| **Network Hardening** | ✅ Applied | SYN cookies, no ICMP redirects, IPv6 privacy |
-| **Kernel Hardening** | ✅ Applied | ptrace_scope=1, split_lock_mitigate=1 |
-| **DNS Security** | ✅ DoT + DNSSEC | Cloudflare with DNS-over-TLS strict mode |
-| **No Secrets in Repo** | ✅ Clean | `.gitignore` covers keys, PEM files |
+| Area                   | Status          | Details                                      |
+| ---------------------- | --------------- | -------------------------------------------- |
+| **Image Signing**      | ✅ Enabled      | Cosign signing with key in `cosign.pub`      |
+| **Composefs**          | ✅ Enabled      | fs-verity validation in `prepare-root.conf`  |
+| **SELinux**            | ✅ Enforcing    | Default on Fedora Atomic                     |
+| **Automatic Updates**  | ✅ Configured   | Topgrade timers for system, flatpak, bootc   |
+| **Network Hardening**  | ✅ Applied      | SYN cookies, no ICMP redirects, IPv6 privacy |
+| **Kernel Hardening**   | ✅ Applied      | ptrace_scope=1, split_lock_mitigate=1        |
+| **DNS Security**       | ✅ DoT + DNSSEC | Cloudflare with DNS-over-TLS strict mode     |
+| **No Secrets in Repo** | ✅ Clean        | `.gitignore` covers keys, PEM files          |
 
 ### ⚠️ Accepted Risks (Home Workstation)
 
-| Area | Risk | Rationale |
-|---|---|---|
-| **Flatpak global overrides** | GPU + IPC access to all flatpaks | Required for multimedia apps; acceptable on trusted workstation |
-| **ping_group_range 0-65534** | Broad raw socket access | Needed for rootless containers; restricted from global (0–2³¹) |
-| **TCP FastOpen client** | TFO cookie leakage risk | Client-only mode (`tcp_fastopen=1`) mitigates server-side injection |
-| **Firewalld** | Default zone may be permissive | Relies on user configuration; consider `FedoraWorkstation` zone |
-| **systemd-resolved stub on :53** | Local DNS exposed | Required for system-wide resolution; protected by localhost binding |
-| **Rogue RA acceptance** | `accept_ra=0` | Disabled to prevent rogue router advertisement attacks |
-
-### 🔴 Previously Fixed Issues
-
-| Issue | Status | Fix Applied |
-|---|---|---|
-| `accept_ra = 1` | ✅ Fixed | Changed to `0` (reject unsolicited RAs) |
-| `ping_group_range` global | ✅ Fixed | Restricted to `0–65534` from `0–2147483647` |
-| `tcp_fastopen = 3` | ✅ Fixed | Changed to `1` (client only) |
-| Topgrade timer collisions | ✅ Fixed | Staggered startup times (5m, 15m, 30m) |
-| `sudo` in setup-kvm.sh | ✅ Fixed | Script now requires sudo; systemd template service passes `%i` as argument |
-| profile.d `return` in `/bin/sh` | ✅ Fixed | Uses `return 0` only (no `exit 0` fallback that could kill parent shell) |
+| Area                             | Risk                             | Rationale                                                           |
+| -------------------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| **Flatpak global overrides**     | GPU + IPC access to all flatpaks | Required for multimedia apps; acceptable on trusted workstation     |
+| **ping_group_range 0-65534**     | Broad raw socket access          | Needed for rootless containers; restricted from global (0–2³¹)      |
+| **TCP FastOpen client**          | TFO cookie leakage risk          | Client-only mode (`tcp_fastopen=1`) mitigates server-side injection |
+| **Firewalld**                    | Default zone may be permissive   | Relies on user configuration; consider `FedoraWorkstation` zone     |
+| **systemd-resolved stub on :53** | Local DNS exposed                | Required for system-wide resolution; protected by localhost binding |
+| **Rogue RA acceptance**          | `accept_ra=0`                    | Disabled to prevent rogue router advertisement attacks              |
 
 ## Audit Checklist
 
