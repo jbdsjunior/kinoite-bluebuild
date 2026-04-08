@@ -100,7 +100,6 @@ Reboot after any rollback.
 | Document                                                     | Purpose                                   |
 | :----------------------------------------------------------- | :---------------------------------------- |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)               | Post-install validation (all variants)    |
-| [`docs/POST_INSTALL_NVIDIA.md`](docs/POST_INSTALL_NVIDIA.md) | NVIDIA validation and Secure Boot         |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)     | Hardware specs, tuning rationale, scaling |
 
 ## License
