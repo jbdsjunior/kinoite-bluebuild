@@ -16,7 +16,6 @@ modules:
         - ffmpeg-libs
 
         - gstreamer1-plugins-bad
-        - gstreamer1-plugins-bad-extras
         - gstreamer1-plugins-ugly
         - gstreamer1-libav
 
