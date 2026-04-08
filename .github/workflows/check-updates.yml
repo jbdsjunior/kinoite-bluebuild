@@ -17,27 +17,42 @@ jobs:
       actions: write
       contents: read
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
       - name: Install Skopeo
         run: |
           sudo apt-get update
           sudo apt-get -y install skopeo
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
 
       - name: Ensure gh auth
         run: gh auth status
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # AMD base image used by recipes/recipe-amd.yml
-      - name: Check Main Image (for AMD)
+      # ── AMD ──────────────────────────────────────────────────────────
+      - name: Resolve AMD base image
+        id: amd_image
+        run: |
+          set -euo pipefail
+          BASE_IMG=$(yq '.base-image' recipes/recipe-amd.yml)
+          echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
+
+      - name: Check AMD base image digest
         id: check_amd
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://quay.io/fedora/fedora-kinoite --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://${{ steps.amd_image.outputs.image }} --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check AMD Cache
         id: cache_amd
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache-amd
           key: upstream-main-${{ steps.check_amd.outputs.digest }}
@@ -52,17 +67,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      # NVIDIA base image used by recipes/recipe-nvidia.yml
-      - name: Check Nvidia Base Image
+      # ── NVIDIA ───────────────────────────────────────────────────────
+      - name: Resolve NVIDIA base image
+        id: nvidia_image
+        run: |
+          set -euo pipefail
+          BASE_IMG=$(yq '.base-image' recipes/recipe-nvidia.yml)
+          echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
+
+      - name: Check NVIDIA base image digest
         id: check_nvidia
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://ghcr.io/ublue-os/kinoite-nvidia --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://${{ steps.nvidia_image.outputs.image }} --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check Nvidia Cache
         id: cache_nvidia
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache-nvidia
           key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}

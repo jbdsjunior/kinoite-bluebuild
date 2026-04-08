@@ -4,8 +4,6 @@
 name: kinoite-amd
 description: "Customized Fedora Kinoite image optimized for AMD-only systems"
 
-# Base image maintained by BlueBuild (aligned with CI update checks)
-# base-image: ghcr.io/blue-build/base-images/fedora-kinoite
 base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 platforms:

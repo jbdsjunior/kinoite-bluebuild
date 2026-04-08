@@ -12,21 +12,19 @@ modules:
 
         # Core system
         - plasma-firewall
-
         - icoutils
         - kf6-kimageformats
         - kio-admin
         - ksshaskpass
         - qt6-qtimageformats
         - flatpak-spawn
-
         - adw-gtk3-theme
 
         # Utilities
         - lm_sensors
         - rclone
 
-        # KDE apps (commented out - enable as needed)
+        # KDE apps
         # - elisa-player
         # - gwenview
         # - haruna
@@ -35,7 +33,7 @@ modules:
         # - krdc
         # - okular
 
-        # Native app mapping from list-apps.txt (when available)
+        # Native app mapping (repos required under files/rpm-ostree/)
         # - brave-browser
         # - firefox
         # - google-chrome-stable

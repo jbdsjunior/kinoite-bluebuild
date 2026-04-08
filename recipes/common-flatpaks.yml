@@ -17,7 +17,7 @@ modules:
           - org.gtk.Gtk3theme.adw-gtk3
           - org.gtk.Gtk3theme.adw-gtk3-dark
 
-          # KDE Multimedia and Productivity tools (uncomment to enable)
+          # KDE Multimedia and Productivity
           # - org.kde.elisa
           # - org.kde.gwenview
           # - org.kde.haruna
@@ -25,21 +25,21 @@ modules:
           # - org.kde.krdc
           # - org.kde.okular
 
-          # Browsers (uncomment to enable)
+          # Browsers
           # - com.brave.Browser
           # - com.google.Chrome
           # - com.microsoft.Edge
           # - org.mozilla.firefox
 
-          # System Utilities (uncomment to enable)
+          # Utilities
           # - com.github.tchx84.Flatseal
           # - io.github.flattool.Warehouse
           # - io.missioncenter.MissionCenter
           # - it.mijorus.gearlever
 
-          # Development (uncomment to enable)
+          # Development
           # - com.visualstudio.code
           # - com.ranfdev.DistroShelf
 
-          # Communication and Others (uncomment to enable)
+          # Communication and Others
           # - org.qbittorrent.qBittorrent
