@@ -187,6 +187,16 @@ The following configurations are **explicitly forbidden** in this repository. LL
 
 ---
 
+## 4b. Image Integrity (Composefs + fs-verity)
+
+| Component | Configuration     | Rationale                                                                                     |
+| --------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| Composefs | `enabled = yes`   | Mounts root filesystem as read-only overlay with cryptographic verification                   |
+| fs-verity | `force`           | Mandates fs-verity on all composefs objects; boot fails if kernel lacks support (fail-secure) |
+| Cosign    | OIDC + static key | Image signing and verification via `cosign.pub`                                               |
+
+---
+
 ## 5. Container Security Posture
 
 ### 5.1 Rootless Podman
