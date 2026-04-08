@@ -68,10 +68,13 @@ Complete validation steps:
 ## Emergency Rollback
 
 ```bash
-# Revert to previous deployment
+### Revert to previous deployment
 sudo bootc rollback
+```
 
-# Return to stock Fedora Kinoite
+### Return to stock Fedora Kinoite
+
+```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 ```
 

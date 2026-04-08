@@ -16,33 +16,27 @@ Saia e entre novamente na sessão para aplicar permissões de grupo.
 
 Se usar BTRFS, aplique atributos para evitar Copy-on-Write em VMs e containers:
 
-```bash
-# Sistema
-sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
+#### Sistema
 
-# User-local
+```bash
+sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
+```
+
+#### User
+
+```bash
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 ```
 
-## Validação de GPU
-
-### AMD GPU
-
-Verifique se os drivers Mesa estão carregados corretamente:
-
-```bash
-# Verificar renderizador Vulkan
-vulkaninfo --summary
-
-# Verificar drivers VA-API (aceleração de vídeo)
-vainfo
-```
-
-Espera-se ver `card0` e `renderD128` (ou similar) listados.
-
 ### NVIDIA GPU (Apenas variante nvidia)
 
-Veja [`docs/POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) para validacao completa da GPU NVIDIA.
+### Secure Boot (Enrollment MOK)
+
+If Secure Boot is enabled, register the key for NVIDIA kernel modules:
+
+```bash
+ujust enroll-secure-boot-key
+```
 
 ## Validar Atualizações Automáticas
 
@@ -58,8 +52,9 @@ Todos devem mostrar `active (waiting)`.
 
 ## Validar Argumentos do Kernel
 
+#### Verificar argumentos atuais
+
 ```bash
-# Verificar argumentos atuais
 rpm-ostree kargs
 ```
 
@@ -79,13 +74,20 @@ sudo ostree admin config-diff
 
 ## Validação de Serviços
 
+#### Firewall ativo
+
 ```bash
-# Firewall ativo
 sudo systemctl status firewalld
+```
 
-# DNS resolvido
+#### DNS resolvido
+
+```bash
 sudo systemctl status systemd-resolved
+```
 
-# Libvirt (se KVM habilitado)
+#### Libvirt (se KVM habilitado)
+
+```bash
 sudo systemctl status libvirtd
 ```
