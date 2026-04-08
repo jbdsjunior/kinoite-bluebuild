@@ -93,14 +93,13 @@ Reboot after any rollback.
 - ✅ Kernel hardening enabled (ptrace_scope, split_lock_mitigate)
 - ✅ Network protected (tcp_syncookies, no ICMP redirects)
 - ✅ Composefs + fs-verity for image integrity
-- ⚠️ Optimized for trusted home networks (see [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md))
 
 ## Documentation
 
-| Document                                                     | Purpose                                   |
-| :----------------------------------------------------------- | :---------------------------------------- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)               | Post-install validation (all variants)    |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)     | Hardware specs, tuning rationale, scaling |
+| Document                                                 | Purpose                                   |
+| :------------------------------------------------------- | :---------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation (all variants)    |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware specs, tuning rationale, scaling |
 
 ## License
 
