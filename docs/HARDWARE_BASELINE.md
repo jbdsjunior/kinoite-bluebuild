@@ -1,5 +1,33 @@
 # Hardware Baseline & Tuning Rationale
 
+## Target Hardware Profile
+
+This repository is optimized for the following high-performance workstation configuration:
+
+| Component           | Specification                          |
+| ------------------- | -------------------------------------- |
+| **CPU**             | AMD Ryzen 9 5950X                      |
+| **GPU (Primary)**   | AMD RX 6600 XT (Wayland display)       |
+| **GPU (Secondary)** | NVIDIA RTX 3080 Ti (Compute only)      |
+| **RAM**             | 64 GB                                  |
+| **Storage**         | 1 TB NVMe                              |
+| **OS**              | Fedora Kinoite (Latest Stable Release) |
+
+## Variant Isolation
+
+Maintain strict separation between GPU variants. Never collapse variant logic.
+
+| Variant          | Base Image                        | Purpose                                       |
+| ---------------- | --------------------------------- | --------------------------------------------- |
+| `kinoite-amd`    | `quay.io/fedora/fedora-kinoite`   | AMD-only systems                              |
+| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | AMD + NVIDIA hybrid systems with CUDA support |
+
+**Rules:**
+
+- Never merge AMD and NVIDIA GitHub Actions workflows.
+- Both variants inherit shared configuration from `common-base.yml`.
+- Each variant declares its own `base-image` and `image-version` independently.
+
 ## Minimum Hardware Requirements
 
 | Component        | Minimum                         | Recommended                       |
@@ -16,13 +44,13 @@
 
 ### Memory & Swap
 
-| Setting                     | Value                  | Rationale                                                       |
-| --------------------------- | ---------------------- | --------------------------------------------------------------- |
-| `vm.swappiness`             | 60                     | Balanced page cache retention with ZRAM usage for 64GB systems  |
-| `vm.dirty_background_ratio` | 2                      | ~1GB background writeback on 64GB RAM                           |
-| `vm.dirty_ratio`            | 6                      | ~4GB blocking writeback on 64GB RAM                             |
-| `vm.page-cluster`           | 0                      | Single-page swap I/O for lower latency on NVMe                  |
-| ZRAM size                   | `min(ram * 0.5, 32GB)` | 32GB cap prevents excessive memory compression overhead         |
+| Setting                     | Value                  | Rationale                                                      |
+| --------------------------- | ---------------------- | -------------------------------------------------------------- |
+| `vm.swappiness`             | 60                     | Balanced page cache retention with ZRAM usage for 64GB systems |
+| `vm.dirty_background_ratio` | 2                      | ~1GB background writeback on 64GB RAM                          |
+| `vm.dirty_ratio`            | 6                      | ~4GB blocking writeback on 64GB RAM                            |
+| `vm.page-cluster`           | 0                      | Single-page swap I/O for lower latency on NVMe                 |
+| ZRAM size                   | `min(ram * 0.5, 32GB)` | 32GB cap prevents excessive memory compression overhead        |
 
 Full memory/VM tuning rationale: [`SECURITY_AUDIT.md` §3.5](SECURITY_AUDIT.md#35-memory--vm)
 

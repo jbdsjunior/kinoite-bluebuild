@@ -11,3 +11,7 @@ modules:
       - mitigations=auto
       # PCIe ASPM: policy_performance for desktop/workstation stability
       - pcie_aspm=policy_performance
+      # Kernel memory allocator hardening (default in modern kernels, explicit for audit clarity)
+      - init_on_alloc=1
+      - init_on_free=1
+      - slab_nomerge
