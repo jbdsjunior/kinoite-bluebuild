@@ -32,6 +32,7 @@ modules:
   - type: dnf
     repos:
       nonfree: rpmfusion
+      cleanup: true
     install:
       allow-erasing: true
       skip-unavailable: true
