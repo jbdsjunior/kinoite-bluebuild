@@ -18,7 +18,7 @@
 
 | Setting                     | Value                  | Rationale                                                       |
 | --------------------------- | ---------------------- | --------------------------------------------------------------- |
-| `vm.swappiness`             | 70                     | Balances page cache retention with ZRAM usage for LLM workloads |
+| `vm.swappiness`             | 60                     | Balanced page cache retention with ZRAM usage for 64GB systems  |
 | `vm.dirty_background_ratio` | 2                      | ~1GB background writeback on 64GB RAM                           |
 | `vm.dirty_ratio`            | 6                      | ~4GB blocking writeback on 64GB RAM                             |
 | `vm.page-cluster`           | 0                      | Single-page swap I/O for lower latency on NVMe                  |
@@ -29,7 +29,6 @@
 | Setting                  | Value     | Rationale                                                   |
 | ------------------------ | --------- | ----------------------------------------------------------- |
 | `tcp_congestion_control` | bbr       | Optimal throughput for high-bandwidth connections           |
-| `tcp_fastopen`           | 1         | Client-side only; avoids server-side injection risk         |
 | `nf_conntrack_max`       | 2,097,152 | Supports P2P, torrents, and container workloads             |
 | `ping_group_range`       | 0–65534   | Rootless container support without global raw socket access |
 

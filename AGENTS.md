@@ -43,3 +43,21 @@ When the user sends `/evolve`, strictly execute this numbered pipeline in order:
 2. **State-of-the-Art Audit:** Verify all remaining configurations against the latest official upstream guidance for Fedora Kinoite, BlueBuild, and bootc/rpm-ostree.
 3. **Hardware Validation:** Cross-check the current stack against the Hybrid GPU (AMD+NVIDIA) and 64GB RAM baseline to ensure maximum valid performance.
 4. **Self-Update:** If a new stable architectural rule emerges during the process, update this `AGENTS.md` file in the same diff.
+
+## 6. Known Security Constraints (Post-Audit April 2026)
+
+- **TCP Fast Open (`net.ipv4.tcp_fastopen`):** Removed from sysctl. Client-side TFO can expose data patterns on untrusted networks. Not acceptable for zero-trust baseline.
+- **Swappiness for 64GB Systems:** Set to `60` (not `70`). Reduces unnecessary ZRAM pressure while maintaining cache retention for LLM/container workloads.
+- **KVM AVIC:** Remains disabled (`# kvm_amd.avic=1`). Kernel 6.16+ still has AVIC stability issues with Windows VMs. Re-evaluate after kernel 6.18+.
+- **ptrace_scope:** Maintained at `1`. Sufficient for security while allowing most development tools. Do not lower to `0` without explicit user request.
+
+## 7. GitHub Actions Version Baseline (April 2026)
+
+| Action                               | Current Version | Notes                                  |
+| ------------------------------------ | --------------- | -------------------------------------- |
+| `blue-build/github-action`           | `v1` (v1.11.1) | Latest stable                          |
+| `actions/checkout`                   | `v6`            | Latest stable                          |
+| `actions/cache`                      | `v4`            | Latest stable                          |
+| `actions/delete-package-versions`    | `v5`            | Latest stable                          |
+| `Mattraks/delete-workflow-runs`      | `v2`            | Latest stable                          |
+| `dependabot`                         | `v2`            | Standard ecosystem                     |
