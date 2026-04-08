@@ -24,6 +24,8 @@
 | `vm.page-cluster`           | 0                      | Single-page swap I/O for lower latency on NVMe                  |
 | ZRAM size                   | `min(ram * 0.5, 32GB)` | 32GB cap prevents excessive memory compression overhead         |
 
+Full memory/VM tuning rationale: [`SECURITY_AUDIT.md` §3.5](SECURITY_AUDIT.md#35-memory--vm)
+
 ### Network
 
 | Setting                  | Value     | Rationale                                                   |
@@ -32,15 +34,14 @@
 | `nf_conntrack_max`       | 2,097,152 | Supports P2P, torrents, and container workloads             |
 | `ping_group_range`       | 0–65534   | Rootless container support without global raw socket access |
 
+Full network tuning rationale: [`SECURITY_AUDIT.md` §3.6](SECURITY_AUDIT.md#36-network-performance-non-security)
+
 ### Security
 
-| Setting                      | Value | Rationale                                   |
-| ---------------------------- | ----- | ------------------------------------------- |
-| `kernel.split_lock_mitigate` | 1     | Prevents DoS via split-lock CPU locking     |
-| `kernel.yama.ptrace_scope`   | 1     | Restricts process injection attacks         |
-| `tcp_syncookies`             | 1     | SYN flood mitigation                        |
-| `accept_ra` (IPv6)           | 0     | Prevents rogue router advertisement attacks |
-| `ip_unprivileged_port_start` | 1024  | Prevents non-root port hijacking            |
+All kernel hardening, filesystem protection, and network security parameters are defined in
+[`SECURITY_AUDIT.md` §3](SECURITY_AUDIT.md#3-mandatory-sysctl-parameters). That document is the
+authoritative reference for all sysctl values, including threat model coverage, prohibited
+configurations, and re-evaluation triggers.
 
 ### Scaling for Lower-Spec Hardware
 
