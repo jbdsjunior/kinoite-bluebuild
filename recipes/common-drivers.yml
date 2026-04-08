@@ -25,7 +25,15 @@ modules:
         - libheif-tools
 
         # High-definition Bluetooth audio (AAC, aptX, LDAC)
-        - pipewire-codec-aptx
         - libfdk-aac
         - libldac
         - lame
+
+  - type: dnf
+    repos:
+      nonfree: rpmfusion
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        - pipewire-codec-aptx
