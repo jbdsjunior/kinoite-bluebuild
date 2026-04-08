@@ -67,8 +67,8 @@ Complete validation steps:
 
 ## Emergency Rollback
 
-
 ### Revert to previous deployment
+
 ```bash
 sudo bootc rollback
 ```
