@@ -26,7 +26,7 @@ jobs:
           sudo apt-get -y install skopeo
 
       - name: Install yq
-        uses: dcarbone/install-yq-action@v4.44.3
+        uses: dcarbone/install-yq-action@v1
         with:
           version: latest
           download-compatibility-mode: true
