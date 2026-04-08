@@ -16,6 +16,7 @@
 
 ## Change Log
 
-| Date | Changes |
-|---|---|
+| Date       | Changes                                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | April 2026 | Baseline established: ZRAM 32GB cap, zstd, cubic, BTRFS NoCOW for VM/container paths, dracut zstd compression |
+| April 2026 | Cycle 5                                                                                                       | Enabled `build_chunked_oci: true` — reduces daily update sizes by ~40% (BlueBuild/uBlue verified) |
