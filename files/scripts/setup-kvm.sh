@@ -2,7 +2,8 @@
 set -euo pipefail
 
 readonly REQUIRED_GROUPS="libvirt,kvm"
-readonly TARGET_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+# Accept explicit user as $1 (for systemd template %i), fall back to SUDO_USER, USER, or current user
+readonly TARGET_USER="${1:-${SUDO_USER:-${USER:-$(id -un)}}}"
 
 if [[ "$TARGET_USER" == "root" ]]; then
     echo "Error: Run as regular user, not root." >&2

@@ -53,6 +53,10 @@ After confirming system stability, enable signature verification:
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
+```bash
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
+```
+
 Public verification key is in [`cosign.pub`](cosign.pub).
 
 ### 3. Post-Installation
