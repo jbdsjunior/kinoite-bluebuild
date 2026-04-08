@@ -15,6 +15,7 @@
 |---|---|---|
 | April 2026 | Cycle 1 | Added 10 sysctl params; 3 kernel boot args (`init_on_alloc=1`, `init_on_free=1`, `slab_nomerge`); `tcp_timestamps=0` → **forbidden** per Red Hat RHEL 10 |
 | April 2026 | Cycle 2 | **FINDING-03:** FallbackDNS rejected — user network only supports Cloudflare DoT; **FINDING-08:** Separate topgrade lock files (`topgrade-system.lock`, `topgrade-flatpak.lock`, `topgrade-boot.lock`); **FINDING-13:** yq via `dcarbone/install-yq-action` (supply chain); **FINDING-15:** Mattraks pinned by SHA `b301838`; **FINDING-17:** `amd_iommu=on` → `common-base.yml`, `kvm_amd.*` + `iommu=pt` → `common-kvm.yml`; **INFO-01:** Audit clarity notes for kernel-default sysctls; **FINDING-06:** N/A (already HTTPS) |
+| April 2026 | Cycle 3 | Full scan: **CLEAN** — no deprecated deps, no unsafe configs, no duplication. Workflows current (`checkout@v6`, `cache@v4`). Dependabot active. File structure validated. |
 
 ---
 
