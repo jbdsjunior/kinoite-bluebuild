@@ -24,7 +24,7 @@ modules:
         - libheif
         - libheif-tools
 
-        # High-definition Bluetooth audio (AAC, aptX, LDAC)
+        # High-definition Bluetooth audio (AAC, LDAC)
         - libfdk-aac
         - libldac
         - lame
