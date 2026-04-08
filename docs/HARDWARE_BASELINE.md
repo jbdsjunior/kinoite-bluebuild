@@ -28,7 +28,7 @@
 
 | Setting                  | Value     | Rationale                                                   |
 | ------------------------ | --------- | ----------------------------------------------------------- |
-| `tcp_congestion_control` | bbr       | Optimal throughput for high-bandwidth connections           |
+| `tcp_congestion_control` | cubic     | Fedora default; fair with mixed workloads (BBRv1 excluded)  |
 | `nf_conntrack_max`       | 2,097,152 | Supports P2P, torrents, and container workloads             |
 | `ping_group_range`       | 0–65534   | Rootless container support without global raw socket access |
 
