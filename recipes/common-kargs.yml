@@ -15,3 +15,5 @@ modules:
       - init_on_alloc=1
       - init_on_free=1
       - slab_nomerge
+      # AMD CPU IOMMU — both variants run on AMD CPU
+      - amd_iommu=on
