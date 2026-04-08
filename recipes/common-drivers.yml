@@ -10,7 +10,7 @@ modules:
         # Hardware acceleration (Primary AMD RX 6600 XT)
         - mesa-va-drivers
         - mesa-vulkan-drivers
-  
+
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
         - ffmpeg-libs
@@ -20,8 +20,8 @@ modules:
         - gstreamer1-libav
 
         # Image format support (HEIC/HEVC/AVIF)
-        - libheif-freeworld
         - heif-pixbuf-loader
+        - libheif
         - libheif-tools
 
         # High-definition Bluetooth audio (AAC, aptX, LDAC)
