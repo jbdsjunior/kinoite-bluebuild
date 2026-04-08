@@ -26,9 +26,10 @@ jobs:
           sudo apt-get -y install skopeo
 
       - name: Install yq
-        run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
+        uses: dcarbone/install-yq-action@v1.4.1
+        with:
+          version: latest
+          download-compatibility-mode: true
 
       - name: Ensure gh auth
         run: gh auth status
