@@ -5,7 +5,7 @@ Wants=libvirtd.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/setup-kvm.sh
+ExecStart=/usr/bin/setup-kvm.sh %i
 RemainAfterExit=yes
 
 [Install]

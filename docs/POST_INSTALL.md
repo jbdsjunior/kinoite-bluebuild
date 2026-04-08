@@ -42,27 +42,9 @@ Espera-se ver `card0` e `renderD128` (ou similar) listados.
 
 ### NVIDIA GPU (Apenas variante nvidia)
 
-## Secure Boot (Enrollment MOK)
+Veja [`docs/POST_INSTALL_NVIDIA.md`](POST_INSTALL_NVIDIA.md) para validacao completa da GPU NVIDIA.
 
-Se Secure Boot estiver habilitado, registre a chave para módulos kernel NVIDIA:
-
-```bash
-ujust enroll-secure-boot-key
-```
-
-## Montagem de Nuvem (Opcional)
-
-Se usar rclone para sincronização de arquivos:
-
-```bash
-# Configurar remservices de nuvem
-rclone config
-
-# Habilitar serviço user (substitua 'remote' pelo nome configurado)
-systemctl --user enable --now rclone@remote.service
-```
-
-## 5. Validar Atualizações Automáticas
+## Validar Atualizações Automáticas
 
 Verifique se os timers de atualização estão ativos:
 

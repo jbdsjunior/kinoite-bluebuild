@@ -34,8 +34,8 @@
 | `ping_group_range` global | ✅ Fixed | Restricted to `0–65534` from `0–2147483647` |
 | `tcp_fastopen = 3` | ✅ Fixed | Changed to `1` (client only) |
 | Topgrade timer collisions | ✅ Fixed | Staggered startup times (5m, 15m, 30m) |
-| `sudo` in setup-kvm.sh | ✅ Fixed | Script now requires sudo; systemd template service available |
-| profile.d `return` in `/bin/sh` | ✅ Fixed | Uses `return 0 || exit 0` pattern |
+| `sudo` in setup-kvm.sh | ✅ Fixed | Script now requires sudo; systemd template service passes `%i` as argument |
+| profile.d `return` in `/bin/sh` | ✅ Fixed | Uses `return 0` only (no `exit 0` fallback that could kill parent shell) |
 
 ## Audit Checklist
 

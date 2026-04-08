@@ -13,3 +13,4 @@ cosign.key
 *.tmp
 *.cache
 tmp/
+.qwen/

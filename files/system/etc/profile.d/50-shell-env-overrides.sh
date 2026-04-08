@@ -7,9 +7,9 @@ export EDITOR=nano
 export VISUAL=nano
 
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
-# Use exit instead of return for POSIX shell compatibility
+# Profile.d scripts are sourced, so return is safe; avoid exit which would kill the parent shell
 if [ -z "${PS1:-}" ]; then
-    return 0 2>/dev/null || exit 0
+    return 0 2>/dev/null
 fi
 
 # Bash-specific interactive configurations
