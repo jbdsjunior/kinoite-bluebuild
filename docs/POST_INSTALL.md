@@ -30,7 +30,7 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 
 ### NVIDIA GPU (Apenas variante nvidia)
 
-### Secure Boot (Enrollment MOK)
+#### Secure Boot (Enrollment MOK)
 
 If Secure Boot is enabled, register the key for NVIDIA kernel modules:
 
