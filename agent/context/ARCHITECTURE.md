@@ -15,9 +15,10 @@ recipe-nvidia.yml┘                     ├── common-repos.yml
                                        ├── common-fonts.yml
                                        ├── common-packages.yml
                                        ├── common-tools.yml
-                                       ├── common-kvm.yml
+                                       ├── common-kvm.yml (+ kvm_amd.*, iommu=pt kargs)
                                        ├── common-systemd.yml
                                        ├── common-kargs.yml
+                                       ├── AMD CPU kargs (amd_iommu=on)
                                        └── common-flatpaks.yml
 ```
 
@@ -47,11 +48,12 @@ recipe-nvidia.yml┘                     ├── common-repos.yml
 
 ### Update Strategy
 - **rpm-ostree:** `AutomaticUpdatePolicy=stage` (stages updates, applies on next reboot)
-- **Topgrade timers:** 3 user-level timers (boot, system, flatpak) with staggered intervals
+- **Topgrade timers:** 3 user-level timers with **separate lock files** per service (system, flatpak, boot) — allows concurrent updates of different subsystems
   - `topgrade-boot-update.timer`: 30min after boot, every 6h + 10m random (misc/containers)
   - `topgrade-system-update.timer`: 15min after boot, every 2h + 5m random (system only)
   - `topgrade-flatpak-update.timer`: 5min after boot, every 1h + 5m random (flatpak only)
-- All timers use low priority (Nice=19, IOSchedulingClass=idle) and flock for mutual exclusion
+  - Lock files: `%t/topgrade-boot.lock`, `%t/topgrade-system.lock`, `%t/topgrade-flatpak.lock`
+- All timers use low priority (Nice=19, IOSchedulingClass=idle)
 
 ### Flatpak Strategy
 - System scope only (user scope disabled by default)
