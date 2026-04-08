@@ -21,7 +21,7 @@ if [ -n "${BASH_VERSION:-}" ]; then
         # shellcheck disable=SC1091
         . /usr/share/bash-completion/bash_completion
     fi
-    
+
     # shellcheck disable=SC3045
     bind 'set show-all-if-ambiguous on'
     bind 'set completion-ignore-case on'

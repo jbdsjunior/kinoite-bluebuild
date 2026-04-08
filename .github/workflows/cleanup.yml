@@ -1,7 +1,7 @@
 name: cleanup
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at 00:00 UTC
+    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -21,13 +21,13 @@ jobs:
         uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ matrix.image-name }}
-          package-type: 'container'
+          package-type: "container"
 
           # Keep at least one week of versions to preserve rollback safety.
           min-versions-to-keep: 7
 
           # Remove tagged old versions too; otherwise only dangling versions are removed.
-          delete-only-untagged-versions: 'false'
+          delete-only-untagged-versions: "false"
 
   # 2) Remove old workflow runs
   delete-old-runs:

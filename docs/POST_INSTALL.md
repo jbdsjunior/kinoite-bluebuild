@@ -5,22 +5,22 @@
 O sistema inclui aliases globais pré-configurados para rotinas de manutenção.
 Disponíveis em todos os shells de login:
 
-| Alias | Comando |
-|---|---|
-| `update` | Executa topgrade (aligns with systemd timers) |
-| `rollback` | `sudo bootc rollback` |
-| `kargs` | `rpm-ostree kargs` |
-| `kargs-edit` | `sudo rpm-ostree kargs --editor` |
-| `config-diff` | `sudo ostree admin config-diff` |
-| `update-status` | Status dos 3 timers topgrade (boot, system, flatpak) |
-| `fw-status` | `sudo systemctl status firewalld` |
-| `dns-status` | `sudo systemctl status systemd-resolved` |
-| `kvm-status` | `sudo systemctl status libvirtd` |
-| `secureboot-enroll` | `ujust enroll-secure-boot-key` (NVIDIA) |
-| `tmpfiles-system` | Aplica NoCOW BTRFS (system) |
-| `tmpfiles-user` | Aplica NoCOW BTRFS (user) |
-| `status-all` | Combo: update-status + fw-status + dns-status |
-| `kvm-setup` | `sudo setup-kvm.sh` |
+| Alias               | Comando                                              |
+| ------------------- | ---------------------------------------------------- |
+| `update`            | Executa topgrade (aligns with systemd timers)        |
+| `rollback`          | `sudo bootc rollback`                                |
+| `kargs`             | `rpm-ostree kargs`                                   |
+| `kargs-edit`        | `sudo rpm-ostree kargs --editor`                     |
+| `config-diff`       | `sudo ostree admin config-diff`                      |
+| `update-status`     | Status dos 3 timers topgrade (boot, system, flatpak) |
+| `fw-status`         | `sudo systemctl status firewalld`                    |
+| `dns-status`        | `sudo systemctl status systemd-resolved`             |
+| `kvm-status`        | `sudo systemctl status libvirtd`                     |
+| `secureboot-enroll` | `ujust enroll-secure-boot-key` (NVIDIA)              |
+| `tmpfiles-system`   | Aplica NoCOW BTRFS (system)                          |
+| `tmpfiles-user`     | Aplica NoCOW BTRFS (user)                            |
+| `status-all`        | Combo: update-status + fw-status + dns-status        |
+| `kvm-setup`         | `sudo setup-kvm.sh`                                  |
 
 ## Virtualização (KVM/libvirt)
 
