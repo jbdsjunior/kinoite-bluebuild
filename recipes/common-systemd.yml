@@ -5,6 +5,4 @@ modules:
   - type: systemd
     user:
       enabled:
-        - topgrade-boot-update.timer
-        - topgrade-system-update.timer
-        - topgrade-flatpak-update.timer
+        - topgrade-update.timer
