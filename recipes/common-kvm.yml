@@ -16,9 +16,6 @@ modules:
     system:
       enabled:
         - libvirtd.service
-        - virtqemud.socket
-        - virtnetworkd.socket
-        - virtnodedevd.socket
 
   - type: files
     files:
