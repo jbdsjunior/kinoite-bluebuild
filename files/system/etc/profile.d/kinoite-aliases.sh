@@ -3,6 +3,9 @@
 # Install: copy to /etc/profile.d/kinoite-aliases.sh (system-wide)
 #          or source from ~/.bashrc / ~/.zshrc (user-level)
 
+# Global alias: update -> topgrade (aligns with systemd service flags)
+alias update='topgrade -cy --no-ask-retry --auto-retry 2'
+
 # --- bootc / rpm-ostree ---
 alias rollback='sudo bootc rollback'
 alias kargs='rpm-ostree kargs'

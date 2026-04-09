@@ -6,29 +6,26 @@
 export EDITOR=nano
 export VISUAL=nano
 
-# Global alias: update -> topgrade (aligns with systemd service flags)
-alias update='topgrade -cy --no-ask-retry --auto-retry 2'
-
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
 # Profile.d scripts are sourced, so return is safe; avoid exit which would kill the parent shell
 if [ -z "${PS1:-}" ]; then
     return 0 2>/dev/null
 fi
 
-# Bash-specific interactive configurations
-if [ -n "${BASH_VERSION:-}" ]; then
-    if [ -r /usr/share/bash-completion/bash_completion ] && [ -z "${BASH_COMPLETION_VERSINFO:-}" ]; then
-        # shellcheck disable=SC1091
-        . /usr/share/bash-completion/bash_completion
-    fi
+# # Bash-specific interactive configurations
+# if [ -n "${BASH_VERSION:-}" ]; then
+#     if [ -r /usr/share/bash-completion/bash_completion ] && [ -z "${BASH_COMPLETION_VERSINFO:-}" ]; then
+#         # shellcheck disable=SC1091
+#         . /usr/share/bash-completion/bash_completion
+#     fi
 
-    # shellcheck disable=SC3045
-    bind 'set show-all-if-ambiguous on'
-    bind 'set completion-ignore-case on'
-    bind 'set menu-complete-display-prefix on'
-    bind '"\e[A": history-search-backward'
-    bind '"\e[B": history-search-forward'
-fi
+#     # shellcheck disable=SC3045
+#     bind 'set show-all-if-ambiguous on'
+#     bind 'set completion-ignore-case on'
+#     bind 'set menu-complete-display-prefix on'
+#     bind '"\e[A": history-search-backward'
+#     bind '"\e[B": history-search-forward'
+# fi
 
 # Initialize starship prompt
 # Users can override by creating ~/.config/starship.toml
