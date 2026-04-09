@@ -12,12 +12,6 @@ modules:
 
         # Core system
         - plasma-firewall
-        - icoutils
-        - kf6-kimageformats
-        - kio-admin
-        - ksshaskpass
-        - qt6-qtimageformats
-        - flatpak-spawn
         - adw-gtk3-theme
 
         # Utilities
