@@ -3,13 +3,8 @@
 
 modules:
   - type: kargs
-    arch: x86_64
     kargs:
-      # Transparent hugepages: defer for better memory allocation latency
-      - transparent_hugepage=madvise
-      # Security mitigations: auto (balanced security/performance)
-      - mitigations=auto
-      # PCIe ASPM: policy_performance for desktop/workstation stability
-      - pcie_aspm=policy_performance
-      # AMD CPU IOMMU — both variants run on AMD CPU
-      - amd_iommu=on
+      - transparent_hugepage=madvise # Transparent hugepages: defer for better memory allocation latency
+      - mitigations=auto # Security mitigations: auto (balanced security/performance)
+      - pcie_aspm=policy_performance # PCIe ASPM: policy_performance for desktop/workstation stability
+      - amd_iommu=on # AMD CPU IOMMU — both variants run on AMD CPU
