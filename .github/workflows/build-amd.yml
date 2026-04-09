@@ -34,4 +34,4 @@ jobs:
           retry_push_count: 3
           use_unstable_cli: false
           skip_checkout: true
-          build_chunked_oci: true
+          build_chunked_oci: false
