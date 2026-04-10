@@ -3,6 +3,10 @@
 
 modules:
   - type: systemd
+    # system:
+    #   masked:
+    #     # Prevent boot delays waiting for DHCP allocation
+    #     - NetworkManager-wait-online.service
     user:
       enabled:
         - topgrade-update.timer
