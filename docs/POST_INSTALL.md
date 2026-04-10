@@ -65,9 +65,7 @@ ujust enroll-secure-boot-key
 Verifique se os timers de atualização estão ativos:
 
 ```bash
-systemctl --user status topgrade-boot-update.timer
-systemctl --user status topgrade-system-update.timer
-systemctl --user status topgrade-flatpak-update.timer
+systemctl --user status topgrade-update.timer
 ```
 
 Todos devem mostrar `active (waiting)`.
