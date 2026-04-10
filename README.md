@@ -90,8 +90,6 @@ Reboot after any rollback.
 ## Security
 
 - ✅ Images cryptographically signed with Cosign
-- ✅ No secrets or credentials in repository
-- ✅ Composefs + fs-verity for image integrity
 - ✅ Kernel hardening: `ptrace_scope=1`, `split_lock_mitigate=1`, `kptr_restrict=2`, `dmesg_restrict=1`
 - ✅ eBPF and user namespace restrictions: `unprivileged_bpf_disabled=1`, `unprivileged_userns_clone=0`
 - ✅ Filesystem protection: `protected_symlinks`, `protected_hardlinks`, `protected_regular`, `protected_fifos`, `suid_dumpable=0`
