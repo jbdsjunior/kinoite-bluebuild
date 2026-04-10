@@ -32,6 +32,18 @@ Execute o script de configuração do projeto:
 setup-kvm.sh
 ```
 
+### Rclone Mount (Optional)
+
+### Configure remotes
+
+# Configure remotes
+```bash
+rclone config
+```
+# Enable user service
+```bash
+systemctl --user enable --now rclone@<remote-name>.service
+```
 Saia e entre novamente na sessão para aplicar permissões de grupo.
 
 ### Aplicar Atributos NoCOW (BTRFS)
