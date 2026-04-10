@@ -9,10 +9,9 @@ image-version: latest
 platforms:
   - linux/amd64
 modules:
-  # Pulls all shared configurations from the base recipe file
+  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
-  # Digitally signs the final image. This is crucial for 'rpm-ostree' verification
-  # after the initial rebase on the client side.
+  # Digital signing module for image integrity and verified updates
   - type: initramfs
   - type: signing
