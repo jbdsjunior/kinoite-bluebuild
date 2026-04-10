@@ -35,8 +35,6 @@ Saia e entre novamente na sessão para aplicar permissões de grupo.
 
 ## Rclone Mount (Optional)
 
-#### Configure remotes
-
 # Configure remotes
 ```bash
 rclone config
