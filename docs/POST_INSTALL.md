@@ -33,9 +33,9 @@ setup-kvm.sh
 ```
 Saia e entre novamente na sessão para aplicar permissões de grupo.
 
-### Rclone Mount (Optional)
+## Rclone Mount (Optional)
 
-### Configure remotes
+#### Configure remotes
 
 # Configure remotes
 ```bash
