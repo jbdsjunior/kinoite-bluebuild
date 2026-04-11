@@ -12,7 +12,7 @@ Disponíveis em todos os shells de login:
 | `kargs`             | `rpm-ostree kargs`                                   |
 | `kargs-edit`        | `sudo rpm-ostree kargs --editor`                     |
 | `config-diff`       | `sudo ostree admin config-diff`                      |
-| `update-status`     | Status dos 3 timers topgrade (boot, system, flatpak) |
+| `update-status`     | `systemctl --user status topgrade-update.timer` |
 | `fw-status`         | `sudo systemctl status firewalld`                    |
 | `dns-status`        | `sudo systemctl status systemd-resolved`             |
 | `kvm-status`        | `sudo systemctl status libvirtd`                     |
