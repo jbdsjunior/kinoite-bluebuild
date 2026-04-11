@@ -37,7 +37,7 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-
+**NVIDIA variant:**
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
