@@ -12,13 +12,3 @@ This repository is optimized for the following high-performance workstation conf
 | **RAM**             | 64 GB                                  |
 | **Storage**         | 1 TB NVMe                              |
 | **OS**              | Fedora Kinoite (Latest Stable Release) |
-
-## Variant Isolation
-
-Maintain strict separation between GPU variants. Never collapse variant logic.
-
-| Variant          | Base Image                        | Purpose                                       |
-| ---------------- | --------------------------------- | --------------------------------------------- |
-| `kinoite-amd`    | `quay.io/fedora/fedora-kinoite`   | AMD-only systems                              |
-| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | AMD + NVIDIA hybrid systems with CUDA support |
-
