@@ -31,12 +31,12 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 
 ### 1. Switch to Custom Image
 
-####**AMD variant:**
+#### **AMD variant:**
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-####**NVIDIA variant:**
+#### **NVIDIA variant:**
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
@@ -46,11 +46,11 @@ Reboot after the rebase completes.
 ### 2. Verify Signature (Recommended)
 
 After confirming system stability, enable signature verification:
-####**AMD variant:**
+#### **AMD variant:**
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-####**NVIDIA variant:**
+#### **NVIDIA variant:**
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
