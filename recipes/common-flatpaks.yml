@@ -13,7 +13,7 @@ modules:
         notify: false
         install:
           # Core multimedia libraries
-          - org.freedesktop.Platform.ffmpeg-full//24.08
+          - org.freedesktop.Platform.ffmpeg-full
           - org.gtk.Gtk3theme.adw-gtk3-dark
           - org.gtk.Gtk3theme.adw-gtk3
 

@@ -2,9 +2,9 @@
 Description=Run topgrade update
 
 [Timer]
-OnStartupSec=5m
-OnUnitInactiveSec=1h
-RandomizedDelaySec=5m
+OnStartupSec=10m
+OnUnitInactiveSec=6h
+RandomizedDelaySec=10m
 AccuracySec=1m
 Persistent=true
 Unit=topgrade-update.service

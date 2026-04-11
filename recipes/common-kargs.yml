@@ -1,8 +1,7 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
-modules:
-  - type: kargs
-    kargs:
-      - transparent_hugepage=madvise # Transparent hugepages: defer for better memory allocation latency
-      - pcie_aspm=policy_performance # PCIe ASPM: policy_performance for desktop/workstation stability
+# Note: transparent_hugepage=madvise and pcie_aspm defaults are already
+# configured by modern kernels (6.12+). Removed to avoid redundancy.
+
+modules: []
