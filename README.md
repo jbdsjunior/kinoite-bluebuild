@@ -87,25 +87,12 @@ sudo bootc switch --enforce-container-sigpolicy quay.io/fedora/fedora-kinoite:la
 
 Reboot after any rollback.
 
-## Security
-
-- ✅ Images cryptographically signed with Cosign
-- ✅ Kernel hardening: `ptrace_scope=1`, `split_lock_mitigate=1`, `kptr_restrict=2`, `dmesg_restrict=1`
-- ✅ eBPF and user namespace restrictions: `unprivileged_bpf_disabled=1`, `unprivileged_userns_clone=0`
-- ✅ Filesystem protection: `protected_symlinks`, `protected_hardlinks`, `protected_regular`, `protected_fifos`, `suid_dumpable=0`
-- ✅ Network hardened: `tcp_syncookies`, `tcp_rfc1337`, `rp_filter`, `cubic` congestion (BBRv1 excluded), no ICMP redirects
-- ✅ IPv6 privacy: `use_tempaddr=2` (RFC 4941), `accept_ra=0`
-- ✅ DNS over TLS + DNSSEC enforced
-
-Full security baseline: [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md)
-
 ## Documentation
 
-| Document                                                     | Purpose                                         |
-| :----------------------------------------------------------- | :---------------------------------------------- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)               | Post-install validation (all variants)          |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)     | Hardware specs, tuning rationale, scaling       |
-| [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md)           | Security baseline, threat model, sysctl reference |
+| Document                                                 | Purpose                                   |
+| :------------------------------------------------------- | :---------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation (all variants)    |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware specs, tuning rationale, scaling |
 
 ## License
 
