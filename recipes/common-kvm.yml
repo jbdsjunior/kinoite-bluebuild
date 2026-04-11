@@ -24,6 +24,9 @@ modules:
 
   - type: kargs
     kargs:
-      # - kvm_amd.avic=1
+      - amd_iommu=on
+      - iommu=pt
+      - kvm_amd.npt=1
+      - kvm_amd.avic=1
       - kvm_amd.nested=1
-      - iommu=pt # Generic IOMMU passthrough
+      - kvm_amd.sev=1
