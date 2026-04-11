@@ -7,6 +7,9 @@ modules:
       - source: system
         destination: /
 
+  # Boot/kernel arguments (applied on next reboot — placed early for clarity)
+  - from-file: common-kargs.yml
+
   - from-file: common-repos.yml
   - from-file: common-debloat.yml
 
@@ -17,7 +20,5 @@ modules:
   - from-file: common-kvm.yml
 
   - from-file: common-systemd.yml
-
-  - from-file: common-kargs.yml
 
   - from-file: common-flatpaks.yml
