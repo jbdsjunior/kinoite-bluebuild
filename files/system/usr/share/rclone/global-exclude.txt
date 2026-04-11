@@ -1,3 +1,8 @@
+# Trash & Recycled paths
+.Trash-*/**
+.Trash-*
+$RECYCLE.BIN/**
+
 # OS & Desktop Environment Metadata
 .directory
 .hidden
@@ -6,22 +11,3 @@ Thumbs.db
 .DS_Store
 .*.swp
 ~*
-
-# Trash & Recycled paths
-.Trash-*/**
-.Trash-*
-$RECYCLE.BIN/**
-
-# Sensitive files (prevent accidental cloud sync)
-.env
-.env.*
-*.key
-*.pem
-*.p12
-*.pfx
-id_rsa
-id_ed25519
-id_ecdsa
-id_ed448
-*.secret
-*.secret.*
