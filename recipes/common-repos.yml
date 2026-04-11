@@ -8,8 +8,8 @@ modules:
 
   - type: rpm-ostree
     repos:
+      - terra.repo
       - brave-browser.repo
       - google-chrome.repo
       - microsoft-edge.repo
-      - terra.repo
       - vscode.repo
