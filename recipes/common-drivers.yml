@@ -8,9 +8,9 @@ modules:
       skip-unavailable: true
       packages:
         # Hardware acceleration (Primary AMD RX 6600 XT)
-        # - mesa-va-drivers
-        # - mesa-vdpau-drivers
-        # - mesa-vulkan-drivers
+        - mesa-va-drivers
+        - mesa-vdpau-drivers
+        - mesa-vulkan-drivers
 
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
