@@ -1,7 +1,4 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
-# Note: transparent_hugepage=madvise and pcie_aspm defaults are already
-# configured by modern kernels (6.12+). Removed to avoid redundancy.
-
 modules: []
