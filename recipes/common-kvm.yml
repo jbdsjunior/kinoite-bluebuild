@@ -25,3 +25,10 @@ modules:
     files:
       - source: scripts/setup-kvm.sh
         destination: /usr/bin/setup-kvm.sh
+
+  - type: kargs
+    kargs:
+      - kvm_amd.npt=1 # AMD KVM virtualization parameters (both variants use AMD CPU)
+      - kvm_amd.nested=1
+      - iommu=pt # Generic IOMMU passthrough
+      - amd_iommu=on
