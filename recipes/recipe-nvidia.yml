@@ -12,9 +12,6 @@ modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
-  # Kargs específicos de hardware AMD (IOMMU, AVIC, NPT)
-  - from-file: common-kvm-amd.yml
-
   # Digital signing module for image integrity and verified updates
   - type: initramfs
   - type: signing
