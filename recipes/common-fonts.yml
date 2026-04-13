@@ -10,4 +10,6 @@ modules:
         # Nerd Fonts (from Terra repository)
         - nerdfontssymbolsonly-nerd-fonts
         # Alternative fonts (uncomment to enable)
-        # - liberation-fonts
+        - liberation-fonts
+        - google-noto-sans-fonts
+        - google-noto-serif-fonts
