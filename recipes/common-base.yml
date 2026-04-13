@@ -7,7 +7,6 @@ modules:
       - source: system
         destination: /
 
-  # - from-file: common-kargs.yml
   - from-file: common-repos.yml
   - from-file: common-debloat.yml
 
