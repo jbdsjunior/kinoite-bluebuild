@@ -1,10 +1,6 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
-# Módulo genérico de virtualização — neutro quanto a hardware.
-# Kargs específicos de AMD foram movidos para common-kvm-amd.yml.
-# Kargs específicos de Intel devem ser criados em common-kvm-intel.yml.
-
 modules:
   - type: dnf
     install:
@@ -30,5 +26,5 @@ modules:
     kargs:
       - kvm_amd.npt=1 # AMD KVM virtualization parameters (both variants use AMD CPU)
       - kvm_amd.nested=1
-      - iommu=pt # Generic IOMMU passthrough
+      - iommu=pt
       - amd_iommu=on
