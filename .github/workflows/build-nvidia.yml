@@ -1,7 +1,6 @@
 name: build-nvidia
 on:
   workflow_dispatch:
-
 concurrency:
   group: build-nvidia-${{ github.ref || github.run_id }}
   cancel-in-progress: true

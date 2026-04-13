@@ -19,13 +19,13 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-max-size 100G \
   --vfs-cache-max-age 72h \
   --dir-cache-time 8760h \
-  --vfs-read-ahead 2G \
+  --vfs-read-ahead 256M \
   --vfs-read-chunk-size 128M \
   --vfs-read-chunk-size-limit off \
-  --buffer-size 256M \
+  --buffer-size 32M \
   --poll-interval 5s \
-  --transfers 16 \
-  --checkers 32 \
+  --transfers 4 \
+  --checkers 8 \
   --exclude-from /usr/share/rclone/global-exclude.txt \
   --log-level INFO \
   $RCLONE_FLAGS
@@ -33,8 +33,25 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 Restart=on-failure
 RestartSec=10
-MemoryMax=16G
-LimitNOFILE=1048576
+
+# Sandboxing — contém danos em caso de comprometimento do binário rclone
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+
+# Limites de recursos ajustados para uso desktop razoável
+MemoryMax=4G
+LimitNOFILE=65536
 
 [Install]
 WantedBy=default.target
