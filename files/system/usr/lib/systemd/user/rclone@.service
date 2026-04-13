@@ -34,21 +34,6 @@ ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 Restart=on-failure
 RestartSec=10
 
-# # Sandboxing — contém danos em caso de comprometimento do binário rclone
-# NoNewPrivileges=true
-# ProtectSystem=full
-# ProtectHome=read-only
-# PrivateTmp=true
-# ProtectKernelTunables=true
-# ProtectKernelModules=true
-# ProtectControlGroups=true
-# RestrictNamespaces=true
-# RestrictRealtime=true
-# LockPersonality=true
-# MemoryDenyWriteExecute=true
-# SystemCallFilter=@system-service
-# SystemCallArchitectures=native
-
 # Limites de recursos ajustados para uso desktop razoável
 MemoryMax=4G
 LimitNOFILE=65536
