@@ -2,14 +2,11 @@
 Description=Rclone Mount - %i
 After=network-online.target
 Wants=network-online.target
-# Evita falhas de montagem caso o diretório seja apagado ou não possa ser lido
-AssertPathIsDirectory=%h/Cloud/%i
 
 [Service]
 Type=notify
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
-# Garante que os diretórios de montagem e cache existam antes de iniciar
 ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
 ExecStartPre=/usr/bin/mkdir -p %h/.cache/rclone/%i
 
@@ -19,24 +16,21 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --vfs-cache-max-size 100G \
   --vfs-cache-max-age 72h \
   --dir-cache-time 8760h \
-  --vfs-read-ahead 256M \
-  --vfs-read-chunk-size 128M \
-  --vfs-read-chunk-size-limit off \
-  --buffer-size 32M \
-  --poll-interval 5s \
+  --buffer-size 128M \
+  --poll-interval 15s \
   --transfers 4 \
   --checkers 8 \
-  --exclude-from /usr/share/rclone/global-exclude.txt \
+  --exclude-from %h/.config/rclone/exclude.txt \
   --log-level INFO \
+  --systemd \
   $RCLONE_FLAGS
 
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
 Restart=on-failure
 RestartSec=10
 
-# Limites de recursos ajustados para uso desktop razoável
-MemoryMax=4G
-LimitNOFILE=65536
+MemoryMax=8G
+LimitNOFILE=1048576
 
 [Install]
 WantedBy=default.target
