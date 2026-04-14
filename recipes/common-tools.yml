@@ -22,3 +22,4 @@ modules:
       packages:
         - fastfetch
         - distrobox
+        - git
