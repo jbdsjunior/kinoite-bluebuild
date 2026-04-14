@@ -11,26 +11,31 @@ ExecStartPre=/usr/bin/mkdir -p %h/Cloud/%i
 ExecStartPre=/usr/bin/mkdir -p %h/.cache/rclone/%i
 
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
-  --vfs-cache-mode full \
+  --config %h/.config/rclone/rclone.conf \
+  --vfs-cache-mode writes \
   --cache-dir %h/.cache/rclone/%i \
-  --vfs-cache-max-size 100G \
-  --vfs-cache-max-age 72h \
-  --dir-cache-time 8760h \
-  --buffer-size 128M \
-  --poll-interval 15s \
+  --vfs-cache-max-size 50G \
+  --vfs-cache-max-age 24h \
+  --dir-cache-time 10m \
+  --poll-interval 30s \
+  --vfs-read-ahead 128M \
+  --buffer-size 16M \
   --transfers 4 \
   --checkers 8 \
-  --exclude-from /usr/share/rclone/global-exclude.txt \
+  --timeout 1m \
+  --contimeout 15s \
+  --low-level-retries 10 \
+  --retries 3 \
   --log-level INFO \
-  --systemd \
   $RCLONE_FLAGS
 
 ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
-Restart=on-failure
-RestartSec=10
 
-MemoryMax=8G
-LimitNOFILE=1048576
+Restart=on-failure
+RestartSec=5
+
+# Ajustes de limites mais equilibrados
+LimitNOFILE=65536
 
 [Install]
 WantedBy=default.target
