@@ -20,7 +20,7 @@ ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --poll-interval 15s \
   --transfers 4 \
   --checkers 8 \
-  --exclude-from %h/.config/rclone/exclude.txt \
+  --exclude-from /usr/share/rclone/global-exclude.txt \
   --log-level INFO \
   --systemd \
   $RCLONE_FLAGS
