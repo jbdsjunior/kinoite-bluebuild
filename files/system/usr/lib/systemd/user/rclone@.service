@@ -1,5 +1,5 @@
 [Unit]
-Description=Rclone Mount - %i
+Description=Rclone Mount - %i (High Performance)
 After=network-online.target
 Wants=network-online.target
 
@@ -12,30 +12,50 @@ ExecStartPre=/usr/bin/mkdir -p %h/.cache/rclone/%i
 
 ExecStart=/usr/bin/rclone mount %i: %h/Cloud/%i \
   --config %h/.config/rclone/rclone.conf \
-  --vfs-cache-mode writes \
+  --vfs-cache-mode full \
   --cache-dir %h/.cache/rclone/%i \
-  --vfs-cache-max-size 50G \
-  --vfs-cache-max-age 24h \
-  --dir-cache-time 10m \
-  --poll-interval 30s \
-  --vfs-read-ahead 128M \
-  --buffer-size 16M \
-  --transfers 4 \
-  --checkers 8 \
-  --timeout 1m \
-  --contimeout 15s \
-  --low-level-retries 10 \
+  --vfs-cache-max-size 100G \
+  --vfs-cache-max-age 72h \
+  --vfs-read-chunk-size 64M \
+  --vfs-read-chunk-size-limit 1G \
+  --dir-cache-time 5m \
+  --poll-interval 0 \
+  --vfs-read-ahead 256M \
+  --buffer-size 64M \
+  --transfers 8 \
+  --checkers 16 \
+  --tpslimit 10 \
+  --tpslimit-burst 20 \
+  --timeout 5m \
+  --contimeout 30s \
+  --low-level-retries 5 \
   --retries 3 \
-  --log-level INFO \
+  --log-level NOTICE \
+  --drive-chunk-size 256M \
+  --drive-pacer-min-sleep 10ms \
+  --drive-pacer-burst 200 \
+  --attr-timeout 1s \
+  --fast-list \
+  --s3-upload-concurrency 8 \
+  --s3-upload-cutoff 500M \
   $RCLONE_FLAGS
 
-ExecStop=/usr/bin/fusermount3 -u %h/Cloud/%i
+ExecStop=/usr/bin/fusermount3 -uz %h/Cloud/%i
+ExecStopPost=/usr/bin/rmdir %h/Cloud/%i
 
 Restart=on-failure
-RestartSec=5
+RestartSec=10
+RestartMaxDelaySec=60
 
-# Ajustes de limites mais equilibrados
-LimitNOFILE=65536
+# Otimizações de alto desempenho
+LimitNOFILE=infinity
+LimitNPROC=4096
+MemoryMax=4G
+CPUQuota=200%
+
+# I/O priority para melhor performance
+IOSchedulingClass=best-effort
+IOSchedulingPriority=2
 
 [Install]
 WantedBy=default.target
