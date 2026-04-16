@@ -3,7 +3,7 @@ Description=Run topgrade update
 
 [Timer]
 OnStartupSec=10m
-OnUnitInactiveSec=4h
+OnUnitInactiveSec=1h
 RandomizedDelaySec=30m
 AccuracySec=1m
 Persistent=true
