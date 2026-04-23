@@ -29,4 +29,4 @@ modules:
         - libfdk-aac
         - libldac
         - lame
-        - ¨@multimedia¨
+        - "@multimedia"
