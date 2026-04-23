@@ -12,6 +12,13 @@ modules:
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - nvidia-container-toolkit
+
   # Digital signing module for image integrity and verified updates
   - type: initramfs
   - type: signing
