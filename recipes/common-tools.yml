@@ -23,3 +23,6 @@ modules:
         - fastfetch
         - distrobox
         - git
+        - podman-compose
+        - podman-docker 
+        - nvidia-container-toolkit
