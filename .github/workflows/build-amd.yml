@@ -17,8 +17,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+        # with:
+        #   fetch-depth: 0
 
       - name: Build Custom AMD Image
         uses: blue-build/github-action@v1
@@ -27,7 +27,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           verify_install: true
-          maximize_build_space: true
+          maximize_build_space: false
           max_layers: 256
           use_cache: true
           retry_push_count: 3
