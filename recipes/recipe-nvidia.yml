@@ -9,6 +9,9 @@ platforms:
   - linux/amd64
 
 modules:
+  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
+  - from-file: common-base.yml
+
   - type: script
     env:
       PUBLIC_KEY_DER_PATH: /etc/pki/akmods/certs/public_key.der
