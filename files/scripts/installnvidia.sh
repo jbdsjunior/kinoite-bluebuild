@@ -18,9 +18,19 @@ else
     fi
 fi
 
-# ATUALIZADO: Adicionado --allowerasing para evitar Rpm transaction failed
+# 1. Instala pacotes base e de compilação PRIMEIRO
 dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-matched-$(rpm -q 'kernel' --queryformat '%{VERSION}')"
-dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++ nvidia-kmod-common nvidia-modprobe
+dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++
+
+# 2. O HACK CRÍTICO: Permite que o akmods corra como root dentro do container
+cp /usr/sbin/akmodsbuild /usr/sbin/akmodsbuild.backup
+sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' /usr/sbin/akmodsbuild
+
+# 3. Agora sim, instala os pacotes da NVIDIA
+dnf install -y --allowerasing --setopt=install_weak_deps=False nvidia-kmod-common nvidia-modprobe
+
+# 4. Restaura o ficheiro original do akmodsbuild
+mv /usr/sbin/akmodsbuild.backup /usr/sbin/akmodsbuild
 
 echo "Compilando driver NVIDIA (isso pode demorar)..."
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "nvidia"
@@ -48,13 +58,11 @@ curl -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container
 sed -i 's/^gpgcheck=0/gpgcheck=1/' /etc/yum.repos.d/nvidia-container-toolkit.repo
 sed -i 's/^enabled=0.*/enabled=1/' /etc/yum.repos.d/nvidia-container-toolkit.repo
 
-# ATUALIZADO: Adicionado --allowerasing aqui também
 dnf install -y --allowerasing --setopt=install_weak_deps=False "${nvidia_packages_list[@]}"
 
 curl -L https://raw.githubusercontent.com/NVIDIA/dgx-selinux/master/bin/RHEL9/nvidia-container.pp -o nvidia-container.pp
 semodule -i nvidia-container.pp
 
-# Limpeza
 dnf remove -y akmod-nvidia akmods kernel-devel kernel-headers gcc-c++
 rm -f nvidia-container.pp /etc/yum.repos.d/nvidia-container-toolkit.repo /etc/yum.repos.d/fedora-nvidia-580.repo /etc/yum.repos.d/negativo17-fedora-nvidia.repo
 
