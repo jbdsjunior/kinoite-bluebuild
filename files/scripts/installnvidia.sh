@@ -65,9 +65,28 @@ restore_akmodsbuild() {
 install_build_dependencies() {
     local kernel_release="$1"
     local kernel_version="$2"
+    local installed=0
 
-    dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-matched-${kernel_release}" || \
-        dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-matched-${kernel_version}"
+    local -a kernel_devel_candidates=(
+        "kernel-devel-matched-${kernel_release}"
+        "kernel-devel-matched-${kernel_version}"
+        "kernel-devel-${kernel_release}"
+        "kernel-devel-${kernel_version}"
+        "kernel-devel"
+    )
+
+    for pkg in "${kernel_devel_candidates[@]}"; do
+        if dnf install -y --allowerasing --setopt=install_weak_deps=False "${pkg}"; then
+            installed=1
+            break
+        fi
+    done
+
+    if [[ "${installed}" -eq 0 ]]; then
+        echo "ERRO CRÍTICO: não foi possível instalar um pacote kernel-devel compatível com ${kernel_release}."
+        return 1
+    fi
+
     dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++
 }
 
