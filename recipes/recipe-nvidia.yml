@@ -4,7 +4,7 @@ name: kinoite-nvidia
 description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems with CUDA support"
 
 base-image: quay.io/fedora/fedora-kinoite
-image-version: latest
+image-version: 44
 platforms:
   - linux/amd64
 
