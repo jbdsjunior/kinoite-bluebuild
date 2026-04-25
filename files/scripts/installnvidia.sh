@@ -4,6 +4,16 @@ set -eou pipefail
 mkdir -p /var/tmp
 chmod 1777 /var/tmp
 
+# --- MOCK BOOTLOADER (HACK PARA O NEGATIVO17) ---
+# Falsifica os diretórios do bootloader para que o scriptlet %post do akmod-nvidia
+# ache que o sistema tem um Grub válido e não aborte o DNF com "exit 1".
+echo "=> Criando ambiente falso de bootloader para evitar falha de scriptlets..."
+mkdir -p /boot/loader/entries
+mkdir -p /boot/grub2
+touch /boot/grub2/grub.cfg
+touch /etc/default/grub
+# ------------------------------------------------
+
 IMAGE_NAME="${IMAGE_NAME:-kinoite}"
 
 # --- 1. CONFIGURAÇÃO DE REPOSITÓRIOS ---
@@ -41,7 +51,6 @@ echo "=> Instalando ferramentas de compilação e fontes do driver..."
 dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++ nvidia-kmod-common nvidia-modprobe akmod-nvidia
 
 # --- 4. HACK DO AKMODS PARA CONTAINERS OCI ---
-# O akmodsbuild verifica se /var é gravável. Em build OCI, precisamos burlar isso.
 cp /usr/sbin/akmodsbuild /usr/sbin/akmodsbuild.backup
 sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' /usr/sbin/akmodsbuild
 
@@ -61,20 +70,19 @@ if [ ${#MODULES[@]} -eq 0 ]; then
     cat /var/cache/akmods/nvidia/*.failed.log || true
     exit 1
 fi
-shopt -u nullglob # Desativa o nullglob por segurança para o resto do script
+shopt -u nullglob
 
 # --- 7. ASSINATURA DOS MÓDULOS (SECURE BOOT) ---
 echo "=> Assinando módulos com chave MOK..."
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 bash "$SCRIPT_DIR/signmodules.sh" "nvidia"
 
-# --- 8. INSTALAÇÃO DO NVIDIA CONTAINER TOOLKIT (COM PROTEÇÃO DE REDE) ---
+# --- 8. INSTALAÇÃO DO NVIDIA CONTAINER TOOLKIT ---
 echo "=> Instalando Nvidia Container Toolkit e Utilitários..."
 curl -fLsS --retry 5 https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo -o /etc/yum.repos.d/nvidia-container-toolkit.repo
 sed -i 's/^gpgcheck=0/gpgcheck=1/' /etc/yum.repos.d/nvidia-container-toolkit.repo
 sed -i 's/^enabled=0.*/enabled=1/' /etc/yum.repos.d/nvidia-container-toolkit.repo
 
-# Previne falhas de SSL (Curl Error) comuns no GitHub Pages durante o build
 echo "sslverify=0" >> /etc/yum.repos.d/nvidia-container-toolkit.repo
 dnf clean all
 
