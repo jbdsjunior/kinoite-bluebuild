@@ -20,12 +20,18 @@ jobs:
         # with:
         #   fetch-depth: 0
 
+      # NOVO PASSO: Extrair a chave privada do Secrets para um ficheiro temporário local.
+      # Isto permite que o módulo `secrets:` no seu recipe-nvidia.yml faça a montagem de forma segura.
+      - name: Prepare MOK Key File
+        run: echo "${{ secrets.MOK_PRIVATE_KEY }}" > ./MOK.priv
+
       - name: Build Custom NVIDIA Image
         uses: blue-build/github-action@v1
         with:
           recipe: recipe-nvidia.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
           verify_install: true
           maximize_build_space: false
           max_layers: 256

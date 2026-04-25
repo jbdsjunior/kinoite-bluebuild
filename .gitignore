@@ -4,7 +4,7 @@ cosign.key
 *.key
 *.p12
 *.pfx
-
+*.priv
 # BlueBuild temporary files
 /.bluebuild-scripts_*
 
