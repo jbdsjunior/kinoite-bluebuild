@@ -10,19 +10,29 @@ fi
 KERNEL_VERSION="$(rpm -q "kernel" --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# Caminhos fixos onde o GitHub Actions injetará as chaves
-CERT_DIR="/tmp/certs"
-PUBLIC_KEY_DER_PATH="${CERT_DIR}/public_key.der"
-PRIVATE_KEY_PATH="${CERT_DIR}/private_key.priv"
-PUBLIC_KEY_CRT_PATH="${CERT_DIR}/public_key.crt"
-SIGNING_KEY="${CERT_DIR}/signing_key.pem"
+# 1. Pega a Chave Pública do ambiente (passado pelo recipe-nvidia.yml)
+PUBLIC_KEY_DER_PATH="${PUBLIC_KEY_DER_PATH:-/etc/pki/akmods/certs/public_key.der}"
 
-if [ ! -f "$PRIVATE_KEY_PATH" ] || [ ! -f "$PUBLIC_KEY_DER_PATH" ]; then
-    echo "Erro Crítico: Chaves MOK não encontradas em ${CERT_DIR}."
+# 2. Pega a Chave Privada injetada secretamente pelo BlueBuild
+PRIVATE_KEY_PATH="/tmp/certs/private_key.priv"
+
+# 3. Cria uma pasta temporária para salvar os certificados gerados
+TMP_GEN_DIR="/var/tmp/certs_gen"
+mkdir -p "$TMP_GEN_DIR"
+PUBLIC_KEY_CRT_PATH="${TMP_GEN_DIR}/public_key.crt"
+SIGNING_KEY="${TMP_GEN_DIR}/signing_key.pem"
+
+if [ ! -f "$PRIVATE_KEY_PATH" ]; then
+    echo "Erro Crítico: Chave Privada MOK não encontrada em ${PRIVATE_KEY_PATH}."
     exit 1
 fi
 
-# Prepara os certificados
+if [ ! -f "$PUBLIC_KEY_DER_PATH" ]; then
+    echo "Erro Crítico: Chave Pública DER não encontrada em ${PUBLIC_KEY_DER_PATH}."
+    exit 1
+fi
+
+# Prepara os certificados para a assinatura
 openssl x509 -inform DER -in "$PUBLIC_KEY_DER_PATH" -out "$PUBLIC_KEY_CRT_PATH"
 cat "$PRIVATE_KEY_PATH" <(echo) "$PUBLIC_KEY_CRT_PATH" >> "$SIGNING_KEY"
 
@@ -30,7 +40,7 @@ cat "$PRIVATE_KEY_PATH" <(echo) "$PUBLIC_KEY_CRT_PATH" >> "$SIGNING_KEY"
 for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*; do
   module_basename="${module:0:-3}"
   module_suffix="${module: -3}"
-
+  
   if [[ "$module_suffix" == ".xz" ]]; then
     xz --decompress "$module"
     openssl cms -sign -signer "${SIGNING_KEY}" -binary -in "$module_basename" -outform DER -out "${module_basename}.cms" -nocerts -noattr -nosmimecap
@@ -49,3 +59,6 @@ for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*;
     bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module}" "${PUBLIC_KEY_CRT_PATH}"
   fi
 done
+
+# Limpa a sujeira
+rm -rf "$TMP_GEN_DIR"
