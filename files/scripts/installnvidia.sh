@@ -11,7 +11,7 @@ IMAGE_NAME="${IMAGE_NAME:-kinoite}"
 if [[ "$IMAGE_NAME" == *"open"* ]]; then
     curl -fLsS --retry 5 -o /etc/yum.repos.d/negativo17-fedora-nvidia.repo https://negativo17.org/repos/fedora-nvidia.repo
     sed -i '/^enabled=1/a\priority=90' /etc/yum.repos.d/negativo17-fedora-nvidia.repo
-else
+else 
     curl -fLsS --retry 5 -o /etc/yum.repos.d/fedora-nvidia-580.repo https://negativo17.org/repos/fedora-nvidia-580.repo
     sed -i '/^enabled=1/a\priority=90' /etc/yum.repos.d/fedora-nvidia-580.repo
     if [ -f /etc/yum.repos.d/fedora-multimedia.repo ]; then
@@ -30,7 +30,7 @@ akmods --force --kernels "${KERNEL_VERSION}" --kmod "nvidia"
 modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz > /dev/null || \
     (cat "/var/cache/akmods/nvidia/*.failed.log" && exit 1)
 
-# Chama o script de assinatura (garante que ele use o mesmo diretório deste script)
+# Chama o script de assinatura
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 bash "$SCRIPT_DIR/signmodules.sh" "nvidia"
 
@@ -63,5 +63,4 @@ if [ -f /etc/yum.repos.d/fedora-multimedia.repo ]; then
     sed -i 's/^enabled=.*/enabled=1/' /etc/yum.repos.d/fedora-multimedia.repo
 fi
 
-# REMOVE AS CHAVES PRIVADAS DEPOIS DE USAR PARA NÃO VAZAR NA IMAGEM
-rm -rf /tmp/certs/
+# ATENÇÃO: A linha `rm -rf /tmp/certs` foi deletada daqui. O BlueBuild vai limpar o segredo automaticamente!
