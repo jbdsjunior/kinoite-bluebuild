@@ -21,10 +21,11 @@ jobs:
         #   fetch-depth: 0
 
       - name: Prepare MOK Key File
+        shell: bash
+        env:
+          MOK_PRIVATE_KEY: ${{ secrets.MOK_PRIVATE_KEY }}
         run: |
-          cat << 'EOF' > ./MOK.priv
-          ${{ secrets.MOK_PRIVATE_KEY }}
-          EOF
+          echo "$MOK_PRIVATE_KEY" > ./MOK.priv
 
       - name: Build Custom NVIDIA Image
         uses: blue-build/github-action@v1
