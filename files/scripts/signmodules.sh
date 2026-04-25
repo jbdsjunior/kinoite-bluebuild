@@ -7,16 +7,20 @@ if [ -z "$MODULE_NAME" ]; then
   exit 1
 fi
 
-KERNEL_VERSION="$(rpm -q "kernel" --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+KERNEL_VERSION="${2:-$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)}"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 PUBLIC_KEY_DER_PATH="${PUBLIC_KEY_DER_PATH:-/etc/pki/akmods/certs/public_key.der}"
 PRIVATE_KEY_PATH="/tmp/certs/private_key.priv"
 
-TMP_GEN_DIR="/var/tmp/certs_gen"
-mkdir -p "$TMP_GEN_DIR"
+TMP_GEN_DIR="$(mktemp -d /var/tmp/certs_gen.XXXXXX)"
 PUBLIC_KEY_CRT_PATH="${TMP_GEN_DIR}/public_key.crt"
 SIGNING_KEY="${TMP_GEN_DIR}/signing_key.pem"
+
+cleanup() {
+  rm -rf "$TMP_GEN_DIR"
+}
+trap cleanup EXIT
 
 if [ ! -f "$PRIVATE_KEY_PATH" ]; then
     echo "Erro Crítico: Chave Privada MOK não encontrada em ${PRIVATE_KEY_PATH}."
@@ -35,7 +39,13 @@ cat "$PRIVATE_KEY_PATH" <(echo) "$PUBLIC_KEY_CRT_PATH" >> "$SIGNING_KEY"
 # Previne que o bash trate *.ko* de forma literal se a pasta estiver vazia
 shopt -s nullglob
 
-for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*; do
+modules=(/usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*)
+if [[ ${#modules[@]} -eq 0 ]]; then
+  echo "Nenhum módulo encontrado em /usr/lib/modules/${KERNEL_VERSION}/extra/${MODULE_NAME}."
+  exit 1
+fi
+
+for module in "${modules[@]}"; do
   module_suffix="${module##*.}"
 
   if [[ "$module_suffix" == "xz" ]]; then
@@ -68,5 +78,3 @@ for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*;
     bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module}" "${PUBLIC_KEY_CRT_PATH}"
   fi
 done
-
-rm -rf "$TMP_GEN_DIR"
