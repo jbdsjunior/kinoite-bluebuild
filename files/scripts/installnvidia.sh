@@ -4,7 +4,6 @@ set -oue pipefail
 mkdir -p /var/tmp
 chmod 1777 /var/tmp
 
-KERNEL_VERSION="$(rpm -q "kernel" --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 IMAGE_NAME="${IMAGE_NAME:-kinoite}"
 
 if [[ "$IMAGE_NAME" == *"open"* ]]; then
@@ -18,21 +17,39 @@ else
     fi
 fi
 
-# 1. Instala pacotes base e de compilação PRIMEIRO
-dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-matched-$(rpm -q 'kernel' --queryformat '%{VERSION}')"
+# 1. Extrai as versões exatas do Kernel atual da imagem
+K_VER="$(rpm -q kernel --queryformat '%{VERSION}')"
+K_REL="$(rpm -q kernel --queryformat '%{RELEASE}')"
+K_ARCH="$(rpm -q kernel --queryformat '%{ARCH}')"
+KERNEL_VERSION="${K_VER}-${K_REL}.${K_ARCH}"
+
+echo "=> Preparando headers para o kernel: ${KERNEL_VERSION}"
+
+# 2. Tenta instalar do DNF. Se não achar (mirror desatualizado), baixa direto do Koji.
+if ! dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-${KERNEL_VERSION}" "kernel-devel-matched-${K_VER}"; then
+    echo "⚠️ Versão do kernel ausente nos mirrors do DNF. Sincronismo detectado."
+    echo "📥 Baixando RPMs de desenvolvimento diretamente do Fedora Koji Build System..."
+    
+    URL_DEVEL="https://kojipkgs.fedoraproject.org/packages/kernel/${K_VER}/${K_REL}/${K_ARCH}/kernel-devel-${KERNEL_VERSION}.rpm"
+    URL_MATCHED="https://kojipkgs.fedoraproject.org/packages/kernel/${K_VER}/${K_REL}/${K_ARCH}/kernel-devel-matched-${KERNEL_VERSION}.rpm"
+    
+    dnf install -y "$URL_DEVEL" "$URL_MATCHED"
+fi
+
+# 3. Instala as ferramentas de compilação
 dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++
 
-# 2. Permite que o akmods corra como root dentro do container OCI
+# 4. HACK CRÍTICO: Permite que o akmods corra como root dentro do container OCI
 cp /usr/sbin/akmodsbuild /usr/sbin/akmodsbuild.backup
 sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' /usr/sbin/akmodsbuild
 
-# 3. Instala os pacotes da NVIDIA (INCLUINDO akmod-nvidia que faltava)
+# 5. Instala os pacotes da NVIDIA para compilação do módulo
 dnf install -y --allowerasing --setopt=install_weak_deps=False nvidia-kmod-common nvidia-modprobe akmod-nvidia
 
-# 4. Restaura o ficheiro original do akmodsbuild
+# 6. Restaura o ficheiro original do akmodsbuild
 mv /usr/sbin/akmodsbuild.backup /usr/sbin/akmodsbuild
 
-echo "Compilando driver NVIDIA (isso pode demorar)..."
+echo "Compilando driver NVIDIA via akmods (isso pode demorar)..."
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "nvidia"
 
 # Verifica se os módulos foram gerados antes de avançar para a assinatura
@@ -47,6 +64,7 @@ fi
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 bash "$SCRIPT_DIR/signmodules.sh" "nvidia"
 
+# 7. Instalação final das ferramentas e utilitários Nvidia
 nvidia_packages_list=(
     'nvidia-driver'
     'nvidia-persistenced'
@@ -66,7 +84,8 @@ dnf install -y --allowerasing --setopt=install_weak_deps=False "${nvidia_package
 curl -L https://raw.githubusercontent.com/NVIDIA/dgx-selinux/master/bin/RHEL9/nvidia-container.pp -o nvidia-container.pp
 semodule -i nvidia-container.pp
 
-dnf remove -y akmod-nvidia akmods kernel-devel kernel-headers gcc-c++
+# 8. Limpeza pesada
+dnf remove -y akmod-nvidia akmods kernel-devel kernel-devel-matched kernel-headers gcc-c++
 rm -f nvidia-container.pp /etc/yum.repos.d/nvidia-container-toolkit.repo /etc/yum.repos.d/fedora-nvidia-580.repo /etc/yum.repos.d/negativo17-fedora-nvidia.repo
 
 if [ -f /etc/yum.repos.d/fedora-multimedia.repo ]; then
