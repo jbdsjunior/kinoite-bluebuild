@@ -28,8 +28,12 @@ if [ ! -f "$PUBLIC_KEY_DER_PATH" ]; then
     exit 1
 fi
 
+# Essencial: '-inform DER' mantido do seu projeto original
 openssl x509 -inform DER -in "$PUBLIC_KEY_DER_PATH" -out "$PUBLIC_KEY_CRT_PATH"
 cat "$PRIVATE_KEY_PATH" <(echo) "$PUBLIC_KEY_CRT_PATH" >> "$SIGNING_KEY"
+
+# Previne que o bash trate *.ko* de forma literal se a pasta estiver vazia
+shopt -s nullglob
 
 for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*; do
   module_suffix="${module##*.}"
@@ -50,7 +54,6 @@ for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*;
     bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module_basename}" "${PUBLIC_KEY_CRT_PATH}"
     gzip -9f "${module_basename}"
 
-  # ATUALIZADO: Suporte nativo ao ZSTD do Fedora Kinoite 40/41+
   elif [[ "$module_suffix" == "zst" ]]; then
     module_basename="${module:0:-4}"
     zstd -d --rm "$module"
