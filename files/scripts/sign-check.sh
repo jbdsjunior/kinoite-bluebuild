@@ -20,8 +20,8 @@ if openssl cms -verify -binary -inform PEM \
     -out "/dev/null" \
     -nointern -noverify
   then
-  echo "✓ Assinatura Verificada para: $(basename ${module})"
+  echo "✓ Assinatura verificada para: $(basename "${module}")"
 else
-  echo "✗ Falha na Assinatura para: $(basename ${module})"
+  echo "✗ Falha na assinatura para: $(basename "${module}")"
   exit 1
 fi
