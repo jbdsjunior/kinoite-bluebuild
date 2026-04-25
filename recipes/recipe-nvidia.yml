@@ -1,24 +1,40 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 name: kinoite-nvidia
 description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems with CUDA support"
 
-base-image: ghcr.io/ublue-os/kinoite-nvidia
-image-version: latest
+base-image: quay.io/fedora/fedora-kinoite
+image-version: 44
 platforms:
   - linux/amd64
+
 modules:
-  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - nvidia-container-toolkit
+  - type: script
+    env:
+      PUBLIC_KEY_DER_PATH: /etc/pki/akmods/certs/public_key.der
+    secrets:
+      - type: file
+        source: ./MOK.priv
+        mount:
+          type: file
+          destination: /tmp/certs/private_key.priv
+    scripts:
+      - installnvidia.sh
 
-  # Digital signing module for image integrity and verified updates
+  - type: kargs
+    kargs:
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+      - nvidia-drm.modeset=1
+      - nvidia-drm.fbdev=1
+
+  - type: script
+    snippets:
+      - test -f /usr/lib/modprobe.d/nvidia-modeset.conf && cp /usr/lib/modprobe.d/nvidia-modeset.conf /etc/modprobe.d/nvidia-modeset.conf || true
+      - test -f /usr/lib/dracut/dracut.conf.d/99-nvidia.conf && sed -i 's/omit_drivers/force_drivers/g' /usr/lib/dracut/dracut.conf.d/99-nvidia.conf || true
+      - test -f /usr/lib/dracut/dracut.conf.d/99-nvidia.conf && sed -i 's/ nvidia / i915 amdgpu nvidia /g' /usr/lib/dracut/dracut.conf.d/99-nvidia.conf || true
+
   - type: initramfs
   - type: signing
