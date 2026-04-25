@@ -22,12 +22,12 @@ fi
 dnf install -y --allowerasing --setopt=install_weak_deps=False "kernel-devel-matched-$(rpm -q 'kernel' --queryformat '%{VERSION}')"
 dnf install -y --allowerasing --setopt=install_weak_deps=False akmods gcc-c++
 
-# 2. O HACK CRÍTICO: Permite que o akmods corra como root dentro do container
+# 2. Permite que o akmods corra como root dentro do container OCI
 cp /usr/sbin/akmodsbuild /usr/sbin/akmodsbuild.backup
 sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' /usr/sbin/akmodsbuild
 
-# 3. Agora sim, instala os pacotes da NVIDIA
-dnf install -y --allowerasing --setopt=install_weak_deps=False nvidia-kmod-common nvidia-modprobe
+# 3. Instala os pacotes da NVIDIA (INCLUINDO akmod-nvidia que faltava)
+dnf install -y --allowerasing --setopt=install_weak_deps=False nvidia-kmod-common nvidia-modprobe akmod-nvidia
 
 # 4. Restaura o ficheiro original do akmodsbuild
 mv /usr/sbin/akmodsbuild.backup /usr/sbin/akmodsbuild
@@ -35,7 +35,10 @@ mv /usr/sbin/akmodsbuild.backup /usr/sbin/akmodsbuild
 echo "Compilando driver NVIDIA (isso pode demorar)..."
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "nvidia"
 
-if ! ls /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia*.ko* 1> /dev/null 2>&1; then
+# Verifica se os módulos foram gerados antes de avançar para a assinatura
+shopt -s nullglob
+MODULES=(/usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia*.ko*)
+if [ ${#MODULES[@]} -eq 0 ]; then
     echo "ERRO CRÍTICO: Módulos NVIDIA não foram gerados pelo akmods."
     cat /var/cache/akmods/nvidia/*.failed.log || true
     exit 1
