@@ -10,13 +10,9 @@ fi
 KERNEL_VERSION="$(rpm -q "kernel" --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# 1. Pega a Chave Pública do ambiente (passado pelo recipe-nvidia.yml)
 PUBLIC_KEY_DER_PATH="${PUBLIC_KEY_DER_PATH:-/etc/pki/akmods/certs/public_key.der}"
-
-# 2. Pega a Chave Privada injetada secretamente pelo BlueBuild
 PRIVATE_KEY_PATH="/tmp/certs/private_key.priv"
 
-# 3. Cria uma pasta temporária para salvar os certificados gerados
 TMP_GEN_DIR="/var/tmp/certs_gen"
 mkdir -p "$TMP_GEN_DIR"
 PUBLIC_KEY_CRT_PATH="${TMP_GEN_DIR}/public_key.crt"
@@ -32,27 +28,37 @@ if [ ! -f "$PUBLIC_KEY_DER_PATH" ]; then
     exit 1
 fi
 
-# Prepara os certificados para a assinatura
 openssl x509 -inform DER -in "$PUBLIC_KEY_DER_PATH" -out "$PUBLIC_KEY_CRT_PATH"
 cat "$PRIVATE_KEY_PATH" <(echo) "$PUBLIC_KEY_CRT_PATH" >> "$SIGNING_KEY"
 
-# Varre e assina os módulos (.ko, .ko.xz, .ko.gz)
 for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*; do
-  module_basename="${module:0:-3}"
-  module_suffix="${module: -3}"
-  
-  if [[ "$module_suffix" == ".xz" ]]; then
+  module_suffix="${module##*.}"
+
+  if [[ "$module_suffix" == "xz" ]]; then
+    module_basename="${module:0:-3}"
     xz --decompress "$module"
     openssl cms -sign -signer "${SIGNING_KEY}" -binary -in "$module_basename" -outform DER -out "${module_basename}.cms" -nocerts -noattr -nosmimecap
     /usr/src/kernels/"${KERNEL_VERSION}"/scripts/sign-file -s "${module_basename}.cms" sha256 "${PUBLIC_KEY_CRT_PATH}" "${module_basename}"
     bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module_basename}" "${PUBLIC_KEY_CRT_PATH}"
     xz -C crc32 -f "${module_basename}"
-  elif [[ "$module_suffix" == ".gz" ]]; then
+
+  elif [[ "$module_suffix" == "gz" ]]; then
+    module_basename="${module:0:-3}"
     gzip -d "$module"
     openssl cms -sign -signer "${SIGNING_KEY}" -binary -in "$module_basename" -outform DER -out "${module_basename}.cms" -nocerts -noattr -nosmimecap
     /usr/src/kernels/"${KERNEL_VERSION}"/scripts/sign-file -s "${module_basename}.cms" sha256 "${PUBLIC_KEY_CRT_PATH}" "${module_basename}"
     bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module_basename}" "${PUBLIC_KEY_CRT_PATH}"
     gzip -9f "${module_basename}"
+
+  # ATUALIZADO: Suporte nativo ao ZSTD do Fedora Kinoite 40/41+
+  elif [[ "$module_suffix" == "zst" ]]; then
+    module_basename="${module:0:-4}"
+    zstd -d --rm "$module"
+    openssl cms -sign -signer "${SIGNING_KEY}" -binary -in "$module_basename" -outform DER -out "${module_basename}.cms" -nocerts -noattr -nosmimecap
+    /usr/src/kernels/"${KERNEL_VERSION}"/scripts/sign-file -s "${module_basename}.cms" sha256 "${PUBLIC_KEY_CRT_PATH}" "${module_basename}"
+    bash "$SCRIPT_DIR/sign-check.sh" "${KERNEL_VERSION}" "${module_basename}" "${PUBLIC_KEY_CRT_PATH}"
+    zstd -19 --rm "${module_basename}"
+
   else
     openssl cms -sign -signer "${SIGNING_KEY}" -binary -in "$module" -outform DER -out "${module}.cms" -nocerts -noattr -nosmimecap
     /usr/src/kernels/"${KERNEL_VERSION}"/scripts/sign-file -s "${module}.cms" sha256 "${PUBLIC_KEY_CRT_PATH}" "${module}"
@@ -60,5 +66,4 @@ for module in /usr/lib/modules/"${KERNEL_VERSION}"/extra/"${MODULE_NAME}"/*.ko*;
   fi
 done
 
-# Limpa a sujeira
 rm -rf "$TMP_GEN_DIR"

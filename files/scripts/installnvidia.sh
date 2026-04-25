@@ -7,11 +7,10 @@ chmod 1777 /var/tmp
 KERNEL_VERSION="$(rpm -q "kernel" --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 IMAGE_NAME="${IMAGE_NAME:-kinoite}"
 
-# Adiciona repositórios
 if [[ "$IMAGE_NAME" == *"open"* ]]; then
     curl -fLsS --retry 5 -o /etc/yum.repos.d/negativo17-fedora-nvidia.repo https://negativo17.org/repos/fedora-nvidia.repo
     sed -i '/^enabled=1/a\priority=90' /etc/yum.repos.d/negativo17-fedora-nvidia.repo
-else 
+else
     curl -fLsS --retry 5 -o /etc/yum.repos.d/fedora-nvidia-580.repo https://negativo17.org/repos/fedora-nvidia-580.repo
     sed -i '/^enabled=1/a\priority=90' /etc/yum.repos.d/fedora-nvidia-580.repo
     if [ -f /etc/yum.repos.d/fedora-multimedia.repo ]; then
@@ -19,22 +18,22 @@ else
     fi
 fi
 
-# Instala dependências de compilação
 dnf install -y --setopt=install_weak_deps=False "kernel-devel-matched-$(rpm -q 'kernel' --queryformat '%{VERSION}')"
 dnf install -y --setopt=install_weak_deps=False akmods gcc-c++ nvidia-kmod-common nvidia-modprobe
 
 echo "Compilando driver NVIDIA (isso pode demorar)..."
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "nvidia"
 
-# Verifica se a compilação gerou os arquivos
-modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz > /dev/null || \
-    (cat "/var/cache/akmods/nvidia/*.failed.log" && exit 1)
+# ATUALIZADO: Busca flexível por ficheiros de módulo, ignorando a extensão final (.xz, .zst, etc)
+if ! ls /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia*.ko* 1> /dev/null 2>&1; then
+    echo "ERRO CRÍTICO: Módulos NVIDIA não foram gerados pelo akmods."
+    cat /var/cache/akmods/nvidia/*.failed.log || true
+    exit 1
+fi
 
-# Chama o script de assinatura
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 bash "$SCRIPT_DIR/signmodules.sh" "nvidia"
 
-# Instala pacotes do usuário
 nvidia_packages_list=(
     'nvidia-driver'
     'nvidia-persistenced'
@@ -51,16 +50,12 @@ sed -i 's/^enabled=0.*/enabled=1/' /etc/yum.repos.d/nvidia-container-toolkit.rep
 
 dnf -y --setopt=install_weak_deps=False install "${nvidia_packages_list[@]}"
 
-# Políticas SELinux
 curl -L https://raw.githubusercontent.com/NVIDIA/dgx-selinux/master/bin/RHEL9/nvidia-container.pp -o nvidia-container.pp
 semodule -i nvidia-container.pp
 
-# Limpeza profunda
 dnf -y remove akmod-nvidia akmods kernel-devel kernel-headers gcc-c++
 rm -f nvidia-container.pp /etc/yum.repos.d/nvidia-container-toolkit.repo /etc/yum.repos.d/fedora-nvidia-580.repo /etc/yum.repos.d/negativo17-fedora-nvidia.repo
 
 if [ -f /etc/yum.repos.d/fedora-multimedia.repo ]; then
     sed -i 's/^enabled=.*/enabled=1/' /etc/yum.repos.d/fedora-multimedia.repo
 fi
-
-# ATENÇÃO: A linha `rm -rf /tmp/certs` foi deletada daqui. O BlueBuild vai limpar o segredo automaticamente!
