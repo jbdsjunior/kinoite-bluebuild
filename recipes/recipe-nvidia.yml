@@ -5,8 +5,9 @@ name: kinoite-nvidia
 description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems
   with CUDA support"
 
-base-image: ghcr.io/ublue-os/kinoite-nvidia
-image-version: 44
+# base-image: ghcr.io/ublue-os/kinoite-nvidia
+base-image: ghcr.io/blue-build/base-images/fedora-kinoite
+image-version: latest
 platforms:
   - linux/amd64
 modules:

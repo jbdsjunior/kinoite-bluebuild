@@ -12,12 +12,11 @@ modules:
 
         # Core system
         - plasma-firewall
-        - adw-gtk3-theme
+        # - adw-gtk3-theme
 
         # Utilities
         - lm_sensors
         - rclone
-
         # KDE apps
         # - elisa-player
         # - gwenview
