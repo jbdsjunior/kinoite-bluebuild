@@ -9,5 +9,4 @@ modules:
       packages:
         # Nerd Fonts (from Terra repository)
         - nerdfontssymbolsonly-nerd-fonts
-
         - liberation-fonts
