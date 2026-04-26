@@ -4,9 +4,10 @@
 name: kinoite-amd
 description: "Customized Fedora Kinoite image optimized for AMD-only systems"
 
-base-image: ghcr.io/ublue-os/kinoite-main
+# base-image: ghcr.io/ublue-os/kinoite-main
 # base-image: quay.io/fedora/fedora-kinoite
-image-version: 44
+base-image: ghcr.io/blue-build/base-images/fedora-kinoite
+image-version: latest
 platforms:
   - linux/amd64
 modules:
