@@ -1,7 +1,7 @@
 name: check-updates
 on:
   schedule:
-    # Check for upstream base image updates every 2 hours
+    # Verifica atualizações da imagem base a cada 2 horas
     - cron: "0 */2 * * *"
   workflow_dispatch:
 
@@ -12,87 +12,56 @@ concurrency:
 jobs:
   check-and-trigger:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
-      actions: write
-      contents: read
+      actions: write   # Necessário para usar o comando 'gh workflow run'
+      contents: read   # Necessário para o checkout
+    strategy:
+      fail-fast: false # Se a verificação AMD falhar, a da NVIDIA ainda vai rodar
+      matrix:
+        flavor: [amd, nvidia] # Para adicionar mais, basta incluir aqui (ex: intel)
+
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Install Skopeo
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install skopeo
-
-      - name: Install yq
-        uses: mikefarah/yq@v4
-
+      # Passo de validação (opcional) apenas para garantir a saúde da Action
       - name: Ensure gh auth
         run: gh auth status
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
 
-      # ── AMD ──────────────────────────────────────────────────────────
-      - name: Resolve AMD base image
-        id: amd_image
+      - name: Resolve base image (${{ matrix.flavor }})
+        id: resolve
         run: |
           set -euo pipefail
-          BASE_IMG=$(yq '.base-image' recipes/recipe-amd.yml)
+          BASE_IMG=$(yq '.base-image' recipes/recipe-${{ matrix.flavor }}.yml)
           echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
 
-      - name: Check AMD base image digest
-        id: check_amd
+      - name: Check base image digest (${{ matrix.flavor }})
+        id: check
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://${{ steps.amd_image.outputs.image }} --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect docker://${{ steps.resolve.outputs.image }} --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check AMD Cache
-        id: cache_amd
-        uses: actions/cache@v5
+      - name: Check Cache (${{ matrix.flavor }})
+        id: cache
+        uses: actions/cache@v4
         with:
-          path: ~/.cache-amd
-          key: upstream-main-${{ steps.check_amd.outputs.digest }}
+          path: ~/.cache-${{ matrix.flavor }}
+          key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
 
-      - name: Trigger AMD Build
-        if: steps.cache_amd.outputs.cache-hit != 'true'
+      - name: Trigger Build (${{ matrix.flavor }})
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          gh workflow run build-amd.yml --ref main --repo "${{ github.repository }}"
-          mkdir -p ~/.cache-amd
-          echo "${{ steps.check_amd.outputs.digest }}" > ~/.cache-amd/upstream-digest.txt
+
+          # Dispara o workflow correspondente
+          gh workflow run build-${{ matrix.flavor }}.yml --ref main --repo "${{ github.repository }}"
+
+          # Cria os dados para que o actions/cache salve no final do job
+          mkdir -p ~/.cache-${{ matrix.flavor }}
+          echo "${{ steps.check.outputs.digest }}" > ~/.cache-${{ matrix.flavor }}/upstream-digest.txt
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      # ── NVIDIA ───────────────────────────────────────────────────────
-      - name: Resolve NVIDIA base image
-        id: nvidia_image
-        run: |
-          set -euo pipefail
-          BASE_IMG=$(yq '.base-image' recipes/recipe-nvidia.yml)
-          echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
-
-      - name: Check NVIDIA base image digest
-        id: check_nvidia
-        run: |
-          set -euo pipefail
-          DIGEST=$(skopeo inspect docker://${{ steps.nvidia_image.outputs.image }} --format '{{.Digest}}')
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-
-      - name: Check Nvidia Cache
-        id: cache_nvidia
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache-nvidia
-          key: upstream-nvidia-${{ steps.check_nvidia.outputs.digest }}
-
-      - name: Trigger Nvidia Build
-        if: steps.cache_nvidia.outputs.cache-hit != 'true'
-        run: |
-          set -euo pipefail
-          gh workflow run build-nvidia.yml --ref main --repo "${{ github.repository }}"
-          mkdir -p ~/.cache-nvidia
-          echo "${{ steps.check_nvidia.outputs.digest }}" > ~/.cache-nvidia/upstream-digest.txt
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
