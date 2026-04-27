@@ -2,8 +2,7 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 name: kinoite-nvidia
-description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems
-  with CUDA support"
+description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems with CUDA support"
 
 # base-image: ghcr.io/ublue-os/kinoite-nvidia
 base-image: ghcr.io/blue-build/base-images/fedora-kinoite-nvidia
