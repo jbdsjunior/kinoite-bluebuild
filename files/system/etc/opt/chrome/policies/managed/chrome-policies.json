@@ -11,10 +11,5 @@
   "PasswordLeakDetectionEnabled": false,
   "SafeBrowsingExtendedReportingEnabled": false,
   "SafeBrowsingSurveysEnabled": false,
-  "DefaultGeolocationSetting": 2,
-  "DefaultNotificationsSetting": 2,
-  "DefaultLocalFontsSetting": 2,
-  "DefaultSensorsSetting": 2,
-  "DefaultSerialGuardSetting": 2,
   "ExtensionManifestV2Availability": 2
 }
