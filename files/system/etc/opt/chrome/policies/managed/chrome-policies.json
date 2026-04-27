@@ -1,0 +1,20 @@
+{
+  "BrowserSignin": 1,
+  "SyncDisabled": false,
+  "BackgroundModeEnabled": false,
+  "MetricsReportingEnabled": false,
+  "CloudReportingEnabled": false,
+  "DeviceMetricsReportingEnabled": false,
+  "LogUploadEnabled": false,
+  "PasswordManagerEnabled": false,
+  "PasswordSharingEnabled": false,
+  "PasswordLeakDetectionEnabled": false,
+  "SafeBrowsingExtendedReportingEnabled": false,
+  "SafeBrowsingSurveysEnabled": false,
+  "DefaultGeolocationSetting": 2,
+  "DefaultNotificationsSetting": 2,
+  "DefaultLocalFontsSetting": 2,
+  "DefaultSensorsSetting": 2,
+  "DefaultSerialGuardSetting": 2,
+  "ExtensionManifestV2Availability": 2
+}
