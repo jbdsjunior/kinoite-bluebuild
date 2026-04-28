@@ -12,20 +12,25 @@ concurrency:
 jobs:
   check-and-trigger:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
-      actions: write   # Necessário para usar o comando 'gh workflow run'
-      contents: read   # Necessário para o checkout
+      actions: write
+      contents: read
     strategy:
-      fail-fast: false # Se a verificação AMD falhar, a da NVIDIA ainda vai rodar
+      fail-fast: false
       matrix:
-        flavor: [amd, nvidia] # Para adicionar mais, basta incluir aqui (ex: intel)
+        flavor: [amd, nvidia]
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Passo de validação (opcional) apenas para garantir a saúde da Action
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends skopeo
+
       - name: Ensure gh auth
         run: gh auth status
         env:
@@ -35,32 +40,37 @@ jobs:
         id: resolve
         run: |
           set -euo pipefail
-          BASE_IMG=$(yq '.base-image' recipes/recipe-${{ matrix.flavor }}.yml)
+          RECIPE_FILE="recipes/recipe-${{ matrix.flavor }}.yml"
+          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE")
+
+          if [[ -z "${BASE_IMG}" ]]; then
+            echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
+            exit 1
+          fi
+
           echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
 
       - name: Check base image digest (${{ matrix.flavor }})
         id: check
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect docker://${{ steps.resolve.outputs.image }} --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect "docker://${{ steps.resolve.outputs.image }}" --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check Cache (${{ matrix.flavor }})
+      - name: Check cache (${{ matrix.flavor }})
         id: cache
         uses: actions/cache@v4
         with:
           path: ~/.cache-${{ matrix.flavor }}
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
 
-      - name: Trigger Build (${{ matrix.flavor }})
+      - name: Trigger build (${{ matrix.flavor }})
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
 
-          # Dispara o workflow correspondente
-          gh workflow run build-${{ matrix.flavor }}.yml --ref main --repo "${{ github.repository }}"
+          gh workflow run "build-${{ matrix.flavor }}.yml" --ref main --repo "${{ github.repository }}"
 
-          # Cria os dados para que o actions/cache salve no final do job
           mkdir -p ~/.cache-${{ matrix.flavor }}
           echo "${{ steps.check.outputs.digest }}" > ~/.cache-${{ matrix.flavor }}/upstream-digest.txt
         env:
