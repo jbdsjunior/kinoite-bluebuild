@@ -3,6 +3,7 @@
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
 ![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
+![Status-Security](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/security-scan.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -13,12 +14,12 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 ## Key Features
 
 - **Two variants:** `kinoite-amd` (AMD only) and `kinoite-nvidia` (AMD + NVIDIA hybrid)
-- **Cryptographic signing:** Images verified with Cosign
-- **Automatic updates:** System, bootloader, and Flatpaks via user-level timers
-- **System tuning:** Kernel, sysctl, network, and performance configs versioned under `files/system/`
-- **Container-first:** Optimized for Podman, Distrobox, KVM, and local workloads
+- **Cryptographic signing:** images signed and verifiable with Cosign
+- **Automatic updates:** system image + Flatpaks via user-level timer (`topgrade-update.timer`)
+- **System tuning:** kernel, sysctl, network, and performance configs versioned under `files/system/`
+- **Container-first:** optimized for Podman, Distrobox, KVM, and local workloads
 
-> ⚠️ **Warning:** This image is optimized for **high-performance workstations with 64 GB RAM**. Use on lower-spec hardware may cause instability. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) for details.
+> ⚠️ **Warning:** This image is optimized for **high-performance workstations with 64 GB RAM**. Running on lower-spec hardware may cause instability. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md).
 
 ## Image Variants
 
@@ -29,37 +30,41 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 
 ## Quick Start
 
-### 1. Switch to Custom Image
+### 1) Switch to custom image
 
-#### **AMD variant:**
+#### AMD variant
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-#### **NVIDIA variant:**
+
+#### NVIDIA variant
+
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Reboot after the rebase completes.
+Reboot after rebase completes.
 
-### 2. Verify Signature (Recommended)
+### 2) Verify signature (recommended)
 
-After confirming system stability, enable signature verification:
-#### **AMD variant:**
+After confirming system stability, enforce signature policy:
+
+#### AMD variant
+
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-#### **NVIDIA variant:**
+
+#### NVIDIA variant
+
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Public verification key is in [`cosign.pub`](cosign.pub).
+Public key: [`cosign.pub`](cosign.pub).
 
-### 3. Post-Installation
-
-Complete validation steps:
+### 3) Post-install validation
 
 - **All variants:** [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)
 
@@ -87,11 +92,11 @@ Reboot after any rollback.
 
 ## Documentation
 
-| Document                                                 | Purpose                                   |
-| :------------------------------------------------------- | :---------------------------------------- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation (all variants)    |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware specs, tuning rationale, scaling |
+| Document                                                 | Purpose                                |
+| :------------------------------------------------------- | :------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation (all variants) |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and tuning rationale |
 
 ## License
 
-This project is licensed under the terms found in [`LICENSE`](LICENSE).
+This project is licensed under [`LICENSE`](LICENSE).
