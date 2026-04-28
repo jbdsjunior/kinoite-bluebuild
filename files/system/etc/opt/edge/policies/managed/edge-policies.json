@@ -19,5 +19,7 @@
   "PasswordManagerEnabled": false,
   "PasswordSharingEnabled": false,
   "PasswordLeakDetectionEnabled": false,
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
   "ExtensionManifestV2Availability": 2
 }

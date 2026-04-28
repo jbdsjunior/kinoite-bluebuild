@@ -3,6 +3,22 @@
 ## Project Overview
 Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blue-build.org/). Two variants: AMD-only and NVIDIA hybrid.
 
+## Instruction Architecture (to prevent drift)
+
+This repository uses a modular instruction model:
+
+- `/.agents/agent.md` → General agent capabilities and global directives only.
+- `/.agents/projeto.md` → Project-specific architecture, hardware, and constraints.
+- `/.agents/skills.md` → DevSecOps practices and technical standards.
+- `/.agents/checklist.md` → Prioritized audit checklist.
+- `/.agents/organizacao.md` → Governance rules for maintaining `.agents/`.
+
+### Maintenance rules
+- Do not place project-specific details in `/.agents/agent.md`.
+- Avoid duplicated guidance across `.agents/*` files.
+- Add new instructions to the most specific file possible.
+- Keep instruction files concise, scan-friendly, and low-redundancy for LLM efficiency.
+
 ## Build System
 - **Build tool**: BlueBuild (`blue-build/github-action@v1`)
 - **Trigger builds**: Manual workflow dispatch via GitHub Actions (`.github/workflows/build-amd.yml`, `build-nvidia.yml`)
@@ -20,7 +36,7 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 ## Image Variants
 | Variant | Base Image | Registry |
 |---------|------------|----------|
-| kinoite-amd | ghcr.io/blue-build/base-images/fedora-kinoite | ghcr.io/jbdsjunior/kinoite-amd:latest |
+| kinoite-amd | quay.io/fedora/fedora-kinoite | ghcr.io/jbdsjunior/kinoite-amd:latest |
 | kinoite-nvidia | ghcr.io/ublue-os/kinoite-nvidia | ghcr.io/jbdsjunior/kinoite-nvidia:latest |
 
 ## Key Files
