@@ -21,6 +21,7 @@ Este documento descreve **somente** os pipelines do GitHub Actions e sua operaç
 - Trigger: manual (`workflow_dispatch`)
 - Timeout: 45 min
 - Ação principal: `blue-build/github-action@v1`
+- Receita usada: `recipes/recipe-amd.yml`
 - Assinatura: via `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### NVIDIA
@@ -28,6 +29,7 @@ Este documento descreve **somente** os pipelines do GitHub Actions e sua operaç
 - Trigger: manual (`workflow_dispatch`)
 - Timeout: 45 min
 - Ação principal: `blue-build/github-action@v1`
+- Receita usada: `recipes/recipe-nvidia.yml`
 - Assinatura: via `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### Configurações relevantes de build
@@ -36,6 +38,28 @@ Este documento descreve **somente** os pipelines do GitHub Actions e sua operaç
 - `use_cache: true`
 - `retry_push_count: 3`
 - `build_chunked_oci: false` (estado atual)
+
+### Sanidade mínima recomendada (auditoria rápida)
+
+Antes de abrir PR com mudanças em workflows/recipes:
+
+1. Validar YAML dos workflows e receitas:
+
+```bash
+ruby -ryaml -e "Dir.glob('{recipes,.github/workflows}/**/*.yml').sort.each{|f| YAML.load_file(f); puts \"OK #{f}\"}"
+```
+
+2. Confirmar caminhos de receita nos workflows:
+
+```bash
+rg -n "recipe:\\s+recipes/recipe-(amd|nvidia)\\.yml" .github/workflows/build-*.yml
+```
+
+3. Confirmar restrição de projeto (Rechunk desativado):
+
+```bash
+rg -n "build_chunked_oci:\\s+false" .github/workflows/build-*.yml
+```
 
 ---
 
