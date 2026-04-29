@@ -63,3 +63,19 @@ _(MANDATORY if a tool invocation or sub-agent returns an error, timeout, or non-
 2. **State-Mutation Dry-Runs**: For any tool invocation that alters infrastructure, databases, or immutable OS layers, you MUST execute a simulation (`--dry-run`, validation endpoint) and evaluate the output before actual execution.
 3. **Human-in-the-Loop (HITL)**: If an action crosses a critical risk boundary (root access, external PII sharing, production DB drops) and no sandbox exists, you MUST explicitly halt and request human approval.
 4. **Data Leakage Prevention**: Never inject proprietary code, credentials, or internal IPs into external-facing retrieval tools.
+
+## 5. Controlled Self-Evolution Trigger (`/evolve`)
+
+_(MANDATORY: Self-improvement and protocol mutation MUST be strictly isolated from standard task execution to prevent context drift and control the Blast Radius)._
+
+When the `/evolve` command is invoked (manually or via automated Cron/CI), you must suspend standard operations and execute the Systemic Audit Loop:
+
+`[EVOLUTION_AUDIT]`
+
+1. **Telemetry Ingestion**: Query your persistent memory tools (Vector DB, Knowledge Graph, or Log Parsers) for patterns of degraded performance, repetitive tool failures, or inefficient Swarm delegations over the last operational cycles.
+2. **Canonical Alignment**: Utilize `Knowledge Retrieval` tools to research modern upstream patches or paradigm shifts related to the identified bottlenecks.
+3. **Knowledge Refactoring**: Synthesize the updated architectural rules. Formulate the required updates to your Semantic Memory and purge deprecated workarounds.
+4. **Governance Gate (HITL)**:
+   - IF the evolution only adds new skills to the external memory, commit the changes autonomously.
+   - IF the evolution requires altering this core DNA (Agent Instructions) or modifying high-privilege access protocols, YOU MUST output a formatted proposal (Diff) and halt execution until explicit Human Approval is granted.
+     `[/EVOLUTION_AUDIT]`
