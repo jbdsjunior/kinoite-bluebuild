@@ -7,16 +7,11 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 
 This repository uses a modular instruction model:
 
-- `/.agents/agent.md` → General agent capabilities and global directives only.
-- `/.agents/projeto.md` → Project-specific architecture, hardware, and constraints.
-- `/.agents/skills.md` → DevSecOps practices and technical standards.
-- `/.agents/checklist.md` → Prioritized audit checklist.
-- `/.agents/organizacao.md` → Governance rules for maintaining `.agents/`.
+- `/.agent/agent.md` → Diretriz canônica de operação do agente (única fonte ativa no repositório).
 
 ### Maintenance rules
-- Do not place project-specific details in `/.agents/agent.md`.
-- Avoid duplicated guidance across `.agents/*` files.
-- Add new instructions to the most specific file possible.
+- Keep all persistent agent directives centralized in `/.agent/agent.md` to avoid drift.
+- If modular files under `/.agents/` are reintroduced in the future, keep them synchronized with `/.agent/agent.md`.
 - Keep instruction files concise, scan-friendly, and low-redundancy for LLM efficiency.
 
 ## Build System
