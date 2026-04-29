@@ -2,6 +2,23 @@
 
 Registro curto de ciclos de evolução aplicados no repositório, com foco em rastreabilidade.
 
+## 2026-04-29 — Alinhamento de governança de instruções (`/evolve`)
+
+### Detectar / Diagnosticar
+- Detectada inconsistência entre a documentação de governança (`AGENTS.md`) e a estrutura real do repositório: apenas `/.agent/agent.md` existe.
+- Risco identificado: agentes externos podem tentar carregar arquivos `/.agents/*` inexistentes e perder diretrizes críticas.
+
+### Propor / Aplicar
+- Atualizada a seção "Instruction Architecture" em `AGENTS.md` para refletir a fonte canônica real (`/.agent/agent.md`).
+- Revisadas regras de manutenção para priorizar uma única origem de verdade e evitar drift documental.
+
+### Verificar
+- Busca textual confirmou ausência de referências pendentes a `/.agents/*` após ajuste.
+
+### Impacto
+- Reduz ambiguidade operacional para agentes e colaboradores.
+- Melhora previsibilidade do fluxo `/evolve` ao apontar corretamente a diretriz ativa.
+
 ## 2026-04-29 — Correções de consistência CI + documentação
 
 ### Detectar / Diagnosticar
