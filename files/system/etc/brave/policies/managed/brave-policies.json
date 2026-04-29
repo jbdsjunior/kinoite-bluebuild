@@ -29,6 +29,6 @@
   "BraveTrackingQueryParametersFilteringEnabled": true,
   "IPFSEnabled": false,
   "ShoppingListEnabled": false,
-  "DefaultBrowserSettingEnabled": false,
-
+  "DefaultBrowserSettingEnabled": false
 }
+
