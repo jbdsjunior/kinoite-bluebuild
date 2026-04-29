@@ -139,6 +139,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Baseline de hardware e limites operacionais |
 | [`docs/CI_CD.md`](docs/CI_CD.md) | Pipelines GitHub Actions, triggers e segurança |
 | [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Arquitetura declarativa e visão técnica do projeto |
+| [`docs/EVOLUTION_LOG.md`](docs/EVOLUTION_LOG.md) | Histórico resumido de ciclos `/evolve` e melhorias aplicadas |
 
 ## Licença
 
