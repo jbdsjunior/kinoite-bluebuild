@@ -63,3 +63,24 @@ Short record of repository evolution cycles, focused on traceability.
 - Improves repeatability of autonomous operations.
 - Reduces oscillation between local-tool variance and CI source-of-truth validation.
 - Strengthens `/evolve` auditability with explicit memory-backed checkpoints.
+
+## 2026-04-30 — `/evolve` Repository Verification and Hardening Pass
+
+### Detect / Diagnose
+- Revalidated agent-instruction entry points to avoid operator confusion between `/.agent/agent.md` and `/.agents/agent.md`.
+- Re-ran repository integrity checks for shell and YAML assets after recent evolution cycles.
+- Identified local tooling variance (`python-yaml` unavailable) as a non-blocking host limitation.
+
+### Propose / Apply
+- Standardized this `/evolve` checkpoint in the evolution ledger for traceable autonomous maintenance.
+- Kept validation path tool-agnostic by using built-in shell parsing and Ruby YAML parser already available in CI-like environments.
+
+### Verify
+- `bash -n files/scripts/postinstall-healthcheck.sh files/scripts/setup-kvm.sh`
+- `ruby -e 'require "yaml"; YAML.load_file(...)'` executed for all `recipes/*.yml` and `.github/workflows/*.yml`.
+- No syntax or YAML structural regressions detected.
+
+### Impact
+- Improves operational predictability for future `/evolve` runs.
+- Reduces risk of breaking workflow-dispatch builds due to malformed YAML.
+- Preserves auditable trail for deterministic maintenance actions.
