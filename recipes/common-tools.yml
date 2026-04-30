@@ -30,3 +30,4 @@ modules:
         - fuse
         - fuse-libs
         - tailscale
+        - gnome-boxes
