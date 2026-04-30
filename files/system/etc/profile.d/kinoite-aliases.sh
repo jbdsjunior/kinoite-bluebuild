@@ -7,8 +7,8 @@
 alias update='topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak'
 alias update-all='topgrade -cy --no-ask-retry --auto-retry 2'
 # --- bootc / rpm-ostree ---
-# Nota: bootc é o runtime primário. rpm-ostree é usado para kargs pois
-# bootc delega essa operação ao backend rpm-ostree em imagens baseadas em OCI.
+# Note: bootc is the primary runtime. rpm-ostree is used for kargs because
+# bootc delegates this operation to the rpm-ostree backend on OCI-based images.
 alias rollback='sudo bootc rollback'
 alias kargs='rpm-ostree kargs'
 alias kargs-edit='sudo rpm-ostree kargs --editor'

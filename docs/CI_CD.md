@@ -1,61 +1,61 @@
-# CI/CD e Automação (GitHub Actions)
+# CI/CD and Automation (GitHub Actions)
 
-Este documento descreve **somente** os pipelines do GitHub Actions e sua operação.
+This document covers **only** GitHub Actions pipelines and how they operate.
 
-## Visão Geral
+## Overview
 
-| Workflow | Trigger | Objetivo |
+| Workflow | Trigger | Goal |
 | :-- | :-- | :-- |
-| `build-amd.yml` | `workflow_dispatch` | Build/publicação da imagem AMD |
-| `build-nvidia.yml` | `workflow_dispatch` | Build/publicação da imagem NVIDIA |
-| `check-updates.yml` | `schedule` (2h) + `workflow_dispatch` | Detecta novo digest upstream e dispara builds |
-| `security-scan.yml` | `push(main)`, `pull_request`, `schedule`, `workflow_dispatch` | Scan de segurança com Trivy + SARIF |
-| `cleanup.yml` | `schedule` diário + `workflow_dispatch` | Limpeza de imagens e runs antigos |
+| `build-amd.yml` | `workflow_dispatch` | Build and publish AMD image |
+| `build-nvidia.yml` | `workflow_dispatch` | Build and publish NVIDIA image |
+| `check-updates.yml` | `schedule` (every 2h) + `workflow_dispatch` | Detect new upstream digest and trigger builds |
+| `security-scan.yml` | `push(main)`, `pull_request`, `schedule`, `workflow_dispatch` | Trivy security scan + SARIF upload |
+| `cleanup.yml` | daily `schedule` + `workflow_dispatch` | Clean up old images and workflow runs |
 
 ---
 
-## Build de Imagens
+## Image Builds
 
 ### AMD
 - Workflow: `.github/workflows/build-amd.yml`
 - Trigger: manual (`workflow_dispatch`)
-- Timeout: 45 min
-- Ação principal: `blue-build/github-action@v1`
-- Receita usada: `recipes/recipe-amd.yml`
-- Assinatura: via `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
+- Timeout: 45 minutes
+- Main action: `blue-build/github-action@v1`
+- Recipe: `recipes/recipe-amd.yml`
+- Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### NVIDIA
 - Workflow: `.github/workflows/build-nvidia.yml`
 - Trigger: manual (`workflow_dispatch`)
-- Timeout: 45 min
-- Ação principal: `blue-build/github-action@v1`
-- Receita usada: `recipes/recipe-nvidia.yml`
-- Assinatura: via `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
+- Timeout: 45 minutes
+- Main action: `blue-build/github-action@v1`
+- Recipe: `recipes/recipe-nvidia.yml`
+- Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
-### Configurações relevantes de build
+### Relevant build settings
 
 - `verify_install: true`
 - `use_cache: true`
 - `retry_push_count: 3`
-- `build_chunked_oci: false` (estado atual)
+- `build_chunked_oci: false` (current state)
 
-### Sanidade mínima recomendada (auditoria rápida)
+### Minimum recommended sanity checks (quick audit)
 
-Antes de abrir PR com mudanças em workflows/recipes:
+Before opening a PR with workflow/recipe changes:
 
-1. Validar YAML dos workflows e receitas:
+1. Validate workflow and recipe YAML:
 
 ```bash
 ruby -ryaml -e "Dir.glob('{recipes,.github/workflows}/**/*.yml').sort.each{|f| YAML.load_file(f); puts \"OK #{f}\"}"
 ```
 
-2. Confirmar caminhos de receita nos workflows:
+2. Verify recipe paths in build workflows:
 
 ```bash
 rg -n "recipe:\\s+recipes/recipe-(amd|nvidia)\\.yml" .github/workflows/build-*.yml
 ```
 
-3. Confirmar restrição de projeto (Rechunk desativado):
+3. Verify project restriction (rechunk disabled):
 
 ```bash
 rg -n "build_chunked_oci:\\s+false" .github/workflows/build-*.yml
@@ -63,54 +63,54 @@ rg -n "build_chunked_oci:\\s+false" .github/workflows/build-*.yml
 
 ---
 
-## Atualização Automática por Digest
+## Automated Digest Update
 
 Workflow: `.github/workflows/check-updates.yml`
 
-- Agenda: `0 */2 * * *` (a cada 2 horas)
-- Matriz: `amd` e `nvidia`
-- Fluxo:
-  1. Lê `base-image` em `recipes/recipe-<flavor>.yml`
-  2. Obtém digest remoto com `skopeo inspect`
-  3. Compara via cache key `upstream-<flavor>-<digest>`
-  4. Se digest novo, dispara `gh workflow run build-<flavor>.yml`
+- Schedule: `0 */2 * * *` (every 2 hours)
+- Matrix: `amd` and `nvidia`
+- Flow:
+  1. Read `base-image` from `recipes/recipe-<flavor>.yml`
+  2. Get remote digest using `skopeo inspect`
+  3. Compare through cache key `upstream-<flavor>-<digest>`
+  4. If digest is new, trigger `gh workflow run build-<flavor>.yml`
 
-> Resultado prático: os builds de imagem continuam manuais por design, mas são **orquestrados automaticamente** pelo checker quando o upstream muda.
+> Practical outcome: image builds remain manual by design, but the checker can **automatically orchestrate** build triggers when upstream changes.
 
 ---
 
-## Segurança (Shift-Left)
+## Security (Shift-Left)
 
 Workflow: `.github/workflows/security-scan.yml`
 
-- Trivy em modo filesystem (`scan-type: fs`)
-- Severidades: `CRITICAL,HIGH`
+- Trivy filesystem mode (`scan-type: fs`)
+- Severities: `CRITICAL,HIGH`
 - `ignore-unfixed: true`
-- Upload SARIF para Security tab
+- SARIF upload to GitHub Security tab
 
-Recomendação:
-- manter revisão periódica de `ignore-unfixed`;
-- considerar gate opcional por branch protegida para severidade crítica.
+Recommendation:
+- review `ignore-unfixed` periodically;
+- consider optional protected-branch gating for critical severity.
 
 ---
 
-## Higiene Operacional
+## Operational Hygiene
 
 Workflow: `.github/workflows/cleanup.yml`
 
-- Remove versões antigas de imagens GHCR (mantém 7)
-- Remove runs antigos (retém mínimo para investigação)
+- Removes old GHCR image versions (keeps 7)
+- Removes old workflow runs (retains a minimum set for investigation)
 
 ---
 
-## Boas Práticas Recomendadas
+## Recommended Practices
 
-1. **Separar documentação por domínio**
-   - Projeto/uso: `README.md`
-   - Operação pós-instalação: `docs/POST_INSTALL.md`
+1. **Keep documentation split by domain**
+   - Project usage: `README.md`
+   - Post-install operations: `docs/POST_INSTALL.md`
    - CI/CD: `docs/CI_CD.md`
-   - Hardware/perfil: `docs/HARDWARE_BASELINE.md`
-2. **Evitar drift documental**
-   - Toda mudança em `.github/workflows/*.yml` deve atualizar `docs/CI_CD.md`.
-3. **Auditoria contínua**
-   - Revisar triggers, permissões e secrets trimestralmente.
+   - Hardware profile: `docs/HARDWARE_BASELINE.md`
+2. **Avoid documentation drift**
+   - Any change in `.github/workflows/*.yml` should update `docs/CI_CD.md`.
+3. **Audit continuously**
+   - Review triggers, permissions, and secrets every quarter.
