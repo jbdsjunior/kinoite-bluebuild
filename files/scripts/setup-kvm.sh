@@ -26,6 +26,11 @@ for cmd in usermod systemctl; do
 done
 
 # Add user to required groups
+
+if ! id "$TARGET_USER" >/dev/null 2>&1; then
+    echo "Error: User '$TARGET_USER' does not exist." >&2
+    exit 1
+fi
 usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
 
 # Restart libvirt-related sockets/services if they exist

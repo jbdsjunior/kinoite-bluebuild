@@ -1,5 +1,5 @@
 [Unit]
-Description=Run topgrade update
+Description=Schedule topgrade unattended update
 
 [Timer]
 OnStartupSec=10m
