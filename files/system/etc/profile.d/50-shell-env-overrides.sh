@@ -3,8 +3,8 @@
 # System-wide environment overrides for interactive shells
 
 # Set default editor (respects user override if already set)
-export EDITOR=${EDITOR:-nano}
-export VISUAL=${VISUAL:-nano}
+export EDITOR=¨${EDITOR:-nano}¨
+export VISUAL=¨${VISUAL:-nano}¨
 
 # Exit early if not running interactively to prevent breaking scp/rsync/sftp
 # Profile.d scripts are sourced, so return is safe; avoid exit which would kill the parent shell
