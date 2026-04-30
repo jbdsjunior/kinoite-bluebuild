@@ -47,13 +47,13 @@ Restart=on-failure
 RestartSec=10
 RestartMaxDelaySec=60
 
-# Otimizações de alto desempenho
+# High-performance tuning
 LimitNOFILE=1048576
 LimitNPROC=4096
 MemoryMax=4G
 CPUQuota=200%
 
-# I/O priority para melhor performance
+# I/O priority for improved performance
 IOSchedulingClass=best-effort
 IOSchedulingPriority=2
 
