@@ -49,7 +49,7 @@ This repository uses a modular instruction model:
 | `kargs` | rpm-ostree kargs |
 | `config-diff` | sudo ostree admin config-diff |
 | `update-status` | systemctl --user status topgrade-update.timer |
-| `tmpfiles-system` | systemd-tmpfiles --create (NoCOW BTRFS) |
+| `tmpfiles-system` | sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf |
 | `kvm-setup` | sudo setup-kvm.sh |
 
 ## Hardware Baseline
