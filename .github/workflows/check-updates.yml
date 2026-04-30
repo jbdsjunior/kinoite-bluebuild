@@ -1,7 +1,7 @@
 name: check-updates
 on:
   schedule:
-    # Verifica atualizações da imagem base a cada 2 horas
+    # Checks base-image updates every 2 hours
     - cron: "0 */2 * * *"
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |

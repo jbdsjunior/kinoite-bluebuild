@@ -21,6 +21,8 @@ modules:
     files:
       - source: scripts/setup-kvm.sh
         destination: /usr/bin/setup-kvm.sh
+      - source: scripts/postinstall-healthcheck.sh
+        destination: /usr/bin/postinstall-healthcheck.sh
 
   - type: kargs
     kargs:
