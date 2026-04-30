@@ -1,37 +1,17 @@
 # Codebase Review — Suggested Tasks
 
-## 1) Typo/structure correction
-**Observed issue:** In `README.md`, the **Quick Start** section uses `##` for both the section title and numbered steps (`## Quick Start` followed by `## 1) ...`), which creates inconsistent heading hierarchy.
+## Status Snapshot (2026-04-30)
 
-**Suggested task:** Change step headings to `### 1)`, `### 2)`, etc., while keeping `## Quick Start` as the parent heading.
+This file was vitrified to remove stale findings that no longer match the repository state.
 
-**Impact:** Better readability and cleaner navigation in generated tables of contents.
+### Already addressed
 
----
+1. **README heading hierarchy:** `Quick Start` uses `###` for numbered steps under the parent `##` section.
+2. **`setup-kvm.sh` user validation:** script validates `TARGET_USER` with `id "$TARGET_USER"` before `usermod -aG`.
+3. **Alias documentation alignment:** `AGENTS.md` now documents `update-status` with both units:
+   - `topgrade-update.timer`
+   - `topgrade-update.service`
 
-## 2) Bug fix
-**Observed issue:** `files/scripts/setup-kvm.sh` adds group membership with `usermod -aG` without explicit prior validation that the target user exists.
+## Open items
 
-**Suggested task:** Add an explicit user existence validation (for example `id "$TARGET_USER" >/dev/null 2>&1`) before running `usermod`, and return a clear error message.
-
-**Impact:** More predictable failure mode and better operator experience during post-install setup.
-
----
-
-## 3) Documentation/comment alignment
-**Observed issue:** The `tmpfiles-system` alias in `files/system/etc/profile.d/kinoite-aliases.sh` includes an explicit config path, while the summary table in `AGENTS.md` used a generic command form.
-
-**Suggested task:** Align `AGENTS.md` with the exact command used by the shipped alias.
-
-**Impact:** More accurate operational documentation and reduced ambiguity.
-
----
-
-## 4) Test improvement
-**Observed issue:** There was no dedicated CI workflow for fast syntax/lint validation of shell scripts and YAML files.
-
-**Suggested task:** Add a lightweight lint workflow with:
-- `shellcheck` for `files/scripts/*.sh` and `files/system/etc/profile.d/*.sh`;
-- `yamllint` for `recipes/*.yml` and `.github/workflows/*.yml`.
-
-**Impact:** Earlier detection of simple regressions before longer image build workflows.
+No open inconsistencies were found in this pass related to duplicate directories/files or mismatched operational instructions.
