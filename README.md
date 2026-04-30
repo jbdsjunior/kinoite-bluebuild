@@ -9,44 +9,44 @@
 
 </div>
 
-Imagem OCI imutável baseada em Fedora Kinoite (KDE Plasma), construída com BlueBuild para workloads de desktop, virtualização e desenvolvimento local com foco em reprodutibilidade, segurança e rollback rápido.
+Immutable OCI images based on Fedora Kinoite (KDE Plasma), built with BlueBuild for desktop, virtualization, and local development workloads with a strong focus on reproducibility, security, and fast rollback.
 
 ---
 
-## Visão Geral
+## Overview
 
-Este repositório publica **duas variantes**:
+This repository publishes **two variants**:
 
-| Variante | Imagem Base | Destino | Caso de uso |
+| Variant | Base Image | Target | Use Case |
 | :-- | :-- | :-- | :-- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | Sistemas AMD sem GPU NVIDIA dedicada |
-| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | `ghcr.io/jbdsjunior/kinoite-nvidia:latest` | Sistemas com GPU NVIDIA (inclui híbrido AMD+NVIDIA) |
+| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD systems without a dedicated NVIDIA GPU |
+| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | `ghcr.io/jbdsjunior/kinoite-nvidia:latest` | Systems with NVIDIA GPU support (including AMD+NVIDIA hybrid setups) |
 
-### Princípios do projeto
+### Project Principles
 
-- **Immutable-first:** customizações entram via `recipes/*.yml` + `files/system/`, não via `dnf install` direto no host.
-- **OCI-native:** troca/atualização da imagem com `bootc switch` e rollback com `bootc rollback`.
-- **Shift-left security:** scanner Trivy em CI, upload SARIF e assinatura Cosign no pipeline de build.
-- **Fail-fast, recover-faster:** rollback atômico para deployment anterior em caso de regressão.
+- **Immutable-first:** apply customizations through `recipes/*.yml` + `files/system/`, not direct `dnf install` on the host.
+- **OCI-native:** switch/update images with `bootc switch` and rollback with `bootc rollback`.
+- **Shift-left security:** run Trivy in CI, upload SARIF reports, and sign images with Cosign in build pipelines.
+- **Fail fast, recover faster:** use atomic rollback to the previous deployment when regressions occur.
 
-> ⚠️ **Aviso:** perfil otimizado para workstations com **64 GB RAM**. Consulte o baseline em [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md).
+> ⚠️ **Warning:** this profile is optimized for workstations with **64 GB RAM**. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md).
 
 ---
 
 ## CI/CD
 
-A documentação detalhada de automação está em [`docs/CI_CD.md`](docs/CI_CD.md).
+Detailed automation documentation is available in [`docs/CI_CD.md`](docs/CI_CD.md).
 
-Resumo rápido:
-- builds de imagem (`build-amd.yml`, `build-nvidia.yml`) são manuais (`workflow_dispatch`);
-- `check-updates.yml` roda em agenda e pode disparar os builds ao detectar novo digest upstream;
-- scan de segurança (`security-scan.yml`) e limpeza (`cleanup.yml`) rodam de forma contínua.
+Quick summary:
+- image builds (`build-amd.yml`, `build-nvidia.yml`) are manual (`workflow_dispatch`);
+- `check-updates.yml` runs on schedule and can trigger builds when a new upstream digest is detected;
+- security scanning (`security-scan.yml`) and cleanup (`cleanup.yml`) run continuously.
 
 ---
 
 ## Quick Start
 
-## 1) Trocar para a imagem customizada
+## 1) Switch to the custom image
 
 ```bash
 # AMD
@@ -56,21 +56,21 @@ sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-Reinicie após a conclusão.
+Reboot after completion.
 
-## 2) Validar assinatura Cosign (recomendado)
+## 2) Verify Cosign signature (recommended)
 
-Chave pública do projeto: [`cosign.pub`](cosign.pub).
+Project public key: [`cosign.pub`](cosign.pub).
 
 ```bash
-# Exemplo (AMD)
+# Example (AMD)
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# Exemplo (NVIDIA)
+# Example (NVIDIA)
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-## 3) (Opcional) Enforce de política de assinatura no switch
+## 3) (Optional) Enforce signature policy during image switch
 
 ```bash
 # AMD
@@ -80,37 +80,37 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:l
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-## 4) Pós-instalação
+## 4) Post-installation
 
-Siga: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
-## Rollback e Recuperação de Desastres
+## Rollback and Disaster Recovery
 
-### Cenários comuns
+### Common scenarios
 
-- Kernel panic após update
-- Falha de sessão Wayland
-- Regressão de driver (ex.: stack NVIDIA)
+- Kernel panic after update
+- Wayland session failure
+- Driver regression (for example, NVIDIA stack)
 
-### Procedimento recomendado (Fail-Fast, Recover-Faster)
+### Recommended procedure (Fail Fast, Recover Faster)
 
-1. Reinicie e selecione o deployment anterior (se necessário).
-2. Execute rollback atômico:
+1. Reboot and select the previous deployment (if needed).
+2. Run atomic rollback:
 
 ```bash
 sudo bootc rollback
 ```
 
-3. Reinicie e valide serviços essenciais:
+3. Reboot and validate essential services:
 
 ```bash
 systemctl --user status topgrade-update.timer
 sudo systemctl status firewalld
 ```
 
-### Voltar ao Fedora Kinoite stock
+### Revert to stock Fedora Kinoite
 
 ```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
@@ -118,29 +118,29 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## Estrutura do Repositório
+## Repository Structure
 
-| Caminho | Finalidade |
+| Path | Purpose |
 | :-- | :-- |
-| `recipes/recipe-amd.yml` | Receita principal da variante AMD |
-| `recipes/recipe-nvidia.yml` | Receita principal da variante NVIDIA |
-| `recipes/common-*.yml` | Módulos compartilhados (pacotes, drivers, serviços etc.) |
-| `files/system/` | Arquivos aplicados no sistema da imagem |
-| `.github/workflows/` | Pipelines CI/CD |
-| `cosign.pub` | Chave pública para verificação |
+| `recipes/recipe-amd.yml` | Main AMD variant recipe |
+| `recipes/recipe-nvidia.yml` | Main NVIDIA variant recipe |
+| `recipes/common-*.yml` | Shared modules (packages, drivers, services, and more) |
+| `files/system/` | Files applied to the image filesystem |
+| `.github/workflows/` | CI/CD pipelines |
+| `cosign.pub` | Public key for signature verification |
 
 ---
 
-## Documentação
+## Documentation
 
-| Documento | Objetivo |
+| Document | Purpose |
 | :-- | :-- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Validações pós-instalação, operação e manutenção |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Baseline de hardware e limites operacionais |
-| [`docs/CI_CD.md`](docs/CI_CD.md) | Pipelines GitHub Actions, triggers e segurança |
-| [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Arquitetura declarativa e visão técnica do projeto |
-| [`docs/EVOLUTION_LOG.md`](docs/EVOLUTION_LOG.md) | Histórico resumido de ciclos `/evolve` e melhorias aplicadas |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Post-install validation, operations, and maintenance |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
+| [`docs/CI_CD.md`](docs/CI_CD.md) | GitHub Actions pipelines, triggers, and security checks |
+| [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Declarative architecture and technical project view |
+| [`docs/EVOLUTION_LOG.md`](docs/EVOLUTION_LOG.md) | Short history of `/evolve` cycles and improvements |
 
-## Licença
+## License
 
-Projeto licenciado sob [`LICENSE`](LICENSE).
+This project is licensed under [`LICENSE`](LICENSE).

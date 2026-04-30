@@ -1,36 +1,36 @@
-# Visão do Projeto
+# Project Overview
 
-## Objetivo
+## Objective
 
-Fornecer imagens OCI imutáveis do Fedora Kinoite com BlueBuild, em duas variantes:
+Provide immutable Fedora Kinoite OCI images with BlueBuild in two variants:
 
 - `kinoite-amd`
 - `kinoite-nvidia`
 
-## Arquitetura Declarativa
+## Declarative Architecture
 
-- Receitas principais:
+- Main recipes:
   - `recipes/recipe-amd.yml`
   - `recipes/recipe-nvidia.yml`
-- Módulos compartilhados: `recipes/common-*.yml`
-- Arquivos aplicados no sistema: `files/system/`
+- Shared modules: `recipes/common-*.yml`
+- System files applied in image builds: `files/system/`
 
-## Modelo Operacional
+## Operating Model
 
-- Troca de imagem: `bootc switch`
+- Image switch: `bootc switch`
 - Rollback: `bootc rollback`
-- Ajustes de kernel args: `rpm-ostree kargs`
-- Verificação de drift: `ostree admin config-diff`
+- Kernel argument management: `rpm-ostree kargs`
+- Drift inspection: `ostree admin config-diff`
 
-## Segurança
+## Security
 
-- Assinatura de imagens com Cosign
-- Scan contínuo de repositório via Trivy (GitHub Actions)
-- Mudanças de sistema preferencialmente declarativas (IaC)
+- Image signing with Cosign
+- Continuous repository scanning with Trivy (GitHub Actions)
+- System changes are preferably declarative (Infrastructure as Code)
 
-## Documentação Relacionada
+## Related Documentation
 
-- Guia principal: `README.md`
-- Pós-instalação: `docs/POST_INSTALL.md`
+- Main guide: `README.md`
+- Post-installation: `docs/POST_INSTALL.md`
 - CI/CD: `docs/CI_CD.md`
-- Baseline de hardware: `docs/HARDWARE_BASELINE.md`
+- Hardware baseline: `docs/HARDWARE_BASELINE.md`

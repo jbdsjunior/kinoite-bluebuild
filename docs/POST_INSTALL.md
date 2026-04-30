@@ -1,35 +1,35 @@
-# Guia Pós-Instalação (Kinoite BlueBuild)
+# Post-Installation Guide (Kinoite BlueBuild)
 
-Este guia descreve validações e ajustes pós-rebase para operação segura em ambiente imutável.
+This guide describes post-rebase validation and adjustments for safe operation on an immutable system.
 
 ---
 
-## 1) Validação Inicial (após reboot)
+## 1) Initial Validation (after reboot)
 
-### Estado do sistema
+### System state
 
 ```bash
 rpm-ostree status
 bootc status
 ```
 
-### Timer de atualização automática (usuário)
+### Automatic update timer (user scope)
 
 ```bash
 systemctl --user status topgrade-update.timer
 ```
 
-Esperado: `active (waiting)`.
+Expected: `active (waiting)`.
 
-> ⚠️ **Aviso:** o timer é de escopo **user**. Execute no usuário logado da sessão desktop.
+> ⚠️ **Warning:** this timer is **user-scoped**. Run the command as the logged-in desktop user.
 
 ---
 
-## 2) Aliases Globais Disponíveis
+## 2) Available Global Aliases
 
-| Alias | Comando/ação |
+| Alias | Command/Action |
 | :-- | :-- |
-| `update` | Executa `topgrade` |
+| `update` | Run `topgrade` |
 | `rollback` | `sudo bootc rollback` |
 | `kargs` | `rpm-ostree kargs` |
 | `kargs-edit` | `sudo rpm-ostree kargs --editor` |
@@ -46,14 +46,14 @@ Esperado: `active (waiting)`.
 
 ---
 
-## 3) Serviços Essenciais
+## 3) Essential Services
 
 ```bash
 sudo systemctl status firewalld
 sudo systemctl status systemd-resolved
 ```
 
-Se usar virtualização:
+If you use virtualization:
 
 ```bash
 sudo systemctl status libvirtd
@@ -61,33 +61,33 @@ sudo systemctl status libvirtd
 
 ---
 
-## 4) Virtualização (KVM/libvirt)
+## 4) Virtualization (KVM/libvirt)
 
-Configure permissões e grupos:
+Configure permissions and groups:
 
 ```bash
 sudo setup-kvm.sh
 ```
 
-Ou:
+Or use:
 
 ```bash
 kvm-setup
 ```
 
-Faça logout/login para aplicar grupos.
+Log out and log back in to apply group changes.
 
 ---
 
-## 5) BTRFS NoCOW para workloads de I/O intenso
+## 5) BTRFS NoCOW for I/O-heavy workloads
 
-Aplicar tmpfiles do sistema:
+Apply system tmpfiles:
 
 ```bash
 sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
 ```
 
-Aplicar tmpfiles do usuário:
+Apply user tmpfiles:
 
 ```bash
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
@@ -95,62 +95,62 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 
 ---
 
-## 6) NVIDIA (apenas variante nvidia)
+## 6) NVIDIA (nvidia variant only)
 
-Se Secure Boot estiver habilitado, faça enrollment da chave MOK:
+If Secure Boot is enabled, enroll the MOK key:
 
 ```bash
 ujust enroll-secure-boot-key
 ```
 
-Depois reinicie e valide módulos/stack gráfica conforme seu fluxo.
+Then reboot and validate kernel modules and graphics stack according to your workflow.
 
 ---
 
-## 7) Operação OCI-Native e alteração de kernel args
+## 7) OCI-native operation and kernel argument changes
 
-Consultar kargs atuais:
+List current kernel arguments:
 
 ```bash
 rpm-ostree kargs
 ```
 
-Editar kargs:
+Edit kernel arguments:
 
 ```bash
 sudo rpm-ostree kargs --editor
 ```
 
-Inspecionar drift/configuração:
+Inspect drift/configuration:
 
 ```bash
 sudo ostree admin config-diff
 ```
 
-> ⚠️ **Aviso:** em sistema imutável, prefira mudanças declarativas por receita (`recipes/*.yml`) e arquivos versionados em vez de ajustes manuais recorrentes no host.
+> ⚠️ **Warning:** on immutable systems, prefer declarative changes in `recipes/*.yml` and versioned files instead of repeated manual host adjustments.
 
 ---
 
-## 8) Recuperação de Desastres / Rollback
+## 8) Disaster Recovery / Rollback
 
-### Quando usar
+### When to use
 
-- Boot falhando após update
+- Boot failure after update
 - Kernel panic
-- Sessão gráfica quebrada
-- Regressão crítica de driver
+- Broken graphical session
+- Critical driver regression
 
-### Procedimento
+### Procedure
 
-1. Faça boot no deployment anterior (menu de boot), se necessário.
-2. Execute rollback:
+1. Boot into the previous deployment (boot menu), if needed.
+2. Run rollback:
 
 ```bash
 sudo bootc rollback
 ```
 
-3. Reinicie.
-4. Valide timer de update e serviços base:
+3. Reboot.
+4. Validate update timer and core services:
 
 ```bash
 systemctl --user status topgrade-update.timer
@@ -158,7 +158,7 @@ sudo systemctl status firewalld
 sudo systemctl status systemd-resolved
 ```
 
-### Retornar para imagem base Fedora Kinoite
+### Return to stock Fedora Kinoite
 
 ```bash
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
@@ -166,7 +166,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 9) Rclone Mount (opcional)
+## 9) Rclone Mount (optional)
 
 ```bash
 rclone config

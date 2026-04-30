@@ -1,42 +1,42 @@
 # Evolution Log (`/evolve`)
 
-Registro curto de ciclos de evolução aplicados no repositório, com foco em rastreabilidade.
+Short record of repository evolution cycles, focused on traceability.
 
-## 2026-04-29 — Alinhamento de governança de instruções (`/evolve`)
+## 2026-04-29 — Instruction Governance Alignment (`/evolve`)
 
-### Detectar / Diagnosticar
-- Detectada inconsistência entre a documentação de governança (`AGENTS.md`) e a estrutura real do repositório: apenas `/.agent/agent.md` existe.
-- Risco identificado: agentes externos podem tentar carregar arquivos `/.agents/*` inexistentes e perder diretrizes críticas.
+### Detect / Diagnose
+- Inconsistency detected between governance documentation (`AGENTS.md`) and actual repository structure: only `/.agent/agent.md` exists.
+- Identified risk: external agents could try to load non-existent `/.agents/*` files and miss critical directives.
 
-### Propor / Aplicar
-- Atualizada a seção "Instruction Architecture" em `AGENTS.md` para refletir a fonte canônica real (`/.agent/agent.md`).
-- Revisadas regras de manutenção para priorizar uma única origem de verdade e evitar drift documental.
+### Propose / Apply
+- Updated the "Instruction Architecture" section in `AGENTS.md` to reflect the actual canonical source (`/.agent/agent.md`).
+- Revised maintenance rules to prioritize a single source of truth and avoid documentation drift.
 
-### Verificar
-- Busca textual confirmou ausência de referências pendentes a `/.agents/*` após ajuste.
+### Verify
+- Text search confirmed no remaining references to `/.agents/*` after the update.
 
-### Impacto
-- Reduz ambiguidade operacional para agentes e colaboradores.
-- Melhora previsibilidade do fluxo `/evolve` ao apontar corretamente a diretriz ativa.
+### Impact
+- Reduces operational ambiguity for agents and contributors.
+- Improves `/evolve` flow predictability by pointing to the active directive source.
 
-## 2026-04-29 — Correções de consistência CI + documentação
+## 2026-04-29 — CI Consistency and Documentation Fixes
 
-### Detectar / Diagnosticar
-- Identificado risco de falha de build por referência incorreta/instável de receitas em workflows.
-- Identificado gap de documentação operacional para validação rápida pré-PR.
+### Detect / Diagnose
+- Identified build failure risk due to incorrect/unstable recipe references in workflows.
+- Identified operational documentation gap for quick pre-PR validation.
 
-### Propor / Aplicar
-- Corrigidos os caminhos de receita nos workflows de build:
+### Propose / Apply
+- Corrected build workflow recipe paths:
   - `recipe: recipes/recipe-amd.yml`
   - `recipe: recipes/recipe-nvidia.yml`
-- Atualizado `docs/CI_CD.md` com:
-  - caminhos de receita por variante;
-  - checklist de sanidade mínima para YAML, paths de recipe e `build_chunked_oci: false`.
+- Updated `docs/CI_CD.md` with:
+  - variant-specific recipe paths;
+  - minimum sanity checklist for YAML, recipe paths, and `build_chunked_oci: false`.
 
-### Verificar
-- Parsing YAML de `recipes/*.yml` e `.github/workflows/*.yml` com Ruby (`YAML.load_file`) concluído com sucesso.
-- Checagens por regex (`rg`) confirmaram os caminhos de recipe e a restrição de Rechunk desativado.
+### Verify
+- YAML parsing for `recipes/*.yml` and `.github/workflows/*.yml` using Ruby (`YAML.load_file`) completed successfully.
+- Regex checks (`rg`) confirmed recipe paths and the rechunk-disabled restriction.
 
-### Impacto
-- Reduz risco de falha em `workflow_dispatch`.
-- Melhora previsibilidade e padronização das validações antes de merge.
+### Impact
+- Reduces failure risk in `workflow_dispatch` runs.
+- Improves predictability and standardization of pre-merge validations.
