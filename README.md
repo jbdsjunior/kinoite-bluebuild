@@ -46,7 +46,7 @@ Quick summary:
 
 ## Quick Start
 
-## 1) Switch to the custom image
+### 1) Switch to the custom image
 
 ```bash
 # AMD
@@ -58,7 +58,7 @@ sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 Reboot after completion.
 
-## 2) Verify Cosign signature (recommended)
+### 2) Verify Cosign signature (recommended)
 
 Project public key: [`cosign.pub`](cosign.pub).
 
@@ -70,7 +70,7 @@ cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-## 3) (Optional) Enforce signature policy during image switch
+### 3) (Optional) Enforce signature policy during image switch
 
 ```bash
 # AMD
@@ -80,7 +80,7 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:l
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
-## 4) Post-installation
+### 4) Post-installation
 
 Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
