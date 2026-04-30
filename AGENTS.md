@@ -7,11 +7,12 @@ Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blu
 
 This repository uses a modular instruction model:
 
-- `/.agent/agent.md` → Canonical directive for agent operation (single active source in the repository).
+- `/.agent/agent.md` → Canonical directive for agent operation (source of truth).
+- `/.agents/agent.md` → Compatibility mirror used by some external orchestrators and legacy prompts.
 
 ### Maintenance rules
 - Keep all persistent agent directives centralized in `/.agent/agent.md` to avoid drift.
-- If modular files under `/.agents/` are reintroduced in the future, keep them synchronized with `/.agent/agent.md`.
+- Keep `/.agents/agent.md` synchronized with `/.agent/agent.md` to avoid instruction drift across orchestrators.
 - Keep instruction files concise, scan-friendly, and low-redundancy for LLM efficiency.
 
 ## Build System
