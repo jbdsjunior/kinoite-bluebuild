@@ -172,3 +172,17 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 rclone config
 systemctl --user enable --now rclone@<remote-name>.service
 ```
+
+
+## 10) Post-install health check
+
+Run the non-destructive health check script:
+
+```bash
+postinstall-healthcheck.sh
+```
+
+This validates staged rpm-ostreed policy, topgrade user timer visibility/enabled state, and rootless Podman readiness.
+
+---
+
