@@ -40,3 +40,26 @@ Short record of repository evolution cycles, focused on traceability.
 ### Impact
 - Reduces failure risk in `workflow_dispatch` runs.
 - Improves predictability and standardization of pre-merge validations.
+
+## 2026-04-30 — `/evolve` DevSecOps Consolidation Cycle
+
+### Detect / Diagnose
+- Parsed episodic memory (`.agents/memory/execution.jsonl`) and reviewed recent mutation history.
+- Recurrent friction point identified: local lint tool availability (`shellcheck`, `yamllint`) is environment-dependent.
+- Confirmed immutable runtime policy baseline remains staged (`rpm-ostreed`) and topgrade cadence is explicitly constrained at 45 minutes in state memory.
+
+### Propose / Apply
+- Consolidated deterministic state baseline in `.agents/projeto.md` for execution constraints and rollback discipline.
+- Kept lint enforcement delegated to CI workflow to avoid host-environment drift.
+- Added this evolution checkpoint to preserve traceability and reduce future decision entropy.
+
+### Verify
+- Structural checks completed:
+  - `bash -n` on maintained shell scripts.
+  - `rg` consistency checks for topgrade cadence and alias/doc alignment.
+- No breaking mutations introduced in this cycle.
+
+### Impact
+- Improves repeatability of autonomous operations.
+- Reduces oscillation between local-tool variance and CI source-of-truth validation.
+- Strengthens `/evolve` auditability with explicit memory-backed checkpoints.
