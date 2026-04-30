@@ -5,6 +5,6 @@ enabled=1
 gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
-# Prioridade acima do Fedora (99) para evitar sobrescrever pacotes oficiais.
-# Apenas pacotes exclusivos do Terra (ex: Nerd Fonts) serão instalados.
+# Priority lower than Fedora to avoid overriding official packages.
+# Only Terra-exclusive packages (for example, Nerd Fonts) should be installed.
 priority=150
