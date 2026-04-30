@@ -19,7 +19,7 @@ bootc status
 systemctl --user status topgrade-update.timer
 ```
 
-Expected: `active (waiting)`.
+Expected: `active (waiting)` with schedule `OnCalendar=*-*-* 03,15:00` and randomized delay.
 
 > ⚠️ **Warning:** this timer is **user-scoped**. Run the command as the logged-in desktop user.
 
@@ -34,7 +34,7 @@ Expected: `active (waiting)`.
 | `kargs` | `rpm-ostree kargs` |
 | `kargs-edit` | `sudo rpm-ostree kargs --editor` |
 | `config-diff` | `sudo ostree admin config-diff` |
-| `update-status` | `systemctl --user status topgrade-update.timer` |
+| `update-status` | `systemctl --user status topgrade-update.timer topgrade-update.service` |
 | `fw-status` | `sudo systemctl status firewalld` |
 | `dns-status` | `sudo systemctl status systemd-resolved` |
 | `kvm-status` | `sudo systemctl status libvirtd` |

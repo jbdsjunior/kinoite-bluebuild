@@ -15,7 +15,7 @@ alias kargs-edit='sudo rpm-ostree kargs --editor'
 alias config-diff='sudo ostree admin config-diff'
 
 # --- update timers ---
-alias update-status='systemctl --user status topgrade-update.timer'
+alias update-status='systemctl --user status topgrade-update.timer topgrade-update.service'
 
 # --- services ---
 alias fw-status='sudo systemctl status firewalld'

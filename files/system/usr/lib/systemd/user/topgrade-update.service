@@ -1,18 +1,22 @@
 [Unit]
-Description=Topgrade update
+Description=Topgrade unattended update (system + flatpak)
+Documentation=https://github.com/topgrade-rs/topgrade
 Wants=network-online.target
 After=network-online.target
-# ConditionACPower=true removed for desktop workstation compatibility
-StartLimitIntervalSec=10min
-StartLimitBurst=3
+StartLimitIntervalSec=15min
+StartLimitBurst=2
 
 [Service]
-Type=exec
+Type=oneshot
+# flock exit code 75 indicates lock contention and is treated as success.
 SuccessExitStatus=75
-TimeoutStartSec=3600
+TimeoutStartSec=2h
 ExecStart=/usr/bin/flock -E 75 -w 900 %t/topgrade-update.lock /usr/bin/topgrade -cy --no-ask-retry --auto-retry 2 --notify-end on_failure --only system flatpak
 Nice=19
 IOSchedulingClass=idle
 CPUSchedulingPolicy=idle
-Restart=on-failure
-RestartSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
