@@ -12,10 +12,10 @@ platforms:
 modules:
   - from-file: common-base.yml
 
-  - type: files
-    files:
-      - source: nvidia
-        destination: /
+  # - type: files
+  #   files:
+  #     - source: nvidia
+  #       destination: /
 
   - type: rpm-ostree
     install:
