@@ -31,11 +31,11 @@ modules:
         - kate
         - kate-plugins
 
-  - type: systemd
-    system:
-      enabled:
-        - nvidia-persistenced.service
-        - nvidia-compute-tuning.service
+  # - type: systemd
+  #   system:
+  #     enabled:
+  #       - nvidia-persistenced.service
+  #       - nvidia-compute-tuning.service
 
   - type: initramfs
   - type: signing
