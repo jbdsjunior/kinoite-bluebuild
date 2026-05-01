@@ -1,0 +1,3 @@
+# Remove seat tags from NVIDIA GPU to prevent display server attachment
+# Ensures 100% VRAM availability for CUDA/LLM workloads
+SUBSYSTEM=="drm", KERNEL=="card*", DRIVERS=="nvidia", TAG-="seat", TAG-="master-of-seat"
