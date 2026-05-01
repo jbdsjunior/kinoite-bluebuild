@@ -1,0 +1,15 @@
+[Unit]
+Description=NVIDIA GPU Compute-Only Tuning
+After=multi-user.target
+Wants=nvidia-persistenced.service
+
+[Service]
+Type=oneshot
+# Set GPU to Exclusive Process compute mode
+ExecStart=/usr/bin/nvidia-smi -c EXCLUSIVE_PROCESS
+# Lock core clocks to base values during idle to save power (optional, removes micro-stutters)
+# ExecStart=/usr/bin/nvidia-smi -lgc 210,1665
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

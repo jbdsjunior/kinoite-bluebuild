@@ -1,4 +1,3 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
@@ -16,7 +15,6 @@ modules:
           - org.freedesktop.Platform.ffmpeg-full
           - org.gtk.Gtk3theme.adw-gtk3-dark
           - org.gtk.Gtk3theme.adw-gtk3
-
           # KDE Multimedia and Productivity
           # - org.kde.elisa
           # - org.kde.gwenview

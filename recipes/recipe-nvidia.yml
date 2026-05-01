@@ -1,34 +1,36 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 name: kinoite-nvidia
-description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems with CUDA support"
+description: "Customized Fedora Kinoite image for AMD + NVIDIA hybrid systems
+  with CUDA support"
 
 base-image: ghcr.io/ublue-os/kinoite-nvidia
-# base-image: ghcr.io/blue-build/base-images/fedora-kinoite-nvidia
-# base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 platforms:
   - linux/amd64
+
 modules:
-  # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
-  - type: dnf
+  - type: files
+    files:
+      - source: files/nvidia
+        destination: /
+
+  - type: rpm-ostree
     install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - nvidia-container-toolkit
-
+      - nvidia-container-toolkit
     remove:
-      auto-remove: true
-      packages:
-        - htop
-        - fcitx5-*
-        - kcm-fcitx5
-        - kate
+      - kcm-fcitx5
+      - fcitx5-*
+      - htop
+      - kate
 
-  # Digital signing module for image integrity and verified updates
+  - type: systemd
+    system:
+      enabled:
+        - nvidia-persistenced.service
+        - nvidia-compute-tuning.service
+
   - type: initramfs
   - type: signing
