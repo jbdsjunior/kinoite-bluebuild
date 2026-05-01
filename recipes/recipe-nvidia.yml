@@ -21,6 +21,13 @@ modules:
       packages:
         - nvidia-container-toolkit
 
+    remove:
+      auto-remove: true
+      packages:
+        - htop
+        - fcitx5-*
+        - kcm-fcitx5
+
   # Digital signing module for image integrity and verified updates
   - type: initramfs
   - type: signing
