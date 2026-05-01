@@ -20,11 +20,16 @@ modules:
   - type: rpm-ostree
     install:
       - nvidia-container-toolkit
+
+  - type: dnf
     remove:
-      - kcm-fcitx5
-      - fcitx5-*
-      - htop
-      - kate
+      auto-remove: true
+      packages:
+        - kcm-fcitx5
+        - fcitx5-*
+        - htop
+        - kate
+        - kate-plugins
 
   - type: systemd
     system:
