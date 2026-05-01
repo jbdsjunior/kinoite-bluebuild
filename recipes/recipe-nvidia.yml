@@ -27,6 +27,7 @@ modules:
         - htop
         - fcitx5-*
         - kcm-fcitx5
+        - kate
 
   # Digital signing module for image integrity and verified updates
   - type: initramfs
