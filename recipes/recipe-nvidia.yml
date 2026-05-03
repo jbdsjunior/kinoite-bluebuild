@@ -20,22 +20,18 @@ modules:
   - type: rpm-ostree
     install:
       - nvidia-container-toolkit
+      - kernel-modules
+      - kernel-modules-extra
+      - linux-firmware
+      - mesa-dri-drivers
+      - libdrm
 
-  - type: dnf
-    remove:
-      auto-remove: true
-      packages:
-        - kcm-fcitx5
-        - fcitx5-*
-        - htop
-        - kate
-        - kate-plugins
-
-  # - type: systemd
-  #   system:
-  #     enabled:
-  #       - nvidia-persistenced.service
-  #       - nvidia-compute-tuning.service
+  - type: systemd
+    system:
+      enabled:
+        - nvidia-persistenced.service
+        - nvidia-powerd.service
+        - supergfxd.service
 
   - type: initramfs
   - type: signing
