@@ -17,14 +17,14 @@ modules:
   #     - source: nvidia
   #       destination: /
 
-  - type: rpm-ostree
-    install:
-      - nvidia-container-toolkit
-      - kernel-modules
-      - kernel-modules-extra
-      - linux-firmware
-      - mesa-dri-drivers
-      - libdrm
+  # - type: rpm-ostree
+  #   install:
+  #     - nvidia-container-toolkit
+  #     - kernel-modules
+  #     - kernel-modules-extra
+  #     - linux-firmware
+  #     - mesa-dri-drivers
+  #     - libdrm
 
   - type: systemd
     system:
