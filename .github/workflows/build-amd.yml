@@ -28,7 +28,7 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           verify_install: true
-          maximize_build_space: false
+          maximize_build_space: true
           max_layers: 256
           use_cache: true
           retry_push_count: 3

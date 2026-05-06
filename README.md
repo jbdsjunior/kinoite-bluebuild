@@ -17,9 +17,9 @@ Immutable OCI images based on Fedora Kinoite (KDE Plasma), built with BlueBuild 
 
 This repository publishes **two variants**:
 
-| Variant | Base Image | Target | Use Case |
-| :-- | :-- | :-- | :-- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD systems without a dedicated NVIDIA GPU |
+| Variant          | Base Image                        | Target                                     | Use Case                                                             |
+| :--------------- | :-------------------------------- | :----------------------------------------- | :------------------------------------------------------------------- |
+| `kinoite-amd`    | `quay.io/fedora/fedora-kinoite`   | `ghcr.io/jbdsjunior/kinoite-amd:latest`    | AMD systems without a dedicated NVIDIA GPU                           |
 | `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | `ghcr.io/jbdsjunior/kinoite-nvidia:latest` | Systems with NVIDIA GPU support (including AMD+NVIDIA hybrid setups) |
 
 ### Project Principles
@@ -38,6 +38,7 @@ This repository publishes **two variants**:
 Detailed automation documentation is available in [`docs/CI_CD.md`](docs/CI_CD.md).
 
 Quick summary:
+
 - image builds (`build-amd.yml`, `build-nvidia.yml`) are manual (`workflow_dispatch`);
 - `check-updates.yml` runs on schedule and can trigger builds when a new upstream digest is detected;
 - security scanning (`security-scan.yml`) and cleanup (`cleanup.yml`) run continuously.
@@ -48,11 +49,15 @@ Quick summary:
 
 ### 1) Switch to the custom image
 
-```bash
 # AMD
+
+```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+```
 
 # NVIDIA
+
+```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
@@ -62,21 +67,29 @@ Reboot after completion.
 
 Project public key: [`cosign.pub`](cosign.pub).
 
-```bash
 # Example (AMD)
+
+```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
+```
 
 # Example (NVIDIA)
+
+```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
 ### 3) (Optional) Enforce signature policy during image switch
 
-```bash
 # AMD
+
+```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+```
 
 # NVIDIA
+
+```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
 ```
 
@@ -107,6 +120,9 @@ sudo bootc rollback
 
 ```bash
 systemctl --user status topgrade-update.timer
+```
+
+```bash
 sudo systemctl status firewalld
 ```
 
@@ -120,26 +136,24 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Repository Structure
 
-| Path | Purpose |
-| :-- | :-- |
-| `recipes/recipe-amd.yml` | Main AMD variant recipe |
-| `recipes/recipe-nvidia.yml` | Main NVIDIA variant recipe |
-| `recipes/common-*.yml` | Shared modules (packages, drivers, services, and more) |
-| `files/system/` | Files applied to the image filesystem |
-| `.github/workflows/` | CI/CD pipelines |
-| `cosign.pub` | Public key for signature verification |
+| Path                        | Purpose                                                |
+| :-------------------------- | :----------------------------------------------------- |
+| `recipes/recipe-amd.yml`    | Main AMD variant recipe                                |
+| `recipes/recipe-nvidia.yml` | Main NVIDIA variant recipe                             |
+| `recipes/common-*.yml`      | Shared modules (packages, drivers, services, and more) |
+| `files/system/`             | Files applied to the image filesystem                  |
+| `.github/workflows/`        | CI/CD pipelines                                        |
+| `cosign.pub`                | Public key for signature verification                  |
 
 ---
 
 ## Documentation
 
-| Document | Purpose |
-| :-- | :-- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Post-install validation, operations, and maintenance |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
-| [`docs/CI_CD.md`](docs/CI_CD.md) | GitHub Actions pipelines, triggers, and security checks |
-| [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Declarative architecture and technical project view |
-| [`docs/EVOLUTION_LOG.md`](docs/EVOLUTION_LOG.md) | Short history of `/evolve` cycles and improvements |
+| Document                                                 | Purpose                                                 |
+| :------------------------------------------------------- | :------------------------------------------------------ |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance    |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits                |
+| [`docs/CI_CD.md`](docs/CI_CD.md)                         | GitHub Actions pipelines, triggers, and security checks |
 
 ## License
 

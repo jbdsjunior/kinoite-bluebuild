@@ -1,10 +1,10 @@
 name: security-scan
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  # workflow_dispatch:
   schedule:
     - cron: "30 3 * * 1"
 

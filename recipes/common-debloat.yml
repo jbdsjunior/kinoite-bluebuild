@@ -8,9 +8,9 @@ modules:
         - firefox
         - plasma-discover-rpm-ostree
         - fedora-flathub-remote
-        # - plasma-welcome-fedora
-        # - fedora-third-party
-        # - fedora-workstation-repositories
+        - plasma-welcome-fedora
+        - fedora-third-party
+        - fedora-workstation-repositories
         - kcm-fcitx5
         - fcitx5-*
         - htop
