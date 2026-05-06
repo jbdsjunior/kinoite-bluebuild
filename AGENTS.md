@@ -1,84 +1,75 @@
-# AGENTS.md - Kinoite BlueBuild
+# AGENTS.md — Kinoite BlueBuild
 
-## 1) Purpose
+## Purpose
+- Define agent behavior for this repository.
+- Focus: immutable Fedora Kinoite images with BlueBuild, DevSecOps quality, and continuous evolution.
 
-This file defines agent behavior for this repository.
-Focus: immutable Fedora Kinoite images with BlueBuild, DevSecOps quality, and continuous project evolution.
+## Rule Hierarchy
+- Direct system/developer/user instructions override AGENTS rules.
+- Canonical technical sources override AGENTS narrative: `recipes/` and `files/system/` > `docs/*.md` > `AGENTS.md`.
+- Keep AGENTS concise, behavioral, and non-redundant.
 
-## 2) Source of Truth and Redundancy Policy
+## Canonical References (do not duplicate)
+- `README.md` — overview, usage, image switching.
+- `docs/POST_INSTALL.md` — post-install operations.
+- `docs/CI_CD.md` — pipelines and automation.
+- `docs/HARDWARE_BASELINE.md` — hardware baseline.
+- `recipes/` and `files/system/` — effective configuration source.
 
-- Keep `AGENTS.md` concise and behavioral (agent rules), not a duplicate of project docs.
-- If information already exists in a more appropriate source (`README.md`, `docs/*.md`, recipes, or unit files), prefer linking/reference over copying.
-- Remove redundant or stale content from `AGENTS.md` whenever detected.
-- When conflicts exist, canonical technical sources win: recipes/files > docs > AGENTS narrative text.
-
-## 3) Mandatory Self-Update Rule for AGENTS.md
-
-The agent must update `AGENTS.md` whenever any of the following changes occur:
-
-1. New operational/security rules are added to the project.
+## Mandatory AGENTS Self-Update
+Update this file when any of the following changes:
+1. New operational/security rules are introduced.
 2. Existing rules become obsolete, ambiguous, or contradictory.
-3. Better guidance patterns are identified during implementation/review.
+3. Better implementation/review guidance patterns are identified.
 4. CI/CD, maintenance, or architecture standards change.
 
-Requirement: apply focused refactors to keep this file current, minimal, and technically precise.
+Requirement: apply focused refactors so AGENTS remains current, minimal, and technically precise.
 
-## 4) Core Agent Principles
-
-- Act as Senior DevSecOps + Linux Systems Architect mindset.
-- Prioritize Shift-Left Security, IaC/declarative changes, rootless-first containers, and atomic rollback paths.
-- Operate with Fail-Fast, Recover-Faster posture.
-- Be proactive: detect drift, inconsistencies, broken references, and risky defaults; fix when safe.
+## Operating Principles
+- Act with Senior DevSecOps + Linux Systems Architect mindset.
+- Prioritize Shift-Left Security, declarative IaC, rootless-first containers, and atomic rollback paths.
+- Operate fail-fast/recover-faster.
+- Proactively detect and fix safe-to-fix drift, inconsistencies, broken references, and risky defaults.
 - Prefer official documentation and precise terminology.
 
-## 5) Project Hard Constraints
-
-- Build workflows (`build-amd.yml`, `build-nvidia.yml`) must enforce a mandatory pre-build security gate (Trivy + SARIF) and only execute image build when the gate succeeds.
-- Keep AMD and NVIDIA flows strictly decoupled in recipes and CI jobs.
+## Hard Constraints
+- Build workflows `build-amd.yml` and `build-nvidia.yml` must enforce mandatory pre-build security gate (Trivy + SARIF); image build runs only after successful gate.
+- Maintain strict AMD/NVIDIA decoupling across recipes and CI jobs.
 - Do not enable Rechunk.
 - Preserve immutable workflow: structural host behavior must come from versioned repository changes.
-- Enforce rapid maintenance timers: Flatpak checks every 15 minutes, rpm-ostree checks every 45 minutes, and Podman prune daily with boot-trigger + low-impact (idle-friendly) execution semantics.
+- Enforce maintenance timers:
+  - Flatpak: every 15 minutes.
+  - rpm-ostree: every 45 minutes.
+  - Podman prune: daily, boot-triggered, low-impact/idle-friendly semantics.
+- Browser hardening must preserve sign-in/sync compatibility for Chrome, Edge, and Brave.
+- Do not enforce sync-disabling policies (`BrowserSignin=0` or `SyncDisabled=true`) unless a documented security exception is approved in canonical docs.
 
-## 6) Always-On Quality and Security Gate
-
-For every change, the agent must:
-
+## Always-On Quality & Security Gate (every change)
 1. Validate syntax/schema for edited files.
 2. Validate cross-file consistency (recipes, deployed files, docs, workflows).
 3. Validate references (paths, unit names, commands, aliases).
 4. Validate AMD/NVIDIA separation boundaries.
 5. Validate security impact (supply chain, privileges, policies, networking, container runtime).
-6. Replace outdated patterns with safer/current equivalents when low risk.
+6. Replace obsolete patterns with safer/current equivalents when low risk.
 7. Fix detected inconsistencies in the same change set whenever feasible.
 8. Report verification commands/results in summaries.
 
-## 7) Priority Audit Focus
-
-High priority checks:
-
+## Priority Audit Focus
+### High priority
 - Supply chain: Cosign flow and third-party repo trust model (GPG/signature hygiene).
 - Hardening: rootfs injections, sensitive permissions, policy lock-down/telemetry controls.
 - Stability: Wayland/graphics boot safety and AMD/NVIDIA isolation correctness.
-- CI/CD OCI: build/deploy robustness and vulnerability scanning integration (Trivy).
+- CI/CD OCI: build/deploy robustness and Trivy vulnerability scan integration.
 
-Medium priority checks:
-
+### Medium priority
 - BlueBuild modularity and hardware-aware recipe composition.
 - IaC consistency for systemd units, sysctl tuning, storage tuning, and user automation.
 
-## 8) Non-Redundant References
-
-For project details, use canonical documents instead of duplicating here:
-
-- `README.md` (overview, usage, image switching)
-- `docs/POST_INSTALL.md` (post-install operations)
-- `docs/CI_CD.md` (pipelines and automation)
-- `docs/HARDWARE_BASELINE.md` (hardware baseline)
-- `recipes/` and `files/system/` (effective configuration source)
-
-## 9) Continuous Structure Hygiene (Auto-Learning)
-
-- The agent must proactively verify project organization on every review/change, even without explicit request.
-- Keep package placement aligned with module intent (drivers in `recipes/common-drivers.yml`, utilities in `recipes/common-tools.yml`, virtualization/KVM assets in `recipes/common-kvm.yml`, etc.).
-- When safe, correct inconsistent file/directory names and misplaced entries to the most recommended canonical structure in the same change set.
+## Continuous Structure Hygiene (auto-learning)
+- Verify project organization proactively on every review/change, even without explicit request.
+- Keep package placement aligned with module intent:
+  - drivers → `recipes/common-drivers.yml`
+  - utilities → `recipes/common-tools.yml`
+  - virtualization/KVM assets → `recipes/common-kvm.yml`
+- When safe, correct inconsistent names/placement in the same change set.
 - Record structural improvements in summaries and keep AGENTS guidance updated when better patterns are learned.
