@@ -8,11 +8,15 @@ modules:
         - NetworkManager-wait-online.service
       enabled:
         - podman.socket
-        # Atualização nativa da imagem imutável (rpm-ostree)
+        # Native immutable image update staging (rpm-ostree)
         - rpm-ostreed-automatic.timer
-        # Atualização de Flatpaks em escopo de sistema
+        # System-scope Flatpak updates
         - flatpak-system-update.timer
+        # Daily root-scope Podman cleanup
+        - podman-prune-root.timer
     user:
       enabled:
-        # Atualização de Flatpaks em escopo de usuário
+        # User-scope Flatpak updates
         - flatpak-user-update.timer
+        # Daily rootless Podman cleanup
+        - podman-prune-user.timer

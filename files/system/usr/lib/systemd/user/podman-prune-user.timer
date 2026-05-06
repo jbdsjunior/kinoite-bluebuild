@@ -1,0 +1,12 @@
+[Unit]
+Description=Run rootless Podman prune daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=30m
+Persistent=true
+AccuracySec=1m
+Unit=podman-prune-user.service
+
+[Install]
+WantedBy=timers.target

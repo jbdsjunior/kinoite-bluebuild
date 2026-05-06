@@ -1,0 +1,12 @@
+[Unit]
+Description=Run root-scope Podman prune daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=20m
+Persistent=true
+AccuracySec=1m
+Unit=podman-prune-root.service
+
+[Install]
+WantedBy=timers.target
