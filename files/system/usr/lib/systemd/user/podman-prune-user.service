@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily Podman prune (rootless user scope)
+Documentation=man:podman-system-prune(1)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman system prune -af --volumes
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+CPUWeight=20
+IOWeight=20
+TimeoutStartSec=30m
