@@ -13,6 +13,11 @@ platforms:
 modules:
   - from-file: common-base.yml
 
+  - type: files
+    files:
+      - source: nvidia
+        destination: /
+
   - type: dnf
     install:
       skip-unavailable: true
@@ -23,6 +28,8 @@ modules:
   - type: systemd
     system:
       enabled:
+        - nvidia-mps.service
+
         - nvidia-persistenced.service
         - nvidia-powerd.service
         - supergfxd.service

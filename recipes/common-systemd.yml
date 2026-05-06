@@ -14,6 +14,7 @@ modules:
         - flatpak-system-update.timer
         # Daily root-scope Podman cleanup
         - podman-prune-root.timer
+        - btrfs-maintenance.timer
     user:
       enabled:
         # User-scope Flatpak updates

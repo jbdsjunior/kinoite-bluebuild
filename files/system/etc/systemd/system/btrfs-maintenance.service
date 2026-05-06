@@ -1,0 +1,7 @@
+[Unit]
+Description=BTRFS Scrub and Balance Service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/btrfs scrub start -B /
+ExecStart=/usr/sbin/btrfs balance start -dusage=50 -musage=50 /

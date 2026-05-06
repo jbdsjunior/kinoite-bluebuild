@@ -1,0 +1,9 @@
+[Unit]
+Description=Monthly BTRFS Scrub and Balance
+
+[Timer]
+OnCalendar=monthly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
