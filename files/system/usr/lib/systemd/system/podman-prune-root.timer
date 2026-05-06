@@ -2,8 +2,10 @@
 Description=Run root-scope Podman prune daily
 
 [Timer]
-OnCalendar=daily
-RandomizedDelaySec=20m
+# Daily cleanup after boot stabilization; persistent to catch missed runs.
+OnBootSec=20m
+OnUnitActiveSec=1d
+RandomizedDelaySec=30m
 Persistent=true
 AccuracySec=1m
 Unit=podman-prune-root.service

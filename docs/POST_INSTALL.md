@@ -207,4 +207,11 @@ sudo systemctl start podman-prune-root.service
 systemctl --user start podman-prune-user.service
 ```
 
+Expected policy:
+
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: `OnBootSec=5m`, `OnUnitActiveSec=15m`.
+- `rpm-ostreed-automatic.timer`: `OnBootSec=10m`, `OnUnitActiveSec=45m`.
+- `podman-prune-root.timer` and `podman-prune-user.timer`: boot-triggered + every `1d` (`OnUnitActiveSec=1d`).
+- Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`) and network-online ordering.
+
 ---
