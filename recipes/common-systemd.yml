@@ -6,6 +6,12 @@ modules:
       masked:
         # Prevent boot delays waiting for DHCP allocation
         - NetworkManager-wait-online.service
+      enabled:
+        # Atualização nativa da imagem imutável (rpm-ostree)
+        - rpm-ostreed-automatic.timer
+        # Atualização de Flatpaks em escopo de sistema
+        - flatpak-system-update.timer
     user:
       enabled:
-        - topgrade-update.timer
+        # Atualização de Flatpaks em escopo de usuário
+        - flatpak-user-update.timer
