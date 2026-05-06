@@ -100,32 +100,12 @@ Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 ---
 
 ## Rollback and Disaster Recovery
-
-### Common scenarios
-
-- Kernel panic after update
-- Wayland session failure
-- Driver regression (for example, NVIDIA stack)
-
-### Recommended procedure (Fail Fast, Recover Faster)
-
 1. Reboot and select the previous deployment (if needed).
 2. Run atomic rollback:
 
 ```bash
 sudo bootc rollback
 ```
-
-3. Reboot and validate essential services:
-
-```bash
-systemctl --user status topgrade-update.timer
-```
-
-```bash
-sudo systemctl status firewalld
-```
-
 ### Revert to stock Fedora Kinoite
 
 ```bash
