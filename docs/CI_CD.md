@@ -6,10 +6,9 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 
 | Workflow | Trigger | Goal |
 | :-- | :-- | :-- |
-| `build-amd.yml` | `workflow_dispatch` | Build and publish AMD image |
-| `build-nvidia.yml` | `workflow_dispatch` | Build and publish NVIDIA image |
+| `build-amd.yml` | `workflow_dispatch` (manual or triggered by `check-updates.yml`) | Run Trivy security gate, then build and publish AMD image |
+| `build-nvidia.yml` | `workflow_dispatch` (manual or triggered by `check-updates.yml`) | Run Trivy security gate, then build and publish NVIDIA image |
 | `check-updates.yml` | `schedule` (every 2h) + `workflow_dispatch` | Detect new upstream digest and trigger builds |
-| `security-scan.yml` | `push(main)`, `pull_request`, `schedule`, `workflow_dispatch` | Trivy security scan + SARIF upload |
 | `cleanup.yml` | daily `schedule` + `workflow_dispatch` | Clean up old images and workflow runs |
 
 ---
@@ -18,7 +17,7 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 
 ### AMD
 - Workflow: `.github/workflows/build-amd.yml`
-- Trigger: manual (`workflow_dispatch`)
+- Trigger: `workflow_dispatch` (manual or invoked by `check-updates.yml`)
 - Timeout: 45 minutes
 - Main action: `blue-build/github-action@v1`
 - Recipe: `recipes/recipe-amd.yml`
@@ -26,7 +25,7 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 
 ### NVIDIA
 - Workflow: `.github/workflows/build-nvidia.yml`
-- Trigger: manual (`workflow_dispatch`)
+- Trigger: `workflow_dispatch` (manual or invoked by `check-updates.yml`)
 - Timeout: 45 minutes
 - Main action: `blue-build/github-action@v1`
 - Recipe: `recipes/recipe-nvidia.yml`
@@ -81,16 +80,16 @@ Workflow: `.github/workflows/check-updates.yml`
 
 ## Security (Shift-Left)
 
-Workflow: `.github/workflows/security-scan.yml`
+Security scan is embedded in each build workflow as a mandatory gate:
 
+- Job `security-scan` runs **before** `build-amd` / `build-nvidia`
+- Build jobs depend on `needs: security-scan`
 - Trivy filesystem mode (`scan-type: fs`)
 - Severities: `CRITICAL,HIGH`
 - `ignore-unfixed: true`
 - SARIF upload to GitHub Security tab
 
-Recommendation:
-- review `ignore-unfixed` periodically;
-- consider optional protected-branch gating for critical severity.
+Practical outcome: builds only run when the security gate passes successfully.
 
 ---
 
