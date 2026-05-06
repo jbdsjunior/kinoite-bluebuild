@@ -32,5 +32,3 @@ alias tmpfiles-user='systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d
 # --- combo shortcuts ---
 alias status-all='update-status && fw-status && dns-status'
 alias kvm-setup='sudo setup-kvm.sh'
-
-alias healthcheck='postinstall-healthcheck.sh'
