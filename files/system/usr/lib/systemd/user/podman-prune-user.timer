@@ -2,7 +2,9 @@
 Description=Run rootless Podman prune daily
 
 [Timer]
-OnCalendar=daily
+# Daily cleanup after boot stabilization; persistent to catch missed runs.
+OnBootSec=25m
+OnUnitActiveSec=1d
 RandomizedDelaySec=30m
 Persistent=true
 AccuracySec=1m
