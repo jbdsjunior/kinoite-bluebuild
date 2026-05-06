@@ -186,3 +186,25 @@ This validates staged rpm-ostreed policy, topgrade user timer visibility/enabled
 
 ---
 
+## 11) Podman automatic cleanup timers
+
+Validate root-scope timer:
+
+```bash
+sudo systemctl status podman-prune-root.timer
+```
+
+Validate rootless timer:
+
+```bash
+systemctl --user status podman-prune-user.timer
+```
+
+Run one-shot cleanup manually when needed:
+
+```bash
+sudo systemctl start podman-prune-root.service
+systemctl --user start podman-prune-user.service
+```
+
+---

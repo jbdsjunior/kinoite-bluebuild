@@ -1,0 +1,18 @@
+[Unit]
+Description=Daily Podman prune (root scope)
+Documentation=man:podman-system-prune(1)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman system prune -af --volumes
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+CPUWeight=20
+IOWeight=20
+TimeoutStartSec=30m
+
+[Install]
+WantedBy=multi-user.target

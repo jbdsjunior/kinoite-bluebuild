@@ -1,56 +1,75 @@
 # AGENTS.md - Kinoite BlueBuild
 
-## Project Overview
+## 1) Purpose
 
-Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blue-build.org/). Two variants: AMD-only and NVIDIA hybrid.
+This file defines agent behavior for this repository.
+Focus: immutable Fedora Kinoite images with BlueBuild, DevSecOps quality, and continuous project evolution.
 
-## Instruction Architecture (to prevent drift)
+## 2) Source of Truth and Redundancy Policy
 
-This repository uses a modular instruction model:
+- Keep `AGENTS.md` concise and behavioral (agent rules), not a duplicate of project docs.
+- If information already exists in a more appropriate source (`README.md`, `docs/*.md`, recipes, or unit files), prefer linking/reference over copying.
+- Remove redundant or stale content from `AGENTS.md` whenever detected.
+- When conflicts exist, canonical technical sources win: recipes/files > docs > AGENTS narrative text.
 
-## Build System
+## 3) Mandatory Self-Update Rule for AGENTS.md
 
-- **Build tool**: BlueBuild (`blue-build/github-action@v1`)
-- **Trigger builds**: Manual workflow dispatch via GitHub Actions (`.github/workflows/build-amd.yml`, `build-nvidia.yml`)
-- **Recipe files**: `recipes/recipe-amd.yml`, `recipes/recipe-nvidia.yml`
-- **Modules**: Shared configs in `recipes/common-*.yml` (packages, flatpaks, drivers, systemd, etc.)
-- **Files deployed**: `files/system/` → `/` on image
+The agent must update `AGENTS.md` whenever any of the following changes occur:
 
-## Build Commands
+1. New operational/security rules are added to the project.
+2. Existing rules become obsolete, ambiguous, or contradictory.
+3. Better guidance patterns are identified during implementation/review.
+4. CI/CD, maintenance, or architecture standards change.
 
-```bash
-# Triggered via GitHub Actions workflow_dispatch
-# Workflow timeout: 45 minutes
-# No local build required - all builds run in CI
-```
+Requirement: apply focused refactors to keep this file current, minimal, and technically precise.
 
-## Image Variants
+## 4) Core Agent Principles
 
-| Variant        | Base Image                      | Registry                                 |
-| -------------- | ------------------------------- | ---------------------------------------- |
-| kinoite-amd    | quay.io/fedora/fedora-kinoite   | ghcr.io/jbdsjunior/kinoite-amd:latest    |
-| kinoite-nvidia | ghcr.io/ublue-os/kinoite-nvidia | ghcr.io/jbdsjunior/kinoite-nvidia:latest |
+- Act as Senior DevSecOps + Linux Systems Architect mindset.
+- Prioritize Shift-Left Security, IaC/declarative changes, rootless-first containers, and atomic rollback paths.
+- Operate with Fail-Fast, Recover-Faster posture.
+- Be proactive: detect drift, inconsistencies, broken references, and risky defaults; fix when safe.
+- Prefer official documentation and precise terminology.
 
-## Key Files
+## 5) Project Hard Constraints
 
-- `recipes/recipe-amd.yml` - AMD variant recipe
-- `recipes/recipe-nvidia.yml` - NVIDIA variant recipe
-- `recipes/common-*.yml` - Shared modules
-- `files/system/` - System config files deployed to image
-- `cosign.pub` - Public key for image verification
+- Keep AMD and NVIDIA flows strictly decoupled in recipes and CI jobs.
+- Do not enable Rechunk.
+- Preserve immutable workflow: structural host behavior must come from versioned repository changes.
 
-## Post-Install Aliases (defined in system)
+## 6) Always-On Quality and Security Gate
 
-| Alias             | Command                                                                     |
-| ----------------- | --------------------------------------------------------------------------- |
-| `update`          | topgrade                                                                    |
-| `rollback`        | sudo bootc rollback                                                         |
-| `kargs`           | rpm-ostree kargs                                                            |
-| `config-diff`     | sudo ostree admin config-diff                                               |
-| `update-status`   | systemctl --user status topgrade-update.timer topgrade-update.service       |
-| `tmpfiles-system` | sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf |
-| `kvm-setup`       | sudo setup-kvm.sh                                                           |
+For every change, the agent must:
 
-## Hardware Baseline
+1. Validate syntax/schema for edited files.
+2. Validate cross-file consistency (recipes, deployed files, docs, workflows).
+3. Validate references (paths, unit names, commands, aliases).
+4. Validate AMD/NVIDIA separation boundaries.
+5. Validate security impact (supply chain, privileges, policies, networking, container runtime).
+6. Replace outdated patterns with safer/current equivalents when low risk.
+7. Fix detected inconsistencies in the same change set whenever feasible.
+8. Report verification commands/results in summaries.
 
-Optimized for 64 GB RAM workstations. See `docs/HARDWARE_BASELINE.md`.
+## 7) Priority Audit Focus
+
+High priority checks:
+
+- Supply chain: Cosign flow and third-party repo trust model (GPG/signature hygiene).
+- Hardening: rootfs injections, sensitive permissions, policy lock-down/telemetry controls.
+- Stability: Wayland/graphics boot safety and AMD/NVIDIA isolation correctness.
+- CI/CD OCI: build/deploy robustness and vulnerability scanning integration (Trivy).
+
+Medium priority checks:
+
+- BlueBuild modularity and hardware-aware recipe composition.
+- IaC consistency for systemd units, sysctl tuning, storage tuning, and user automation.
+
+## 8) Non-Redundant References
+
+For project details, use canonical documents instead of duplicating here:
+
+- `README.md` (overview, usage, image switching)
+- `docs/POST_INSTALL.md` (post-install operations)
+- `docs/CI_CD.md` (pipelines and automation)
+- `docs/HARDWARE_BASELINE.md` (hardware baseline)
+- `recipes/` and `files/system/` (effective configuration source)
