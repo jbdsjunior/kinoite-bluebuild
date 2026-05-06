@@ -1,21 +1,15 @@
 # AGENTS.md - Kinoite BlueBuild
 
 ## Project Overview
+
 Immutable Fedora Kinoite (KDE Plasma) desktop built with [BlueBuild](https://blue-build.org/). Two variants: AMD-only and NVIDIA hybrid.
 
 ## Instruction Architecture (to prevent drift)
 
 This repository uses a modular instruction model:
 
-- `/.agent/agent.md` → Canonical directive for agent operation (source of truth).
-- `/.agents/agent.md` → Compatibility mirror used by some external orchestrators and legacy prompts.
-
-### Maintenance rules
-- Keep all persistent agent directives centralized in `/.agent/agent.md` to avoid drift.
-- Keep `/.agents/agent.md` synchronized with `/.agent/agent.md` to avoid instruction drift across orchestrators.
-- Keep instruction files concise, scan-friendly, and low-redundancy for LLM efficiency.
-
 ## Build System
+
 - **Build tool**: BlueBuild (`blue-build/github-action@v1`)
 - **Trigger builds**: Manual workflow dispatch via GitHub Actions (`.github/workflows/build-amd.yml`, `build-nvidia.yml`)
 - **Recipe files**: `recipes/recipe-amd.yml`, `recipes/recipe-nvidia.yml`
@@ -23,6 +17,7 @@ This repository uses a modular instruction model:
 - **Files deployed**: `files/system/` → `/` on image
 
 ## Build Commands
+
 ```bash
 # Triggered via GitHub Actions workflow_dispatch
 # Workflow timeout: 45 minutes
@@ -30,12 +25,14 @@ This repository uses a modular instruction model:
 ```
 
 ## Image Variants
-| Variant | Base Image | Registry |
-|---------|------------|----------|
-| kinoite-amd | quay.io/fedora/fedora-kinoite | ghcr.io/jbdsjunior/kinoite-amd:latest |
+
+| Variant        | Base Image                      | Registry                                 |
+| -------------- | ------------------------------- | ---------------------------------------- |
+| kinoite-amd    | quay.io/fedora/fedora-kinoite   | ghcr.io/jbdsjunior/kinoite-amd:latest    |
 | kinoite-nvidia | ghcr.io/ublue-os/kinoite-nvidia | ghcr.io/jbdsjunior/kinoite-nvidia:latest |
 
 ## Key Files
+
 - `recipes/recipe-amd.yml` - AMD variant recipe
 - `recipes/recipe-nvidia.yml` - NVIDIA variant recipe
 - `recipes/common-*.yml` - Shared modules
@@ -43,15 +40,17 @@ This repository uses a modular instruction model:
 - `cosign.pub` - Public key for image verification
 
 ## Post-Install Aliases (defined in system)
-| Alias | Command |
-|-------|--------|
-| `update` | topgrade |
-| `rollback` | sudo bootc rollback |
-| `kargs` | rpm-ostree kargs |
-| `config-diff` | sudo ostree admin config-diff |
-| `update-status` | systemctl --user status topgrade-update.timer topgrade-update.service |
+
+| Alias             | Command                                                                     |
+| ----------------- | --------------------------------------------------------------------------- |
+| `update`          | topgrade                                                                    |
+| `rollback`        | sudo bootc rollback                                                         |
+| `kargs`           | rpm-ostree kargs                                                            |
+| `config-diff`     | sudo ostree admin config-diff                                               |
+| `update-status`   | systemctl --user status topgrade-update.timer topgrade-update.service       |
 | `tmpfiles-system` | sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf |
-| `kvm-setup` | sudo setup-kvm.sh |
+| `kvm-setup`       | sudo setup-kvm.sh                                                           |
 
 ## Hardware Baseline
+
 Optimized for 64 GB RAM workstations. See `docs/HARDWARE_BASELINE.md`.
