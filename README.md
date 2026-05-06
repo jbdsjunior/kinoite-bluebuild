@@ -49,13 +49,13 @@ Quick summary:
 
 ### 1) Switch to the custom image
 
-# AMD
+AMD
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-# NVIDIA
+NVIDIA
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
@@ -67,13 +67,13 @@ Reboot after completion.
 
 Project public key: [`cosign.pub`](cosign.pub).
 
-# Example (AMD)
+Example (AMD)
 
 ```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-# Example (NVIDIA)
+Example (NVIDIA)
 
 ```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
@@ -81,13 +81,13 @@ cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 ### 3) (Optional) Enforce signature policy during image switch
 
-# AMD
+AMD
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-# NVIDIA
+NVIDIA
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest

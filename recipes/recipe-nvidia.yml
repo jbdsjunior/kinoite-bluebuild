@@ -13,6 +13,13 @@ platforms:
 modules:
   - from-file: common-base.yml
 
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - nvidia-container-toolkit
+
   - type: systemd
     system:
       enabled:
