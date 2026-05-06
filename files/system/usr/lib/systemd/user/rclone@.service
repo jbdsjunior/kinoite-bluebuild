@@ -46,7 +46,6 @@ ExecStopPost=/usr/bin/rmdir %h/Cloud/%i
 
 Restart=on-failure
 RestartSec=10
-RestartMaxDelaySec=60
 
 # High-performance tuning
 LimitNOFILE=1048576
