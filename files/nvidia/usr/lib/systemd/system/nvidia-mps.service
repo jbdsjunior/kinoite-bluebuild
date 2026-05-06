@@ -9,7 +9,7 @@ Environment=CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
 Environment=CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-mps-log
 ExecStartPre=/usr/bin/mkdir -p /tmp/nvidia-mps /tmp/nvidia-mps-log
 ExecStart=/usr/bin/nvidia-cuda-mps-control -d
-ExecStop=/usr/bin/echo quit | /usr/bin/nvidia-cuda-mps-control
+ExecStop=/bin/sh -c '/usr/bin/echo quit | /usr/bin/nvidia-cuda-mps-control'
 Restart=on-failure
 
 [Install]
