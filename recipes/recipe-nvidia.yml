@@ -23,7 +23,6 @@ modules:
   - type: systemd
     system:
       enabled:
-        # - nvidia-compute-tuning.service
         - nvidia-persistenced.service
         - nvidia-powerd.service
         - supergfxd.service
