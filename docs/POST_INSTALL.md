@@ -13,12 +13,6 @@ rpm-ostree status
 bootc status
 ```
 
-### Automatic update timer (user scope)
-
-```bash
-systemctl --user status topgrade-update.timer
-```
-
 Expected: `active (waiting)` with recurring interval `OnUnitInactiveSec=45m` and randomized delay.
 
 > ⚠️ **Warning:** this timer is **user-scoped**. Run the command as the logged-in desktop user.
@@ -175,12 +169,6 @@ systemctl --user enable --now rclone@<remote-name>.service
 
 
 ## 10) Post-install health check
-
-Run the non-destructive health check script:
-
-```bash
-postinstall-healthcheck.sh
-```
 
 This validates staged rpm-ostreed policy, topgrade user timer visibility/enabled state, and rootless Podman readiness.
 
