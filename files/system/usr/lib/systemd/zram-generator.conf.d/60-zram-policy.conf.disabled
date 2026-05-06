@@ -1,4 +1,0 @@
-[zram0]
-zram-size = min(ram * 0.5, 16384)
-compression-algorithm = zstd
-swap-priority = 32767
