@@ -20,7 +20,7 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 - Trigger: `workflow_dispatch` (manual or invoked by `check-updates.yml`)
 - Timeout: 45 minutes
 - Main action: `blue-build/github-action@v1`
-- Recipe: `recipes/recipe-amd.yml`
+- Recipe: `recipe-amd.yml`
 - Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### NVIDIA
@@ -28,7 +28,7 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 - Trigger: `workflow_dispatch` (manual or invoked by `check-updates.yml`)
 - Timeout: 45 minutes
 - Main action: `blue-build/github-action@v1`
-- Recipe: `recipes/recipe-nvidia.yml`
+- Recipe: `recipe-nvidia.yml`
 - Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### Relevant build settings
@@ -51,7 +51,7 @@ ruby -ryaml -e "Dir.glob('{recipes,.github/workflows}/**/*.yml').sort.each{|f| Y
 2. Verify recipe paths in build workflows:
 
 ```bash
-rg -n "recipe:\\s+recipes/recipe-(amd|nvidia)\\.yml" .github/workflows/build-*.yml
+rg -n "recipe:\\s+recipe-(amd|nvidia)\\.yml" .github/workflows/build-*.yml
 ```
 
 3. Verify project restriction (rechunk disabled):
