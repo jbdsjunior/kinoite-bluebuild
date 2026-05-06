@@ -32,7 +32,6 @@ modules:
 
         - nvidia-persistenced.service
         - nvidia-powerd.service
-        - supergfxd.service
 
   - type: initramfs
   - type: signing

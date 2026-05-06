@@ -25,7 +25,7 @@ modules:
         - podman-compose
         - podman-docker
         - podman-machine
-        - slirp4netns # slirp4netns is no longer the default for rootless networking on new podman installations, obsoleted in favor of passt. If you have containers using slirp4netns, make sure slirp4netns is installed
+        - passt
         - fuse
         - fuse-libs
         - tailscale
