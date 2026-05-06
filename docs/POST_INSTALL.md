@@ -21,22 +21,21 @@ Expected: `active (waiting)` with recurring interval `OnUnitInactiveSec=45m` and
 
 ## 2) Available Global Aliases
 
-| Alias | Command/Action |
-| :-- | :-- |
-| `update` | Run `topgrade` |
-| `rollback` | `sudo bootc rollback` |
-| `kargs` | `rpm-ostree kargs` |
-| `kargs-edit` | `sudo rpm-ostree kargs --editor` |
-| `config-diff` | `sudo ostree admin config-diff` |
-| `update-status` | `systemctl --user status topgrade-update.timer topgrade-update.service` |
-| `fw-status` | `sudo systemctl status firewalld` |
-| `dns-status` | `sudo systemctl status systemd-resolved` |
-| `kvm-status` | `sudo systemctl status libvirtd` |
-| `secureboot-enroll` | `ujust enroll-secure-boot-key` (NVIDIA) |
-| `tmpfiles-system` | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf` |
-| `tmpfiles-user` | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
-| `status-all` | `update-status && fw-status && dns-status` |
-| `kvm-setup` | `sudo setup-kvm.sh` |
+| Alias               | Command/Action                                                                       |
+| :------------------ | :----------------------------------------------------------------------------------- |
+| `update`            | Run `topgrade`                                                                       |
+| `rollback`          | `sudo bootc rollback`                                                                |
+| `kargs`             | `rpm-ostree kargs`                                                                   |
+| `kargs-edit`        | `sudo rpm-ostree kargs --editor`                                                     |
+| `config-diff`       | `sudo ostree admin config-diff`                                                      |
+| `fw-status`         | `sudo systemctl status firewalld`                                                    |
+| `dns-status`        | `sudo systemctl status systemd-resolved`                                             |
+| `kvm-status`        | `sudo systemctl status libvirtd`                                                     |
+| `secureboot-enroll` | `ujust enroll-secure-boot-key` (NVIDIA)                                              |
+| `tmpfiles-system`   | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
+| `tmpfiles-user`     | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
+| `status-all`        | `fw-status && dns-status`                                                            |
+| `kvm-setup`         | `sudo setup-kvm.sh`                                                                  |
 
 ---
 
@@ -144,10 +143,9 @@ sudo bootc rollback
 ```
 
 3. Reboot.
-4. Validate update timer and core services:
+4. Reboot and validate update timer and core services:
 
 ```bash
-systemctl --user status topgrade-update.timer
 sudo systemctl status firewalld
 sudo systemctl status systemd-resolved
 ```
@@ -167,10 +165,9 @@ rclone config
 systemctl --user enable --now rclone@<remote-name>.service
 ```
 
-
 ## 10) Post-install health check
 
-This validates staged rpm-ostreed policy, topgrade user timer visibility/enabled state, and rootless Podman readiness.
+This validates staged rpm-ostreed policy and rootless Podman readiness.
 
 ---
 
