@@ -33,6 +33,7 @@ Requirement: apply focused refactors to keep this file current, minimal, and tec
 
 ## 5) Project Hard Constraints
 
+- Build workflows (`build-amd.yml`, `build-nvidia.yml`) must enforce a mandatory pre-build security gate (Trivy + SARIF) and only execute image build when the gate succeeds.
 - Keep AMD and NVIDIA flows strictly decoupled in recipes and CI jobs.
 - Do not enable Rechunk.
 - Preserve immutable workflow: structural host behavior must come from versioned repository changes.
