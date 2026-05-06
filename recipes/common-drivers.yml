@@ -9,6 +9,8 @@ modules:
         # Hardware acceleration (Primary AMD RX 6600 XT)
         - mesa-va-drivers
         - mesa-vulkan-drivers
+        # AMD observability and diagnostics
+        - rocm-smi
 
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
