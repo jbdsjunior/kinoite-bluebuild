@@ -36,6 +36,7 @@ Requirement: apply focused refactors to keep this file current, minimal, and tec
 - Keep AMD and NVIDIA flows strictly decoupled in recipes and CI jobs.
 - Do not enable Rechunk.
 - Preserve immutable workflow: structural host behavior must come from versioned repository changes.
+- Enforce rapid maintenance timers: Flatpak checks every 15 minutes, rpm-ostree checks every 45 minutes, and Podman prune daily with boot-trigger + low-impact (idle-friendly) execution semantics.
 
 ## 6) Always-On Quality and Security Gate
 
