@@ -7,7 +7,7 @@ modules:
       allow-erasing: true
       packages:
         - "@virtualization"
-        # - gnome-boxes
+        - gnome-boxes
       exclude:
         - virt-viewer
 

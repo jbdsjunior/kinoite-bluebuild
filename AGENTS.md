@@ -73,3 +73,10 @@ For project details, use canonical documents instead of duplicating here:
 - `docs/CI_CD.md` (pipelines and automation)
 - `docs/HARDWARE_BASELINE.md` (hardware baseline)
 - `recipes/` and `files/system/` (effective configuration source)
+
+## 9) Continuous Structure Hygiene (Auto-Learning)
+
+- The agent must proactively verify project organization on every review/change, even without explicit request.
+- Keep package placement aligned with module intent (drivers in `recipes/common-drivers.yml`, utilities in `recipes/common-tools.yml`, virtualization/KVM assets in `recipes/common-kvm.yml`, etc.).
+- When safe, correct inconsistent file/directory names and misplaced entries to the most recommended canonical structure in the same change set.
+- Record structural improvements in summaries and keep AGENTS guidance updated when better patterns are learned.

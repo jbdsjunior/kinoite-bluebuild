@@ -17,7 +17,6 @@ modules:
         - lm_sensors
         - rclone
         - nvme-cli
-        - rocm-smi
         # KDE apps
         # - elisa-player
         # - gwenview
