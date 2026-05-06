@@ -3,7 +3,6 @@
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
 ![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
-![Status-Security](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/security-scan.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -41,7 +40,8 @@ Quick summary:
 
 - image builds (`build-amd.yml`, `build-nvidia.yml`) are manual (`workflow_dispatch`);
 - `check-updates.yml` runs on schedule and can trigger builds when a new upstream digest is detected;
-- security scanning (`security-scan.yml`) and cleanup (`cleanup.yml`) run continuously.
+- each build workflow executes a Trivy security job before building, and only builds after security succeeds;
+- `cleanup.yml` runs continuously for operational hygiene.
 
 ---
 
