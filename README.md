@@ -63,23 +63,7 @@ sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
 
 Reboot after completion.
 
-### 2) Verify Cosign signature (recommended)
-
-Project public key: [`cosign.pub`](cosign.pub).
-
-Example (AMD)
-
-```bash
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
-```
-
-Example (NVIDIA)
-
-```bash
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
-
-### 3) (Optional) Enforce signature policy during image switch
+### 2) Enforce signature policy during image switch
 
 AMD
 
