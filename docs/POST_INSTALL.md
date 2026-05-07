@@ -3,7 +3,21 @@
 This guide describes post-rebase validation and adjustments for safe operation on an immutable system.
 
 ---
+### (Optional) Verify Cosign signature (recommended)
 
+Project public key: [`cosign.pub`](cosign.pub).
+
+Example (AMD)
+
+```bash
+cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
+```
+
+Example (NVIDIA)
+
+```bash
+cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
+```
 ## 1) Initial Validation (after reboot)
 
 ### System state
