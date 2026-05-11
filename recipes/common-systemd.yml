@@ -18,6 +18,6 @@ modules:
     user:
       enabled:
         # User-scope Flatpak updates
-        # - flatpak-user-update.timer
+        - flatpak-user-update.timer
         # Daily rootless Podman cleanup
         - podman-prune-user.timer
