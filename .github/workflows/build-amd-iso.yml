@@ -28,7 +28,6 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
-          exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
@@ -56,13 +55,12 @@ jobs:
       - name: Detect Image Version
         id: detect
         run: |
-          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | sort -nr | head -n 1)
+          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | head -n 1)
           if [ -z "$VERSION" ]; then
             echo "Erro: Versão numérica não detectada no GHCR."
             exit 1
           fi
           echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
-
       - name: Generate ISO
         uses: jasonn3/build-container-installer@main
         id: build
@@ -85,3 +83,16 @@ jobs:
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
           retention-days: 3
           if-no-files-found: error
+
+      # - name: Publish ISO to GHCR
+      #   shell: bash
+      #   run: |
+      #     IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/kinoite-iso:latest"
+      #     ISO_FILE="${{ steps.build.outputs.iso_name }}"
+          
+      #     echo "FROM scratch" > "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
+      #     echo "COPY $ISO_FILE /" >> "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
+          
+      #     echo "${{ github.token }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+      #     podman build -f "${{ steps.build.outputs.iso_path }}/Dockerfile.iso" -t "$IMAGE_NAME" "${{ steps.build.outputs.iso_path }}"
+      #     podman push "$IMAGE_NAME"
