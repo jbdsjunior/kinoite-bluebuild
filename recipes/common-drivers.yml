@@ -24,7 +24,7 @@ modules:
 
         # Image format support (HEIC/HEVC/AVIF)
         - heif-pixbuf-loader
-        - libheif
+        # - libheif ## already installed
         - libheif-tools
 
         # High-definition Bluetooth audio (AAC, LDAC)
