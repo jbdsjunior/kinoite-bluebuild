@@ -7,8 +7,8 @@ modules:
       skip-unavailable: true
       packages:
         # # Hardware acceleration (Primary AMD RX 6600 XT)
-        # - mesa-va-drivers ## already installed
-        # - mesa-vulkan-drivers ## already installed
+        - mesa-va-drivers-freeworld
+        - mesa-vdpau-drivers-freeworld
         # AMD observability and diagnostics
         - rocm-smi
 
@@ -16,7 +16,7 @@ modules:
         - ffmpeg
         - ffmpeg-libs
 
-        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
         # - gstreamer1-libav ## already installed
 
@@ -31,3 +31,4 @@ modules:
         # - libldac ## already installed
         # - lame ## already installed
         - "@multimedia"
+        - "@sound-and-video"
