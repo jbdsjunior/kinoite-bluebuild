@@ -28,6 +28,7 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
+          exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
@@ -55,7 +56,7 @@ jobs:
       - name: Detect Image Version
         id: detect
         run: |
-          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | head -n 1)
+          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | sort -nr | head -n 1)
           if [ -z "$VERSION" ]; then
             echo "Erro: Versão numérica não detectada no GHCR."
             exit 1
