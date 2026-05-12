@@ -21,6 +21,8 @@ modules:
         - gstreamer1-plugins-ugly
         # - gstreamer1-libav ## already installed
 
+        - libavcodec-freeworld
+
         # Image format support (HEIC/HEVC/AVIF)
         - heif-pixbuf-loader
         - libheif
