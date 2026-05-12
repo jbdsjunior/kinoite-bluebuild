@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         # Container images published by this repository
-        image-name: [kinoite-amd, kinoite-nvidia]
+        image-name: [kinoite-amd]
     steps:
       - name: Delete old package versions
         uses: actions/delete-package-versions@v5

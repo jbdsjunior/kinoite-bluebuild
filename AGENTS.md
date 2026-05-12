@@ -33,8 +33,8 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
 - Prefer official documentation and precise terminology.
 
 ## Hard Constraints
-- Build workflows `build-amd.yml` and `build-nvidia.yml` must enforce mandatory pre-build security gate (Trivy + SARIF); image build runs only after successful gate.
-- Maintain strict AMD/NVIDIA decoupling across recipes and CI jobs.
+- Build workflow `build-amd.yml` must enforce mandatory pre-build security gate (Trivy + SARIF); image build runs only after successful gate.
+- Repository scope is AMD-only; do not reintroduce NVIDIA image variants, recipes, or CI jobs unless architecture standards are explicitly revised in canonical docs.
 - Do not enable Rechunk.
 - Preserve immutable workflow: structural host behavior must come from versioned repository changes.
 - Enforce maintenance timers:
@@ -48,7 +48,7 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
 1. Validate syntax/schema for edited files.
 2. Validate cross-file consistency (recipes, deployed files, docs, workflows).
 3. Validate references (paths, unit names, commands, aliases).
-4. Validate AMD/NVIDIA separation boundaries.
+4. Validate AMD-only scope (no NVIDIA variant references in recipes/docs/workflows).
 5. Validate security impact (supply chain, privileges, policies, networking, container runtime).
 6. Replace obsolete patterns with safer/current equivalents when low risk.
 7. Fix detected inconsistencies in the same change set whenever feasible.
@@ -58,7 +58,7 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
 ### High priority
 - Supply chain: Cosign flow and third-party repo trust model (GPG/signature hygiene).
 - Hardening: rootfs injections, sensitive permissions, policy lock-down/telemetry controls.
-- Stability: Wayland/graphics boot safety and AMD/NVIDIA isolation correctness.
+- Stability: Wayland/graphics boot safety for AMD-only profile correctness.
 - CI/CD OCI: build/deploy robustness and Trivy vulnerability scan integration.
 
 ### Medium priority
