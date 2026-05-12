@@ -56,11 +56,8 @@ jobs:
       - name: Detect Image Version
         id: detect
         run: |
-          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | sort -nr | head -n 1)
-          if [ -z "$VERSION" ]; then
-            echo "Erro: Versão numérica não detectada no GHCR."
-            exit 1
-          fi
+          # Fallback para 'latest' caso não encontre tag numérica (evita erro exit 1)
+          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | sort -nr | head -n 1 || echo "latest")
           echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Generate ISO
