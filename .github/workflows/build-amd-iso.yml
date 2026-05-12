@@ -2,7 +2,7 @@ name: build-amd-iso
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 3 * * *" # Roda diariamente às 03:00 UTC
   workflow_dispatch:
 
 concurrency:
@@ -19,7 +19,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4 # Corrigido de v6 para v4
+        uses: actions/checkout@v4
 
       - name: Run Trivy scan (filesystem)
         uses: aquasecurity/trivy-action@v0.36.0
@@ -39,27 +39,25 @@ jobs:
 
   generate-nightly-iso:
     name: Generate nightly ISO (BlueBuild)
-    needs: security-scan # Corrigido: dependência alterada para aguardar o gate de segurança
+    needs: security-scan
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: read
+      contents: write # OBRIGATÓRIO: Necessário para deletar/criar releases e tags
       packages: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Utiliza o método oficial recomendado pelo template do BlueBuild para geração de ISO OCI
       - name: Generate ISO
         uses: jasonn3/build-container-installer@v1.2.4
         with:
           arch: x86_64
           image_name: kinoite-amd
-          image_repo: ghcr.io/jbdsjunior
+          image_repo: ghcr.io/${{ github.repository_owner }}
           image_tag: latest
-          version: 40 # Ajuste para 41 caso a imagem base do seu Fedora Kinoite seja a 41
-          iso_name: kinoite-amd-nightly-live-${{ github.run_number }}.iso
-          # Injeta a chave Cosign existente no seu projeto para permitir a validação do Secure Boot via MOK
+          version: 44
+          iso_name: kinoite-amd-nightly.iso 
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
       - name: Upload nightly ISO artifacts
@@ -69,15 +67,18 @@ jobs:
           path: |
             ./*.iso
             ./*.iso.CHECKSUM
-          retention-days: 14
+          # Retenção reduzida para poupar espaço, já que a ISO estará na Release
+          retention-days: 3 
 
       - name: Update Nightly Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Cria a tag/release se não existir, ou atualiza se já existir
-          gh release delete nightly --yes || true
-          git tag -d nightly || true
-          git tag nightly
-          git push origin nightly --force
-          gh release create nightly ./*.iso ./*.iso.CHECKSUM --title "Nightly Build" --notes "Build gerada automaticamente em $(date)" --prerelease
+          # 1. Tenta deletar a release antiga e a tag correspondente de forma nativa via CLI
+          gh release delete nightly --cleanup-tag --yes || true
+          
+          # 2. Cria a nova release apontando para o commit atual com os arquivos gerados
+          gh release create nightly ./*.iso ./*.iso.CHECKSUM \
+            --title "Nightly Build ($(date +'%Y-%m-%d'))" \
+            --notes "Build ISO gerada automaticamente a partir da imagem OCI mais recente." \
+            --prerelease
