@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@v1.2.4
+        uses: jasonn3/build-container-installer@v1.4.0
         with:
           arch: x86_64
           image_name: kinoite-amd
