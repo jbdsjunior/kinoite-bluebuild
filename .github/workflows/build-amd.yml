@@ -75,4 +75,4 @@ jobs:
           use_unstable_cli: false
           skip_checkout: true
           build_chunked_oci: false
-          max_layers: 128
+          # max_layers: 128
