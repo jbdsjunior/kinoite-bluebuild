@@ -13,11 +13,6 @@ Example (AMD)
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-Example (NVIDIA)
-
-```bash
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
 ## 1) Initial Validation (after reboot)
 
 ### System state
@@ -45,7 +40,6 @@ Expected: `active (waiting)` with recurring interval `OnUnitInactiveSec=45m` and
 | `fw-status`         | `sudo systemctl status firewalld`                                                    |
 | `dns-status`        | `sudo systemctl status systemd-resolved`                                             |
 | `kvm-status`        | `sudo systemctl status libvirtd`                                                     |
-| `secureboot-enroll` | `ujust enroll-secure-boot-key` (NVIDIA)                                              |
 | `tmpfiles-system`   | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
 | `tmpfiles-user`     | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
 | `status-all`        | `fw-status && dns-status`                                                            |
@@ -102,19 +96,7 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 
 ---
 
-## 6) NVIDIA (nvidia variant only)
-
-If Secure Boot is enabled, enroll the MOK key:
-
-```bash
-ujust enroll-secure-boot-key
-```
-
-Then reboot and validate kernel modules and graphics stack according to your workflow.
-
----
-
-## 7) OCI-native operation and kernel argument changes
+## 6) OCI-native operation and kernel argument changes
 
 List current kernel arguments:
 
@@ -138,7 +120,7 @@ sudo ostree admin config-diff
 
 ---
 
-## 8) Disaster Recovery / Rollback
+## 7) Disaster Recovery / Rollback
 
 ### When to use
 
@@ -172,20 +154,20 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 9) Rclone Mount (optional)
+## 8) Rclone Mount (optional)
 
 ```bash
 rclone config
 systemctl --user enable --now rclone@<remote-name>.service
 ```
 
-## 10) Post-install health check
+## 9) Post-install health check
 
 This validates staged rpm-ostreed policy and rootless Podman readiness.
 
 ---
 
-## 11) Podman automatic cleanup timers
+## 10) Podman automatic cleanup timers
 
 Validate root-scope timer:
 
