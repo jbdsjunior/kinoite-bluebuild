@@ -16,7 +16,6 @@ modules:
         # Utilities
         - lm_sensors
         - rclone
-        - nvme-cli
         # KDE apps
         # - elisa-player
         # - gwenview
