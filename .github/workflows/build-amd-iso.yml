@@ -1,13 +1,9 @@
 name: build-amd-iso
 
 on:
-  workflow_run:
-    workflows: ["build-amd"] # Dispara automaticamente após a imagem OCI estar pronta
-    types:
-      - completed
   schedule:
-    - cron: "0 3 * * *"
-  workflow_dispatch:
+    - cron: "0 3 * * *" # Executa automaticamente todos os dias às 03:00 UTC (Madrugada)
+  workflow_dispatch: # Permite a execução manual caso você precise gerar uma ISO pontual
 
 concurrency:
   group: build-iso-${{ github.ref || github.run_id }}
@@ -16,7 +12,6 @@ concurrency:
 jobs:
   security-scan:
     name: Security scan (nightly ISO)
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -24,7 +19,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run Trivy scan (filesystem)
         uses: aquasecurity/trivy-action@v0.36.0
@@ -48,31 +43,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: write 
+      contents: write
       packages: read
     
-    # Gestão Estruturada de Dados: Variáveis centralizadas
-    env:
-      IMAGE_NAME: kinoite-amd
-      IMAGE_TAG: latest
-      VERSION: 44
-      VARIANT: Kinoite # Define explicitamente a variante do instalador Anaconda
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
 
+      - name: Detect Image Version
+        id: detect
+        run: |
+          # A ISO vai usar a imagem "latest" que estiver disponível no GHCR no momento da madrugada
+          VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | head -n 1)
+          if [ -z "$VERSION" ]; then
+            echo "Erro: Versão numérica não detectada no GHCR."
+            exit 1
+          fi
+          echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@v1.4.0
-        id: build # Identificador necessário para recolher outputs
+        uses: jasonn3/build-container-installer@main
+        id: build
         with:
           arch: x86_64
-          image_name: ${{ env.IMAGE_NAME }}
+          variant: Kinoite
+          image_name: kinoite-amd
           image_repo: ghcr.io/${{ github.repository_owner }}
-          image_tag: ${{ env.IMAGE_TAG }}
-          version: ${{ env.VERSION }}
-          variant: ${{ env.VARIANT }}
-          iso_name: ${{ env.IMAGE_NAME }}-nightly.iso 
+          image_tag: latest
+          version: ${{ steps.detect.outputs.fedorav }}
+          iso_name: kinoite-amd-nightly.iso 
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
       - name: Upload nightly ISO artifacts
@@ -91,10 +90,9 @@ jobs:
         run: |
           gh release delete nightly --cleanup-tag --yes || true
           
-          # Utiliza diretamente os outputs oficiais para anexar os ficheiros
           gh release create nightly \
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }} \
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM \
-            --title "Nightly Build - Fedora ${{ env.VERSION }}" \
-            --notes "ISO gerada automaticamente. Base: Fedora ${{ env.VARIANT }} ${{ env.VERSION }}." \
+            --title "Nightly Build - Fedora ${{ steps.detect.outputs.fedorav }}" \
+            --notes "ISO baseada na imagem Fedora Kinoite ${{ steps.detect.outputs.fedorav }} (Última compilação do dia anterior)." \
             --prerelease
