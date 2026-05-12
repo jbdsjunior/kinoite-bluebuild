@@ -45,9 +45,6 @@ jobs:
     permissions:
       contents: write
       packages: read
-    # Resolve a depreciação do Node.js 20 forçando o uso do Node.js 24 no runner
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: Checkout repo
