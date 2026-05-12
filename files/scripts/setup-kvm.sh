@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 readonly REQUIRED_GROUPS="libvirt,kvm"
