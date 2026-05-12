@@ -6,9 +6,9 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # Hardware acceleration (Primary AMD RX 6600 XT)
-        - mesa-va-drivers
-        - mesa-vulkan-drivers
+        # # Hardware acceleration (Primary AMD RX 6600 XT)
+        # - mesa-va-drivers ## already installed
+        # - mesa-vulkan-drivers ## already installed
         # AMD observability and diagnostics
         - rocm-smi
 
@@ -18,7 +18,7 @@ modules:
 
         - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
-        - gstreamer1-libav
+        # - gstreamer1-libav ## already installed
 
         # Image format support (HEIC/HEVC/AVIF)
         - heif-pixbuf-loader
@@ -28,6 +28,6 @@ modules:
         # High-definition Bluetooth audio (AAC, LDAC)
         - fdk-aac
         - libfdk-aac
-        - libldac
-        - lame
+        # - libldac ## already installed
+        # - lame ## already installed
         - "@multimedia"
