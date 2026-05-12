@@ -2,7 +2,6 @@
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-NVIDIA](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-nvidia.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -14,12 +13,11 @@ Immutable OCI images based on Fedora Kinoite (KDE Plasma), built with BlueBuild 
 
 ## Overview
 
-This repository publishes **two variants**:
+This repository publishes **one variant**:
 
-| Variant          | Base Image                        | Target                                     | Use Case                                                             |
-| :--------------- | :-------------------------------- | :----------------------------------------- | :------------------------------------------------------------------- |
-| `kinoite-amd`    | `quay.io/fedora/fedora-kinoite`   | `ghcr.io/jbdsjunior/kinoite-amd:latest`    | AMD systems without a dedicated NVIDIA GPU                           |
-| `kinoite-nvidia` | `ghcr.io/ublue-os/kinoite-nvidia` | `ghcr.io/jbdsjunior/kinoite-nvidia:latest` | Systems with NVIDIA GPU support (including AMD+NVIDIA hybrid setups) |
+| Variant       | Base Image                      | Target                                  | Use Case                      |
+| :------------ | :------------------------------ | :-------------------------------------- | :---------------------------- |
+| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD systems (single variant). |
 
 ### Project Principles
 
@@ -38,7 +36,7 @@ Detailed automation documentation is available in [`docs/CI_CD.md`](docs/CI_CD.m
 
 Quick summary:
 
-- image builds (`build-amd.yml`, `build-nvidia.yml`) are manual (`workflow_dispatch`);
+- image build (`build-amd.yml`) is manual (`workflow_dispatch`);
 - `check-updates.yml` runs on schedule and can trigger builds when a new upstream digest is detected;
 - each build workflow executes a Trivy security job before building, and only builds after security succeeds;
 - `cleanup.yml` runs continuously for operational hygiene.
@@ -55,11 +53,6 @@ AMD
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-NVIDIA
-
-```bash
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
 
 Reboot after completion.
 
@@ -71,11 +64,6 @@ AMD
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-NVIDIA
-
-```bash
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-nvidia:latest
-```
 
 ### 4) Post-installation
 
@@ -102,8 +90,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 | Path                        | Purpose                                                |
 | :-------------------------- | :----------------------------------------------------- |
-| `recipes/recipe-amd.yml`    | Main AMD variant recipe                                |
-| `recipes/recipe-nvidia.yml` | Main NVIDIA variant recipe                             |
+| `recipes/recipe-amd.yml`    | Main AMD recipe variant                                |
 | `recipes/common-*.yml`      | Shared modules (packages, drivers, services, and more) |
 | `files/system/`             | Files applied to the image filesystem                  |
 | `.github/workflows/`        | CI/CD pipelines                                        |

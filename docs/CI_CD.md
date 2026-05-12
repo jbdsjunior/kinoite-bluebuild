@@ -7,7 +7,6 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 | Workflow | Trigger | Goal |
 | :-- | :-- | :-- |
 | `build-amd.yml` | `workflow_dispatch` (manual or triggered by `check-updates.yml`) | Run Trivy security gate, then build and publish AMD image |
-| `build-nvidia.yml` | `workflow_dispatch` (manual or triggered by `check-updates.yml`) | Run Trivy security gate, then build and publish NVIDIA image |
 | `check-updates.yml` | `schedule` (every 2h) + `workflow_dispatch` | Detect new upstream digest and trigger builds |
 | `cleanup.yml` | daily `schedule` + `workflow_dispatch` | Clean up old images and workflow runs |
 
@@ -21,14 +20,6 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 - Timeout: 45 minutes
 - Main action: `blue-build/github-action@v1`
 - Recipe: `recipe-amd.yml`
-- Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
-
-### NVIDIA
-- Workflow: `.github/workflows/build-nvidia.yml`
-- Trigger: `workflow_dispatch` (manual or invoked by `check-updates.yml`)
-- Timeout: 45 minutes
-- Main action: `blue-build/github-action@v1`
-- Recipe: `recipe-nvidia.yml`
 - Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
 
 ### Relevant build settings
@@ -51,7 +42,7 @@ ruby -ryaml -e "Dir.glob('{recipes,.github/workflows}/**/*.yml').sort.each{|f| Y
 2. Verify recipe paths in build workflows:
 
 ```bash
-rg -n "recipe:\\s+recipe-(amd|nvidia)\\.yml" .github/workflows/build-*.yml
+rg -n "recipe:\s+recipe-amd\.yml" .github/workflows/build-amd.yml
 ```
 
 3. Verify project restriction (rechunk disabled):
@@ -67,12 +58,12 @@ rg -n "build_chunked_oci:\\s+false" .github/workflows/build-*.yml
 Workflow: `.github/workflows/check-updates.yml`
 
 - Schedule: `0 */2 * * *` (every 2 hours)
-- Matrix: `amd` and `nvidia`
+- Matrix: `amd`
 - Flow:
   1. Read `base-image` from `recipes/recipe-<flavor>.yml`
   2. Get remote digest using `skopeo inspect`
   3. Compare through cache key `upstream-<flavor>-<digest>`
-  4. If digest is new, trigger `gh workflow run build-<flavor>.yml`
+  4. If digest is new, trigger `gh workflow run build-amd.yml`
 
 > Practical outcome: image builds remain manual by design, but the checker can **automatically orchestrate** build triggers when upstream changes.
 
@@ -82,7 +73,7 @@ Workflow: `.github/workflows/check-updates.yml`
 
 Security scan is embedded in each build workflow as a mandatory gate:
 
-- Job `security-scan` runs **before** `build-amd` / `build-nvidia`
+- Job `security-scan` runs **before** `build-amd`
 - Build jobs depend on `needs: security-scan`
 - Trivy filesystem mode (`scan-type: fs`)
 - Severities: `CRITICAL,HIGH`
