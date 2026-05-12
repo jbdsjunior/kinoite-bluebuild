@@ -25,7 +25,6 @@ modules:
         - podman-compose
         - podman-docker
         - podman-machine
-        - passt
         - fuse
         - fuse-libs
         - tailscale
