@@ -4,6 +4,8 @@ Description=Monthly BTRFS Scrub and Balance
 [Timer]
 OnCalendar=monthly
 Persistent=true
+RandomizedDelaySec=2h
+AccuracySec=10m
 
 [Install]
 WantedBy=timers.target
