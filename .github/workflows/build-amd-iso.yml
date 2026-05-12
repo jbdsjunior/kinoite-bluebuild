@@ -48,22 +48,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: write # Necessário para gerenciar Releases
+      contents: write 
       packages: read
+    
+    # Gestão Estruturada de Dados: Variáveis centralizadas
+    env:
+      IMAGE_NAME: kinoite-amd
+      IMAGE_TAG: latest
+      VERSION: 44
+      VARIANT: Kinoite # Define explicitamente a variante do instalador Anaconda
+
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@main
-        id: build # OBRIGATÓRIO: Permite referenciar os outputs gerados nos próximos passos
+        uses: jasonn3/build-container-installer@v1.4.0
+        id: build # Identificador necessário para recolher outputs
         with:
           arch: x86_64
-          image_name: kinoite-amd
+          image_name: ${{ env.IMAGE_NAME }}
           image_repo: ghcr.io/${{ github.repository_owner }}
-          image_tag: latest
-          version: 44 # Utilize 44 para o instalador buscar os pacotes do Fedora 44
-          iso_name: kinoite-amd-nightly.iso 
+          image_tag: ${{ env.IMAGE_TAG }}
+          version: ${{ env.VERSION }}
+          variant: ${{ env.VARIANT }}
+          iso_name: ${{ env.IMAGE_NAME }}-nightly.iso 
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
       - name: Upload nightly ISO artifacts
@@ -80,13 +89,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Remove a release anterior e a tag
           gh release delete nightly --cleanup-tag --yes || true
           
-          # Cria a release utilizando exatamente os outputs dinâmicos da action
+          # Utiliza diretamente os outputs oficiais para anexar os ficheiros
           gh release create nightly \
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }} \
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM \
-            --title "Nightly Build - Fedora 44" \
-            --notes "ISO gerada automaticamente. Base: Fedora Kinoite 44." \
+            --title "Nightly Build - Fedora ${{ env.VERSION }}" \
+            --notes "ISO gerada automaticamente. Base: Fedora ${{ env.VARIANT }} ${{ env.VERSION }}." \
             --prerelease
