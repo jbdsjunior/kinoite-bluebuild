@@ -6,6 +6,9 @@ concurrency:
   group: build-amd-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   security-scan:
     name: Security scan (AMD)
@@ -40,8 +43,6 @@ jobs:
     needs: security-scan
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: read
       packages: write

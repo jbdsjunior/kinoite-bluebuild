@@ -9,6 +9,9 @@ concurrency:
   group: build-iso-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   security-scan:
     name: Security scan (nightly ISO)
@@ -45,9 +48,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
