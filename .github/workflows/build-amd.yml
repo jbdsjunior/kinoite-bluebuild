@@ -44,8 +44,6 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v10
