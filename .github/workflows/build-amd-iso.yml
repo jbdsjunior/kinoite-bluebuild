@@ -6,11 +6,8 @@ on:
   workflow_dispatch: # Permite a execução manual caso você precise gerar uma ISO pontual
 
 concurrency:
-  group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
+  group: build-iso-${{ github.ref || github.run_id }}
   cancel-in-progress: true
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   security-scan:
@@ -48,6 +45,9 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -62,17 +62,16 @@ jobs:
           fi
           echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@v1.4.0
+        uses: jasonn3/build-container-installer@main
         id: build
         with:
-          enable_cache: false
           arch: x86_64
           variant: Kinoite
           image_name: kinoite-amd
           image_repo: ghcr.io/${{ github.repository_owner }}
           image_tag: latest
           version: ${{ steps.detect.outputs.fedorav }}
-          iso_name: kinoite-amd-nightly.iso 
+          iso_name: kinoite-amd-nightly.iso
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
       - name: Upload nightly ISO artifacts
@@ -90,10 +89,10 @@ jobs:
       #   run: |
       #     IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/kinoite-iso:latest"
       #     ISO_FILE="${{ steps.build.outputs.iso_name }}"
-          
+
       #     echo "FROM scratch" > "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
       #     echo "COPY $ISO_FILE /" >> "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
-          
+
       #     echo "${{ github.token }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
       #     podman build -f "${{ steps.build.outputs.iso_path }}/Dockerfile.iso" -t "$IMAGE_NAME" "${{ steps.build.outputs.iso_path }}"
       #     podman push "$IMAGE_NAME"
