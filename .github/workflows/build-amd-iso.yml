@@ -1,9 +1,11 @@
 name: build-amd-iso
 
 on:
-  schedule:
-    - cron: "0 3 * * *" # Roda diariamente às 03:00 UTC
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["build-amd"] # Dispara automaticamente após o build da imagem OCI
+    types:
+      - completed
+  workflow_dispatch: # Permite execução manual
 
 concurrency:
   group: build-iso-${{ github.ref || github.run_id }}
@@ -12,6 +14,8 @@ concurrency:
 jobs:
   security-scan:
     name: Security scan (nightly ISO)
+    # Só executa se o build anterior foi sucesso ou se for manual
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -43,20 +47,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: write # OBRIGATÓRIO: Necessário para deletar/criar releases e tags
+      contents: write
       packages: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@main
+        uses: jasonn3/build-container-installer@v1.4.0
         with:
           arch: x86_64
           image_name: kinoite-amd
           image_repo: ghcr.io/${{ github.repository_owner }}
           image_tag: latest
-          version: latest
+          version: 44
           iso_name: kinoite-amd-nightly.iso 
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
@@ -67,18 +71,17 @@ jobs:
           path: |
             ./*.iso
             ./*.iso.CHECKSUM
-          # Retenção reduzida para poupar espaço, já que a ISO estará na Release
           retention-days: 3 
 
       - name: Update Nightly Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # 1. Tenta deletar a release antiga e a tag correspondente de forma nativa via CLI
+          # Limpeza nativa da release e tag antiga
           gh release delete nightly --cleanup-tag --yes || true
           
-          # 2. Cria a nova release apontando para o commit atual com os arquivos gerados
+          # Criação da nova release com link estável
           gh release create nightly ./*.iso ./*.iso.CHECKSUM \
-            --title "Nightly Build ($(date +'%Y-%m-%d'))" \
-            --notes "Build ISO gerada automaticamente a partir da imagem OCI mais recente." \
+            --title "Nightly Build - Fedora 44" \
+            --notes "ISO gerada automaticamente a partir da imagem OCI estável mais recente (Fedora 44)." \
             --prerelease
