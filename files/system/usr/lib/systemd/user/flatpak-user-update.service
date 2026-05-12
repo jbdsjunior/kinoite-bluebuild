@@ -1,9 +1,11 @@
 [Unit]
+Description=Update User Flatpaks
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-# Fail fast without network and prefer idle runtime behavior.
+Type=oneshot
 ExecStartPre=/usr/bin/nm-online -q --timeout=60
+ExecStart=/usr/bin/flatpak update -y --noninteractive --user
 Nice=19
 IOSchedulingClass=idle

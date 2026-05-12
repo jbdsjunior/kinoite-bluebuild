@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flavor: [amd, nvidia]
+        flavor: [amd]
 
     steps:
       - name: Checkout repo
