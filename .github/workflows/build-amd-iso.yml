@@ -70,3 +70,14 @@ jobs:
             ./*.iso
             ./*.iso.CHECKSUM
           retention-days: 14
+
+      - name: Update Nightly Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Cria a tag/release se não existir, ou atualiza se já existir
+          gh release delete nightly --yes || true
+          git tag -d nightly || true
+          git tag nightly
+          git push origin nightly --force
+          gh release create nightly ./*.iso ./*.iso.CHECKSUM --title "Nightly Build" --notes "Build gerada automaticamente em $(date)" --prerelease
