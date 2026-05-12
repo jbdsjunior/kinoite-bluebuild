@@ -11,13 +11,13 @@ modules:
         # Native immutable image update staging (rpm-ostree)
         - rpm-ostreed-automatic.timer
         # System-scope Flatpak updates
-        # - flatpak-system-update.timer
+        - flatpak-system-update.timer
         # Daily root-scope Podman cleanup
         - podman-prune-root.timer
         - btrfs-maintenance.timer
     user:
       enabled:
         # User-scope Flatpak updates
-        # - flatpak-user-update.timer
+        - flatpak-user-update.timer
         # Daily rootless Podman cleanup
         - podman-prune-user.timer

@@ -19,9 +19,6 @@ alias fw-status='sudo systemctl status firewalld'
 alias dns-status='sudo systemctl status systemd-resolved'
 alias kvm-status='sudo systemctl status libvirtd'
 
-# --- secure boot (nvidia variant) ---
-alias secureboot-enroll='ujust enroll-secure-boot-key'
-
 # --- tmpfiles (BTRFS NoCOW) ---
 alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'
 alias tmpfiles-user='systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf'

@@ -1,8 +1,7 @@
 [Unit]
-Description=Flatpak Automatic Update Timer (15 min)
+Description=Timer for User Flatpak Updates
 
 [Timer]
-# Wait 5 minutes after boot, then run every 15 minutes
 OnBootSec=5m
 OnUnitActiveSec=15m
 RandomizedDelaySec=2m
