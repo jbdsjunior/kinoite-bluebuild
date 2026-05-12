@@ -65,6 +65,7 @@ jobs:
         uses: jasonn3/build-container-installer@main
         id: build
         with:
+          enable_cache: false
           arch: x86_64
           variant: Kinoite
           image_name: kinoite-amd
