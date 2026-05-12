@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # Permite a execução manual caso você precise gerar uma ISO pontual
 
 concurrency:
-  group: build-iso-${{ github.ref || github.run_id }}
+  group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
   cancel-in-progress: true
 
 env:
@@ -62,7 +62,7 @@ jobs:
           fi
           echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@main
+        uses: jasonn3/build-container-installer@v1.3.0
         id: build
         with:
           enable_cache: false
