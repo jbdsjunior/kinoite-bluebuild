@@ -29,7 +29,6 @@ modules:
 
         # High-definition Bluetooth audio (AAC, LDAC)
         - fdk-aac
-        - libfdk-aac
         # - libldac ## already installed
         # - lame ## already installed
         - "@multimedia"
