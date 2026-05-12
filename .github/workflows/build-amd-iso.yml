@@ -45,15 +45,30 @@ jobs:
     permissions:
       contents: write
       packages: read
+    # Resolve a depreciação do Node.js 20 forçando o uso do Node.js 24 no runner
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
 
+      # Maximiza o espaço em disco para evitar o erro "Cache save failed" e garantir espaço para a ISO
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 5120
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
       - name: Detect Image Version
         id: detect
         run: |
-          # A ISO vai usar a imagem "latest" que estiver disponível no GHCR no momento da madrugada
+          # A ISO vai usar a imagem "latest" disponível no GHCR
           VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | head -n 1)
           if [ -z "$VERSION" ]; then
             echo "Erro: Versão numérica não detectada no GHCR."
@@ -83,16 +98,3 @@ jobs:
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
           retention-days: 3
           if-no-files-found: error
-
-      # - name: Update Nightly Release
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     gh release delete nightly --cleanup-tag --yes || true
-          
-      #     gh release create nightly \
-      #       ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }} \
-      #       ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM \
-      #       --title "Nightly Build - Fedora ${{ steps.detect.outputs.fedorav }}" \
-      #       --notes "ISO baseada na imagem Fedora Kinoite ${{ steps.detect.outputs.fedorav }} (Última compilação do dia anterior)." \
-      #       --prerelease
