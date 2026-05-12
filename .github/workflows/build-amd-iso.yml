@@ -1,11 +1,14 @@
 name: build-amd-iso
 
 on:
+  # Dispara automaticamente quando a imagem principal terminar de ser compilada com sucesso
   workflow_run:
-    workflows: ["build-amd"] # Dispara automaticamente após o build da imagem OCI
+    workflows: ["build-amd"]
     types:
       - completed
-  workflow_dispatch: # Permite execução manual
+  schedule:
+    - cron: "0 3 * * *" # Mantém o agendamento de segurança diário às 03:00 UTC
+  workflow_dispatch: # Permite disparo manual
 
 concurrency:
   group: build-iso-${{ github.ref || github.run_id }}
@@ -14,8 +17,8 @@ concurrency:
 jobs:
   security-scan:
     name: Security scan (nightly ISO)
-    # Só executa se o build anterior foi sucesso ou se for manual
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    # Executa apenas se o build da imagem foi bem-sucedido ou se o trigger for manual/agendado
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -42,27 +45,31 @@ jobs:
           sarif_file: trivy-results.sarif
 
   generate-nightly-iso:
-    name: Generate nightly ISO (BlueBuild)
+    name: Generate nightly ISO (Fedora 44)
     needs: security-scan
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
-      contents: write
+      contents: write # Obrigatório para poder eliminar/criar Releases e Tags
       packages: read
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Generate ISO
-        uses: jasonn3/build-container-installer@v1.4.0
+        uses: jasonn3/build-container-installer@v1.4.0 # Versão robusta com suporte para o Lorax no Fedora mais recente
         with:
           arch: x86_64
           image_name: kinoite-amd
           image_repo: ghcr.io/${{ github.repository_owner }}
           image_tag: latest
-          version: 44
+          version: 44 # Específico para forçar o instalador a utilizar os ficheiros de boot do Fedora 44
           iso_name: kinoite-amd-nightly.iso 
           secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
+
+      - name: Generate Checksum
+        # Criação obrigatória do ficheiro de checksum para a release
+        run: sha256sum kinoite-amd-nightly.iso > kinoite-amd-nightly.iso.sha256sum
 
       - name: Upload nightly ISO artifacts
         uses: actions/upload-artifact@v4
@@ -70,18 +77,19 @@ jobs:
           name: kinoite-amd-nightly-iso
           path: |
             ./*.iso
-            ./*.iso.CHECKSUM
+            ./*.sha256sum
+          # Retenção curta para evitar consumir espaço desnecessário da conta (já que ficará na Release)
           retention-days: 3 
 
       - name: Update Nightly Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Limpeza nativa da release e tag antiga
+          # 1. Remove a release e tag antigas (se existirem) sem falhar o workflow
           gh release delete nightly --cleanup-tag --yes || true
           
-          # Criação da nova release com link estável
-          gh release create nightly ./*.iso ./*.iso.CHECKSUM \
+          # 2. Cria a nova release com os ficheiros recém-gerados
+          gh release create nightly ./*.iso ./*.sha256sum \
             --title "Nightly Build - Fedora 44" \
-            --notes "ISO gerada automaticamente a partir da imagem OCI estável mais recente (Fedora 44)." \
+            --notes "ISO gerada automaticamente a partir da imagem OCI estável mais recente (Base: Fedora Kinoite 44)." \
             --prerelease
