@@ -1,4 +1,4 @@
-name: build-iso-nightly-amd
+name: build-amd-iso
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: build-iso-nightly-${{ github.ref || github.run_id }}
+  group: build-iso-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
