@@ -11,7 +11,3 @@ modules:
         - plasma-welcome-fedora
         - fedora-third-party
         - fedora-workstation-repositories
-        - kcm-fcitx5
-        - fcitx5-*
-        - htop
-        - kate
