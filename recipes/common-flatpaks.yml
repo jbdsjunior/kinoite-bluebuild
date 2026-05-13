@@ -16,7 +16,7 @@ modules:
           - org.kde.gwenview
           - org.kde.haruna
           - org.kde.kcalc
-          - org.kde.krdc
+          # - org.kde.krdc
           - org.kde.okular
 
           # Browsers
