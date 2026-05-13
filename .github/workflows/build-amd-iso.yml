@@ -83,16 +83,3 @@ jobs:
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
           retention-days: 3
           if-no-files-found: error
-
-      # - name: Publish ISO to GHCR
-      #   shell: bash
-      #   run: |
-      #     IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/kinoite-iso:latest"
-      #     ISO_FILE="${{ steps.build.outputs.iso_name }}"
-
-      #     echo "FROM scratch" > "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
-      #     echo "COPY $ISO_FILE /" >> "${{ steps.build.outputs.iso_path }}/Dockerfile.iso"
-
-      #     echo "${{ github.token }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
-      #     podman build -f "${{ steps.build.outputs.iso_path }}/Dockerfile.iso" -t "$IMAGE_NAME" "${{ steps.build.outputs.iso_path }}"
-      #     podman push "$IMAGE_NAME"
