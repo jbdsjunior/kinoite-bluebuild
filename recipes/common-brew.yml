@@ -2,3 +2,10 @@
 
 modules:
   - type: brew
+    nofile-limits: true
+    brew-analytics: false
+
+  - type: soar
+    additional-repos: true
+    auto-upgrade: true
+    upgrade-interval: "3h"
