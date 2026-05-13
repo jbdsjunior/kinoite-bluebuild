@@ -81,5 +81,6 @@ jobs:
           path: |
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}
             ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
-          retention-days: 3
           if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
