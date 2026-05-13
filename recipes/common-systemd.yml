@@ -5,15 +5,17 @@ modules:
     system:
       enabled:
         - podman.socket
-        # Native immutable image update staging (rpm-ostree)
-        - rpm-ostreed-automatic.timer
-        # System-scope Flatpak updates
-        - flatpak-system-update.timer
-        # Daily root-scope Podman cleanup
+        - podman-restart.service
+        - podman-auto-update.timer
         - podman-prune-root.timer
+
+        - rpm-ostreed-automatic.timer
+
+        - flatpak-system-update.timer
     user:
       enabled:
-        # User-scope Flatpak updates
-        - flatpak-user-update.timer
-        # Daily rootless Podman cleanup
+        - podman.socket
+        - podman-auto-update.timer
         - podman-prune-user.timer
+
+        - flatpak-user-update.timer
