@@ -8,13 +8,17 @@ modules:
       packages:
         - "@virtualization"
         - gnome-boxes
-      exclude:
+        - virt-manager
         - virt-viewer
+        - libvirt-daemon-config-network
+        - libvirt-daemon-kvm
 
   - type: systemd
     system:
       enabled:
         - libvirtd.service
+        - virtlogd.service
+        - virtproxyd.service
 
   - type: files
     files:

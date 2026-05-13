@@ -3,33 +3,28 @@
 modules:
   - type: dnf
     install:
-      allow-erasing: true
       skip-unavailable: true
+      allow-erasing: true
       packages:
-        # # Hardware acceleration (Primary AMD RX 6600 XT)
+        # Hardware acceleration (AMD RX 6600 XT)
         - mesa-va-drivers-freeworld
         - mesa-vulkan-drivers-freeworld
+
         # AMD observability and diagnostics
         - rocm-smi
 
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
         - ffmpeg-libs
-
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
-        # - gstreamer1-libav ## already installed
-
         - libavcodec-freeworld
 
         # Image format support (HEIC/HEVC/AVIF)
         - heif-pixbuf-loader
-        # - libheif ## already installed
         - libheif-tools
 
         # High-definition Bluetooth audio (AAC, LDAC)
         - fdk-aac
-        # - libldac ## already installed
-        # - lame ## already installed
         - "@multimedia"
         - "@sound-and-video"

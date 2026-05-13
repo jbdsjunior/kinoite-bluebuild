@@ -1,16 +1,45 @@
-# Secrets and signing material
-cosign.key
-*.pem
-*.key
-*.p12
-*.pfx
-*.priv
-# BlueBuild temporary files
-/.bluebuild-scripts_*
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+target/
 
-# Local development/runtime artifacts
+# Dependencies
+.venv/
+venv/
+node_modules/
+.julia/
+.zig-cache/
+
+# Logs and temp files
 *.log
 *.tmp
-*.cache
-tmp/
-.qwen/
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Package manager caches
+.mypy_cache/
+.pytest_cache/
+.gradle/
+```

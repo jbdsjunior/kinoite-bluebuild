@@ -13,5 +13,7 @@
   "SafeBrowsingSurveysEnabled": false,
   "AutofillAddressEnabled": false,
   "AutofillCreditCardEnabled": false,
-  "ExtensionManifestV2Availability": 2
+  "ExtensionManifestV2Availability": 2,
+  "PrivacySandboxAdsEnabled": false,
+  "PrivacySandboxAttestationsPreloadedEnabled": false
 }

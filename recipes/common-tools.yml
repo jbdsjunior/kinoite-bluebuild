@@ -4,29 +4,31 @@ modules:
   - type: dnf
     repos:
       cleanup: true
-      # files:
-      #  - https://terra.fyralabs.com/terra.repo
       copr:
-       - lilay/topgrade
-       - atim/starship
+        - lilay/topgrade
+        - atim/starship
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-       - topgrade
-       - starship
+        - topgrade
+        - starship
 
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-       - fastfetch
-       - distrobox
-       - podman-compose
-       - podman-docker
-       - podman-machine
-       - tailscale
-       - git
-       - fuse
-       - fuse-libs
+        - fastfetch
+        - distrobox
+        - podman-compose
+        - podman-docker
+        - podman-machine
+        - tailscale
+        - git
+        - fuse
+        - fuse-libs
+        - htop
+        - btrfs-progs
+        - ostree
+        - bootc
