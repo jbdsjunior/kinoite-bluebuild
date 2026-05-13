@@ -4,7 +4,7 @@ Documentation=man:podman-system-prune(1)
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/podman system prune -af --volumes
+ExecStart=/usr/bin/podman system prune -af --volumes --build
 Nice=10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=7
