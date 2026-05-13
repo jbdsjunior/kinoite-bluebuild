@@ -11,6 +11,9 @@ modules:
         - mesa-vulkan-drivers-freeworld
         # AMD observability and diagnostics
         - rocm-smi
+        # AMD GPU computing stack for Local LLMs (Ollama/llama.cpp)
+        - rocm-hip
+        - rocm-opencl
 
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
