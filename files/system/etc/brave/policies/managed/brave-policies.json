@@ -23,7 +23,6 @@
   "SafeBrowsingExtendedReportingEnabled": false,
   "AutofillAddressEnabled": false,
   "AutofillCreditCardEnabled": false,
-  "ExtensionManifestV2Availability": 2,
   "BraveDeAmpEnabled": true,
   "BraveDebouncingEnabled": true,
   "BraveTrackingQueryParametersFilteringEnabled": true,
