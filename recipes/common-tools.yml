@@ -6,18 +6,19 @@ modules:
       cleanup: true
       copr:
         - lilay/topgrade
+        - atim/starship
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
         - topgrade
+        - starship
 
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - starship
         - fastfetch
         - distrobox
         - podman-compose
