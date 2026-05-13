@@ -23,6 +23,7 @@ modules:
 
   - type: kargs
     kargs:
+      - amd_pstate=active
       - kvm_amd.npt=1
       - kvm_amd.nested=1
       - amd_iommu=on
