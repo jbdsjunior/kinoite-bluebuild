@@ -12,6 +12,5 @@
   "SafeBrowsingExtendedReportingEnabled": false,
   "SafeBrowsingSurveysEnabled": false,
   "AutofillAddressEnabled": false,
-  "AutofillCreditCardEnabled": false,
-  "ExtensionManifestV2Availability": 2
+  "AutofillCreditCardEnabled": false
 }
