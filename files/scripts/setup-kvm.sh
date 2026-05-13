@@ -1,43 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly REQUIRED_GROUPS="libvirt,kvm"
-# Accept explicit user as $1 (for systemd template %i), fall back to SUDO_USER, USER, or current user
-readonly TARGET_USER="${1:-${SUDO_USER:-${USER:-$(id -un)}}}"
-
-if [[ "$TARGET_USER" == "root" ]]; then
-    echo "Error: Run as regular user, not root." >&2
-    exit 1
-fi
-
-# This script must be executed via: sudo setup-kvm.sh
-# It performs privileged operations on behalf of the invoking user.
+# SECURITY: Require root privileges for system-level modifications
 if [[ "$(id -u)" -ne 0 ]]; then
-    echo "Error: This script must be run with sudo." >&2
-    echo "Usage: sudo setup-kvm.sh" >&2
+    echo "Error: Execution requires sudo privileges." >&2
     exit 1
 fi
 
-for cmd in usermod systemctl; do
-    if ! command -v "$cmd" >/dev/null 2>&1; then
-        echo "Error: $cmd not found" >&2
-        exit 1
-    fi
-done
+TARGET_USER="${1:-${SUDO_USER:-${USER:-$(id -un)}}}"
 
-# Add user to required groups
-
-if ! id "$TARGET_USER" >/dev/null 2>&1; then
-    echo "Error: User '$TARGET_USER' does not exist." >&2
+# CRITICAL FLOW: Prevent root user assignment to unprivileged virtualization groups
+if [[ "$TARGET_USER" == "root" ]]; then
+    echo "Error: Target user cannot be root." >&2
     exit 1
 fi
-usermod -aG "$REQUIRED_GROUPS" "$TARGET_USER"
 
-# Restart libvirt-related sockets/services if they exist
-if systemctl is-active --quiet virtqemud.socket 2>/dev/null || \
-   systemctl list-unit-files virtqemud.socket 2>/dev/null | grep -q "virtqemud.socket"; then
-    systemctl restart virtqemud.socket virtnetworkd.socket 2>/dev/null || true
-fi
+# CRITICAL FLOW: Fail fast if required binaries are missing
+command -v usermod >/dev/null 2>&1 || { echo "Error: usermod not found"; exit 1; }
+command -v systemctl >/dev/null 2>&1 || { echo "Error: systemctl not found"; exit 1; }
+
+id "$TARGET_USER" >/dev/null 2>&1 || { echo "Error: User '$TARGET_USER' does not exist."; exit 1; }
+
+usermod -aG libvirt,kvm "$TARGET_USER"
+
+systemctl restart virtqemud.socket 2>/dev/null || true
+systemctl restart virtnetworkd.socket 2>/dev/null || true
 
 echo "KVM setup completed for user: $TARGET_USER"
-echo "Note: Please log out and back in for group changes to take effect."

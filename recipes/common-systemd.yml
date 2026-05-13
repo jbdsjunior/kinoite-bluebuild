@@ -3,9 +3,9 @@
 modules:
   - type: systemd
     system:
-      masked:
-        # Prevent boot delays waiting for DHCP allocation
-        - NetworkManager-wait-online.service
+      # masked:
+      #   # Prevent boot delays waiting for DHCP allocation
+      #   - NetworkManager-wait-online.service
       enabled:
         - podman.socket
         # Native immutable image update staging (rpm-ostree)
@@ -14,7 +14,6 @@ modules:
         - flatpak-system-update.timer
         # Daily root-scope Podman cleanup
         - podman-prune-root.timer
-        - btrfs-maintenance.timer
     user:
       enabled:
         # User-scope Flatpak updates
