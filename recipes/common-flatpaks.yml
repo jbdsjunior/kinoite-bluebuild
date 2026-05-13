@@ -11,20 +11,16 @@ modules:
       - scope: system
         notify: false
         install:
-          # Core multimedia libraries
-          # - org.freedesktop.Platform.ffmpeg-full
-          # - org.gtk.Gtk3theme.adw-gtk3-dark
-          # - org.gtk.Gtk3theme.adw-gtk3
           # KDE Multimedia and Productivity
-          # - org.kde.elisa
-          # - org.kde.gwenview
-          # - org.kde.haruna
-          # - org.kde.kcalc
-          # - org.kde.krdc
-          # - org.kde.okular
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
+          - org.kde.kcalc
+          - org.kde.krdc
+          - org.kde.okular
 
           # Browsers
-          # - com.brave.Browser
+          - com.brave.Browser
           # - com.google.Chrome
           # - com.microsoft.Edge
           # - org.mozilla.firefox

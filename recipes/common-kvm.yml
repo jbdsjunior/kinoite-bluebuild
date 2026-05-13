@@ -25,5 +25,5 @@ modules:
     kargs:
       - kvm_amd.npt=1
       - kvm_amd.nested=1
-      - iommu=pt
       - amd_iommu=on
+      - iommu=pt

@@ -14,7 +14,7 @@ modules:
   - from-file: common-packages.yml
   - from-file: common-tools.yml
   - from-file: common-kvm.yml
-
+  - from-file: common-brew.yml
   - from-file: common-systemd.yml
 
-  # - from-file: common-flatpaks.yml
+  - from-file: common-flatpaks.yml

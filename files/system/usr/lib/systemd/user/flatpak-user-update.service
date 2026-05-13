@@ -1,5 +1,6 @@
 [Unit]
 Description=Update User Flatpaks
+Documentation=man:flatpak
 Wants=network-online.target
 After=network-online.target
 
@@ -7,5 +8,6 @@ After=network-online.target
 Type=oneshot
 ExecStartPre=/usr/bin/nm-online -q --timeout=60
 ExecStart=/usr/bin/flatpak update -y --noninteractive --user
+
 Nice=19
 IOSchedulingClass=idle

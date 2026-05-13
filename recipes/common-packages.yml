@@ -11,38 +11,7 @@ modules:
 
         # Core system
         - plasma-firewall
-        # - adw-gtk3-theme
 
         # Utilities
         - lm_sensors
         - rclone
-        # KDE apps
-        # - elisa-player
-        # - gwenview
-        # - haruna
-        # - kate
-        # - kcalc
-        # - krdc
-        # - okular
-
-        # Native app mapping (repos required under files/rpm-ostree/)
-        # - brave-browser
-        # - firefox
-        # - google-chrome-stable
-        # - microsoft-edge-stable
-
-        # Development (external repos required under files/system/etc/yum.repos.d)
-        # - code
-
-        # GNOME and desktop utilities
-        # - flatseal
-        # - gearlever
-        # - mission-center
-        # - pika-backup
-        # - showtime
-        # - warehouse
-
-        # Media and downloads
-        # - obsidian
-        # - qbittorrent
-        # - stremio
