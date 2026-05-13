@@ -5,13 +5,11 @@ modules:
     repos:
       cleanup: true
       copr:
-        - atim/starship
         - lilay/topgrade
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - starship
         - topgrade
 
   - type: dnf
@@ -19,6 +17,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        - starship
         - fastfetch
         - distrobox
         - podman-compose
