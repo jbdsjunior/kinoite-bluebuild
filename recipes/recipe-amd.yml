@@ -9,11 +9,6 @@ image-version: latest
 platforms:
   - linux/amd64
 modules:
-  - type: os-release
-    properties:
-      ID: kinoite-amd
-      NAME: Kinoite AMD
-      PRETTY_NAME: Fedora Kinoite (AMD Workstation)
   # Inherits all shared system configurations (packages, flatpaks, kargs, etc.)
   - from-file: common-base.yml
 
