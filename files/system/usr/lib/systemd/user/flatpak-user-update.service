@@ -6,7 +6,6 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/bin/nm-online -q --timeout=60
 ExecStart=/usr/bin/flatpak update -y --noninteractive --user
 
 Nice=19
