@@ -1,14 +1,13 @@
 [Unit]
 Description=Update System Flatpaks
-Documentation=man:flatpak(1)
+Documentation=man:flatpak
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Type=oneshot
-# Garante que o serviço espere a rede estar pronta antes de tentar baixar
 ExecStartPre=/usr/bin/nm-online -q --timeout=60
 ExecStart=/usr/bin/flatpak update -y --noninteractive --system
-# Configurações de performance para não impactar o uso do desktop
+
 Nice=19
 IOSchedulingClass=idle

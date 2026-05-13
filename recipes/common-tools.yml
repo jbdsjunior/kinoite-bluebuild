@@ -21,10 +21,10 @@ modules:
       packages:
         - fastfetch
         - distrobox
-        - git
         - podman-compose
         - podman-docker
         - podman-machine
-        - fuse
-        - fuse-libs
         - tailscale
+        - git
+        # - fuse
+        # - fuse-libs
