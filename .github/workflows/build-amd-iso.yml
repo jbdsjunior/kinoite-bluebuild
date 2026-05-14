@@ -72,7 +72,7 @@ jobs:
           image_tag: latest
           version: ${{ steps.detect.outputs.fedorav }}
           iso_name: kinoite-amd-nightly-iso.zip
-          secure_boot_key_url: "./cosign.pub"
+          secure_boot_key_url: "https://raw.githubusercontent.com/${{ github.repository }}/main/cosign.pub"
 
       - name: Upload nightly ISO artifacts
         uses: actions/upload-artifact@v7
