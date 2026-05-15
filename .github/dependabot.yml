@@ -20,18 +20,3 @@ updates:
       github-actions-group:
         patterns:
           - "*"
-# Abordagem Expandida (Adicionar apenas se houver Containerfiles/Dockerfiles explícitos fora do escopo BlueBuild no futuro)
-# Justificativa: Escaneia containers upstream para aplicar patches de segurança em imagens base customizadas.
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      timezone: "America/Porto_Velho"
-    assignees:
-      - "jbdsjunior"
-    labels:
-      - "dependencies"
-      - "security"
-    commit-message:
-      prefix: "build(deps-docker)"
-    open-pull-requests-limit: 3
