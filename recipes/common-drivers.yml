@@ -31,9 +31,6 @@ modules:
 
         # High-definition Bluetooth audio (AAC, LDAC)
         - fdk-aac
-        # - libldac ## already installed
-        # - lame ## already installed
-        - vulkan-loader
 
         - x264-libs
         - x265-libs
