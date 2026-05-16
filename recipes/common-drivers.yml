@@ -11,7 +11,6 @@ modules:
         # # Hardware acceleration (Primary AMD RX 6600 XT)
         - mesa-va-drivers-freeworld
         - mesa-vulkan-drivers-freeworld
-        - mesa-vdpau-drivers-freeworld
         # AMD observability and diagnostics
         - rocm-smi
 
