@@ -14,6 +14,7 @@
 - `docs/POST_INSTALL.md` — post-install operations.
 - `docs/CI_CD.md` — pipelines and automation.
 - `docs/HARDWARE_BASELINE.md` — hardware baseline.
+- `docs/PROJECT_STRUCTURE.md` — canonical file taxonomy and placement rules.
 - `recipes/` and `files/system/` — effective configuration source.
 
 ## Mandatory AGENTS Self-Update
@@ -24,6 +25,12 @@ Update this file when any of the following changes:
 4. CI/CD, maintenance, or architecture standards change.
 
 Requirement: apply focused refactors so AGENTS remains current, minimal, and technically precise.
+
+## Organization & Modularity Principle (2026)
+- Maintaining the project well-organized is a mandatory core principle.
+- Always organize, categorize, and group relevant files/modules to keep architecture clear and scalable.
+- Keep repository components perfectly modular whenever relevant, following 2026 best practices (high cohesion, low coupling, single-responsibility modules, explicit ownership).
+- Continuously research and apply safe, low-risk structural improvements that increase maintainability, reviewability, and operational reliability.
 
 ## Operating Principles
 - Act with Senior DevSecOps + Linux Systems Architect mindset.
@@ -67,6 +74,10 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
 
 ## Continuous Structure Hygiene (auto-learning)
 - Verify project organization proactively on every review/change, even without explicit request.
+- Keep file placement aligned with taxonomy in `docs/PROJECT_STRUCTURE.md`:
+  - immutable host behavior → `files/system/`
+  - executable host helpers → `files/scripts/`
+  - optional external repo definitions → `files/rpm-ostree/`
 - Keep package placement aligned with module intent:
   - drivers → `recipes/common-drivers.yml`
   - utilities → `recipes/common-tools.yml`
