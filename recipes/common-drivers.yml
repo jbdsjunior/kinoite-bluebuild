@@ -12,6 +12,20 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
+        # # Hardware acceleration (Primary AMD RX 6600 XT)
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
+        # Full multimedia framework and FFmpeg integration
+        - ffmpeg
+        - ffmpeg-libs
+        - mesa-dri-drivers
+        - mesa-vulkan-drivers
+        - vulkan-loader
+        - mesa-libGLU
+        - x264-libs
+        - x265-libs
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
         # AMD observability and diagnostics
         - rocm-smi
         # AMD GPU computing stack for Local LLMs (Ollama/llama.cpp)
@@ -25,27 +39,4 @@ modules:
         - libheif-tools
         # - libldac ## already installed
         # - lame ## already installed
-
-    replace:
-      - from-repo: rpmfusion-free
-        allow-erasing: true
-        packages:
-          # # Hardware acceleration (Primary AMD RX 6600 XT)
-          - mesa-va-drivers-freeworld
-          - mesa-vulkan-drivers-freeworld
-          # Full multimedia framework and FFmpeg integration
-          - ffmpeg
-          - ffmpeg-libs
-          - mesa-dri-drivers
-          - mesa-vulkan-drivers
-          - vulkan-loader
-          - mesa-libGLU
-          - x264-libs
-          - x265-libs
-          - gstreamer1-plugins-bad-freeworld
-          - gstreamer1-plugins-ugly
-
-      - from-repo: rpmfusion-nonfree
-        allow-erasing: true
-        packages:
-          - fdk-aac
+        - fdk-aac
