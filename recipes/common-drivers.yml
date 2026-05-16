@@ -2,50 +2,38 @@
 
 modules:
   - type: dnf
-    group-install:
-      allow-erasing: true
-      # with-optional: true
-      packages:
-        - multimedia
-        - sound-and-video
-
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
+        - "@multimedia"
+        - "@sound-and-video"
+        # # Hardware acceleration (Primary AMD RX 6600 XT)
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
         # AMD observability and diagnostics
         - rocm-smi
-        # AMD GPU computing stack for Local LLMs (Ollama/llama.cpp)
-        - rocm-hip
-        - rocm-opencl
+
+        # Full multimedia framework and FFmpeg integration
+        - ffmpeg
+        - ffmpeg-libs
+
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
         # - gstreamer1-libav ## already installed
+
         - libavcodec-freeworld
+
         # Image format support (HEIC/HEVC/AVIF)
         - heif-pixbuf-loader
         # - libheif ## already installed
         - libheif-tools
+
+        # High-definition Bluetooth audio (AAC, LDAC)
+        - fdk-aac
         # - libldac ## already installed
         # - lame ## already installed
-
-    replace:
-      - from-repo: rpmfusion-free
-        allow-erasing: true
-        packages:
-          # # Hardware acceleration (Primary AMD RX 6600 XT)
-          - mesa-va-drivers-freeworld
-          - mesa-vulkan-drivers-freeworld
           - vulkan-loader
-          # Full multimedia framework and FFmpeg integration
-          - ffmpeg
-          - ffmpeg-libs
 
           - x264-libs
           - x265-libs
-
-          - gstreamer1-plugins-bad-freeworld
-          - gstreamer1-plugins-ugly
-
-      - from-repo: rpmfusion-nonfree
-        allow-erasing: true
-        packages:
-          - fdk-aac
