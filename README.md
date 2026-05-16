@@ -92,8 +92,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | :-------------------------- | :----------------------------------------------------- |
 | `recipes/recipe-amd.yml`    | Main AMD recipe variant                                |
 | `recipes/common-*.yml`      | Shared modules (packages, drivers, services, and more) |
-| `files/system/`             | Files applied to the image filesystem                  |
-| `.github/workflows/`        | CI/CD pipelines                                        |
+| `files/system/`             | Immutable host overlays (policies, units, defaults)   |
+| `files/scripts/`            | Executable provisioning helpers                        |
+| `files/rpm-ostree/`         | Optional third-party RPM repo definitions              |
+| `.github/workflows/`        | CI/CD pipelines and security gates                     |
+| `docs/PROJECT_STRUCTURE.md` | Canonical taxonomy and placement rules                 |
 | `cosign.pub`                | Public key for signature verification                  |
 
 ---
@@ -105,6 +108,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance    |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits                |
 | [`docs/CI_CD.md`](docs/CI_CD.md)                         | GitHub Actions pipelines, triggers, and security checks |
+| [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) | Repository taxonomy, grouping, and placement standards |
 
 ## License
 
