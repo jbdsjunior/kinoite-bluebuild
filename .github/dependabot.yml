@@ -1,22 +1,6 @@
-# Abordagem Principal: Segurança proativa + Redução de fadiga de CI + Conventional Commits
-# Justificativa: Agrupa atualizações para evitar múltiplas execuções concorrentes de CI, restringe volume de PRs e padroniza o histórico do repositório.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-      timezone: "America/Porto_Velho"
-    assignees:
-      - "jbdsjunior"
-    labels:
-      - "dependencies"
-      - "security"
-    commit-message:
-      prefix: "build(deps)"
-      include: "scope"
-    open-pull-requests-limit: 5
-    groups:
-      github-actions-group:
-        patterns:
-          - "*"
