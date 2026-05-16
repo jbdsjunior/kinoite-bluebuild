@@ -33,7 +33,7 @@ modules:
         - fdk-aac
         # - libldac ## already installed
         # - lame ## already installed
-          - vulkan-loader
+        - vulkan-loader
 
-          - x264-libs
-          - x265-libs
+        - x264-libs
+        - x265-libs
