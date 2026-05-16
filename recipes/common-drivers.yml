@@ -14,6 +14,13 @@ modules:
         # AMD observability and diagnostics
         - rocm-smi
 
+        # ROCm/HIP userspace stack for local LLM runtimes (Ollama/LM Studio)
+        - rocm-hip
+        - rocm-opencl
+        - rocm-runtime
+        - rocblas
+        - rocm-clinfo
+
         # Full multimedia framework and FFmpeg integration
         - ffmpeg
         - ffmpeg-libs
