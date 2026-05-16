@@ -6,12 +6,11 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Locale and dictionaries
+        # Locale and language support
         - langpacks-pt_BR
 
-        # Core system
+        # KDE base security integration
         - plasma-firewall
 
-        # Utilities
+        # Hardware and observability baseline
         - lm_sensors
-        - rclone
