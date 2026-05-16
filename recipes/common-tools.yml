@@ -1,32 +1,47 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
+  # DevOps and shell tooling from trusted COPR sources
   - type: dnf
     repos:
       cleanup: true
-      # files:
-      #  - https://terra.fyralabs.com/terra.repo
       copr:
-       - lilay/topgrade
-       - atim/starship
+        - lilay/topgrade
+        - atim/starship
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-       - topgrade
-       - starship
+        - topgrade
+        - starship
 
+  # GitOps and remote operations
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-       - fastfetch
-       - distrobox
-       - podman-compose
-       - podman-docker
-       - podman-machine
-       - tailscale
-       - git
-       - fuse
-       - fuse-libs
+        - git
+        - rclone
+
+  # Rootless container and distro integration toolchain
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - distrobox
+        - podman-compose
+        - podman-docker
+        - podman-machine
+
+  # System diagnostics and networking helpers
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - fastfetch
+        - tailscale
+        - fuse
+        - fuse-libs
