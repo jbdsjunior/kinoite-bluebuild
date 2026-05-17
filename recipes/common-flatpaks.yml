@@ -6,43 +6,54 @@ modules:
       - scope: system
         notify: false
         install:
-          # --- 1. BROWSERS & INTERNET ---
+          # --- CORE DESKTOP ENVIRONMENTS ---
+          # KDE Plasma Base
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
+          - org.kde.kate
+          - org.kde.kcalc
+          - org.kde.okular
+
+          # GNOME Core & Runtime Utilities
+          - org.gnome.Calculator
+          - org.gnome.DejaDup
+          - org.gnome.Weather
+
+          # --- BROWSERS & INTERNET ---
           - com.brave.Browser
           - com.google.Chrome
           # - com.microsoft.Edge
           # - org.mozilla.firefox
-          # - org.mozilla.thunderbird
+          # - org.mozilla.Thunderbird
 
-          # --- 2. DEVELOPMENT & SYSTEMS ---
+          # --- DEVELOPMENT & INFRASTRUCTURE ---
+          # IDEs & Editors
           - com.visualstudio.code
           # - dev.zed.Zed
+
+          # Containers & DevOps Tooling
           - com.github.marhkb.Pods
-          - io.github.BuddySirJava.SSH-Studio
           - io.github.DenysMb.Kontainer
+
+          # Remote Access & SSH Management
+          - io.github.BuddySirJava.SSH-Studio
           - io.github.mfat.sshpilot
 
-          # --- 3. SYSTEM UTILITIES & UTILS ---
+          # --- SYSTEM UTILITIES & TELEMETRY ---
           - com.github.tchx84.Flatseal
           - com.github.wwmm.easyeffects
-          - io.missioncenter.MissionCenter
+          # - io.missioncenter.MissionCenter
           - it.mijorus.gearlever
-          - org.fkoehler.KTailctl
-          - org.gnome.Calculator
-          - org.gnome.DejaDup
+          # - org.fkoehler.KTailctl
 
-          # --- 4. MULTIMEDIA & ENTERTAINMENT ---
-          - com.stremio.Stremio
-          - dev.fredol.open-tv
-          - org.kde.elisa
-          - org.kde.gwenview
-          - org.kde.haruna
-          - org.qbittorrent.qBittorrent
-
-          # --- 5. PRODUCTIVITY & OFFICE ---
+          # --- PRODUCTIVITY & ENTERTAINMENT ---
+          # Office & Information Management
           - io.github.alainm23.planify
           - md.obsidian.Obsidian
-          - org.gnome.Weather
-          - org.kde.kate
-          - org.kde.kcalc
-          - org.kde.okular
           - org.onlyoffice.desktopeditors
+
+          # Streaming & P2P Protocols
+          - org.qbittorrent.qBittorrent
+          - com.stremio.Stremio
+          - dev.fredol.open-tv
