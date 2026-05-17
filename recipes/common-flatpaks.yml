@@ -3,37 +3,46 @@
 modules:
   - type: default-flatpaks
     configurations:
-      # User scope flatpaks (disabled by default)
-      # - scope: user
-      #   notify: false
-
-      # System scope flatpaks
       - scope: system
         notify: false
         install:
-          # KDE Multimedia and Productivity
+          # --- 1. BROWSERS & INTERNET ---
+          - com.brave.Browser
+          - com.google.Chrome
+          # - com.microsoft.Edge
+          # - org.mozilla.firefox
+          # - org.mozilla.thunderbird
+
+          # --- 2. DEVELOPMENT & SYSTEMS ---
+          - com.visualstudio.code
+          # - dev.zed.Zed
+          - com.github.marhkb.Pods
+          - io.github.BuddySirJava.SSH-Studio
+          - io.github.DenysMb.Kontainer
+          - io.github.mfat.sshpilot
+
+          # --- 3. SYSTEM UTILITIES & UTILS ---
+          - com.github.tchx84.Flatseal
+          - com.github.wwmm.easyeffects
+          - io.missioncenter.MissionCenter
+          - it.mijorus.gearlever
+          - org.fkoehler.KTailctl
+          - org.gnome.Calculator
+          - org.gnome.DejaDup
+
+          # --- 4. MULTIMEDIA & ENTERTAINMENT ---
+          - com.stremio.Stremio
+          - dev.fredol.open-tv
           - org.kde.elisa
           - org.kde.gwenview
           - org.kde.haruna
+          - org.qbittorrent.qBittorrent
+
+          # --- 5. PRODUCTIVITY & OFFICE ---
+          - io.github.alainm23.planify
+          - md.obsidian.Obsidian
+          - org.gnome.Weather
+          - org.kde.kate
           - org.kde.kcalc
-          # - org.kde.krdc
           - org.kde.okular
-
-          # Browsers
-          - com.brave.Browser
-          # - com.google.Chrome
-          # - com.microsoft.Edge
-          # - org.mozilla.firefox
-
-          # Utilities
-          # - com.github.tchx84.Flatseal
-          # - io.github.flattool.Warehouse
-          # - io.missioncenter.MissionCenter
-          # - it.mijorus.gearlever
-
-          # Development
-          # - com.visualstudio.code
-          # - com.ranfdev.DistroShelf
-
-          # Communication and Others
-          # - org.qbittorrent.qBittorrent
+          - org.onlyoffice.desktopeditors
