@@ -123,6 +123,8 @@
   "PasswordLeakDetectionEnabled": false,
   "QuickAnswersEnabled": false,
   "SafeBrowsingExtendedReportingEnabled": false,
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
   "SafeBrowsingSurveysEnabled": false,
   "SafeBrowsingDeepScanningEnabled": false,
   "DeviceActivityHeartbeatEnabled": false,
