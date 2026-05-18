@@ -52,7 +52,6 @@
   "AutomaticHttpsDefault": true,
   "BingAdsSuppression": true,
   "BrowserGuestModeEnabled": false,
-  "BrowserSignin": 0,
   "ComposeInlineEnabled": false,
   "ConfigureDoNotTrack": true,
   "CryptoWalletEnabled": false,
