@@ -52,3 +52,20 @@ It complements `AGENTS.md` and keeps structure decisions explicit, reviewable, a
 - Ensure no duplicate responsibility across recipe modules.
 - Ensure new files are referenced by a recipe/workflow when required.
 - Ensure docs and paths remain in sync.
+
+
+## Naming and consistency conventions
+
+1. Prefer `common-<domain>.yml` for reusable recipe modules and keep one responsibility per file.
+2. Use numeric prefixes in tunables/policies (e.g., `60-...`) to make precedence explicit and deterministic.
+3. Use `kebab-case` for file names and keep suffixes semantically meaningful (`-policy`, `-override`, `-update`, `-prune`).
+4. Place executable helpers only in `files/scripts/`; avoid executable logic in docs or ad-hoc locations.
+5. Avoid duplicate configuration ownership: each behavior should have one canonical file path.
+
+## Documentation baseline per change
+
+For every structural or configuration change:
+- update the relevant doc in `docs/`;
+- record system impact and rationale;
+- validate path references and unit names;
+- preserve AMD-only scope and immutable-host principles.
