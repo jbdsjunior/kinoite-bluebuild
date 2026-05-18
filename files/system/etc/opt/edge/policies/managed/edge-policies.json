@@ -15,9 +15,6 @@
   "AIGenThemesEnabled": false,
   "EdgeWalletCheckoutEnabled": false,
   "CryptoWalletEnabled": false,
-  "PasswordManagerEnabled": false,
-  "PasswordSharingEnabled": false,
-  "PasswordLeakDetectionEnabled": false,
   "AutofillAddressEnabled": false,
   "AutofillCreditCardEnabled": false
 }
