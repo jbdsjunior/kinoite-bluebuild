@@ -1,13 +1,36 @@
 {
-  "BrowserSignin": 1,
-  "SyncDisabled": false,
-  "BackgroundModeEnabled": false,
-  "MetricsReportingEnabled": false,
   "CloudReportingEnabled": false,
-  "DeviceMetricsReportingEnabled": false,
-  "LogUploadEnabled": false,
+  "DriveDisabled": true,
+  "PasswordManagerEnabled": false,
+  "PasswordSharingEnabled": false,
+  "PasswordLeakDetectionEnabled": false,
+  "QuickAnswersEnabled": false,
   "SafeBrowsingExtendedReportingEnabled": false,
   "SafeBrowsingSurveysEnabled": false,
-  "AutofillAddressEnabled": false,
-  "AutofillCreditCardEnabled": false
+  "SafeBrowsingDeepScanningEnabled": false,
+  "DeviceActivityHeartbeatEnabled": false,
+  "DeviceMetricsReportingEnabled": false,
+  "HeartbeatEnabled": false,
+  "LogUploadEnabled": false,
+  "ReportAppInventory": [
+    ""
+  ],
+  "ReportDeviceActivityTimes": false,
+  "ReportDeviceAppInfo": false,
+  "ReportDeviceSystemInfo": false,
+  "ReportDeviceUsers": false,
+  "ReportWebsiteTelemetry": [
+    ""
+  ],
+  "AlternateErrorPagesEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "BackgroundModeEnabled": false,
+  "BrowserGuestModeEnabled": false,
+  "BuiltInDnsClientEnabled": false,
+  "DefaultBrowserSettingEnabled": false,
+  "MetricsReportingEnabled": false,
+  "ParcelTrackingEnabled": false,
+  "RelatedWebsiteSetsEnabled": false,
+  "ShoppingListEnabled": false,
+  "ExtensionManifestV2Availability": 2
 }
