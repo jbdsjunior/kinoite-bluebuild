@@ -109,6 +109,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits                |
 | [`docs/CI_CD.md`](docs/CI_CD.md)                         | GitHub Actions pipelines, triggers, and security checks |
 | [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) | Repository taxonomy, grouping, and placement standards |
+| [`docs/CONFIG_CATALOG.md`](docs/CONFIG_CATALOG.md)     | File-by-file configuration impact and design rationale |
 
 ## License
 
