@@ -6,6 +6,7 @@ OnBootSec=5m
 OnUnitActiveSec=15m
 RandomizedDelaySec=2m
 Persistent=true
+Unit=flatpak-update-user.service
 
 [Install]
 WantedBy=timers.target
