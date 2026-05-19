@@ -14,5 +14,5 @@ modules:
       enabled:
         - podman.socket
         - podman-auto-update.timer
-        # - podman-prune-root.timer
+        # - podman-prune-user.timer
         - flatpak-user-update.timer
