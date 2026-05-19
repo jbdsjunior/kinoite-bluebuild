@@ -3,6 +3,8 @@
 modules:
   - type: systemd
     system:
+      masked:
+        - systemd-remount-fs.service
       enabled:
         - podman.socket
         - podman-restart.service
