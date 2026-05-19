@@ -1,14 +1,14 @@
 [Unit]
-Description=Run root-scope Podman prune daily
+Description=Run rootless Podman prune daily
 
 [Timer]
 # Daily cleanup after boot stabilization; persistent to catch missed runs.
-OnBootSec=20m
+OnBootSec=25m
 OnUnitActiveSec=1d
 RandomizedDelaySec=30m
 Persistent=true
 AccuracySec=1m
-Unit=podman-prune-root.service
+Unit=podman-user-prune.service
 
 [Install]
 WantedBy=timers.target
