@@ -28,16 +28,12 @@
   "DeviceMetricsReportingEnabled": false,
   "HeartbeatEnabled": false,
   "LogUploadEnabled": false,
-  "ReportAppInventory": [
-    ""
-  ],
+  "ReportAppInventory": [""],
   "ReportDeviceActivityTimes": false,
   "ReportDeviceAppInfo": false,
   "ReportDeviceSystemInfo": false,
   "ReportDeviceUsers": false,
-  "ReportWebsiteTelemetry": [
-    ""
-  ],
+  "ReportWebsiteTelemetry": [""],
   "AlternateErrorPagesEnabled": false,
   "AutofillCreditCardEnabled": false,
   "BackgroundModeEnabled": false,
