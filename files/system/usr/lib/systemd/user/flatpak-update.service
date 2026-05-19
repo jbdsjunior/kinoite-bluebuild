@@ -1,6 +1,7 @@
 [Unit]
 Description=Update User Flatpaks
 Documentation=man:flatpak
+
 Wants=network-online.target
 After=network-online.target
 
