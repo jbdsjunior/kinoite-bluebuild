@@ -7,12 +7,12 @@ modules:
         - podman.socket
         - podman-restart.service
         - podman-auto-update.timer
-        # - podman-prune-root.timer
+        # - podman-prune.timer
         - rpm-ostreed-automatic.timer
-        - flatpak-update-system.timer
+        - flatpak-update.timer
     user:
       enabled:
         - podman.socket
         - podman-auto-update.timer
-        # - podman-prune-user.timer
-        - flatpak-update-user.timer
+        # - podman-prune.timer
+        - flatpak-update.timer
