@@ -25,4 +25,4 @@ modules:
   - from-file: common-systemd.yml
 
   # App layer last for clearer rollback boundaries
-  - from-file: common-flatpaks.yml
+  # - from-file: common-flatpaks.yml
