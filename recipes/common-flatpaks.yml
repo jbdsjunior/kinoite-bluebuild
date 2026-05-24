@@ -12,7 +12,7 @@ modules:
           - org.kde.gwenview
           - org.kde.haruna
           - org.kde.kate
-          - org.kde.kcalc
+          # - org.kde.kcalc
           - org.kde.okular
 
           # GNOME Core & Runtime Utilities
