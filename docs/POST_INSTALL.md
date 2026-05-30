@@ -156,41 +156,41 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## 8) Rclone cloud mounts for KDE Plasma (optional)
 
-The image ships systemd user units for rclone FUSE mounts that start with the KDE Plasma graphical session, restart after transient failures, and write logs to the user journal. The default mount points are:
+The image ships one dynamic systemd user template for rclone FUSE mounts. Each `rclone@<remote>.service` instance starts with the KDE Plasma graphical session, restarts after transient failures, and writes logs to the user journal. It can mount Google Drive, OneDrive, or any other configured rclone remote by instance name.
 
-| Service | Expected rclone remote | Mount point | Optional override file |
+| Service instance | Expected rclone remote | Mount point | Optional override file |
 |---|---|---|---|
-| `rclone-google-drive.service` | `GoogleDrive:` | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/google-drive.env` |
-| `rclone-onedrive.service` | `OneDrive:` | `~/Cloud/OneDrive` | `~/.config/rclone/env/onedrive.env` |
+| `rclone@GoogleDrive.service` | `GoogleDrive:` | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
+| `rclone@OneDrive.service` | `OneDrive:` | `~/Cloud/OneDrive` | `~/.config/rclone/env/OneDrive.env` |
 | `rclone@<remote>.service` | `<remote>:` | `~/Cloud/<remote>` | `~/.config/rclone/env/<remote>.env` |
 
-Configure the cloud remotes first. Name them `GoogleDrive` and `OneDrive` to use the dedicated units without overrides, or set `RCLONE_REMOTE=<remote>:` in the matching environment file.
+Configure the cloud remotes first. The instance name maps directly to the rclone remote name by default, so `rclone@GoogleDrive.service` mounts `GoogleDrive:` and `rclone@OneDrive.service` mounts `OneDrive:`. To mount a differently named remote or adjust limits, set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
-The units are installable from `default.target` as well as the KDE graphical-session targets. This keeps enabled mounts starting with the user manager at login even when Plasma does not reliably re-trigger `graphical-session.target` wants.
+The template is installable from `default.target` as well as the KDE graphical-session targets. This keeps enabled mounts starting with the user manager at login even when Plasma does not reliably re-trigger `graphical-session.target` wants.
 
 ```bash
 rclone config
 mkdir -p ~/.config/rclone/env
-printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/google-drive.env
-printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/onedrive.env
+printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/GoogleDrive.env
+printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/OneDrive.env
 systemctl --user daemon-reload
-systemctl --user enable --now rclone-google-drive.service rclone-onedrive.service
+systemctl --user enable --now rclone@GoogleDrive.service rclone@OneDrive.service
 ```
 
-For remotes named `google-drive` and `onedrive`, enable the templated instances instead. After receiving this image update on an existing install, run `reenable` once so systemd creates the new `default.target` wants symlinks; after that, normal logins should start the mounts automatically.
+For remotes named `google-drive` and `onedrive`, enable matching templated instances instead.
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user reenable --now rclone@google-drive.service rclone@onedrive.service
+systemctl --user enable --now rclone@google-drive.service rclone@onedrive.service
 ```
 
-The units use `--vfs-cache-mode full`, `--dir-cache-time 12h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and `--bwlimit 40M` by default to balance desktop responsiveness with cloud API stability. They also load `/usr/share/rclone/kde-trash-excludes.filter`, which explicitly excludes KDE/Freedesktop trash paths such as `.local/share/Trash`, `.Trash-*`, `Trash`, `Trashes`, `Lixeira`, and `$RECYCLE.BIN` so Dolphin/KDE trash folders are neither created through the mount nor synchronized to Google Drive or OneDrive.
+The template uses `--vfs-cache-mode full`, `--dir-cache-time 12h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and `--bwlimit 40M` by default to balance desktop responsiveness with cloud API stability. It also excludes `/.Trash-1000/**` directly in the service command so KDE's per-mount trash directory is not created through or synchronized by rclone mounts.
 
 Check logs and status with:
 
 ```bash
-systemctl --user status rclone-google-drive.service rclone-onedrive.service
-journalctl --user -u rclone-google-drive.service -u rclone-onedrive.service -f
+systemctl --user status rclone@GoogleDrive.service rclone@OneDrive.service
+journalctl --user -u rclone@GoogleDrive.service -u rclone@OneDrive.service -f
 ```
 
 ## 9) Post-install health check
