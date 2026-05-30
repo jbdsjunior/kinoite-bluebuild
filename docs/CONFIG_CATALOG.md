@@ -128,19 +128,16 @@ It is the operational reference to keep architecture modular, auditable, and sca
   - `podman-user-prune.timer`
   - `podman-user-prune.service.d/override.conf`
   - `rclone@.service`
-  - `rclone-google-drive.service`
-  - `rclone-onedrive.service`
 
 **Impact:** Enforces maintenance cadence, lifecycle behavior, and session-scoped cloud mounts for KDE Plasma.
 
 **Rationale:** Timers/units as code provide deterministic operations, user-journal logging, network-failure recovery, and quick rollback.
 
-### Rclone cloud mount filters
-- `files/system/usr/share/rclone/kde-trash-excludes.filter`
+### Rclone cloud mount filter policy
 
-**Impact:** Prevents KDE/Freedesktop trash directories from being created through or synchronized by rclone cloud mounts.
+**Impact:** The dynamic `rclone@.service` excludes KDE/Freedesktop `.Trash-1000` directories from cloud mounts.
 
-**Rationale:** Centralized filter policy keeps Google Drive, OneDrive, and generic rclone units consistent while preserving transparent Dolphin access to mounted cloud storage.
+**Rationale:** Keeping the narrow exclude rule in the only rclone service avoids separate filter-file drift while preserving transparent Dolphin access to mounted cloud storage.
 
 ### Userland assets
 - `files/system/usr/share/fontconfig/conf.d/60-font-rendering.conf`
