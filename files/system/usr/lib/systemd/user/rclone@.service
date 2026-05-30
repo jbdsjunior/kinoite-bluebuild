@@ -57,5 +57,6 @@ IOSchedulingClass=best-effort
 IOSchedulingPriority=4
 
 [Install]
+WantedBy=default.target
 WantedBy=graphical-session.target
 WantedBy=plasma-workspace.target
