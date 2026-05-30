@@ -45,3 +45,4 @@ modules:
         - tailscale
         - fuse
         - fuse-libs
+        - fuse3
