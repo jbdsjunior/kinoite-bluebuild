@@ -17,7 +17,7 @@ ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
 ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --config %h/.config/rclone/rclone.conf \
-  --filter-from /usr/share/rclone/kde-trash-excludes.filter \
+  --exclude /.Trash-1000/** \
   --cache-dir ${RCLONE_CACHE} \
   --vfs-cache-mode full \
   --vfs-cache-max-size 50G \
