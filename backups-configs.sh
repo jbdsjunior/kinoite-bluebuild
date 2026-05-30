@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # TARGET: Directory structure in your BlueBuild repository
-# INFO: This matches the 'files/system' mapping to '/' in common-base.yml
-DEST_SKEL="files/system/etc/skel"
+# INFO: Runtime system defaults belong under /usr/etc on atomic Fedora.
+#       This path maps to /usr/etc/skel in the built image while keeping /etc for local admin overrides.
+DEST_SKEL="files/system/usr/etc/skel"
 DEST_CONFIG_DIR="$DEST_SKEL/.config"
 DEST_LOCAL_SHARE_DIR="$DEST_SKEL/.local/share"
 

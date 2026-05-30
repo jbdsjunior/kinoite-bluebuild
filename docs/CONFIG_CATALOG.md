@@ -91,6 +91,15 @@ It is the operational reference to keep architecture modular, auditable, and sca
 
 **Rationale:** Operational consistency across endpoints.
 
+### User skeleton defaults
+- `files/system/usr/etc/skel/.config/*`
+- `files/system/usr/etc/skel/.local/share/kxmlgui5/dolphin/dolphinui.rc`
+- `files/system/usr/etc/skel/.var/app/*/config/*-flags.conf`
+
+**Impact:** Seeds KDE Plasma, Dolphin, and Chromium-family Flatpak browser defaults for newly created users without mutating existing homes.
+
+**Rationale:** On atomic Fedora, image-owned defaults belong in `/usr/etc/skel`; runtime `/etc/skel` remains available for host-local administrator overrides.
+
 ### Kernel/runtime/system tuning
 - `files/system/usr/lib/sysctl.d/60-kernel-tuning.conf`
 - `files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`
@@ -107,17 +116,17 @@ It is the operational reference to keep architecture modular, auditable, and sca
 - System scope (`files/system/usr/lib/systemd/system/...`):
   - `flatpak-system-update.service`
   - `flatpak-system-update.timer`
-  - `podman-prune-root.service`
-  - `podman-prune-root.timer`
-  - `podman-prune-root.service.d/override.conf`
+  - `podman-system-prune.service`
+  - `podman-system-prune.timer`
+  - `podman-system-prune.service.d/override.conf`
   - `rpm-ostreed-automatic.service.d/override.conf`
   - `rpm-ostreed-automatic.timer.d/override.conf`
 - User scope (`files/system/usr/lib/systemd/user/...`):
   - `flatpak-user-update.service`
   - `flatpak-user-update.timer`
-  - `podman-prune-user.service`
-  - `podman-prune-user.timer`
-  - `podman-prune-user.service.d/override.conf`
+  - `podman-user-prune.service`
+  - `podman-user-prune.timer`
+  - `podman-user-prune.service.d/override.conf`
   - `rclone@.service`
 
 **Impact:** Enforces maintenance cadence and lifecycle behavior.
