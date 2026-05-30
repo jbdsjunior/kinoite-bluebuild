@@ -1,6 +1,6 @@
 [Unit]
-Description=Rclone mount for KDE Plasma - %i
-Documentation=https://rclone.org/commands/rclone_mount/
+Description=Rclone Google Drive mount for KDE Plasma
+Documentation=https://rclone.org/drive/ https://rclone.org/commands/rclone_mount/
 After=graphical-session.target
 PartOf=graphical-session.target
 StartLimitIntervalSec=10min
@@ -8,11 +8,11 @@ StartLimitBurst=20
 
 [Service]
 Type=notify
-Environment=RCLONE_REMOTE=%i:
-Environment=RCLONE_MOUNT=%h/Cloud/%i
-Environment=RCLONE_CACHE=%h/.cache/rclone/%i
+Environment=RCLONE_REMOTE=GoogleDrive:
+Environment=RCLONE_MOUNT=%h/Cloud/GoogleDrive
+Environment=RCLONE_CACHE=%h/.cache/rclone/google-drive
 Environment=RCLONE_BWLIMIT=40M
-EnvironmentFile=-%h/.config/rclone/env/%i.env
+EnvironmentFile=-%h/.config/rclone/env/google-drive.env
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
 ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
@@ -38,6 +38,9 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --contimeout 20s \
   --low-level-retries 10 \
   --retries 10 \
+  --drive-chunk-size 128M \
+  --drive-pacer-min-sleep 100ms \
+  --drive-pacer-burst 100 \
   --attr-timeout 1s \
   --umask 0022 \
   --log-level NOTICE \

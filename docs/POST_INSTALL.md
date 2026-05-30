@@ -154,11 +154,34 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 8) Rclone Mount (optional)
+## 8) Rclone cloud mounts for KDE Plasma (optional)
+
+The image ships systemd user units for rclone FUSE mounts that start with the KDE Plasma graphical session, restart after transient failures, and write logs to the user journal. The default mount points are:
+
+| Service | Expected rclone remote | Mount point | Optional override file |
+|---|---|---|---|
+| `rclone-google-drive.service` | `GoogleDrive:` | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/google-drive.env` |
+| `rclone-onedrive.service` | `OneDrive:` | `~/Cloud/OneDrive` | `~/.config/rclone/env/onedrive.env` |
+| `rclone@<remote>.service` | `<remote>:` | `~/Cloud/<remote>` | `~/.config/rclone/env/<remote>.env` |
+
+Configure the cloud remotes first. Name them `GoogleDrive` and `OneDrive` to use the dedicated units without overrides, or set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
 ```bash
 rclone config
-systemctl --user enable --now rclone@<remote-name>.service
+mkdir -p ~/.config/rclone/env
+printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/google-drive.env
+printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/onedrive.env
+systemctl --user daemon-reload
+systemctl --user enable --now rclone-google-drive.service rclone-onedrive.service
+```
+
+The units use `--vfs-cache-mode full`, `--dir-cache-time 12h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and `--bwlimit 40M` by default to balance desktop responsiveness with cloud API stability. They also load `/usr/share/rclone/kde-trash-excludes.filter`, which explicitly excludes KDE/Freedesktop trash paths such as `.local/share/Trash`, `.Trash-*`, `Trash`, `Trashes`, `Lixeira`, and `$RECYCLE.BIN` so Dolphin/KDE trash folders are neither created through the mount nor synchronized to Google Drive or OneDrive.
+
+Check logs and status with:
+
+```bash
+systemctl --user status rclone-google-drive.service rclone-onedrive.service
+journalctl --user -u rclone-google-drive.service -u rclone-onedrive.service -f
 ```
 
 ## 9) Post-install health check
