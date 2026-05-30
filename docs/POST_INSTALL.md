@@ -166,6 +166,8 @@ The image ships systemd user units for rclone FUSE mounts that start with the KD
 
 Configure the cloud remotes first. Name them `GoogleDrive` and `OneDrive` to use the dedicated units without overrides, or set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
+The units are installable from `default.target` as well as the KDE graphical-session targets. This keeps enabled mounts starting with the user manager at login even when Plasma does not reliably re-trigger `graphical-session.target` wants.
+
 ```bash
 rclone config
 mkdir -p ~/.config/rclone/env
@@ -173,6 +175,13 @@ printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/google-drive.env
 printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/onedrive.env
 systemctl --user daemon-reload
 systemctl --user enable --now rclone-google-drive.service rclone-onedrive.service
+```
+
+For remotes named `google-drive` and `onedrive`, enable the templated instances instead. After receiving this image update on an existing install, run `reenable` once so systemd creates the new `default.target` wants symlinks; after that, normal logins should start the mounts automatically.
+
+```bash
+systemctl --user daemon-reload
+systemctl --user reenable --now rclone@google-drive.service rclone@onedrive.service
 ```
 
 The units use `--vfs-cache-mode full`, `--dir-cache-time 12h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and `--bwlimit 40M` by default to balance desktop responsiveness with cloud API stability. They also load `/usr/share/rclone/kde-trash-excludes.filter`, which explicitly excludes KDE/Freedesktop trash paths such as `.local/share/Trash`, `.Trash-*`, `Trash`, `Trashes`, `Lixeira`, and `$RECYCLE.BIN` so Dolphin/KDE trash folders are neither created through the mount nor synchronized to Google Drive or OneDrive.
