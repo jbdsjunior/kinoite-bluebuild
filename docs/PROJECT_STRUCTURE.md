@@ -32,6 +32,7 @@ It complements `AGENTS.md` and keeps structure decisions explicit, reviewable, a
   - browser policies
   - shell environment defaults
   - containers defaults
+- `usr/etc/skel/`: image-provided user skeleton defaults for new accounts; keep `/etc` reserved for runtime local admin overrides on atomic Fedora
 - `usr/lib/systemd/`: system and user units/timers + overrides
 - `usr/lib/sysctl.d/`: kernel runtime tuning
 - `usr/lib/tmpfiles.d/` and `usr/share/user-tmpfiles.d/`: temp/runtime file policy
@@ -44,7 +45,8 @@ It complements `AGENTS.md` and keeps structure decisions explicit, reviewable, a
 2. **Virtualization/KVM** assets go to `recipes/common-kvm.yml` and `files/scripts/setup-kvm.sh` when executable support is needed.
 3. **General CLI/system tools** go to `recipes/common-tools.yml`.
 4. **System behavior** must be encoded under `files/system/` (not manual post-install mutations).
-5. **New docs** must be placed in `docs/` and linked from `README.md` if user-facing.
+5. **User skeleton defaults** must live under `files/system/usr/etc/skel/` so the built image owns `/usr/etc/skel` and leaves runtime `/etc/skel` for host-local administrator overrides.
+6. **New docs** must be placed in `docs/` and linked from `README.md` if user-facing.
 
 ## Review checklist for structure changes
 

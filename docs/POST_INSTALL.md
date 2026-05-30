@@ -172,27 +172,27 @@ This validates staged rpm-ostreed policy and rootless Podman readiness.
 Validate root-scope timer:
 
 ```bash
-sudo systemctl status podman-prune-root.timer
+sudo systemctl status podman-system-prune.timer
 ```
 
 Validate rootless timer:
 
 ```bash
-systemctl --user status podman-prune-user.timer
+systemctl --user status podman-user-prune.timer
 ```
 
 Run one-shot cleanup manually when needed:
 
 ```bash
-sudo systemctl start podman-prune-root.service
-systemctl --user start podman-prune-user.service
+sudo systemctl start podman-system-prune.service
+systemctl --user start podman-user-prune.service
 ```
 
 Expected policy:
 
 - `flatpak-system-update.timer` and `flatpak-user-update.timer`: `OnBootSec=5m`, `OnUnitActiveSec=15m`.
 - `rpm-ostreed-automatic.timer`: `OnBootSec=10m`, `OnUnitActiveSec=45m`.
-- `podman-prune-root.timer` and `podman-prune-user.timer`: boot-triggered + every `1d` (`OnUnitActiveSec=1d`).
+- `podman-system-prune.timer` and `podman-user-prune.timer`: boot-triggered + every `1d` (`OnUnitActiveSec=1d`).
 - Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`) and network-online ordering.
 
 ---
