@@ -36,10 +36,6 @@ modules:
           - com.github.marhkb.Pods
           - io.github.DenysMb.Kontainer
 
-          # Remote Access & SSH Management
-          - io.github.BuddySirJava.SSH-Studio
-          - io.github.mfat.sshpilot
-
           # --- SYSTEM UTILITIES & TELEMETRY ---
           - com.github.tchx84.Flatseal
           - com.github.wwmm.easyeffects
@@ -49,11 +45,9 @@ modules:
 
           # --- PRODUCTIVITY & ENTERTAINMENT ---
           # Office & Information Management
-          - io.github.alainm23.planify
-          - md.obsidian.Obsidian
           - org.onlyoffice.desktopeditors
 
           # Streaming & P2P Protocols
-          - org.qbittorrent.qBittorrent
-          - com.stremio.Stremio
-          - dev.fredol.open-tv
+          # - org.qbittorrent.qBittorrent
+          # - com.stremio.Stremio
+          # - dev.fredol.open-tv
