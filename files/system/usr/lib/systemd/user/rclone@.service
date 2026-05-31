@@ -1,13 +1,14 @@
 [Unit]
 Description=Rclone mount for KDE Plasma - %i
 Documentation=https://rclone.org/commands/rclone_mount/
-After=graphical-session.target
-PartOf=graphical-session.target
+After=network-online.target
+Wants=network-online.target
 StartLimitIntervalSec=10min
 StartLimitBurst=20
 
 [Service]
-Type=notify
+Type=simple
+TimeoutStartSec=15
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
@@ -65,5 +66,3 @@ IOSchedulingPriority=4
 
 [Install]
 WantedBy=default.target
-WantedBy=graphical-session.target
-WantedBy=plasma-workspace.target
