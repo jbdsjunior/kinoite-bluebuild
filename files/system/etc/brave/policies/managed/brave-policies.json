@@ -43,7 +43,6 @@
   "BuiltInDnsClientEnabled": true,
   "SyncDisabled": false,
   "HardwareAccelerationMode": 1,
-  "NewTabPageLocation": "about:blank",
   "IPFSEnabled": false,
   "BraveAutoOnboardingEnabled": false,
   "BraveEphemeralStorageEnabled": true
