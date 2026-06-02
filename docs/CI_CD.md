@@ -7,6 +7,7 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 | Workflow | Trigger | Goal |
 | :-- | :-- | :-- |
 | `build-amd.yml` | `workflow_dispatch` (manual or triggered by `check-updates.yml`) | Run Trivy security gate, then build and publish AMD image |
+| `build-amd-iso.yml` | `workflow_dispatch` | Run Trivy security gate, then generate a short-retention AMD installer ISO artifact |
 | `check-updates.yml` | `schedule` (every 2h) + `workflow_dispatch` | Detect new upstream digest and trigger builds |
 | `cleanup.yml` | daily `schedule` + `workflow_dispatch` | Clean up old images and workflow runs |
 
@@ -21,6 +22,14 @@ This document covers **only** GitHub Actions pipelines and how they operate.
 - Main action: `blue-build/github-action@v1`
 - Recipe: `recipe-amd.yml`
 - Signing: `cosign_private_key: ${{ secrets.SIGNING_SECRET }}`
+
+### AMD ISO
+- Workflow: `.github/workflows/build-amd-iso.yml`
+- Trigger: `workflow_dispatch`
+- Timeout: 90 minutes
+- Main action: `jasonn3/build-container-installer@main`
+- Source image: `ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest`
+- Artifact retention: 3 days
 
 ### Relevant build settings
 
@@ -71,13 +80,14 @@ Workflow: `.github/workflows/check-updates.yml`
 
 ## Security (Shift-Left)
 
-Security scan is embedded in each build workflow as a mandatory gate:
+Security scan is embedded in each build and ISO workflow as a mandatory gate:
 
-- Job `security-scan` runs **before** `build-amd`
-- Build jobs depend on `needs: security-scan`
+- Job `security-scan` runs **before** `build-amd` and `generate-nightly-iso`
+- Build and ISO jobs depend on `needs: security-scan`
 - Trivy filesystem mode (`scan-type: fs`)
 - Severities: `CRITICAL,HIGH`
 - `ignore-unfixed: true`
+- `exit-code: '1'` so CRITICAL/HIGH findings fail the gate
 - SARIF upload to GitHub Security tab
 
 Practical outcome: builds only run when the security gate passes successfully.
@@ -100,6 +110,7 @@ Workflow: `.github/workflows/cleanup.yml`
    - Post-install operations: `docs/POST_INSTALL.md`
    - CI/CD: `docs/CI_CD.md`
    - Hardware profile: `docs/HARDWARE_BASELINE.md`
+   - Structure and configuration catalog: `docs/PROJECT_STRUCTURE.md`, `docs/CONFIG_CATALOG.md`
 2. **Avoid documentation drift**
    - Any change in `.github/workflows/*.yml` should update `docs/CI_CD.md`.
 3. **Audit continuously**

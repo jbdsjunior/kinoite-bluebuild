@@ -1,17 +1,4 @@
 {
-  "BraveAIChatEnabled": false,
-  "BraveNewsDisabled": true,
-  "BraveP3AEnabled": false,
-  "BraveRewardsDisabled": true,
-  "BraveSpeedreaderEnabled": false,
-  "BraveStatsPingEnabled": false,
-  "BraveTalkDisabled": true,
-  "BraveVPNDisabled": true,
-  "BraveWalletDisabled": true,
-  "BraveWaybackMachineEnabled": false,
-  "BraveWebDiscoveryEnabled": false,
-  "TorDisabled": true,
-  "BravePlaylistEnabled": false,
   "CloudReportingEnabled": false,
   "DriveDisabled": true,
   "PasswordManagerEnabled": false,
@@ -43,7 +30,9 @@
   "BuiltInDnsClientEnabled": true,
   "SyncDisabled": false,
   "HardwareAccelerationModeEnabled": true,
-  "IPFSEnabled": false,
-  "BraveAutoOnboardingEnabled": false,
-  "BraveEphemeralStorageEnabled": true
+  "MicrosoftEdgeInsiderPromotionEnabled": false,
+  "PromotionalTabsEnabled": false,
+  "ShowRecommendationsEnabled": false,
+  "EdgeShoppingAssistantEnabled": false,
+  "HubsSidebarEnabled": false
 }

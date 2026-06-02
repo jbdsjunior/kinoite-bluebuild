@@ -2,8 +2,8 @@ name: build-amd-iso
 
 on:
   # schedule:
-  #   - cron: "0 3 * * *" # Executa automaticamente todos os dias às 03:00 UTC (Madrugada)
-  workflow_dispatch: # Permite a execução manual caso você precise gerar uma ISO pontual
+  #   - cron: "0 3 * * *" # Optional daily ISO generation at 03:00 UTC.
+  workflow_dispatch: # Allows manual ISO generation when needed
 
 concurrency:
   group: build-iso-${{ github.ref || github.run_id }}
@@ -28,6 +28,7 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
+          exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
@@ -52,15 +53,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
 
+      - name: Install skopeo
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends skopeo
+
       - name: Detect Image Version
         id: detect
         run: |
+          set -euo pipefail
           VERSION=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest --format '{{range .RepoTags}}{{println .}}{{end}}' | grep -E '^[0-9]+$' | head -n 1)
           if [ -z "$VERSION" ]; then
-            echo "Erro: Versão numérica não detectada no GHCR."
+            echo "Error: numeric Fedora version tag was not detected in GHCR." >&2
             exit 1
           fi
-          echo "fedorav=$VERSION" >> $GITHUB_OUTPUT
+          echo "fedorav=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Generate ISO
         uses: jasonn3/build-container-installer@main
         id: build
