@@ -40,19 +40,11 @@
   "RelatedWebsiteSetsEnabled": false,
   "ShoppingListEnabled": false,
   "ExtensionManifestV2Availability": 2,
-
   "BuiltInDnsClientEnabled": true,
-
   "SyncDisabled": false,
-
   "HardwareAccelerationMode": 1,
-  "TabHoverCardImagesEnabled": false,
-  "NewTabPageLocation": "about:blank"
+  "NewTabPageLocation": "about:blank",
   "IPFSEnabled": false,
   "BraveAutoOnboardingEnabled": false,
-  "BraveEphemeralStorageEnabled": true,
-
-  "ShowHomeButton": true,
-  "ShoppingListManagerEnabled": false,
-  "LensOverlaySettings": 0,
+  "BraveEphemeralStorageEnabled": true
 }
