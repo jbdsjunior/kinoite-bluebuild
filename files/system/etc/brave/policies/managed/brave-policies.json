@@ -45,10 +45,6 @@
 
   "SyncDisabled": false,
 
-  "ExtensionInstallForceInjected": [
-    "nngcegclmccenmhodfobcaccednmbbof;https://clients2.google.com/service/update2/crx"
-  ],
-
   "HardwareAccelerationMode": 1,
   "TabHoverCardImagesEnabled": false,
   "NewTabPageLocation": "about:blank"
