@@ -40,16 +40,23 @@
   "RelatedWebsiteSetsEnabled": false,
   "ShoppingListEnabled": false,
   "ExtensionManifestV2Availability": 2,
+
   "BuiltInDnsClientEnabled": true,
+
   "SyncDisabled": false,
+
   "ExtensionInstallForceInjected": [
     "nngcegclmccenmhodfobcaccednmbbof;https://clients2.google.com/service/update2/crx"
   ],
 
   "HardwareAccelerationMode": 1,
+  "TabHoverCardImagesEnabled": false,
+  "NewTabPageLocation": "about:blank"
   "IPFSEnabled": false,
   "BraveAutoOnboardingEnabled": false,
   "BraveEphemeralStorageEnabled": true,
+
+  "ShowHomeButton": true,
   "ShoppingListManagerEnabled": false,
-  "LensOverlaySettings": 0
+  "LensOverlaySettings": 0,
 }
