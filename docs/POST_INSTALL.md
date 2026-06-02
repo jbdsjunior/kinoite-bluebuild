@@ -5,7 +5,7 @@ This guide describes post-rebase validation and adjustments for safe operation o
 ---
 ### (Optional) Verify Cosign signature (recommended)
 
-Project public key: [`cosign.pub`](cosign.pub).
+Project public key: [`cosign.pub`](../cosign.pub).
 
 Example (AMD)
 
@@ -22,9 +22,7 @@ rpm-ostree status
 bootc status
 ```
 
-Expected: `active (waiting)` with recurring interval `OnUnitInactiveSec=45m` and randomized delay.
-
-> ⚠️ **Warning:** this timer is **user-scoped**. Run the command as the logged-in desktop user.
+Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest`, and `bootc status` reports the same image reference.
 
 ---
 
@@ -184,7 +182,7 @@ systemctl --user daemon-reload
 systemctl --user enable --now rclone@google-drive.service rclone@onedrive.service
 ```
 
-The template uses `--vfs-cache-mode full`, `--dir-cache-time 12h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and `--bwlimit 40M` by default to balance desktop responsiveness with cloud API stability. It also excludes `/.Trash-1000/**` directly in the service command so KDE's per-mount trash directory is not created through or synchronized by rclone mounts.
+The template uses `--vfs-cache-mode full`, `--dir-cache-time 72h`, bounded VFS cache size/age, transfer/checker limits, API TPS limits, and unlimited bandwidth by default (`--bwlimit 0`). Set `RCLONE_BWLIMIT` in the optional environment file when a remote needs throttling. It also excludes `/.Trash-1000/**` directly in the service command so KDE's per-mount trash directory is not created through or synchronized by rclone mounts.
 
 Check logs and status with:
 
@@ -195,7 +193,20 @@ journalctl --user -u rclone@GoogleDrive.service -u rclone@OneDrive.service -f
 
 ## 9) Post-install health check
 
-This validates staged rpm-ostreed policy and rootless Podman readiness.
+This validates staged rpm-ostreed policy, maintenance timers, and rootless Podman readiness after the first reboot.
+
+```bash
+systemctl status rpm-ostreed-automatic.timer flatpak-system-update.timer podman-system-prune.timer
+systemctl --user status flatpak-user-update.timer podman-user-prune.timer
+podman info --format '{{.Host.Security.Rootless}}'
+```
+
+Expected timer policy:
+
+- `rpm-ostreed-automatic.timer`: active with `OnBootSec=10m`, `OnUnitActiveSec=45m`.
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=15m`.
+- `podman-system-prune.timer` and `podman-user-prune.timer`: active with boot-triggered daily cleanup.
+- `podman info` returns `true` when run as the desktop user.
 
 ---
 
