@@ -5,7 +5,6 @@
   "BraveRewardsDisabled": true,
   "BraveSpeedreaderEnabled": false,
   "BraveStatsPingEnabled": false,
-  "BraveSyncUrl": "",
   "BraveTalkDisabled": true,
   "BraveVPNDisabled": true,
   "BraveWalletDisabled": true,
@@ -28,21 +27,25 @@
   "DeviceMetricsReportingEnabled": false,
   "HeartbeatEnabled": false,
   "LogUploadEnabled": false,
-  "ReportAppInventory": [""],
   "ReportDeviceActivityTimes": false,
   "ReportDeviceAppInfo": false,
   "ReportDeviceSystemInfo": false,
   "ReportDeviceUsers": false,
-  "ReportWebsiteTelemetry": [""],
   "AlternateErrorPagesEnabled": false,
-  "AutofillCreditCardEnabled": false,
   "BackgroundModeEnabled": false,
   "BrowserGuestModeEnabled": false,
-  "BuiltInDnsClientEnabled": false,
   "DefaultBrowserSettingEnabled": false,
   "MetricsReportingEnabled": false,
   "ParcelTrackingEnabled": false,
   "RelatedWebsiteSetsEnabled": false,
   "ShoppingListEnabled": false,
-  "ExtensionManifestV2Availability": 2
+  "ExtensionManifestV2Availability": 2,
+  "BuiltInDnsClientEnabled": true,
+  "TranslateEnabled": true,
+  "SyncDisabled": false,
+  "ExtensionInstallForceInjected": [
+    "nngcegclmccenmhodfobcaccednmbbof;https://clients2.google.com/service/update2/crx"
+  ],
+  "HardwareAccelerationMode": 1,
+  "TabHoverCardImagesEnabled": false
 }
