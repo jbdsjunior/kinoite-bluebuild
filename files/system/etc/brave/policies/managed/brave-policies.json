@@ -41,11 +41,15 @@
   "ShoppingListEnabled": false,
   "ExtensionManifestV2Availability": 2,
   "BuiltInDnsClientEnabled": true,
-  "TranslateEnabled": true,
   "SyncDisabled": false,
   "ExtensionInstallForceInjected": [
     "nngcegclmccenmhodfobcaccednmbbof;https://clients2.google.com/service/update2/crx"
   ],
+
   "HardwareAccelerationMode": 1,
-  "TabHoverCardImagesEnabled": false
+  "IPFSEnabled": false,
+  "BraveAutoOnboardingEnabled": false,
+  "BraveEphemeralStorageEnabled": true,
+  "ShoppingListManagerEnabled": false,
+  "LensOverlaySettings": 0
 }
