@@ -21,7 +21,6 @@
   "ReportDeviceUsers": false,
   "ReportWebsiteTelemetry": [""],
   "AlternateErrorPagesEnabled": false,
-  "AutofillCreditCardEnabled": false,
   "BackgroundModeEnabled": false,
   "BrowserGuestModeEnabled": false,
   "DefaultBrowserSettingEnabled": false,
@@ -29,5 +28,8 @@
   "ParcelTrackingEnabled": false,
   "RelatedWebsiteSetsEnabled": false,
   "ShoppingListEnabled": false,
-  "ExtensionManifestV2Availability": 2
+  "ExtensionManifestV2Availability": 2,
+  "BuiltInDnsClientEnabled": true,
+  "SyncDisabled": false,
+  "HardwareAccelerationModeEnabled": true
 }
