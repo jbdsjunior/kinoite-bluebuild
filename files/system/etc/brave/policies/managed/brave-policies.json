@@ -42,14 +42,8 @@
   "BackgroundModeEnabled": false,
   "DefaultBrowserSettingEnabled": false,
   "HardwareAccelerationModeEnabled": true,
-  "ExtensionManifestV2Availability": 0,
-  "TranslateEnabled": true,
-  "SearchSuggestEnabled": true,
   "AlternateErrorPagesEnabled": true,
   "SpellCheckServiceEnabled": false,
   "BuiltInDnsClientEnabled": false,
-  "SyncDisabled": false,
-  "ExtensionInstallForcelist": [
-    "nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx"
-  ]
+  "SyncDisabled": false
 }
