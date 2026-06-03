@@ -21,5 +21,10 @@
   "BuiltInDnsClientEnabled": false,
   "DnsOverHttpsMode": "off",
   "PrivacySandboxPromptEnabled": false,
-  "PrivacySandboxAdMeasurementEnabled": false
+  "PrivacySandboxAdMeasurementEnabled": false,
+  "EnableMediaRouter": false,
+  "NetworkPredictionOptions": 2,
+  "PasswordLeakDetectionEnabled": false,
+  "BlockThirdPartyCookies": true,
+  "UserFeedbackAllowed": false
 }

@@ -22,5 +22,9 @@
   "SafeBrowsingExtendedReportingEnabled": false,
   "SafeBrowsingSurveysEnabled": false,
   "BuiltInDnsClientEnabled": false,
-  "DnsOverHttpsMode": "off"
+  "DnsOverHttpsMode": "off",
+  "EnableMediaRouter": false,
+  "NetworkPredictionOptions": 2,
+  "PasswordLeakDetectionEnabled": false,
+  "UserFeedbackAllowed": false
 }
