@@ -53,7 +53,6 @@ AMD
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-
 Reboot after completion.
 
 ### 2) Enforce signature policy during image switch
@@ -64,7 +63,6 @@ AMD
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
-
 ### 3) Post-installation
 
 Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -72,12 +70,14 @@ Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 ---
 
 ## Rollback and Disaster Recovery
+
 1. Reboot and select the previous deployment (if needed).
 2. Run atomic rollback:
 
 ```bash
 sudo bootc rollback
 ```
+
 ### Revert to stock Fedora Kinoite
 
 ```bash
@@ -88,16 +88,15 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Repository Structure
 
-| Path                        | Purpose                                                |
-| :-------------------------- | :----------------------------------------------------- |
-| `recipes/recipe-amd.yml`    | Main AMD recipe variant                                |
-| `recipes/common-*.yml`      | Shared modules (packages, drivers, services, and more) |
-| `files/system/`             | Immutable host overlays (policies, units, defaults)   |
-| `files/scripts/`            | Executable provisioning helpers                        |
-| `files/rpm-ostree/`         | Optional third-party RPM repo definitions              |
-| `.github/workflows/`        | CI/CD pipelines and security gates                     |
-| `docs/PROJECT_STRUCTURE.md` | Canonical taxonomy and placement rules                 |
-| `cosign.pub`                | Public key for signature verification                  |
+| Path                     | Purpose                                                |
+| :----------------------- | :----------------------------------------------------- |
+| `recipes/recipe-amd.yml` | Main AMD recipe variant                                |
+| `recipes/common-*.yml`   | Shared modules (packages, drivers, services, and more) |
+| `files/system/`          | Immutable host overlays (policies, units, defaults)    |
+| `files/scripts/`         | Executable provisioning helpers                        |
+| `files/rpm-ostree/`      | Optional third-party RPM repo definitions              |
+| `.github/workflows/`     | CI/CD pipelines and security gates                     |
+| `cosign.pub`             | Public key for signature verification                  |
 
 ---
 
@@ -108,8 +107,6 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance    |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits                |
 | [`docs/CI_CD.md`](docs/CI_CD.md)                         | GitHub Actions pipelines, triggers, and security checks |
-| [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) | Repository taxonomy, grouping, and placement standards |
-| [`docs/CONFIG_CATALOG.md`](docs/CONFIG_CATALOG.md)      | File-by-file configuration impact and design rationale  |
 
 ## License
 
