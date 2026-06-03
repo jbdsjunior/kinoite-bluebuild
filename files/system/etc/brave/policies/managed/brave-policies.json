@@ -4,27 +4,19 @@
   "BraveVPNDisabled": true,
   "BraveAIChatEnabled": false,
   "BraveNewsDisabled": true,
-  "BraveTalkDisabled": true,
   "BravePlaylistEnabled": false,
   "BraveWaybackMachineEnabled": false,
   "TorDisabled": true,
   "IPFSEnabled": false,
-  "BackgroundModeEnabled": false,
-  "BrowserGuestModeEnabled": false,
-  "HardwareAccelerationModeEnabled": true,
+
   "PasswordManagerEnabled": false,
   "AutofillCreditCardEnabled": false,
   "AutofillAddressEnabled": false,
-  "BraveP3AEnabled": false,
-  "BraveStatsPingEnabled": false,
-  "BraveWebDiscoveryEnabled": false,
-  "MetricsReportingEnabled": false,
-  "SafeBrowsingExtendedReportingEnabled": false,
-  "SafeBrowsingSurveysEnabled": false,
-  "BuiltInDnsClientEnabled": false,
-  "DnsOverHttpsMode": "off",
+
+  "BackgroundModeEnabled": false,
   "EnableMediaRouter": false,
-  "NetworkPredictionOptions": 2,
-  "PasswordLeakDetectionEnabled": false,
-  "UserFeedbackAllowed": false
+  "DnsOverHttpsMode": "off",
+
+  "BraveStatsPingEnabled": false,
+  "MetricsReportingEnabled": false
 }
