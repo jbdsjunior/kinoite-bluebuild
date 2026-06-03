@@ -20,7 +20,7 @@
   "SafeBrowsingDeepScanningEnabled": false,
   "AlternateErrorPagesEnabled": true,
   "BuiltInDnsClientEnabled": false,
-  "DnsOverHttpsMode": "off",
+  "DnsOverHttpsMode": "on",
   "BackgroundModeEnabled": false,
   "BrowserGuestModeEnabled": false,
   "DefaultBrowserSettingEnabled": false,
