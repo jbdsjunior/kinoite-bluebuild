@@ -6,17 +6,31 @@
   "PriceTrackingEnabled": false,
   "ShoppingListEnabled": false,
   "DriveDisabled": true,
+
+  "ParcelTrackingEnabled": false,
+
   "PrivacySandboxPromptEnabled": false,
   "PrivacySandboxAdMeasurementEnabled": false,
+
+  "RelatedWebsiteSetsEnabled": false,
   "UrlKeyedAnonymizedDataCollectionEnabled": false,
   "MetricsReportingEnabled": false,
   "CloudReportingEnabled": false,
+
   "PasswordManagerEnabled": false,
   "AutofillCreditCardEnabled": false,
   "AutofillAddressEnabled": false,
+
   "BuiltInDnsClientEnabled": false,
   "DnsOverHttpsMode": "off",
+  "BackgroundModeEnabled": false,
   "EnableMediaRouter": false,
   "EnableDoNotTrack": true,
-  "DefaultBrowserSettingEnabled": false
+  "DefaultBrowserSettingEnabled": false,
+
+  "BrowserGuestModeEnabled": false,
+
+  "SafeBrowsingDeepScanningEnabled": false,
+  "SafeBrowsingExtendedReportingEnabled": false,
+  "SafeBrowsingSurveysEnabled": false
 }
