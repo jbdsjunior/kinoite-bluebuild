@@ -29,8 +29,5 @@
   "HardwareAccelerationModeEnabled": true,
   "SyncDisabled": false,
   "InsecureFormsWarningEnabled": true,
-  "HttpsOnlyMode": "force_enabled",
-  "ExtensionInstallForcelist": [
-    "ghnomdcacenbmilgjigehppbamfmbblo;https://clients2.google.com/service/update2/crx"
-  ]
+  "HttpsOnlyMode": "force_enabled"
 }
