@@ -6,17 +6,17 @@
   "PriceTrackingEnabled": false,
   "ShoppingListEnabled": false,
   "DriveDisabled": true,
-
   "PrivacySandboxPromptEnabled": false,
   "PrivacySandboxAdMeasurementEnabled": false,
+  "UrlKeyedAnonymizedDataCollectionEnabled": false,
   "MetricsReportingEnabled": false,
   "CloudReportingEnabled": false,
-
   "PasswordManagerEnabled": false,
   "AutofillCreditCardEnabled": false,
   "AutofillAddressEnabled": false,
-
-  "BackgroundModeEnabled": false,
+  "BuiltInDnsClientEnabled": false,
+  "DnsOverHttpsMode": "off",
   "EnableMediaRouter": false,
-  "DnsOverHttpsMode": "off"
+  "EnableDoNotTrack": true,
+  "DefaultBrowserSettingEnabled": false
 }
