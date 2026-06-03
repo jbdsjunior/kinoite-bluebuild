@@ -28,5 +28,18 @@
   "ReportDeviceActivityTimes": false,
   "ReportDeviceAppInfo": false,
   "ReportDeviceSystemInfo": false,
-  "ReportDeviceUsers": false
+  "ReportDeviceUsers": false,
+  "DefaultGeolocationSetting": 2,
+  "DefaultNotificationsSetting": 2,
+  "DefaultLocalFontsSetting": 2,
+  "DefaultSensorsSetting": 2,
+  "DefaultSerialGuardSetting": 2,
+  "PasswordManagerEnabled": false,
+  "PasswordSharingEnabled": false,
+  "PasswordLeakDetectionEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "RelatedWebsiteSetsEnabled": false,
+  "SafeBrowsingExtendedReportingEnabled": false,
+  "SafeBrowsingSurveysEnabled": false,
+  "SafeBrowsingDeepScanningEnabled": false
 }
