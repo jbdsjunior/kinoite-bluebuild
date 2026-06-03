@@ -43,6 +43,5 @@
   "DefaultBrowserSettingEnabled": false,
   "HardwareAccelerationModeEnabled": true,
   "AlternateErrorPagesEnabled": true,
-  "BuiltInDnsClientEnabled": false,
   "SyncDisabled": false
 }
