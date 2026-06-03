@@ -40,7 +40,7 @@
   "RelatedWebsiteSetsEnabled": false,
   "ShoppingListEnabled": false,
   "ExtensionManifestV2Availability": 2,
-  "BuiltInDnsClientEnabled": true,
+  "BuiltInDnsClientEnabled": false,
   "SyncDisabled": false,
   "HardwareAccelerationModeEnabled": true,
   "IPFSEnabled": false,
