@@ -12,9 +12,7 @@
 ## Canonical References (do not duplicate)
 - `README.md` — overview, usage, image switching.
 - `docs/POST_INSTALL.md` — post-install operations.
-- `docs/CI_CD.md` — pipelines and automation.
 - `docs/HARDWARE_BASELINE.md` — hardware baseline.
-- `docs/PROJECT_STRUCTURE.md` — canonical file taxonomy and placement rules.
 - `recipes/` and `files/system/` — effective configuration source.
 
 ## Mandatory AGENTS Self-Update
@@ -74,7 +72,7 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
 
 ## Continuous Structure Hygiene (auto-learning)
 - Verify project organization proactively on every review/change, even without explicit request.
-- Keep file placement aligned with taxonomy in `docs/PROJECT_STRUCTURE.md`:
+- Keep file placement aligned with repository conventions:
   - immutable host behavior → `files/system/`
   - executable host helpers → `files/scripts/`
   - optional external repo definitions → `files/rpm-ostree/`
@@ -83,4 +81,3 @@ Requirement: apply focused refactors so AGENTS remains current, minimal, and tec
   - utilities → `recipes/common-tools.yml`
   - virtualization/KVM assets → `recipes/common-kvm.yml`
 - When safe, correct inconsistent names/placement in the same change set.
-- Record structural improvements in summaries and keep AGENTS guidance updated when better patterns are learned.

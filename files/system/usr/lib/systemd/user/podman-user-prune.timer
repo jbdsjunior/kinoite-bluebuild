@@ -1,8 +1,8 @@
+# Podman user prune timer
 [Unit]
 Description=Run rootless Podman prune daily
 
 [Timer]
-# Daily cleanup after boot stabilization; persistent to catch missed runs.
 OnBootSec=25m
 OnUnitActiveSec=1d
 RandomizedDelaySec=30m

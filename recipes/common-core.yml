@@ -6,11 +6,6 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # Locale and language support
         - langpacks-pt_BR
-
-        # KDE base security integration
         - plasma-firewall
-
-        # Hardware and observability baseline
         - lm_sensors

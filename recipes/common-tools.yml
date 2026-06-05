@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # DevOps and shell tooling from trusted COPR sources
   - type: dnf
     repos:
       cleanup: true
@@ -15,7 +14,6 @@ modules:
         - topgrade
         - starship
 
-  # GitOps and remote operations
   - type: dnf
     install:
       skip-unavailable: true
@@ -24,7 +22,6 @@ modules:
         - git
         - rclone
 
-  # Rootless container and distro integration toolchain
   - type: dnf
     install:
       skip-unavailable: true
@@ -35,7 +32,6 @@ modules:
         - podman-docker
         - podman-machine
 
-  # System diagnostics and networking helpers
   - type: dnf
     install:
       skip-unavailable: true

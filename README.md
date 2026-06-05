@@ -32,14 +32,13 @@ This repository publishes **one variant**:
 
 ## CI/CD
 
-Detailed automation documentation is available in [`docs/CI_CD.md`](docs/CI_CD.md).
+Automation workflows (`.github/workflows/`):
 
-Quick summary:
+- `build-amd.yml`: manual image build via `workflow_dispatch`;
+- `check-updates.yml`: scheduled check that can trigger builds when a new upstream digest is detected;
+- `cleanup.yml`: continuous operational hygiene.
 
-- image build (`build-amd.yml`) is manual (`workflow_dispatch`);
-- `check-updates.yml` runs on schedule and can trigger builds when a new upstream digest is detected;
-- each build workflow executes a Trivy security job before building, and only builds after security succeeds;
-- `cleanup.yml` runs continuously for operational hygiene.
+Each build executes a Trivy security scan before building; the image build runs only after the security gate succeeds.
 
 ---
 
@@ -102,11 +101,10 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Documentation
 
-| Document                                                 | Purpose                                                 |
-| :------------------------------------------------------- | :------------------------------------------------------ |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance    |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits                |
-| [`docs/CI_CD.md`](docs/CI_CD.md)                         | GitHub Actions pipelines, triggers, and security checks |
+| Document                                                 | Purpose                                              |
+| :------------------------------------------------------- | :--------------------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits             |
 
 ## License
 

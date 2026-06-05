@@ -19,16 +19,13 @@ modules:
         - NerdFontsSymbolsOnly
 
       google-fonts:
-        # Google
         - Google Sans
         - Google Sans Code
         - Google Sans Flex
         - Google Sans Text
-
-        # Microsoft Replacements
-        - Arimo # (Replaces Arial)
-        - Caladea # (Replaces Cambria)
-        - Carlito # (Replaces Calibri)
-        - Comic Neue # (Replaces Comic Sans MS)
-        - Cousine # (Replaces Courier New)
-        - Tinos # (Replaces Times New Roman)
+        - Arimo
+        - Caladea
+        - Carlito
+        - Comic Neue
+        - Cousine
+        - Tinos
