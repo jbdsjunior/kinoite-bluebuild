@@ -16,6 +16,14 @@
   "AutofillCreditCardEnabled": false,
   "AutofillAddressEnabled": false,
 
+  "BuiltInDnsClientEnabled": false,
+  "DnsOverHttpsMode": "off",
+  "BackgroundModeEnabled": false,
+  "EnableMediaRouter": false,
+  "DefaultBrowserSettingEnabled": false,
+
+  "BrowserGuestModeEnabled": false,
+
   "SafeBrowsingExtendedReportingEnabled": false,
 
   "MetricsReportingEnabled": false,
