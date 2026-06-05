@@ -4,11 +4,3 @@ modules:
   - type: bling
     install:
       - rpmfusion
-
-  # - type: rpm-ostree
-  #   repos:
-  #     - terra.repo
-  #     - brave-browser.repo
-  #     - google-chrome.repo
-  #     - microsoft-edge.repo
-  #     - vscode.repo

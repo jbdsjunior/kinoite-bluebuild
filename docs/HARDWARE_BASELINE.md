@@ -42,4 +42,3 @@ On hardware below this baseline, you may observe:
 
 - Main recipe: `recipes/recipe-amd.yml`.
 - Shared modules: `recipes/common-*.yml`.
-- In the current CI configuration, `build_chunked_oci` remains **disabled** (`false`).
