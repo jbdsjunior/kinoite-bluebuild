@@ -1,14 +1,13 @@
 name: cleanup
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-  # 1) Remove old GHCR image versions
   delete-old-images:
     runs-on: ubuntu-latest
     permissions:
@@ -17,7 +16,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Container images published by this repository
         image-name: [kinoite-amd]
     steps:
       - name: Delete old package versions
@@ -28,7 +26,6 @@ jobs:
           min-versions-to-keep: 7
           delete-only-untagged-versions: "false"
 
-  # 2) Remove old workflow runs
   delete-old-runs:
     runs-on: ubuntu-latest
     permissions:
@@ -36,11 +33,9 @@ jobs:
       contents: read
     steps:
       - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@b3018382ca039b53d238908238bd35d1fb14f8ee # v2
+        uses: Mattraks/delete-workflow-runs@b3018382ca039b53d238908238bd35d1fb14f8ee
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          # Keep a short history window for lower Actions noise.
           retain_days: 3
-          # Always keep a minimal set of older runs for incident review.
           keep_minimum_runs: 3
