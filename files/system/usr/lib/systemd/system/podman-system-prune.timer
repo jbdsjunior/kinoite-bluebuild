@@ -1,8 +1,8 @@
+# Podman system prune timer
 [Unit]
 Description=Run root-scope Podman prune daily
 
 [Timer]
-# Daily cleanup after boot stabilization; persistent to catch missed runs.
 OnBootSec=20m
 OnUnitActiveSec=1d
 RandomizedDelaySec=30m

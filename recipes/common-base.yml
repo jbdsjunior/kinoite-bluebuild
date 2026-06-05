@@ -1,28 +1,17 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # Repository-managed filesystem overlays (policies, units, defaults)
   - type: files
     files:
       - source: system
         destination: /
 
-  # Base repositories and hardening/debloat first
   - from-file: common-repos.yml
   - from-file: common-debloat.yml
-
-  # Hardware + platform stack
   - from-file: common-drivers.yml
   - from-file: common-kvm.yml
-
-  # User experience and productivity layers
   - from-file: common-fonts.yml
   - from-file: common-core.yml
   - from-file: common-tools.yml
   - from-file: common-brew.yml
-
-  # Timers and service defaults (immutable + declarative)
   - from-file: common-systemd.yml
-
-  # App layer last for clearer rollback boundaries
-  # - from-file: common-flatpaks.yml
