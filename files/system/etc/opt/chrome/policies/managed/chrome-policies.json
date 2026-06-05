@@ -1,9 +1,0 @@
-{
-  "FeedbackSurveysEnabled": false,
-  "MetricsReportingEnabled": false,
-  "SafeBrowsingExtendedReportingEnabled": false,
-  "SafeBrowsingSurveysEnabled": false,
-  "UserFeedbackAllowed": false,
-  "UserSecurityAuthenticatedReporting": false,
-  "UserSecuritySignalsReporting": false
-}
