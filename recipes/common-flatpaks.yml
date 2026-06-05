@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: false
+        install:
+          # --- CORE DESKTOP ENVIRONMENTS ---
+          # KDE Plasma Base
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
+          - org.kde.kate
+          # - org.kde.kcalc
+          - org.kde.okular
+
+          # GNOME Core & Runtime Utilities
+          - org.gnome.Calculator
+          - org.gnome.DejaDup
+          - org.gnome.Weather
+
+          # --- BROWSERS & INTERNET ---
+          - com.brave.Browser
+          - com.google.Chrome
+          # - com.microsoft.Edge
+          # - org.mozilla.firefox
+          # - org.mozilla.Thunderbird
+
+          # --- DEVELOPMENT & INFRASTRUCTURE ---
+          # IDEs & Editors
+          - com.visualstudio.code
+          # - dev.zed.Zed
+
+          # Containers & DevOps Tooling
+          - com.github.marhkb.Pods
+          - io.github.DenysMb.Kontainer
+
+          # --- SYSTEM UTILITIES & TELEMETRY ---
+          - com.github.tchx84.Flatseal
+          - com.github.wwmm.easyeffects
+          # - io.missioncenter.MissionCenter
+          - it.mijorus.gearlever
+          # - org.fkoehler.KTailctl
+
+          # --- PRODUCTIVITY & ENTERTAINMENT ---
+          # Office & Information Management
+          - org.onlyoffice.desktopeditors
+
+          # Streaming & P2P Protocols
+          # - org.qbittorrent.qBittorrent
+          # - com.stremio.Stremio
+          # - dev.fredol.open-tv
