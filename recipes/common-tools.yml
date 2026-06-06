@@ -28,7 +28,7 @@ modules:
       allow-erasing: true
       packages:
         - distrobox
-        - podman-compose
+        - docker-compose
         - podman-docker
         - podman-machine
 

@@ -6,6 +6,7 @@ Description=Run rootless Podman prune daily
 OnBootSec=25m
 OnUnitActiveSec=1d
 RandomizedDelaySec=30m
+FixedRandomDelay=true
 Persistent=true
 AccuracySec=1m
 Unit=podman-user-prune.service
