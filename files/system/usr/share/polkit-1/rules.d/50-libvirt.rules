@@ -1,0 +1,9 @@
+// Polkit rule for libvirt management permissions
+// Allows users in the wheel group or with an active local session to manage libvirt without additional authentication
+
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.libvirt.unix.manage" &&
+        (subject.isInGroup("wheel") || (subject.local && subject.active))) {
+        return polkit.Result.YES;
+    }
+});
