@@ -41,7 +41,6 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `tmpfiles-system`   | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
 | `tmpfiles-user`     | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
 | `status-all`        | `fw-status && dns-status`                                                            |
-| `kvm-setup`         | `sudo setup-kvm.sh`                                                                  |
 
 ---
 
@@ -62,19 +61,13 @@ sudo systemctl status libvirtd
 
 ## 4) Virtualization (KVM/libvirt)
 
-Configure permissions and groups:
+Permissions are managed declaratively via Polkit rules included in the image. Users in the `wheel` group or with an active local session can manage libvirt without additional authentication. No manual group assignment is required.
+
+Verify libvirt status:
 
 ```bash
-sudo setup-kvm.sh
+sudo systemctl status libvirtd
 ```
-
-Or use:
-
-```bash
-kvm-setup
-```
-
-Log out and log back in to apply group changes.
 
 ---
 

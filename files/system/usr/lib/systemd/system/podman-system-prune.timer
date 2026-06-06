@@ -6,6 +6,7 @@ Description=Run root-scope Podman prune daily
 OnBootSec=20m
 OnUnitActiveSec=1d
 RandomizedDelaySec=30m
+FixedRandomDelay=true
 Persistent=true
 AccuracySec=1m
 Unit=podman-system-prune.service
