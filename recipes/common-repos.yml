@@ -5,8 +5,9 @@ modules:
     install:
       - rpmfusion
 
-  # - type: rpm-ostree
-  #   repos:
+  - type: rpm-ostree
+    repos:
+      - netbird.repo
   #     - terra.repo
   #     - brave-browser.repo
   #     - google-chrome.repo
