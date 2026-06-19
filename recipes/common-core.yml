@@ -9,3 +9,4 @@ modules:
         - langpacks-pt_BR
         - plasma-firewall
         - lm_sensors
+        - kate
