@@ -11,7 +11,7 @@ modules:
           - org.kde.elisa
           - org.kde.gwenview
           - org.kde.haruna
-          - org.kde.kate
+          # - org.kde.kate
           # - org.kde.kcalc
           - org.kde.okular
 
