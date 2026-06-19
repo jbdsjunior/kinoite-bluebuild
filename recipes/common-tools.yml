@@ -39,6 +39,7 @@ modules:
       packages:
         - fastfetch
         - tailscale
+        - netbird
         - fuse
         - fuse-libs
         - fuse3
