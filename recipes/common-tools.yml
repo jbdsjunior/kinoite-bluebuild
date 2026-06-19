@@ -40,5 +40,3 @@ modules:
         - fastfetch
         - tailscale
         - fuse
-        - fuse-libs
-        - fuse3
