@@ -10,3 +10,7 @@ modules:
         - plasma-firewall
         - lm_sensors
         - kate
+        - gwenview
+        - okular
+        - haruna
+        - elisa
