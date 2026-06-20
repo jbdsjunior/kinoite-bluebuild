@@ -8,12 +8,12 @@ modules:
         install:
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
-          - org.kde.elisa
-          - org.kde.gwenview
-          - org.kde.haruna
+          # - org.kde.elisa
+          # - org.kde.gwenview
+          # - org.kde.haruna
           # - org.kde.kate
           # - org.kde.kcalc
-          - org.kde.okular
+          # - org.kde.okular
 
           # GNOME Core & Runtime Utilities
           - org.gnome.Calculator
