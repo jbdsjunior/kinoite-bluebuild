@@ -2,15 +2,11 @@
 Description=Daily Podman prune (rootless user scope)
 Documentation=man:podman
 
-Wants=network-online.target
-After=network-online.target
-
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/podman system prune -af --volumes --build
-Nice=10
-IOSchedulingClass=best-effort
-IOSchedulingPriority=7
+Nice=19
+IOSchedulingClass=idle
 CPUWeight=20
 IOWeight=20
 TimeoutStartSec=30m
