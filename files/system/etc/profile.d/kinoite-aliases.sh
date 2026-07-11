@@ -15,4 +15,3 @@ alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-
 alias tmpfiles-user='systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf'
 
 alias status-all='fw-status && dns-status'
-alias kvm-setup='sudo setup-kvm.sh'

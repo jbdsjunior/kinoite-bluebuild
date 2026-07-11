@@ -22,6 +22,12 @@ This project is optimized for a high-capacity workstation profile focused on KDE
 
 ---
 
+## Tuned Defaults
+
+- Kernel arguments keep `amd_pstate=active` for Zen 3 frequency scaling, enable AMD IOMMU passthrough defaults for libvirt, and keep CPU vulnerability mitigations on `auto`.
+- ZRAM policy is capped for a 64 GB workstation to absorb pressure spikes without creating an oversized compressed swap device.
+- BTRFS NoCOW tmpfiles cover libvirt image directories and Podman/Distrobox storage roots before heavy write paths are populated.
+
 ## Expected Operational Limits
 
 On hardware below this baseline, you may observe:
