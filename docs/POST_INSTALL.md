@@ -61,7 +61,7 @@ sudo systemctl status libvirtd
 
 ## 4) Virtualization (KVM/libvirt)
 
-Permissions are managed declaratively via Polkit rules included in the image. Users in the `wheel` group or with an active local session can manage libvirt without additional authentication. No manual group assignment is required.
+Permissions are managed declaratively via Polkit rules included in the image. Only users in the `wheel` group can manage libvirt without additional authentication. Add non-administrator users deliberately instead of granting access to every active local session.
 
 Verify libvirt status:
 
@@ -157,7 +157,7 @@ The image ships one dynamic systemd user template for rclone FUSE mounts. Each `
 
 Configure the cloud remotes first. The instance name maps directly to the rclone remote name by default, so `rclone@GoogleDrive.service` mounts `GoogleDrive:` and `rclone@OneDrive.service` mounts `OneDrive:`. To mount a differently named remote or adjust limits, set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
-The template is installable from `default.target` as well as the KDE graphical-session targets. This keeps enabled mounts starting with the user manager at login even when Plasma does not reliably re-trigger `graphical-session.target` wants.
+The template is installable from `default.target`. This keeps enabled mounts starting with the user manager at login while ordering them after `network-online.target`.
 
 ```bash
 rclone config
@@ -229,6 +229,6 @@ Expected policy:
 - `flatpak-system-update.timer` and `flatpak-user-update.timer`: `OnBootSec=5m`, `OnUnitActiveSec=15m`.
 - `rpm-ostreed-automatic.timer`: `OnBootSec=10m`, `OnUnitActiveSec=45m`.
 - `podman-system-prune.timer` and `podman-user-prune.timer`: boot-triggered + every `1d` (`OnUnitActiveSec=1d`).
-- Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`) and network-online ordering.
+- Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`). Flatpak updates, rclone mounts, and rpm-ostreed automatic staging wait for `network-online.target`; local Podman prune units do not require network access and run with idle I/O scheduling.
 
 ---
