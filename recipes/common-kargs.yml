@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: kargs
+    kargs:
+      - amd_pstate=active
+      - amd_iommu=on
+      - mitigations=auto
+      # Performance extra de vídeo e frame buffer
+      - radeon.si_support=0
+      - amdgpu.si_support=1
