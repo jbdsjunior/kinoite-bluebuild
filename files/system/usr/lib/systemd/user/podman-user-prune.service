@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily rootless Podman prune
+Description=Daily Podman prune (rootless user scope)
 Documentation=man:podman
 
 [Service]
