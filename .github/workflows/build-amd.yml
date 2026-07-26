@@ -64,3 +64,21 @@ jobs:
           retry_push_count: 3
           skip_checkout: true
           build_chunked_oci: false
+
+  sbom:
+    name: Generate SBOM (AMD)
+    needs: build-amd
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
+          format: spdx-json
+          output-file: kinoite-amd.sbom.spdx.json
+          upload-artifact: true

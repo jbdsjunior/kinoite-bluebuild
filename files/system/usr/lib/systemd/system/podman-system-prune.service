@@ -11,5 +11,3 @@ CPUWeight=20
 IOWeight=20
 TimeoutStartSec=30m
 
-[Install]
-WantedBy=multi-user.target
