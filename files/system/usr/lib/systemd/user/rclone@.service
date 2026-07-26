@@ -1,28 +1,68 @@
 [Unit]
-Description=rclone FUSE mount for remote %i
-Documentation=man:rclone(1)
+Description=Rclone mount for KDE Plasma - %i
+Documentation=https://rclone.org/commands/rclone_mount/
+After=network-online.target
 Wants=network-online.target
-After=network-online.target default.target
+StartLimitIntervalSec=10min
+StartLimitBurst=20
 
 [Service]
-Type=notify
-EnvironmentFile=-%h/.config/rclone/env/%i.env
-EnvironmentFile=-%h/.config/rclone/env/.env
+Type=simple
+TimeoutStartSec=15
 Environment=RCLONE_REMOTE=%i:
-ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} %h/Cloud/%i \
+Environment=RCLONE_MOUNT=%h/Cloud/%i
+Environment=RCLONE_CACHE=%h/.cache/rclone/%i
+# Remoção do limite padrão de 40M para explorar largura de banda máxima, controlável via .env
+Environment=RCLONE_BWLIMIT=0
+EnvironmentFile=-%h/.config/rclone/env/%i.env
+
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
+
+ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --config %h/.config/rclone/rclone.conf \
+  --exclude /.Trash-1000/** \
+  --exclude /.Trash/** \
+  --exclude /.trashinfo/** \
+  --cache-dir ${RCLONE_CACHE} \
   --vfs-cache-mode full \
+  --vfs-cache-max-size 100G \
   --vfs-cache-max-age 72h \
-  --vfs-cache-max-size 10G \
+  --vfs-fast-fingerprint \
+  --vfs-read-chunk-size 64M \
+  --vfs-read-chunk-size-limit off \
+  --vfs-read-ahead 256M \
+  --vfs-write-back 10s \
   --dir-cache-time 72h \
-  --transfers 4 \
-  --checkers 8 \
-  --tpslimit 10 \
-  --bwlimit ${RCLONE_BWLIMIT:-0} \
-  --exclude "/.Trash-1000/**"
-ExecStop=/bin/fusermount -u %h/Cloud/%i
+  --poll-interval 1m \
+  --buffer-size 128M \
+  --transfers 8 \
+  --checkers 16 \
+  --tpslimit 12 \
+  --tpslimit-burst 20 \
+  --bwlimit ${RCLONE_BWLIMIT} \
+  --use-mmap \
+  --timeout 2m \
+  --contimeout 20s \
+  --low-level-retries 10 \
+  --retries 10 \
+  --attr-timeout 5s \
+  --umask 0022 \
+  --log-level NOTICE \
+  --log-systemd \
+  $RCLONE_FLAGS
+
+ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
+ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
-RestartSec=10
+RestartSec=30s
+TimeoutStopSec=30s
+
+LimitNOFILE=1048576
+MemoryMax=4G
+CPUQuota=200%
+IOSchedulingClass=best-effort
+IOSchedulingPriority=4
 
 [Install]
 WantedBy=default.target
