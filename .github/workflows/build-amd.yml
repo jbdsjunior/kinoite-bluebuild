@@ -64,3 +64,7 @@ jobs:
           retry_push_count: 3
           skip_checkout: true
           build_chunked_oci: false
+          use_unstable_cli: true
+
+          chunkah: true
+          max_layers: 64
