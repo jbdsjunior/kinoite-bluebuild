@@ -54,7 +54,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Custom AMD Image
-        uses: blue-build/github-action@afab3d8f3c693f75936d3a853f38e12c026faff68025345944ef1f0de1cdc10d # v1.12.0
+        uses: blue-build/github-action@main # v1.12.0
         with:
           recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
