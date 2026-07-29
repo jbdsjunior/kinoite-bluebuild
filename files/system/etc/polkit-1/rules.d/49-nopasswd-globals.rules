@@ -1,0 +1,113 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   POLKIT RULES - AAA GRADE SECURITY WITH USABILITY
+   Target: Single-user Workstation with KVM, Containers
+   Standard: Fedora Security Guidelines, Universal Blue defaults
+   ───────────────────────────────────────────────────────────────────────────── */
+
+// ===========================================================================
+// GLOBAL RULES - Admin authentication without password for local user
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    // Allow members of wheel group to execute any action without password
+    // ONLY on local sessions (not SSH/network logins)
+    if (subject.isInGroup("wheel") && 
+        subject.user != "root" &&
+        subject.local && 
+        subject.active) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// LIBVIRT/KVM - VM management without password prompts
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") &&
+        subject.local && 
+        subject.active &&
+        (action.id == "org.libvirt.unix.manage" ||
+         action.id == "org.libvirt.unix.monitor" ||
+         action.id == "org.libvirt.unix.powermanage")) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// PODMAN/CONTAINERS - Rootless container operations
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") &&
+        subject.local && 
+        subject.active &&
+        (action.id == "org.fedoraproject.firewalld.rich-rule" ||
+         action.id == "org.fedoraproject.firewalld.service")) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// DISK MOUNTING - Allow mounting removable media without password
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") &&
+        subject.local && 
+        subject.active &&
+        (action.id == "org.freedesktop.udisks2.filesystem-mount" ||
+         action.id == "org.freedesktop.udisks2.filesystem-mount-system" ||
+         action.id == "org.freedesktop.udisks2.eject-media" ||
+         action.id == "org.freedesktop.udisks2.power-off-drive")) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// NETWORK MANAGER - WiFi, VPN, network settings
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") &&
+        subject.local && 
+        subject.active &&
+        (action.id == "org.freedesktop.NetworkManager.settings.modify.system" ||
+         action.id == "org.freedesktop.NetworkManager.settings.modify.hostname" ||
+         action.id == "org.freedesktop.NetworkManager.enable-or-disable-statistics")) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// RPM-OSTREE - System updates and rollback
+// ===========================================================================
+
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") &&
+        subject.local && 
+        subject.active &&
+        (action.id == "org.projectatomic.rpmostree.upgrade-system" ||
+         action.id == "org.projectatomic.rpmostree.rollback" ||
+         action.id == "org.projectatomic.rpmostree.rebase" ||
+         action.id == "org.projectatomic.rpmostree.install-uninstall")) {
+        return polkit.Result.YES;
+    }
+});
+
+// ===========================================================================
+// SECURITY NOTES:
+// 
+// These rules apply ONLY to:
+// - Local physical sessions (subject.local && subject.active)
+// - Members of wheel group (typically the primary user)
+// - Non-root users (root doesn't need polkit)
+//
+// For multi-user systems or servers, remove these rules and use
+// explicit sudo/su authentication instead.
+//
+// VALIDATION COMMANDS:
+//   polkitctl list-rules           # List all loaded polkit rules
+//   polkitctl monitor              # Monitor polkit decisions in real-time
+//   grep -r "polkit" /var/log/     # Check auth logs
+// =============================================================================

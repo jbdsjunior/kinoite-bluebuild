@@ -1,20 +1,97 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEMD SERVICES - AAA GRADE SERVICE MANAGEMENT
+# Target: Desktop Workstation with KVM, Containers, Development
+# Standard: Universal Blue, Fedora Kinoite best practices
+# ─────────────────────────────────────────────────────────────────────────────
 
 modules:
   - type: systemd
+    # System-wide services (root level)
     system:
+      # Mask dangerous or redundant services
       masked:
+        # systemd-remount-fs.service: Conflicts with immutable ostree root
         - systemd-remount-fs.service
+        
+        # Debug services - disable in production for security
+        - systemd-debug-generator.path
+        - debug-shell.service
+        
+        # Legacy services not needed on modern KDE/Wayland
+        - bluetooth.service  # Enable only if Bluetooth hardware present
+        - ModemManager.service  # Enable only if cellular modem present
+      
+      # Essential enabled services
       enabled:
+        # Podman container runtime - root level
         - podman.socket
         - podman-restart.service
         - podman-auto-update.timer
         - podman-system-prune.timer
+        
+        # rpm-ostree automatic updates (staged)
         - rpm-ostreed-automatic.timer
+        
+        # Flatpak automatic updates (system apps)
         - flatpak-system-update.timer
+        
+        # Virtualization - Libvirt daemon for KVM/QEMU
+        - libvirtd.service
+        - libvirtd-ro.service  # Read-only socket for non-root users
+        
+        # Network time synchronization (critical for TLS/certs)
+        - systemd-timesyncd.service
+        
+        # TRIM support for NVMe SSDs (weekly scheduled)
+        - fstrim.timer
+    
+    # User-level services (per-user session)
     user:
       enabled:
+        # Podman user socket for rootless containers
         - podman.socket
         - podman-auto-update.timer
         - podman-user-prune.timer
+        
+        # Flatpak user app updates
         - flatpak-user-update.timer
+        
+        # D-Bus session bus (required for most desktop apps)
+        - dbus-broker.service
+        
+        # Pipewire multimedia stack (audio/video)
+        - pipewire.service
+        - pipewire-pulse.service
+        - wireplumber.service
+        
+        # GNOME Keyring for credential storage (KDE uses kwallet too)
+        - gnome-keyring-daemon.service
+        
+        # XDG Desktop Portal for sandboxed app integration
+        - xdg-desktop-portal.service
+        - xdg-desktop-portal-kde.service
+
+# =============================================================================
+# SERVICE NOTES:
+# 
+# Masked Services Rationale:
+# - systemd-remount-fs: Ostree manages root filesystem immutability
+# - debug-shell: Security risk (opens getty on tty9 with root access)
+# - bluetooth/ModemManager: Enable only if hardware is present
+#
+# Enabled Services Rationale:
+# - Podman timers: Automatic container hygiene without manual intervention
+# - rpm-ostreed-automatic: Staged updates allow safe rollback
+# - libvirtd: Required for KVM VMs and Docker Desktop via libvirt backend
+# - fstrim: Extends NVMe lifespan by releasing unused blocks
+# - Pipewire suite: Modern audio stack with low latency, Bluetooth A2DP
+# - XDG portals: Essential for Flatpak sandbox integration with host
+#
+# VALIDATION COMMANDS:
+#   systemctl list-unit-files --state=enabled
+#   systemctl list-unit-files --state=masked
+#   systemctl --user list-unit-files --state=enabled
+#   systemd-analyze blame            # Boot time analysis
+#   systemd-analyze critical-chain   # Critical path analysis
+# =============================================================================

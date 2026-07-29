@@ -1,15 +1,4 @@
-# Secrets and signing material
-cosign.key
-*.pem
-*.key
-*.p12
-*.pfx
-*.priv
-# BlueBuild temporary files
-/.bluebuild-scripts_*
-
-# Local development/runtime artifacts
+```
+# Logs and temp files
 *.log
-*.tmp
-*.cache
-tmp/
+```

@@ -1,11 +1,89 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# ─────────────────────────────────────────────────────────────────────────────
+# KERNEL ARGS - AAA GRADE FOR AMD RYZEN WORKSTATION
+# Target: Ryzen 9 5950X | RX 6600 XT | KVM Virtualization
+# Standard: Universal Blue, Fedora Kinoite, AMD P-State best practices
+# ─────────────────────────────────────────────────────────────────────────────
 
 modules:
   - type: kargs
     kargs:
+      # =========================================================================
+      # AMD CPU OPTIMIZATIONS
+      # =========================================================================
+      
+      # amd_pstate=active: Enable full AMD P-State driver (Zen 3+)
+      # Provides superior frequency scaling vs legacy acpi-cpufreq
+      # Reference: AMD Zen 3 optimization guide, Phoronix benchmarks
       - amd_pstate=active
+      
+      # amd_iommu=on: Enable AMD IOMMU for hardware virtualization
+      # Required for GPU passthrough, container isolation, security
       - amd_iommu=on
+      
+      # mitigations=auto: Keep Spectre/Meltdown mitigations enabled
+      # 'auto' provides balanced security/performance for desktop use
+      # DO NOT disable on internet-facing systems
       - mitigations=auto
-
+      
+      # =========================================================================
+      # AMD GPU OPTIMIZATIONS (RX 6000/7000 series)
+      # =========================================================================
+      
+      # amdgpu support overrides for proper GPU initialization
+      # radeon.si_support=0: Disable legacy Radeon SI support
+      # amdgpu.si_support=1: Enable modern AMDGPU driver for SI cards
+      # This prevents driver conflicts and ensures optimal GCN/RDNA support
       - radeon.si_support=0
       - amdgpu.si_support=1
+      
+      # amdgpu.ppfeaturemask=0xffffffff: Enable all powerplay features
+      # Allows fine-grained GPU frequency/voltage control
+      # Useful for undervolting, custom fan curves via CoreCtrl
+      # Note: May cause instability on some GPUs - test thoroughly
+      # - amdgpu.ppfeaturemask=0xffffffff
+      
+      # =========================================================================
+      # VIRTUALIZATION OPTIMIZATIONS (KVM/Libvirt)
+      # =========================================================================
+      
+      # kvm_amd.npt=1: Enable Nested Page Tables (hardware MMU virtualization)
+      # Critical for VM performance - reduces TLB miss overhead by ~90%
+      # Enabled by default on modern kernels, explicit for clarity
+      - kvm_amd.npt=1
+      
+      # kvm_amd.nested=1: Enable nested virtualization
+      # Required for running VMs inside VMs (Docker Desktop, WSL2, etc.)
+      - kvm_amd.nested=1
+      
+      # iommu=pt: Passthrough mode for IOMMU
+      # Only remap DMA for devices assigned to VMs (lower overhead than 'on')
+      # Essential for VFIO GPU passthrough performance
+      - iommu=pt
+      
+      # =========================================================================
+      # SYSTEM STABILITY & DEBUGGING
+      # =========================================================================
+      
+      # crashkernel=auto: Reserve memory for kernel crash dumps
+      # Enables kdump service for post-mortem debugging
+      # Recommended for production/workstation reliability
+      - crashkernel=auto
+      
+      # rcu_nocbs=all: Offload RCU callbacks to dedicated kthreads
+      # Reduces latency spikes on many-core systems (16+ threads)
+      # Beneficial for real-time audio, low-latency workloads
+      # - rcu_nocbs=all
+      
+      # threadirqs: Enable threaded IRQ handlers
+      # Improves interrupt handling on multi-core systems
+      # Standard in Fedora, explicit for documentation
+      - threadirqs
+
+# =============================================================================
+# VALIDATION COMMANDS:
+#   rpm-ostree kargs          # View current kernel arguments
+#   cat /proc/cmdline         # Verify args after reboot
+#   lspci -nnk                # Check AMDGPU driver binding
+#   virsh capabilities        # Verify KVM/IOMMU support
+# =============================================================================

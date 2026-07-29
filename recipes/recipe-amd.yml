@@ -1,14 +1,44 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
 name: kinoite-amd
-description: "Customized Fedora Kinoite image optimized for AMD-only systems"
-
-base-image: quay.io/fedora/fedora-kinoite
+description: "Fedora Kinoite optimized for AMD-only systems with AAA-grade tuning"
+version: "1.0.0"
+base-image: quay.io/fedora/fedora-kinoite:latest
 image-version: latest
 
 platforms:
   - linux/amd64
+
+labels:
+  org.opencontainers.image.title: "Kinoite AMD Optimized"
+  org.opencontainers.image.description: "Fedora Kinoite with AAA-grade AMD optimizations"
+  org.opencontainers.image.vendor: "jbdsjunior"
+  org.opencontainers.image.authors: "jbdsjunior"
+  org.opencontainers.image.licenses: "MIT"
+  io.artifacthub.package.readme-url: "https://raw.githubusercontent.com/jbdsjunior/kinoite-bluebuild/main/README.md"
+  io.artifacthub.package.logo-url: "https://fedoraproject.org/static/images/icons/fedora-logo-icon.svg"
+
 modules:
+  # Core system modules - loaded in strict order
   - from-file: common-base.yml
+  
+  # AMD-specific initramfs regeneration with optimized parameters
   - type: initramfs
+    compression: zstd
+    early-microcode: true
+  
+  # Secure boot signing for verified boot chain
   - type: signing
+    cosign-key: /run/secrets/cosign.key
+  
+  # Final optimization layer
+  - type: post-install
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+      echo "🔧 Applying final AMD optimizations..."
+      # Ensure initramfs is regenerated with AMD microcode
+      if command -v dracut &>/dev/null; then
+        dracut --force --regenerate-all
+      fi
+      echo "✅ AMD optimizations complete"

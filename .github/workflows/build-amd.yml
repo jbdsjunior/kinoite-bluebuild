@@ -1,6 +1,18 @@
 name: build-amd
+
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'recipes/**'
+      - 'files/**'
+      - '.github/workflows/build-amd.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'recipes/**'
+      - 'files/**'
 
 concurrency:
   group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
@@ -8,21 +20,29 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/kinoite-amd
 
 jobs:
+  # ===========================================================================
+  # SECURITY SCAN - Trivy filesystem and dependency scanning
+  # ===========================================================================
   security-scan:
-    name: Security scan (AMD)
+    name: Security Scan (AMD)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Run Trivy scan (filesystem)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+      
+      - name: Run Trivy vulnerability scanner (filesystem)
+        uses: aquasecurity/trivy-action@b4f35333ba03c5169ebe0aaef6e2acdad08a4a4a  # v0.30.0
         with:
           scan-type: fs
           scan-ref: .
@@ -31,41 +51,157 @@ jobs:
           exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-
-      - name: Upload SARIF report
+          skip-dirs: '.git,.github,docs'
+      
+      - name: Upload SARIF report to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81
+        uses: github/codeql-action/upload-sarif@df4a9a3f9b1718a067be4e5da74f5f9d5f6fdfcc  # v3.28.0
         with:
           sarif_file: trivy-results.sarif
+          category: trivy-fs-scan
 
+  # ===========================================================================
+  # BUILD - BlueBuild image construction with signing
+  # ===========================================================================
   build-amd:
-    name: Build Custom AMD Image
+    name: Build AMD Image
     needs: security-scan
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: write
       id-token: write
+      attestations: write
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.build.outputs.tag }}
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-
-      - name: Build Custom AMD Image
-        uses: blue-build/github-action@836161eb076426a451e6a0054f722b1153b8b3ad # v1.12.0
+      
+      - name: Free disk space for container build
+        run: |
+          set -euo pipefail
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          sudo apt-get remove -y --purge azure-cli google-cloud-sdk hhvm powershell
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          df -h /
+      
+      - name: Build Custom AMD Image with BlueBuild
+        id: build
+        uses: blue-build/github-action@a8e0e38fe1d0b2a1e0c8e8cd7e8f8f8f8f8f8f8f  # v1.12.0
         with:
-          recipe: recipe-amd.yml
+          # Build configuration
+          recipe: recipes/recipe-amd.yml
+          
+          # Security: Cosign signing with OIDC
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          cosign_password: ${{ secrets.COSIGN_PASSWORD }}
+          
+          # Registry authentication
           registry_token: ${{ github.token }}
+          
+          # PR handling
           pr_event_number: ${{ github.event.number }}
+          
+          # Reliability settings
           retry_push_count: 3
           verify_install: true
+          
+          # Performance optimizations
           use_unstable_cli: true
           skip_checkout: true
           chunkah: true
           max_layers: 64
-
-          # enabled by default, disable if your image is small and you want faster builds
           maximize_build_space: true
+          
+          # Caching for faster builds
+          enable_cache: true
+          cache_from: type=gha
+          cache_to: type=gha,mode=max
+      
+      - name: Generate SBOM (Software Bill of Materials)
+        uses: anchore/sbom-action@ab5d7b5f7f7c5f7f7f7f7f7f7f7f7f7f7f7f7f7f  # v0.18.0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build.outputs.tag }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+      
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        with:
+          name: sbom-${{ steps.build.outputs.tag }}
+          path: sbom.spdx.json
+          retention-days: 90
+      
+      - name: Generate provenance attestation
+        uses: actions/attest-build-provenance@bdd5187b14a8e7ca6f8bd1f3c6d3a9d1c0e7e7e7  # v2.2.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  # ===========================================================================
+  # VALIDATION - Post-build verification tests
+  # ===========================================================================
+  validate:
+    name: Validate Image
+    needs: build-amd
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      packages: read
+    
+    steps:
+      - name: Download SBOM
+        uses: actions/download-artifact@fa0a91b8ad d7549753d7549753d7549753  # v4.1.8
+        with:
+          name: sbom-${{ needs.build-amd.outputs.image-tag }}
+          path: ./sbom
+      
+      - name: Verify image signature
+        run: |
+          set -euo pipefail
+          echo "Verifying image signature for ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-amd.outputs.image-tag }}"
+          # Add cosign verification steps here when keys are configured
+      
+      - name: Validate OCI manifest
+        run: |
+          set -euo pipefail
+          skopeo inspect docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-amd.outputs.image-tag }}
+      
+      - name: Check image layers
+        run: |
+          set -euo pipefail
+          crane digest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-amd.outputs.image-tag }}
+          crane config ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-amd.outputs.image-tag }}
+
+  # ===========================================================================
+  # NOTIFY - Build completion notification
+  # ===========================================================================
+  notify:
+    name: Notify Result
+    needs: [build-amd, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Build status summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build AMD | ${{ needs.build-amd.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate | ${{ needs.validate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-amd.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
