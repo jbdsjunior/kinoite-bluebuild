@@ -7,5 +7,5 @@ modules:
       - amd_iommu=on
       - mitigations=auto
 
-      - radeon.si_support=0
-      - amdgpu.si_support=1
+      # - radeon.si_support=0
+      # - amdgpu.si_support=1
