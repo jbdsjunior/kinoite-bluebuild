@@ -3,8 +3,8 @@
 modules:
   - type: systemd
     system:
-      # masked:
-      #   - systemd-remount-fs.service
+      masked:
+        - systemd-remount-fs.service
       enabled:
         - rpm-ostreed-automatic.timer
         - flatpak-system-update.timer
