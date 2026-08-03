@@ -6,13 +6,8 @@ modules:
       # masked:
       #   - systemd-remount-fs.service
       enabled:
-        - podman.socket
-        - podman-restart.service
-        - podman-auto-update.timer
         - rpm-ostreed-automatic.timer
         - flatpak-system-update.timer
     user:
       enabled:
-        - podman.socket
-        - podman-auto-update.timer
         - flatpak-user-update.timer
