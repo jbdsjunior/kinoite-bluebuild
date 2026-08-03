@@ -44,13 +44,15 @@ jobs:
           set -euo pipefail
           RECIPE_FILE="recipes/recipe-${{ matrix.flavor }}.yml"
           BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE")
+          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE")
+          FULL_IMG="${BASE_IMG}:${IMG_VER}"
 
           if [[ -z "${BASE_IMG}" ]]; then
             echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
             exit 1
           fi
 
-          echo "image=${BASE_IMG}" >> "$GITHUB_OUTPUT"
+          echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
 
       - name: Check base image digest (${{ matrix.flavor }})
         id: check
