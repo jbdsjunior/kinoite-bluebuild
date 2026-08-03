@@ -3,9 +3,6 @@
 modules:
   - type: kargs
     kargs:
+      - mitigations=auto
       - amd_pstate=active
       - amd_iommu=on
-      - mitigations=auto
-
-      # - radeon.si_support=0
-      # - amdgpu.si_support=1
