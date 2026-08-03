@@ -26,7 +26,7 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --exclude /.trashinfo/** \
   --cache-dir ${RCLONE_CACHE} \
   --vfs-cache-mode full \
-  --vfs-cache-max-size 100G \
+  --vfs-cache-max-size 20G \
   --vfs-cache-max-age 72h \
   --vfs-fast-fingerprint \
   --vfs-read-chunk-size 64M \
@@ -59,7 +59,7 @@ RestartSec=30s
 TimeoutStopSec=30s
 
 LimitNOFILE=1048576
-MemoryMax=8G
+MemoryMax=2G
 CPUQuota=200%
 IOSchedulingClass=best-effort
 IOSchedulingPriority=4

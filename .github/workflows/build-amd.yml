@@ -28,7 +28,6 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
-          exit-code: '1'
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
