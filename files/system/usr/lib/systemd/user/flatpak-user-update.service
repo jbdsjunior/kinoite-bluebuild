@@ -15,4 +15,5 @@ CapabilityBoundingSet=
 ProtectSystem=full
 
 Nice=19
+CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
