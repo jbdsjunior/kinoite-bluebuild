@@ -14,5 +14,8 @@ Restart=on-failure
 CapabilityBoundingSet=
 ProtectSystem=full
 
+Nice=19
+IOSchedulingClass=idle
+
 [Install]
 WantedBy=multi-user.target
