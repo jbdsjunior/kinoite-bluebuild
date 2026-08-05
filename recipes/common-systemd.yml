@@ -5,9 +5,19 @@ modules:
     system:
       masked:
         - systemd-remount-fs.service
+      disabled:
+        # Remover serviços de Guest/VM em máquina física
+        - vboxservice.service
+        - vmtoolsd.service
+        - vgauthd.service
+        - qemu-guest-agent.service
+        # Incompatível com AMD
+        - mcelog.service
       enabled:
         - rpm-ostreed-automatic.timer
         - flatpak-system-update.timer
+        # Facilitadores para o Podman
+        - podman-restart.service
     user:
       enabled:
         - flatpak-user-update.timer
