@@ -22,8 +22,7 @@ modules:
       enabled:
         # Timers base de atualização do sistema
         - rpm-ostreed-automatic.timer
-        - bootc-fetch-apply-updates.timer
-        # - flatpak-system-update.timer
+        - flatpak-system-update.timer
 
         # 3. Automação para Contentores (Podman)
         # Garante que contentores com a flag --restart=always arranquem com o sistema
