@@ -2,10 +2,10 @@
 Description=Timer for User Flatpak Updates
 
 [Timer]
-OnBootSec=1m
+OnBootSec=5m
 OnUnitActiveSec=15m
-RandomizedDelaySec=2m
-Persistent=true
+RandomizedDelaySec=3m
+AccuracySec=5m
 Unit=flatpak-user-update.service
 
 [Install]
