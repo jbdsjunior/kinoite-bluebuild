@@ -27,7 +27,7 @@ modules:
         # 3. Automação para Contentores (Podman)
         # Garante que contentores com a flag --restart=always arranquem com o sistema
         - podman-restart.service
-        # Permite atualizar contentores automaticamente se usarem a label adequada
+        # Permite atualizar contentores automaticamente se usarem a label adequada "io.containers.autoupdate"
         - podman-auto-update.service
 
         # 4. Tuning de Performance do CPU
