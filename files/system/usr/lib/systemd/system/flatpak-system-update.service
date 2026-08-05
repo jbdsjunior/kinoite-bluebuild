@@ -16,12 +16,8 @@ Restart=on-failure
 CapabilityBoundingSet=
 ProtectSystem=full
 
-# --- Configurações de Ociosidade e Baixo Impacto ---
-# Reduz a prioridade da CPU para o nível mais baixo possível
 Nice=19
-# Só usa o processador se não houver mais nada exigindo dele
 CPUSchedulingPolicy=idle
-# Só acessa o disco se nenhum outro programa estiver lendo/escrevendo
 IOSchedulingClass=idle
 
 [Install]
