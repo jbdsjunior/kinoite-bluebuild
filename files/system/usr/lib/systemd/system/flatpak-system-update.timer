@@ -2,8 +2,8 @@
 Description=Timer for System Flatpak Updates
 
 [Timer]
-OnBootSec=5m
-OnUnitActiveSec=12h
+OnBootSec=1m
+OnUnitActiveSec=15m
 RandomizedDelaySec=2m
 Persistent=true
 Unit=flatpak-system-update.service
