@@ -7,31 +7,32 @@ modules:
         - systemd-remount-fs.service
       disabled:
         # 1. Limpeza de Bloatware de Máquinas Virtuais
-        # Sendo uma máquina física (Bare-Metal), ferramentas de "Guest" 
+        # Sendo uma máquina física (Bare-Metal), ferramentas de "Guest"
         # apenas atrasam o boot e consomem recursos desnecessariamente.
         - vboxservice.service
         - vmtoolsd.service
         - vgauthd.service
         - qemu-guest-agent.service
-        
+
         # 2. Correção de Hardware
-        # O mcelog regista erros de hardware exclusivamente em CPUs Intel. 
+        # O mcelog regista erros de hardware exclusivamente em CPUs Intel.
         # No seu Ryzen 9 (AMD), este daemon apenas gera falhas no log.
         - mcelog.service
-      
+
       enabled:
         # Timers base de atualização do sistema
         - rpm-ostreed-automatic.timer
-        - flatpak-system-update.timer
-        
+        - bootc-fetch-apply-updates.timer
+        # - flatpak-system-update.timer
+
         # 3. Automação para Contentores (Podman)
         # Garante que contentores com a flag --restart=always arranquem com o sistema
         - podman-restart.service
         # Permite atualizar contentores automaticamente se usarem a label adequada
         - podman-auto-update.service
-        
+
         # 4. Tuning de Performance do CPU
-        # Habilita o cpupower, permitindo que configure o Ryzen 9 para o governor 
+        # Habilita o cpupower, permitindo que configure o Ryzen 9 para o governor
         # 'performance' em cargas pesadas de compilação, se desejar.
         - cpupower.service
 
