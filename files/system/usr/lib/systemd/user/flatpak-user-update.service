@@ -17,6 +17,9 @@ Restart=on-failure
 CapabilityBoundingSet=
 ProtectSystem=full
 
+Nice=19
+IOSchedulingClass=idle
+
 # Opcional: Manter a prioridade baixa para não causar lag no desktop
 Nice=19
 IOSchedulingClass=idle
