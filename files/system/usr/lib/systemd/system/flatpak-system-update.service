@@ -1,13 +1,18 @@
 [Unit]
-Description=Update System Flatpaks
-Documentation=man:flatpak
-
-Wants=network-online.target
+Description=Apply Flatpak system updates
+Documentation=man:flatpak-update(1)
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/flatpak update -y --noninteractive --system
+ExecCondition=/bin/bash -c '[[ "$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered | cut -c 3-)" == @(2|4) ]]'
+ExecStart=/usr/bin/sh -c '/usr/bin/flatpak --system uninstall --unused -y --noninteractive ; /usr/bin/flatpak --system update -y --noninteractive'
+RestartSec=1h
+Restart=on-failure
 
-Nice=19
-IOSchedulingClass=idle
+CapabilityBoundingSet=
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
