@@ -8,4 +8,11 @@ modules:
   - type: soar
     additional-repos: true
     auto-upgrade: true
-    upgrade-interval: "3h"
+    upgrade-interval: "daily"
+
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - homebrew

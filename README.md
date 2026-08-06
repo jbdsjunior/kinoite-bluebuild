@@ -46,7 +46,7 @@ Each build executes a Trivy security scan before building; the image build runs 
 
 ### 1) Switch to the custom image
 
-AMD
+**AMD**
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
@@ -56,7 +56,7 @@ Reboot after completion.
 
 ### 2) Enforce signature policy during image switch
 
-AMD
+**AMD**
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
@@ -92,7 +92,6 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | `recipes/recipe-amd.yml` | Main AMD recipe variant                                |
 | `recipes/common-*.yml`   | Shared modules (packages, drivers, services, and more) |
 | `files/system/`          | Immutable host overlays (policies, units, defaults)    |
-| `files/rpm-ostree/`      | Optional third-party RPM repo definitions              |
 | `.github/workflows/`     | CI/CD pipelines and security gates                     |
 | `cosign.pub`             | Public key for signature verification                  |
 

@@ -8,15 +8,15 @@ modules:
       packages:
         - "@virtualization"
         - gnome-boxes
-      exclude:
         - virt-viewer
+        - virt-manager
+        - libvirt-daemon-config-network
+        - libvirt-daemon-kvm
+        - qemu-img
+        - edk2-ovmf
 
   - type: systemd
     system:
       enabled:
         - libvirtd.service
-
-  - type: kargs
-    kargs:
-      - kvm_amd.nested=1
-      - iommu=pt
+        - virtlogd.service

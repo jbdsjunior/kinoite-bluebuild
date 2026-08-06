@@ -21,16 +21,20 @@ modules:
       packages:
         - git
         - rclone
+        - wget
+        - curl
 
   - type: dnf
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        - podman
         - distrobox
         - docker-compose
         - podman-docker
-        - podman-machine
+        - buildah
+        - skopeo
 
   - type: dnf
     install:
@@ -40,3 +44,9 @@ modules:
         - fastfetch
         - tailscale
         - fuse
+        - fuse3
+        - lsof
+        - htop
+        - btop
+        - nvme-cli
+        - smartmontools

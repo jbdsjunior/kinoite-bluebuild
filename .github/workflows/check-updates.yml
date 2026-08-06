@@ -8,9 +8,6 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   check-and-trigger:
     runs-on: ubuntu-latest
@@ -25,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install dependencies
         run: |
@@ -63,7 +60,7 @@ jobs:
 
       - name: Check cache (${{ matrix.flavor }})
         id: cache
-        uses: actions/cache@v6
+        uses: actions/cache@112dd89cbb1ae3e87f01618a97be6c4fd8c26ab0 # v4.2.2
         with:
           path: ~/.cache-${{ matrix.flavor }}
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}

@@ -4,15 +4,15 @@ Documentation=https://rclone.org/commands/rclone_mount/
 After=network-online.target
 Wants=network-online.target
 StartLimitIntervalSec=10min
-StartLimitBurst=20
+StartLimitBurst=5
 
 [Service]
 Type=simple
-TimeoutStartSec=15
+TimeoutStartSec=60
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
-# Remoção do limite padrão de 40M para explorar largura de banda máxima, controlável via .env
+# Default bandwidth limit (0 = unlimited), can be overridden via .env file
 Environment=RCLONE_BWLIMIT=0
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
@@ -41,7 +41,6 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --tpslimit 12 \
   --tpslimit-burst 20 \
   --bwlimit ${RCLONE_BWLIMIT} \
-  --use-mmap \
   --timeout 2m \
   --contimeout 20s \
   --low-level-retries 10 \
@@ -56,7 +55,7 @@ ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
 RestartSec=30s
-TimeoutStopSec=30s
+TimeoutStopSec=120s
 
 LimitNOFILE=1048576
 MemoryMax=2G
