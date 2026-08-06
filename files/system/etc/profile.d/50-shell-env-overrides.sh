@@ -3,7 +3,7 @@
 export EDITOR="${EDITOR:-nano}"
 export VISUAL="${VISUAL:-nano}"
 export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
-
+alias sudo='sudo EDITOR=$EDITOR VISUAL=$VISUAL '
 export LESS="-R"
 
 case "$-" in
