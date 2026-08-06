@@ -6,3 +6,4 @@ modules:
       - mitigations=auto
       - amd_pstate=active
       - amd_iommu=on
+      - pcie_aspm=performance

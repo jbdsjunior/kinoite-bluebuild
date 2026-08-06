@@ -15,6 +15,7 @@ modules:
     system:
       enabled:
         - libvirtd.service
+        - virtlogd.service
 
   - type: kargs
     kargs:
