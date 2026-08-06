@@ -16,6 +16,8 @@ green = "#9ece6a"
 yellow = "#e0af68"
 red = "#f7768e"
 gray = "#6c7086"
+cyan = "#7dcfff"
+magenta = "#bb9af7"
 
 [os]
 disabled = false
@@ -24,6 +26,9 @@ style = "bold blue"
 
 [os.symbols]
 Fedora = ""
+Arch = ""
+Debian = ""
+Ubuntu = ""
 
 [username]
 show_always = false
@@ -67,3 +72,18 @@ vimcmd_symbol = "[❮](bold blue)"
 
 [package]
 disabled = true
+
+[battery]
+disabled = true
+
+[kubernetes]
+disabled = true
+
+[docker_context]
+disabled = false
+format = "via [🐳 $context]($style) "
+style = "blue"
+
+[container]
+disabled = false
+format = '⬡ [$name](bold red)'

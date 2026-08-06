@@ -1,8 +1,15 @@
 // Polkit rule for libvirt management permissions.
 // Least-privilege policy: only wheel users may manage libvirt without extra authentication.
+// Allows full libvirt management for administrative users while maintaining security boundaries.
 
 polkit.addRule(function(action, subject) {
+    // Allow libvirt management for users in the wheel group
     if (action.id == "org.libvirt.unix.manage" && subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+    }
+
+    // Allow read-only access to libvirt for all local users
+    if (action.id == "org.libvirt.unix.read" && subject.isInGroup("users")) {
         return polkit.Result.YES;
     }
 });

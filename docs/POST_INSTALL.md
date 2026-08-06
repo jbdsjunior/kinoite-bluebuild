@@ -3,11 +3,12 @@
 This guide describes post-rebase validation and adjustments for safe operation on an immutable system.
 
 ---
+
 ### (Optional) Verify Cosign signature (recommended)
 
 Project public key: [`cosign.pub`](../cosign.pub).
 
-Example (AMD)
+**Example (AMD)**
 
 ```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
@@ -28,19 +29,19 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 ## 2) Available Global Aliases
 
-| Alias               | Command/Action                                                                       |
-| :------------------ | :----------------------------------------------------------------------------------- |
-| `update`            | Run `topgrade`                                                                       |
-| `rollback`          | `sudo bootc rollback`                                                                |
-| `kargs`             | `rpm-ostree kargs`                                                                   |
-| `kargs-edit`        | `sudo rpm-ostree kargs --editor`                                                     |
-| `config-diff`       | `sudo ostree admin config-diff`                                                      |
-| `status-fw`         | `sudo systemctl status firewalld`                                                    |
-| `status-dns`        | `sudo systemctl status systemd-resolved`                                             |
-| `status-kvm`        | `sudo systemctl status libvirtd`                                                     |
-| `status-all`        | `fw-status && dns-status`                                                            |
-| `tmpfiles-system`   | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
-| `tmpfiles-user`     | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
+| Alias             | Command/Action                                                                       |
+| :---------------- | :----------------------------------------------------------------------------------- |
+| `update`          | Run `topgrade`                                                                       |
+| `rollback`        | `sudo bootc rollback`                                                                |
+| `kargs`           | `rpm-ostree kargs`                                                                   |
+| `kargs-edit`      | `sudo rpm-ostree kargs --editor`                                                     |
+| `config-diff`     | `sudo ostree admin config-diff`                                                      |
+| `status-fw`       | `sudo systemctl status firewalld`                                                    |
+| `status-dns`      | `sudo systemctl status systemd-resolved`                                             |
+| `status-kvm`      | `sudo systemctl status libvirtd`                                                     |
+| `status-all`      | `fw-status && dns-status`                                                            |
+| `tmpfiles-system` | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
+| `tmpfiles-user`   | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
 
 ---
 
@@ -149,11 +150,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 The image ships one dynamic systemd user template for rclone FUSE mounts. Each `rclone@<remote>.service` instance starts with the KDE Plasma graphical session, restarts after transient failures, and writes logs to the user journal. It can mount Google Drive, OneDrive, or any other configured rclone remote by instance name.
 
-| Service instance | Expected rclone remote | Mount point | Optional override file |
-|---|---|---|---|
-| `rclone@GoogleDrive.service` | `GoogleDrive:` | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
-| `rclone@OneDrive.service` | `OneDrive:` | `~/Cloud/OneDrive` | `~/.config/rclone/env/OneDrive.env` |
-| `rclone@<remote>.service` | `<remote>:` | `~/Cloud/<remote>` | `~/.config/rclone/env/<remote>.env` |
+| Service instance             | Expected rclone remote | Mount point           | Optional override file                 |
+| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- |
+| `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
+| `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    |
+| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    |
 
 Configure the cloud remotes first. The instance name maps directly to the rclone remote name by default, so `rclone@GoogleDrive.service` mounts `GoogleDrive:` and `rclone@OneDrive.service` mounts `OneDrive:`. To mount a differently named remote or adjust limits, set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
