@@ -35,12 +35,12 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `kargs`             | `rpm-ostree kargs`                                                                   |
 | `kargs-edit`        | `sudo rpm-ostree kargs --editor`                                                     |
 | `config-diff`       | `sudo ostree admin config-diff`                                                      |
-| `fw-status`         | `sudo systemctl status firewalld`                                                    |
-| `dns-status`        | `sudo systemctl status systemd-resolved`                                             |
-| `kvm-status`        | `sudo systemctl status libvirtd`                                                     |
+| `status-fw`         | `sudo systemctl status firewalld`                                                    |
+| `status-dns`        | `sudo systemctl status systemd-resolved`                                             |
+| `status-kvm`        | `sudo systemctl status libvirtd`                                                     |
+| `status-all`        | `fw-status && dns-status`                                                            |
 | `tmpfiles-system`   | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
 | `tmpfiles-user`     | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
-| `status-all`        | `fw-status && dns-status`                                                            |
 
 ---
 
