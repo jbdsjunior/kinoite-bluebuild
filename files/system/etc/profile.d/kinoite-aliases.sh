@@ -7,9 +7,9 @@ alias kargs='rpm-ostree kargs'
 alias kargs-edit='sudo rpm-ostree kargs --editor'
 alias config-diff='sudo ostree admin config-diff'
 
-alias fw-status='sudo systemctl status firewalld'
-alias dns-status='sudo systemctl status systemd-resolved'
-alias kvm-status='sudo systemctl status libvirtd'
+alias status-fw='sudo systemctl status firewalld'
+alias status-dns='sudo systemctl status systemd-resolved'
+alias status-kvm='sudo systemctl status libvirtd'
 
 alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'
 alias tmpfiles-user='systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf'
