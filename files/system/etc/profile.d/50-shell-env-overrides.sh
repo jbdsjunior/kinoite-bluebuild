@@ -1,6 +1,10 @@
 #!/bin/sh
+
 export EDITOR="${EDITOR:-nano}"
 export VISUAL="${VISUAL:-nano}"
+export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
+
+export LESS="-R"
 
 case "$-" in
     *i*) ;;
@@ -16,7 +20,6 @@ if command -v starship >/dev/null 2>&1; then
         eval "$(starship init zsh)"
     fi
 fi
-
 
 if command -v fastfetch >/dev/null 2>&1 && [ -z "${FASTFETCH_SHOWN:-}" ]; then
     export FASTFETCH_SHOWN=1
