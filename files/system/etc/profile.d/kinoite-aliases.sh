@@ -1,4 +1,25 @@
-#!/bin/bash
+#!/bin/sh
+# Caminho sugerido: files/system/etc/profile.d/kinoite-aliases.sh
+
+# Ignora se não for um shell interativo
+case "$-" in
+    *i*) ;;
+      *) return 0 2>/dev/null || exit 0 ;;
+esac
+
+# Aliases de navegação e listagem (cores padrão ativadas)
+alias ls='ls --color=auto'
+alias ll='ls -l --color=auto'
+alias la='ls -la --color=auto'
+alias grep='grep --color=auto'
+
+# Proteção contra sobrescrita e remoção acidental de arquivos importantes
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+
+# Alias utilitário para recarregar o perfil rapidamente após edições
+alias reload-profile='source /etc/profile'
 
 # System update aliases
 alias update='topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak'
