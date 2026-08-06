@@ -10,8 +10,7 @@ alias config-diff='sudo ostree admin config-diff'
 alias status-fw='sudo systemctl status firewalld'
 alias status-dns='sudo systemctl status systemd-resolved'
 alias status-kvm='sudo systemctl status libvirtd'
+alias status-all='fw-status && dns-status'
 
 alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'
 alias tmpfiles-user='systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf'
-
-alias status-all='fw-status && dns-status'
