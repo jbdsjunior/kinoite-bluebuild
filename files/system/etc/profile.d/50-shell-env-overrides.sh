@@ -8,10 +8,19 @@ export LESS="-R"
 
 alias sudo='sudo EDITOR=$EDITOR VISUAL=$VISUAL'
 
-case "$-" in
-    *i*) ;;
-      *) return 0 2>/dev/null || exit 0 ;;
-esac
+# [ -d /usr/lib64/rocm ] && export ROCM_PATH="${ROCM_PATH:-/usr/lib64/rocm}"
+# [ -d /usr/lib64/rocm ] && export HIP_PATH="${HIP_PATH:-/usr/lib64/rocm}"
+
+export HSA_OVERRIDE_GFX_VERSION="${HSA_OVERRIDE_GFX_VERSION:-}"
+
+if [ -z "${PS1:-}" ]; then
+    return 0 2>/dev/null
+fi
+
+# case "$-" in
+#     *i*) ;;
+#       *) return 0 2>/dev/null || exit 0 ;;
+# esac
 
 if command -v starship >/dev/null 2>&1; then
     [ -f "/usr/share/starship/starship.toml" ] && export STARSHIP_CONFIG="/usr/share/starship/starship.toml"
