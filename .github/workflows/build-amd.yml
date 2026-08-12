@@ -1,13 +1,18 @@
 name: build-amd
 on:
+  schedule:
+    - cron: "00 06 * * *"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  pull_request:
   workflow_dispatch:
 
 concurrency:
-  group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
-
-# env:
-#   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   security-scan:
@@ -19,7 +24,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run Trivy scan (filesystem)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
@@ -48,9 +53,14 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Patch recipe to bypass OCI Index creation
+        run: |
+          # CRITICAL: Prevents BlueBuild CLI JSON deserialization panic during signing
+          sed -i '/^platforms:/,+1d' recipe-amd.yml
 
       - name: Build Custom AMD Image
         uses: blue-build/github-action@836161eb076426a451e6a0054f722b1153b8b3ad # v1.12.0
@@ -61,7 +71,7 @@ jobs:
           pr_event_number: ${{ github.event.number }}
           retry_push_count: 3
           verify_install: true
-          # use_unstable_cli: true
           skip_checkout: true
-          chunkah: false
-          maximize_build_space: false
+          chunkah: true
+          max_layers: 64
+          maximize_build_space: true
