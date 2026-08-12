@@ -39,5 +39,5 @@ modules:
       packages:
         - fastfetch
         - tailscale
-        - chezmoi
         - fuse
+        # - chezmoi
