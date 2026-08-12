@@ -4,7 +4,6 @@ modules:
   - type: default-flatpaks
     configurations:
       - notify: true
-      - scope: user # Also add Flathub user repo, but no user packages
         scope: system
         install:
           # --- CORE DESKTOP ENVIRONMENTS ---
@@ -52,3 +51,4 @@ modules:
           # - org.qbittorrent.qBittorrent
           # - com.stremio.Stremio
           # - dev.fredol.open-tv
+      - scope: user # Also add Flathub user repo, but no user packages
