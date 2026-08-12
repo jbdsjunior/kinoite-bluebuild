@@ -66,7 +66,7 @@ jobs:
           pr_event_number: ${{ github.event.number }}
           retry_push_count: 3
           verify_install: true
-          use_unstable_cli: true
+          use_unstable_cli: false
           skip_checkout: true
           chunkah: true
           maximize_build_space: true
