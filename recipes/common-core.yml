@@ -8,6 +8,11 @@ modules:
       packages:
         - langpacks-pt_BR
         - plasma-firewall
+        - icoutils
+        - kf6-kimageformats
+        - kio-admin
+        - ksshaskpass
+        - qt6-qtimageformats
         - lm_sensors
         - kate
         - gwenview
