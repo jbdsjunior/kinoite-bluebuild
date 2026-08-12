@@ -19,3 +19,11 @@ modules:
         - okular
         - haruna
         - elisa
+    replace:
+      # mitigate upstream packaging bug: https://bugzilla.redhat.com/show_bug.cgi?id=2332429
+      # swap the incorrectly installed OpenCL-ICD-Loader for ocl-icd, the expected package
+      - from-repo: fedora
+        install-weak-deps: false
+        packages:
+          - new: ocl-icd
+            old: OpenCL-ICD-Loader
