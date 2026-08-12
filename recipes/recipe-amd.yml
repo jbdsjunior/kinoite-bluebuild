@@ -6,8 +6,9 @@ description: "Customized Fedora Kinoite image optimized for AMD-only systems"
 base-image: quay.io/fedora/fedora-kinoite
 image-version: latest
 
-platforms:
-  - linux/amd64
+# platforms:
+#   - linux/amd64
+
 modules:
   - from-file: common-base.yml
   - type: initramfs
