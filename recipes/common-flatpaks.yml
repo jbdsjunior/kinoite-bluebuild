@@ -4,7 +4,7 @@ modules:
   - type: default-flatpaks
     configurations:
       - notify: true
-        scope: user # Also add Flathub user repo, but no user packages
+      - scope: user # Also add Flathub user repo, but no user packages
         scope: system
         install:
           # --- CORE DESKTOP ENVIRONMENTS ---
