@@ -17,14 +17,14 @@ modules:
         - SourceCodePro
         - Terminus
         - JetBrainsMono
-      # google-fonts:
-      #   - Google Sans
-      #   - Google Sans Code
-      #   - Google Sans Flex
-      #   - Google Sans Text
-      #   - Arimo
-      #   - Caladea
-      #   - Carlito
-      #   - Comic Neue
-      #   - Cousine
-      #   - Tinos
+      google-fonts:
+        - Google Sans
+        - Google Sans Code
+        - Google Sans Flex
+        - Google Sans Text
+        - Arimo
+        - Caladea
+        - Carlito
+        - Comic Neue
+        - Cousine
+        - Tinos
