@@ -3,8 +3,9 @@
 modules:
   - type: default-flatpaks
     configurations:
-      - scope: system
-        notify: false
+      - notify: true
+        scope: user # Also add Flathub user repo, but no user packages
+        scope: system
         install:
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
