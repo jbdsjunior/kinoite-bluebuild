@@ -59,5 +59,5 @@ jobs:
           verify_install: true
           use_unstable_cli: false
           skip_checkout: true
-          chunkah: false
+          chunkah: true
           maximize_build_space: true
