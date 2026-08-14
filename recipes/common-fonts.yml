@@ -8,10 +8,17 @@ modules:
       packages:
         - liberation-fonts
 
+  - type: dnf
+      repos:
+        - https://terra.fyralabs.com/terra.repo
+      install:
+        packages:
+          - nerdfontssymbolsonly-nerd-fonts
+      
   - type: fonts
     fonts:
       nerd-fonts:
-        - NerdFontsSymbolsOnly
+        # - NerdFontsSymbolsOnly
         - FiraCode
         - Hack
         - SourceCodePro
