@@ -9,11 +9,11 @@ modules:
         - liberation-fonts
 
   - type: dnf
-      repos:
-        - https://terra.fyralabs.com/terra.repo
-      install:
-        packages:
-          - nerdfontssymbolsonly-nerd-fonts
+    repos:
+      - https://terra.fyralabs.com/terra.repo
+    install:
+      packages:
+        - nerdfontssymbolsonly-nerd-fonts
       
   - type: fonts
     fonts:
