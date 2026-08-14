@@ -17,7 +17,7 @@ modules:
 
       enabled:
         # Base update timers
-        - rpm-ostreed-automatic.timer
+        - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
 
         # Container automation (Podman)
