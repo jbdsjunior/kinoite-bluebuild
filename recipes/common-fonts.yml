@@ -10,7 +10,7 @@ modules:
   
   - type: dnf
     repos:
-      - https://terra.fyralabs.com/terra.repo
+      - terra
     install:
       skip-unavailable: true
       allow-erasing: true
