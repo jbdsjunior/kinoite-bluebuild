@@ -19,3 +19,6 @@ ProtectSystem=full
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target
