@@ -7,7 +7,6 @@ modules:
 
   - type: rpm-ostree
     repos:
-      # - netbird.repo
       - terra.repo
       # - brave-browser.repo
       # - google-chrome.repo
