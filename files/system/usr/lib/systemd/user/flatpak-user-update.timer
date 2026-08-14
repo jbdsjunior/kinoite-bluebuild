@@ -7,6 +7,7 @@ OnUnitActiveSec=15m
 RandomizedDelaySec=3m
 AccuracySec=5m
 Unit=flatpak-user-update.service
+Persistent=true
 
 [Install]
 WantedBy=timers.target
