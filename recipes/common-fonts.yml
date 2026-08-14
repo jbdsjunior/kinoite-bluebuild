@@ -10,7 +10,8 @@ modules:
 
   - type: dnf
     repos:
-      - https://terra.fyralabs.com/terra.repo
+      files:
+        - https://terra.fyralabs.com/terra.repo
     install:
       packages:
         - nerdfontssymbolsonly-nerd-fonts
