@@ -9,8 +9,6 @@ modules:
         - liberation-fonts
   
   - type: dnf
-    repos:
-      - terra
     install:
       skip-unavailable: true
       allow-erasing: true
