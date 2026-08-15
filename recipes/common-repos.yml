@@ -10,5 +10,4 @@ modules:
       - terra.repo
       # - brave-browser.repo
       # - google-chrome.repo
-      # - microsoft-edge.repo
       # - vscode.repo
