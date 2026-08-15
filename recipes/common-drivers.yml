@@ -2,38 +2,27 @@
 
 modules:
   - type: dnf
-    repos:
-      nonfree: negativo17
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
         - "@multimedia"
         - "@sound-and-video"
-        - rocm-smi
-        - rocm-hip
-        - rocm-opencl
-        - rocm-runtime
-        - rocblas
-        - rocm-clinfo
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
+        # - rocm-smi
+        # - rocm-hip
+        # - rocm-opencl
+        # - rocm-runtime
+        # - rocblas
+        # - rocm-clinfo
         - ffmpeg
         - ffmpeg-libs
-        - gstreamer1-plugins-bad
+        - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
-        - libavcodec
+        - libavcodec-freeworld
         - heif-pixbuf-loader
         - libheif-tools
         - fdk-aac
         - x264-libs
         - x265-libs
-    replace:
-      # Forces base OS mesa drivers replacement with full-featured versions from Negativo17 repository.
-      - from-repo: fedora-multimedia
-        packages:
-          - mesa-dri-drivers
-          - mesa-filesystem
-          - mesa-libEGL
-          - mesa-libGL
-          - mesa-libgbm
-          - mesa-va-drivers
-          - mesa-vulkan-drivers
