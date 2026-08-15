@@ -3,7 +3,6 @@
 modules:
   - type: bling
     install:
-      # - negativo17
       - rpmfusion
 
   - type: rpm-ostree
