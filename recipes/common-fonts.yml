@@ -9,6 +9,10 @@ modules:
         - liberation-fonts
   
   - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
     install:
       skip-unavailable: true
       allow-erasing: true
