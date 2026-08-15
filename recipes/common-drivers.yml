@@ -8,14 +8,16 @@ modules:
       packages:
         - "@multimedia"
         - "@sound-and-video"
-        - mesa-va-drivers-freeworld
-        - mesa-vulkan-drivers-freeworld
+##
+        # - mesa-va-drivers-freeworld
+        # - mesa-vulkan-drivers-freeworld
         # - rocm-smi
         # - rocm-hip
         # - rocm-opencl
         # - rocm-runtime
         # - rocblas
         # - rocm-clinfo
+##
         - ffmpeg
         - ffmpeg-libs
         - gstreamer1-plugins-bad-freeworld
@@ -26,3 +28,11 @@ modules:
         - fdk-aac
         - x264-libs
         - x265-libs
+##
+        - mesa-dri-drivers
+        - mesa-filesystem
+        - mesa-libEGL
+        - mesa-libGL
+        - mesa-libgbm
+        - mesa-va-drivers
+        - mesa-vulkan-drivers
