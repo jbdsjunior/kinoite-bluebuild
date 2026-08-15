@@ -45,7 +45,7 @@ modules:
           - mesa-vulkan-drivers
           - libheif
 
-    - type: dnf
+  - type: dnf
     install:
       packages:
         - libopenjph # Manually install dependency for `libheif`, as Negativo upstreamed it
