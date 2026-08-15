@@ -6,7 +6,6 @@ modules:
       - source: system
         destination: /
 
-  - from-file: common-repos.yml
   - from-file: common-debloat.yml
   - from-file: common-drivers.yml
   - from-file: common-kvm.yml
