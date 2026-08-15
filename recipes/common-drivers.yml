@@ -18,7 +18,7 @@ modules:
         - rocm-clinfo
         - ffmpeg
         - ffmpeg-libs
-        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad
         - gstreamer1-plugins-ugly
         - libavcodec
         - heif-pixbuf-loader
