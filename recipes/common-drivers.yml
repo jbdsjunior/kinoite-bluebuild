@@ -8,21 +8,65 @@ modules:
       packages:
         - "@multimedia"
         - "@sound-and-video"
-        - mesa-va-drivers-freeworld
-        - mesa-vulkan-drivers-freeworld
+        # - mesa-va-drivers-freeworld
+        # - mesa-vulkan-drivers-freeworld
         # - rocm-smi
         # - rocm-hip
         # - rocm-opencl
         # - rocm-runtime
         # - rocblas
         # - rocm-clinfo
-        - ffmpeg
-        - ffmpeg-libs
-        - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-ugly
-        - libavcodec-freeworld
-        - heif-pixbuf-loader
-        - libheif-tools
-        - fdk-aac
-        - x264-libs
-        - x265-libs
+        # - ffmpeg
+        # - ffmpeg-libs
+        # - gstreamer1-plugins-bad-freeworld
+        # - gstreamer1-plugins-ugly
+        # - libavcodec-freeworld
+        # - heif-pixbuf-loader
+        # - libheif-tools
+        # - fdk-aac
+        # - x264-libs
+        # - x265-libs
+
+  # Install stuff from negativo
+  - type: dnf
+    repos:
+      nonfree: negativo17
+    replace:
+      - from-repo: fedora-multimedia
+        skip-unavailable: true
+        packages:
+          - libva
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-va-drivers
+          - mesa-vulkan-drivers
+          - libheif
+
+    - type: dnf
+    install:
+      packages:
+        - libopenjph # Manually install dependency for `libheif`, as Negativo upstreamed it
+        - repo: fedora-multimedia
+          packages:
+            - libva-utils
+            - pipewire-libs-extra
+            - heif-pixbuf-loader
+    replace:
+      - from-repo: fedora-multimedia
+        packages:
+          - old: ffmpeg-free
+            new: ffmpeg
+          - old: libfdk-aac-free
+            new: libfdk-aac
+          - old: libavcodec-free
+            new: libavcodec
+
+  - type: dnf
+    install:
+      packages:
+        - repo: fedora-multimedia
+          packages:
+            - ffmpeg-libs
