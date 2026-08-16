@@ -86,10 +86,8 @@ modules:
         - libbluray
         - libbluray-utils
         - makemkv
-        - repo: terra
-          packages:
-            - mesa-libOpenCL
-            - clinfo
+        - mesa-libOpenCL
+        - clinfo
         - repo: fedora-multimedia
           packages:
             - ffmpeg-libs
