@@ -28,13 +28,24 @@ modules:
         # - rocblas
         # - rocm-clinfo
 
+modules:
+  - type: bling
+    install:
+      - negativo17
+
   - type: dnf
     repos:
       cleanup: true
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+      copr:
+        - ublue-os/bazzite
+        - ublue-os/bazzite-multilib
+    remove:
+      - mesa-va-drivers
+      - pipewire-config-raop
     replace:
-      - from-repo: terra-mesa
+      - from-repo: terra
         skip-unavailable: true
         packages:
           - mesa-dri-drivers
@@ -43,13 +54,39 @@ modules:
           - mesa-libGL
           - mesa-libgbm
           - mesa-vulkan-drivers
+      - from-repo: copr:copr.fedorainfracloud.org:ublue-os:bazzite
+        skip-unavailable: true
+        packages:
+          - wireplumber
+      - from-repo: copr:copr.fedorainfracloud.org:ublue-os:bazzite-multilib
+        skip-unavailable: true
+        packages:
+          - bluez
+          - bluez-cups
+          - bluez-libs
+          - bluez-obexd
+          - xorg-x11-server-Xwayland
 
   - type: dnf
-    repos:
-      nonfree: negativo17
     install:
       packages:
         - libopenjph
+        - libfreeaptx
+        - amdsmi
+        - ryzenadj
+        - scx-scheds
+        - scx-tools
+        - vulkan-low-latency-layer
+        - vulkan-tools
+        - libbluray
+        - libbluray-utils
+        - makemkv
+        - repo: terra
+          packages:
+            - mesa-libOpenCL
+            - clinfo
+            - terra-gamescope
+            - terra-gamescope-libs
         - repo: fedora-multimedia
           packages:
             - ffmpeg-libs
