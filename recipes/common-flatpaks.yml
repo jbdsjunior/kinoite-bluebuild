@@ -6,6 +6,9 @@ modules:
       - notify: false
         scope: system
         install:
+          - runtime/com.obsproject.Studio.Plugin.GStreamerVaapi
+          - runtime/com.obsproject.Studio.Plugin.Gstreamer
+          - runtime/org.freedesktop.Platform.ffmpeg-full
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
           # - org.kde.elisa
@@ -51,7 +54,6 @@ modules:
           # - org.qbittorrent.qBittorrent
           # - com.stremio.Stremio
           # - dev.fredol.open-tv
-          - com.obsproject.Studio.Plugin.GStreamerVaapi
-          - com.obsproject.Studio.Plugin.Gstreamer
+
           
       - scope: user # Also add Flathub user repo, but no user packages
