@@ -20,4 +20,4 @@ modules:
   - type: kargs
     kargs:
       - kvm_amd.nested=1
-      - iommu=pt
+      # - iommu=pt
