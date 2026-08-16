@@ -1,24 +1,24 @@
 [Unit]
 Description=Apply Flatpak system updates
-Documentation=man:flatpak-update(1)
+Documentation=man:flatpak(1) man:flatpak-update(1)
 After=network-online.target
 Wants=network-online.target
-
 ConditionACPower=true
 
 [Service]
 Type=oneshot
-ExecCondition=/bin/bash -c '[[ "$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered | cut -c 3-)" == @(2|4) ]]'
-ExecStart=/usr/bin/sh -c '/usr/bin/flatpak --system uninstall --unused -y --noninteractive ; /usr/bin/flatpak --system update -y --noninteractive'
-RestartSec=1h
-Restart=on-failure
+# Verifica se a conexão NÃO é limitada (NM_METERED_NO = 2, NM_METERED_GUESS_NO = 4)
+ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null); [[ "$m" =~ \ (2|4)$ ]]'
 
-CapabilityBoundingSet=
+# Execução nativa sequencial sem necessidade de invocar /bin/sh intermediário
+ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
+ExecStart=/usr/bin/flatpak --system update -y --noninteractive
+
+# Isolamento e prioridade (mantendo capacidades necessárias para o deploy de arquivos no /var/lib/flatpak)
 ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
 
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
-
-[Install]
-WantedBy=multi-user.target
