@@ -22,15 +22,15 @@ modules:
         - git
         - rclone
 
-  # - type: dnf
-  #   install:
-  #     skip-unavailable: true
-  #     allow-erasing: true
-  #     packages:
-  #       - distrobox
-  #       - docker-compose
-  #       - podman-docker
-  #       - podman-machine
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        - distrobox
+        - docker-compose
+        - podman-docker
+        - podman-machine
 
   - type: dnf
     install:
