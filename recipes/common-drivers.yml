@@ -31,6 +31,8 @@ modules:
   # Bibliotecas base para aceleração gráfica e ferramentas de diagnóstico.
   - type: dnf
     install:
+      allow-erasing: true
+      skip-unavailable: true
       packages:
         - libva
         - libva-utils # Ferramenta de verificação de aceleração de vídeo
@@ -45,6 +47,8 @@ modules:
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
     install:
+      allow-erasing: true
+      skip-unavailable: true
       packages:
         - terra-release-mesa
     replace:
