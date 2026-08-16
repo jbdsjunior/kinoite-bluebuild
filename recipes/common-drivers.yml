@@ -28,16 +28,20 @@ modules:
         # - rocblas
         # - rocm-clinfo
 
-modules:
   - type: bling
     install:
       - negativo17
 
   - type: dnf
     repos:
-      cleanup: true
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+    install:
+      packages:
+        - terra-release-mesa
+
+  - type: dnf
+    repos:
       copr:
         - ublue-os/bazzite
         - ublue-os/bazzite-multilib
@@ -45,7 +49,7 @@ modules:
       - mesa-va-drivers
       - pipewire-config-raop
     replace:
-      - from-repo: terra
+      - from-repo: terra-mesa
         skip-unavailable: true
         packages:
           - mesa-dri-drivers
