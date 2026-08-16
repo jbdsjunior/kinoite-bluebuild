@@ -1,17 +1,14 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  # Codecs essenciais, plugins e ferramentas de mídia para reprodução de vídeo e áudio.
   - type: dnf
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # Grupos base
         - "@multimedia"
         - "@sound-and-video"
-  
-        # Codecs Core e Encoders
+
         - ffmpeg
         - ffmpeg-libs
         - libavcodec-freeworld
@@ -19,69 +16,26 @@ modules:
         - x265-libs
         - fdk-aac
 
-        # Plugins GStreamer
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
 
-        # Suporte a formatos de imagem (HEIF/HEIC)
         - heif-pixbuf-loader
         - libheif-tools
 
-  # Documentação: "Vulkan and basic acceleration". 
-  # Bibliotecas base para aceleração gráfica e ferramentas de diagnóstico.
   - type: dnf
     install:
-      allow-erasing: true
       skip-unavailable: true
       packages:
-        - libva
-        - libva-utils # Ferramenta de verificação de aceleração de vídeo
-        - vulkan-loader
-        - mesa-libGLU
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
 
-  # Substituição dos drivers Mesa padrão do Fedora pelos do Terra 
-  # para melhor estabilidade e suporte em hardware AMD/Intel.
-  - type: dnf
-    repos:
-      cleanup: true
-      files:
-        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - terra-release-mesa
-    replace:
-      - from-repo: terra-mesa
-        allow-erasing: true
-        skip-unavailable: true
-        packages:
-          - mesa-dri-drivers
-          - mesa-filesystem
-          - mesa-libEGL
-          - mesa-libGL
-          - mesa-libgbm
-          - mesa-va-drivers
-          - mesa-vulkan-drivers
-
-  # Documentação: "Replace defaults with freeworld for full codec support (H.264/HEVC)".
-  # Descomente estes pacotes se você usa GPU AMD e precisa de aceleração de hardware 
-  # para codecs proprietários/comerciais.
   # - type: dnf
   #   install:
   #     skip-unavailable: true
   #     packages:
-  #       # - mesa-va-drivers-freeworld
-  #       # - mesa-vulkan-drivers-freeworld
-
-  # Pilha de computação GPGPU para GPUs AMD (Machine Learning, Renderização, etc).
-  # - type: dnf
-  #   install:
-  #     skip-unavailable: true
-  #     packages:
-  #       # - rocm-smi
-  #       # - rocm-hip
-  #       # - rocm-opencl
-  #       # - rocm-runtime
-  #       # - rocblas
-  #       # - rocm-clinfo
+  #       - rocm-smi
+  #       - rocm-hip
+  #       - rocm-opencl
+  #       - rocm-runtime
+  #       - rocblas
+  #       - rocm-clinfo
