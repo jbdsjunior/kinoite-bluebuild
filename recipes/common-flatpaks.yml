@@ -16,11 +16,11 @@ modules:
 
           # Drivers Gráficos Mesa / VA-API AMD (Garante sincronização de versão com os runtimes)
           - org.freedesktop.Platform.GL.default/x86_64/24.08
-          - org.freedesktop.Platform.GL.default/x86_64/23.08
+          # - org.freedesktop.Platform.GL.default/x86_64/23.08
 
           # Codecs de Vídeo / FFmpeg (Freedesktop Runtimes 23.08 e 24.08)
           - org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
-          - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
+          # - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
 
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
