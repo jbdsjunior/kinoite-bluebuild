@@ -61,5 +61,5 @@ jobs:
           use_unstable_cli: false
           skip_checkout: true
           max_layers: 256
-          # chunkah: true
+          chunkah: true
           maximize_build_space: true
