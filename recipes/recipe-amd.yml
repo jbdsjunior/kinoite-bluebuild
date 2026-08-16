@@ -3,8 +3,8 @@
 name: kinoite-amd
 description: "Customized Fedora Kinoite image optimized for AMD-only systems"
 
-# base-image: quay.io/fedora/fedora-kinoite
-base-image: ghcr.io/ublue-os/bazzite-dx
+base-image: quay.io/fedora/fedora-kinoite
+# base-image: ghcr.io/ublue-os/bazzite-dx
 image-version: latest
 
 platforms:
