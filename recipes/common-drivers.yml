@@ -10,13 +10,16 @@ modules:
         - "@sound-and-video"
         # - mesa-va-drivers-freeworld
         # - mesa-vulkan-drivers-freeworld
-        # - ffmpeg
-        # - ffmpeg-libs
+        - ffmpeg
+        - ffmpeg-libs
         # - gstreamer1-plugins-bad-freeworld
         # - gstreamer1-plugins-ugly
-        # - libavcodec-freeworld
-        # - heif-pixbuf-loader
-        # - libheif-tools
+        - libavcodec-freeworld
+        - heif-pixbuf-loader
+        - libheif-tools
+        - libfdk-aac
+        - libva
+        - libva-utils
         # - fdk-aac
         # - x264-libs
         # - x265-libs
@@ -72,39 +75,19 @@ modules:
           - bluez-obexd
           - xorg-x11-server-Xwayland
 
-  - type: dnf
-    install:
-      packages:
-        - libopenjph
-        - libfreeaptx
-        - amdsmi
-        - ryzenadj
-        - scx-scheds
-        - scx-tools
-        - vulkan-low-latency-layer
-        - vulkan-tools
-        - libbluray
-        - libbluray-utils
-        - makemkv
-        - mesa-libOpenCL
-        - clinfo
-        - repo: fedora-multimedia
-          packages:
-            - ffmpeg-libs
-            - heif-pixbuf-loader
-            - libva-utils
-            - pipewire-libs-extra
-    replace:
-      - from-repo: fedora-multimedia
-        skip-unavailable: true
-        packages:
-          - libheif
-          - libva
-      - from-repo: fedora-multimedia
-        packages:
-          - old: ffmpeg-free
-            new: ffmpeg
-          - old: libavcodec-free
-            new: libavcodec
-          - old: libfdk-aac-free
-            new: libfdk-aac
+  # - type: dnf
+  #   install:
+  #     packages:
+  #       - libopenjph
+  #       - libfreeaptx
+  #       - amdsmi
+  #       - ryzenadj
+  #       - scx-scheds
+  #       - scx-tools
+  #       - vulkan-low-latency-layer
+  #       - vulkan-tools
+  #       - libbluray
+  #       - libbluray-utils
+  #       - makemkv
+  #       - mesa-libOpenCL
+  #       - clinfo
