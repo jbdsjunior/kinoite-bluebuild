@@ -12,7 +12,7 @@ modules:
 
           # OpenH264 (Compatibilidade WebRTC / H.264 em navegadores e players)
           - org.freedesktop.Platform.openh264/x86_64/2.4.1
-          - org.freedesktop.Platform.openh264/x86_64/2.3.1
+          # - org.freedesktop.Platform.openh264/x86_64/2.3.1
 
           # Drivers Gráficos Mesa / VA-API AMD (Garante sincronização de versão com os runtimes)
           - org.freedesktop.Platform.GL.default/x86_64/24.08
