@@ -17,7 +17,6 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - nerd-fonts
-        # - nerdfontssymbolsonly-nerd-fonts
-        # - firacode-nerd-fonts
-        # - hack-nerd-fonts
+        - nerdfontssymbolsonly-nerd-fonts
+        - firacode-nerd-fonts
+        - hack-nerd-fonts
