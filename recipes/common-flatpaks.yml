@@ -10,10 +10,6 @@ modules:
           - runtime/com.obsproject.Studio.Plugin.GStreamerVaapi/x86_64/stable
           - runtime/com.obsproject.Studio.Plugin.Gstreamer/x86_64/stable
 
-          # Codecs de Vídeo / FFmpeg (Freedesktop Runtimes 23.08 e 24.08)
-          - runtime/org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
-          - runtime/org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
-
           # OpenH264 (Compatibilidade WebRTC / H.264 em navegadores e players)
           - runtime/org.freedesktop.Platform.openh264/x86_64/2.4.1
           - runtime/org.freedesktop.Platform.openh264/x86_64/2.3.1
@@ -21,7 +17,11 @@ modules:
           # Drivers Gráficos Mesa / VA-API AMD (Garante sincronização de versão com os runtimes)
           - runtime/org.freedesktop.Platform.GL.default/x86_64/24.08
           - runtime/org.freedesktop.Platform.GL.default/x86_64/23.08
- 
+
+          # Codecs de Vídeo / FFmpeg (Freedesktop Runtimes 23.08 e 24.08)
+          - org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
+          - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08
+
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
           # - org.kde.elisa
