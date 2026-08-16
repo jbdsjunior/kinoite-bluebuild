@@ -1,12 +1,14 @@
 [Unit]
-Description=Timer for System Flatpak Updates
+Description=Flatpak System Updates Timer
+Documentation=man:flatpak-update(1) man:systemd.timer(5)
+ConditionACPower=true
 
 [Timer]
-OnBootSec=5m
-OnUnitActiveSec=15m
-RandomizedDelaySec=3m
-AccuracySec=5m
 Unit=flatpak-system-update.service
+OnBootSec=15m
+OnUnitActiveSec=1h
+RandomizedDelaySec=15m
+AccuracySec=1m
 Persistent=true
 
 [Install]
