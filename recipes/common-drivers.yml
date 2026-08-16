@@ -90,8 +90,6 @@ modules:
           packages:
             - mesa-libOpenCL
             - clinfo
-            - terra-gamescope
-            - terra-gamescope-libs
         - repo: fedora-multimedia
           packages:
             - ffmpeg-libs
