@@ -8,18 +8,18 @@ modules:
       packages:
         - "@multimedia"
         - "@sound-and-video"
-        - mesa-va-drivers-freeworld
-        - mesa-vulkan-drivers-freeworld
-        - ffmpeg
-        - ffmpeg-libs
-        - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-ugly
-        - libavcodec-freeworld
-        - heif-pixbuf-loader
-        - libheif-tools
-        - fdk-aac
-        - x264-libs
-        - x265-libs
+        # - mesa-va-drivers-freeworld
+        # - mesa-vulkan-drivers-freeworld
+        # - ffmpeg
+        # - ffmpeg-libs
+        # - gstreamer1-plugins-bad-freeworld
+        # - gstreamer1-plugins-ugly
+        # - libavcodec-freeworld
+        # - heif-pixbuf-loader
+        # - libheif-tools
+        # - fdk-aac
+        # - x264-libs
+        # - x265-libs
 
         # - rocm-smi
         # - rocm-hip
@@ -27,3 +27,37 @@ modules:
         # - rocm-runtime
         # - rocblas
         # - rocm-clinfo
+
+- type: dnf
+    repos:
+      nonfree: negativo17
+    install:
+      packages:
+        - libopenjph
+        - repo: fedora-multimedia
+          packages:
+            - ffmpeg-libs
+            - heif-pixbuf-loader
+            - libva-utils
+            - pipewire-libs-extra
+    replace:
+      - from-repo: fedora-multimedia
+        skip-unavailable: true
+        packages:
+          - libheif
+          - libva
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-va-drivers
+          - mesa-vulkan-drivers
+      - from-repo: fedora-multimedia
+        packages:
+          - old: ffmpeg-free
+            new: ffmpeg
+          - old: libavcodec-free
+            new: libavcodec
+          - old: libfdk-aac-free
+            new: libfdk-aac
