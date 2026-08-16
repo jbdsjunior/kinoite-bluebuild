@@ -8,32 +8,27 @@ modules:
       packages:
         - "@multimedia"
         - "@sound-and-video"
+
         # - mesa-va-drivers-freeworld
         # - mesa-vulkan-drivers-freeworld
-        - ffmpeg
-        - ffmpeg-libs
-        # - gstreamer1-plugins-bad-freeworld
-        # - gstreamer1-plugins-ugly
-        - libavcodec-freeworld
-        - heif-pixbuf-loader
-        - libheif-tools
-        - libfdk-aac
-        - libva
-        - libva-utils
-        # - fdk-aac
-        # - x264-libs
-        # - x265-libs
-
+##
         # - rocm-smi
         # - rocm-hip
         # - rocm-opencl
         # - rocm-runtime
         # - rocblas
         # - rocm-clinfo
-
-  - type: bling
-    install:
-      - negativo17
+##
+        - ffmpeg
+        - ffmpeg-libs
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
+        - libavcodec-freeworld
+        - heif-pixbuf-loader
+        - libheif-tools
+        - fdk-aac
+        - x264-libs
+        - x265-libs
 
   - type: dnf
     repos:
@@ -42,16 +37,6 @@ modules:
     install:
       packages:
         - terra-release-mesa
-
-  - type: dnf
-    repos:
-      copr:
-        - ublue-os/bazzite
-        - ublue-os/bazzite-multilib
-    remove:
-      packages:
-        - mesa-va-drivers
-        - pipewire-config-raop
     replace:
       - from-repo: terra-mesa
         skip-unavailable: true
@@ -61,33 +46,6 @@ modules:
           - mesa-libEGL
           - mesa-libGL
           - mesa-libgbm
+          - mesa-va-drivers
           - mesa-vulkan-drivers
-      - from-repo: copr:copr.fedorainfracloud.org:ublue-os:bazzite
-        skip-unavailable: true
-        packages:
-          - wireplumber
-      - from-repo: copr:copr.fedorainfracloud.org:ublue-os:bazzite-multilib
-        skip-unavailable: true
-        packages:
-          - bluez
-          - bluez-cups
-          - bluez-libs
-          - bluez-obexd
-          - xorg-x11-server-Xwayland
 
-  # - type: dnf
-  #   install:
-  #     packages:
-  #       - libopenjph
-  #       - libfreeaptx
-  #       - amdsmi
-  #       - ryzenadj
-  #       - scx-scheds
-  #       - scx-tools
-  #       - vulkan-low-latency-layer
-  #       - vulkan-tools
-  #       - libbluray
-  #       - libbluray-utils
-  #       - makemkv
-  #       - mesa-libOpenCL
-  #       - clinfo
