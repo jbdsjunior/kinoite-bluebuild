@@ -46,8 +46,9 @@ modules:
         - ublue-os/bazzite
         - ublue-os/bazzite-multilib
     remove:
-      - mesa-va-drivers
-      - pipewire-config-raop
+      packages:
+        - mesa-va-drivers
+        - pipewire-config-raop
     replace:
       - from-repo: terra-mesa
         skip-unavailable: true
