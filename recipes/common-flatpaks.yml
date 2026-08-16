@@ -51,4 +51,7 @@ modules:
           # - org.qbittorrent.qBittorrent
           # - com.stremio.Stremio
           # - dev.fredol.open-tv
+          - com.obsproject.Studio.Plugin.GStreamerVaapi
+          - com.obsproject.Studio.Plugin.Gstreamer
+          
       - scope: user # Also add Flathub user repo, but no user packages
