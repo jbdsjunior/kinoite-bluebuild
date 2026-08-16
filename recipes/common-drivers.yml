@@ -33,7 +33,6 @@ modules:
     install:
       packages:
         - libva
-        - libva-util
         - libva-utils # Ferramenta de verificação de aceleração de vídeo
         - vulkan-loader
         - mesa-libGLU
