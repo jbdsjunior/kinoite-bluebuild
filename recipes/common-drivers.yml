@@ -29,6 +29,8 @@ modules:
         - fdk-aac
         - x264-libs
         - x265-libs
+        - libva
+        - libva-util
 
   - type: dnf
     repos:
