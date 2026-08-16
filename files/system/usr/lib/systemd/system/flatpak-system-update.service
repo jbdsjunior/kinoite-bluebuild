@@ -7,14 +7,11 @@ ConditionACPower=true
 
 [Service]
 Type=oneshot
-# Verifica se a conexão NÃO é limitada (NM_METERED_NO = 2, NM_METERED_GUESS_NO = 4)
 ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null); [[ "$m" =~ \ (2|4)$ ]]'
 
-# Execução nativa sequencial sem necessidade de invocar /bin/sh intermediário
 ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
 ExecStart=/usr/bin/flatpak --system update -y --noninteractive
 
-# Isolamento e prioridade (mantendo capacidades necessárias para o deploy de arquivos no /var/lib/flatpak)
 ProtectSystem=full
 ProtectHome=true
 PrivateTmp=true
