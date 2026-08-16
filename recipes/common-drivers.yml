@@ -28,45 +28,45 @@ modules:
         # - rocblas
         # - rocm-clinfo
 
-- type: dnf
-  repos:
-    cleanup: true
-    files:
-      - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
-  replace:
-    - from-repo: terra-mesa
-      skip-unavailable: true
-      packages:
-        - mesa-dri-drivers
-        - mesa-filesystem
-        - mesa-libEGL
-        - mesa-libGL
-        - mesa-libgbm
-        - mesa-vulkan-drivers
-
-- type: dnf
-  repos:
-    nonfree: negativo17
-  install:
-    packages:
-      - libopenjph
-      - repo: fedora-multimedia
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+    replace:
+      - from-repo: terra-mesa
+        skip-unavailable: true
         packages:
-          - ffmpeg-libs
-          - heif-pixbuf-loader
-          - libva-utils
-          - pipewire-libs-extra
-  replace:
-    - from-repo: fedora-multimedia
-      skip-unavailable: true
+          - mesa-dri-drivers
+          - mesa-filesystem
+          - mesa-libEGL
+          - mesa-libGL
+          - mesa-libgbm
+          - mesa-vulkan-drivers
+
+  - type: dnf
+    repos:
+      nonfree: negativo17
+    install:
       packages:
-        - libheif
-        - libva
-    - from-repo: fedora-multimedia
-      packages:
-        - old: ffmpeg-free
-          new: ffmpeg
-        - old: libavcodec-free
-          new: libavcodec
-        - old: libfdk-aac-free
-          new: libfdk-aac
+        - libopenjph
+        - repo: fedora-multimedia
+          packages:
+            - ffmpeg-libs
+            - heif-pixbuf-loader
+            - libva-utils
+            - pipewire-libs-extra
+    replace:
+      - from-repo: fedora-multimedia
+        skip-unavailable: true
+        packages:
+          - libheif
+          - libva
+      - from-repo: fedora-multimedia
+        packages:
+          - old: ffmpeg-free
+            new: ffmpeg
+          - old: libavcodec-free
+            new: libavcodec
+          - old: libfdk-aac-free
+            new: libfdk-aac
