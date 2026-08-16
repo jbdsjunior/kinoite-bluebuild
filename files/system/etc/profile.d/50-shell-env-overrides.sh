@@ -4,13 +4,6 @@ export EDITOR="${EDITOR:-nano}"
 export VISUAL="${VISUAL:-nano}"
 export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
 
-# Force explicit VA-API backend for AMD hardware
-export LIBVA_DRIVER_NAME=radeonsi
-# Enable Wayland native rendering for Mozilla/Firefox
-export MOZ_ENABLE_WAYLAND=1
-# Disable sandbox restrictions that break RDD (Remote Data Decoder) processing
-export MOZ_DISABLE_RDD_SANDBOX=1
-
 export LESS="-R"
 
 alias sudo='sudo EDITOR=$EDITOR VISUAL=$VISUAL'
