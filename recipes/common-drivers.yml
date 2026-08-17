@@ -26,6 +26,7 @@ modules:
         - libheif-freeworld
         - libheif-tools
 
+        - libva
         - libva-utils
 
   - type: dnf
@@ -45,3 +46,21 @@ modules:
   #       - rocm-runtime
   #       - rocblas
   #       - rocm-clinfo
+
+  # Install stuff from negativo
+  # - type: dnf
+  #   repos:
+  #     nonfree: negativo17
+  #   replace:
+  #     - from-repo: fedora-multimedia
+  #       skip-unavailable: true
+  #       packages:
+  #         - libva
+  #         - mesa-dri-drivers
+  #         - mesa-filesystem
+  #         - mesa-libEGL
+  #         - mesa-libGL
+  #         - mesa-libgbm
+  #         - mesa-va-drivers
+  #         - mesa-vulkan-drivers
+  #         - libheif
