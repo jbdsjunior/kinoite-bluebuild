@@ -15,6 +15,7 @@ modules:
         - x264-libs
         - x265-libs
         - fdk-aac
+        - libfdk-aac
 
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
