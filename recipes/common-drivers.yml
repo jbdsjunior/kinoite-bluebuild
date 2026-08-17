@@ -22,6 +22,8 @@ modules:
         - heif-pixbuf-loader
         - libheif-tools
 
+        - libva-utils
+
   - type: dnf
     install:
       skip-unavailable: true
