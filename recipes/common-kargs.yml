@@ -3,7 +3,10 @@
 modules:
   - type: kargs
     kargs:
-      - mitigations=auto
-      - amd_pstate=active
-      - amd_iommu=on
-      - pcie_aspm=performance
+      # - mitigations=auto
+      # - amd_pstate=active
+      # - amd_iommu=on
+      # - pcie_aspm=performance
+      - amdgpu.ppfeaturemask=0xffffffff
+      - acpi_backlight=vendor
+      - split_lock_detect=off
