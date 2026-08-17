@@ -62,4 +62,4 @@ modules:
           # - dev.fredol.open-tv
 
           
-      - scope: user # Also add Flathub user repo, but no user packages
+      # - scope: user # Also add Flathub user repo, but no user packages
