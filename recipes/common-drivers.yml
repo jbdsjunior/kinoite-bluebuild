@@ -18,8 +18,12 @@ modules:
 
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
+        - gstreamer1-plugin-libav
+
+        - pipewire-libs-extra
 
         - heif-pixbuf-loader
+        - libheif-freeworld
         - libheif-tools
 
         - libva-utils
