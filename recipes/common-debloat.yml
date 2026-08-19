@@ -21,28 +21,28 @@ modules:
 
       # --- Unused Hardware Drivers & Firmware (Non-AMD/Nvidia) ---
 
-      # Intel Hardware (GPU/Video/Audio/Network)
-      - intel-gmmlib
-      - intel-mediasdk
-      - intel-vaapi-driver
-      - intel-vpl-gpu-rt
-      - libva-intel-media-driver
-      - intel-audio-firmware
-      - intel-gpu-firmware
-      - intel-vsc-firmware
-      - iwlegacy-firmware
-      - iwlwifi-dvm-firmware
-      - iwlwifi-mld-firmware
-      - iwlwifi-mvm-firmware
+      # # Intel Hardware (GPU/Video/Audio/Network)
+      # - intel-gmmlib
+      # - intel-mediasdk
+      # - intel-vaapi-driver
+      # - intel-vpl-gpu-rt
+      # - libva-intel-media-driver
+      # - intel-audio-firmware
+      # - intel-gpu-firmware
+      # - intel-vsc-firmware
+      # - iwlegacy-firmware
+      # - iwlwifi-dvm-firmware
+      # - iwlwifi-mld-firmware
+      # - iwlwifi-mvm-firmware
 
-      # Other Hardware (Broadcom, MediaTek, Marvell, etc.)
-      - brcmfmac-firmware
-      - mt7xxx-firmware
-      - nxpwireless-firmware
-      - tiwilink-firmware
-      - libertas-firmware
-      - cirrus-audio-firmware
-      - qcom-wwan-firmware
+      # # Other Hardware (Broadcom, MediaTek, Marvell, etc.)
+      # - brcmfmac-firmware
+      # - mt7xxx-firmware
+      # - nxpwireless-firmware
+      # - tiwilink-firmware
+      # - libertas-firmware
+      # - cirrus-audio-firmware
+      # - qcom-wwan-firmware
 
       # --- Virtualization Guest Agents (Bare Metal optimization) ---
       - open-vm-tools
