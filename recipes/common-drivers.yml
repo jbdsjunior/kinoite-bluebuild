@@ -31,7 +31,6 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # Suporte a formatos proprietários comuns
         - pipewire-codec-aptx          # Codec aptX para áudio Bluetooth de alta qualidade
         # - lame                         # Codificador MP3 # is already installed
         - twolame                      # Codificador MPEG-2
