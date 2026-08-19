@@ -19,9 +19,20 @@ modules:
       - vim-filesystem
       - vim-minimal
 
+      # --- Virtualization Guest Agents (Bare Metal optimization) ---
+      - open-vm-tools
+      - open-vm-tools-desktop
+      - qemu-guest-agent
+      - virtualbox-guest-additions
+      - hyperv-daemons
+      - hyperv-daemons-license
+      - hypervfcopyd
+      - hypervkvpd
+      - hypervvssd
+
       # --- Unused Hardware Drivers & Firmware (Non-AMD/Nvidia) ---
 
-      # # Intel Hardware (GPU/Video/Audio/Network)
+      # --- Intel Hardware (GPU/Video/Audio/Network) ---
       # - intel-gmmlib
       # - intel-mediasdk
       # - intel-vaapi-driver
@@ -35,7 +46,7 @@ modules:
       # - iwlwifi-mld-firmware
       # - iwlwifi-mvm-firmware
 
-      # # Other Hardware (Broadcom, MediaTek, Marvell, etc.)
+      # --- Other Hardware (Broadcom, MediaTek, Marvell, etc.) ---
       # - brcmfmac-firmware
       # - mt7xxx-firmware
       # - nxpwireless-firmware
@@ -43,14 +54,3 @@ modules:
       # - libertas-firmware
       # - cirrus-audio-firmware
       # - qcom-wwan-firmware
-
-      # --- Virtualization Guest Agents (Bare Metal optimization) ---
-      - open-vm-tools
-      - open-vm-tools-desktop
-      - qemu-guest-agent
-      - virtualbox-guest-additions
-      - hyperv-daemons
-      - hyperv-daemons-license
-      - hypervfcopyd
-      - hypervkvpd
-      - hypervvssd
