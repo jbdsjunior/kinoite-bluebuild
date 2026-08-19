@@ -20,3 +20,30 @@ modules:
         - nerdfontssymbolsonly-nerd-fonts
         - firacode-nerd-fonts
         - hack-nerd-fonts
+
+  # --- FONTES ADICIONAIS RECOMENDADAS ---
+  - type: dnf
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        # Fontes Google
+        - google-noto-sans-fonts           # Fonte sans-serif universal
+        - google-noto-sans-mono-fonts      # Fonte monospace universal
+        - google-noto-serif-fonts          # Fonte serif universal
+        - google-noto-color-emoji-fonts    # Emojis coloridos
+
+        # Fontes Microsoft (compatibilidade)
+        - ms-core-fonts                    # Arial, Times New Roman, Verdana, etc.
+
+        # Fontes adicionais para desenvolvimento
+        - jetbrains-mono-fonts             # JetBrains Mono (excelente para coding)
+        # - fira-code-fonts                  # Fira Code com ligaturas
+        - source-code-pro-fonts            # Source Code Pro da Adobe
+
+        # Fontes asiáticas (suporte internacional)
+        - google-noto-cjk-fonts            # Suporte para Chinês, Japonês, Coreano
+
+        # Fontes de símbolos e ícones
+        - fontawesome-fonts                # Ícones FontAwesome
+        - sil-padauk-fonts                 # Suporte adicional de escrita
