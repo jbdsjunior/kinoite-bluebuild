@@ -41,3 +41,14 @@ modules:
       - libertas-firmware
       - cirrus-audio-firmware
       - qcom-wwan-firmware
+
+      # --- Virtualization Guest Agents (Bare Metal optimization) ---
+      - open-vm-tools
+      - open-vm-tools-desktop
+      - qemu-guest-agent
+      - virtualbox-guest-additions
+      - hyperv-daemons
+      - hyperv-daemons-license
+      - hypervfcopyd
+      - hypervkvpd
+      - hypervvssd
