@@ -6,8 +6,8 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - "@multimedia"
-        - "@sound-and-video"
+        # - "@multimedia"
+        # - "@sound-and-video"
 
         - ffmpeg
         - ffmpeg-libs
@@ -15,20 +15,26 @@ modules:
         - libva
         - libva-utils
 
+        - gstreamer1-plugin-libav
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
+        - gstreamer1-vaapi
+
         # - x264-libs
         # - x265-libs
         # - fdk-aac
         # - libfdk-aac
 
-        - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-ugly
-        - gstreamer1-plugin-libav
+        # - gstreamer1-plugins-bad-freeworld
+        # - gstreamer1-plugins-ugly
+        # - gstreamer1-plugin-libav
 
-        - pipewire-libs-extra
+        # - pipewire-libs-extra
 
-        - heif-pixbuf-loader
-        - libheif-freeworld
-        - libheif-tools
+        # - heif-pixbuf-loader
+        # - libheif-freeworld
+        # - libheif-tools
 
   - type: dnf
     install:
