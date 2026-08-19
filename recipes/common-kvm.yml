@@ -14,9 +14,13 @@ modules:
   - type: systemd
     system:
       enabled:
-        - libvirtd.service
-        - virtlogd.service
-
+        # - libvirtd.service
+        # - virtlogd.service
+        - libvirtd.service            # Daemon principal do libvirt
+        - virtlogd.service            # Gerenciamento de logs de VMs
+        - virtlockd.service           # Gerenciamento de locks de VMs
+        - libvirtd-ro.service         # Libvirt somente leitura para usuários não privilegiados
+        - libvirtd-admin.socket       # Socket para administração do libvirt
   - type: kargs
     kargs:
       - kvm_amd.nested=1
