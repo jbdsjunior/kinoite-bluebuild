@@ -1,28 +1,87 @@
+# =============================================================================
+# rclone@.service - Template para mounts rclone no KDE Plasma
+# =============================================================================
+# USO:
+#   systemctl --user enable --now rclone@GoogleDrive.service
+#   systemctl --user enable --now rclone@OneDrive.service
+#
+# CONFIGURAÇÃO:
+#   1. Configure o remote: rclone config
+#   2. (Opcional) Crie ~/.config/rclone/env/<remote>.env com variáveis customizadas
+#
+# EXEMPLO DE .env (GoogleDrive.env):
+#   RCLONE_BWLIMIT=50M
+#   RCLONE_FLAGS=--buffer-size 32M
+#
+# HARDWARE BASELINE: Ryzen 9 5950X, 64GB RAM, 1TB NVMe
+# Este serviço é otimizado para este hardware. Em hardware menor, reduza
+# MemoryHigh/MemoryMax e vfs-cache-max-size proporcionalmente.
+# =============================================================================
+
 [Unit]
-Description=Rclone mount for KDE Plasma - %i
+Description=Rclone mount para KDE Plasma - %i
 Documentation=https://rclone.org/commands/rclone_mount/
+Documentation=https://rclone.org/drive/
+Documentation=https://rclone.org/onedrive/
+
+# Dependências de rede
 After=network-online.target
 Wants=network-online.target
-StartLimitIntervalSec=10min
-StartLimitBurst=10
+
+# Integração com sessão gráfica (opcional)
+# Se você quer que o mount seja desmontado no logout, descomente:
+# PartOf=graphical-session.target
+
+# Limites de reinicialização (mais tolerante para redes instáveis)
+StartLimitIntervalSec=30min
+StartLimitBurst=20
+
+# Verifica se o config do rclone existe antes de iniciar
+ConditionPathExists=%h/.config/rclone/rclone.conf
 
 [Service]
 Type=simple
-TimeoutStartSec=15
+TimeoutStartSec=30
+TimeoutStopSec=60
+
+# =============================================================================
+# VARIÁVEIS DE AMBIENTE
+# =============================================================================
+# Remote rclone (ex: GoogleDrive, OneDrive, Dropbox)
 Environment=RCLONE_REMOTE=%i:
+
+# Ponto de mount (ex: ~/Cloud/GoogleDrive)
 Environment=RCLONE_MOUNT=%h/Cloud/%i
+
+# Diretório de cache VFS (ex: ~/.cache/rclone/GoogleDrive)
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
+
+# Limite de banda (0 = ilimitado, use 50M para limitar a 50MB/s)
 Environment=RCLONE_BWLIMIT=0
+
+# Flags adicionais (podem ser sobrescritas no .env)
+Environment=RCLONE_FLAGS=
+
+# Carrega variáveis customizadas do usuário (opcional)
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
+# =============================================================================
+# PREPARAÇÃO
+# =============================================================================
+# Cria diretórios de mount e cache se não existirem
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
 
+# =============================================================================
+# INICIALIZAÇÃO DO RCLONE MOUNT
+# =============================================================================
 ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --config %h/.config/rclone/rclone.conf \
+  \
   --exclude /.Trash-1000/** \
   --exclude /.Trash/** \
   --exclude /.trashinfo/** \
+  \
   --cache-dir ${RCLONE_CACHE} \
   --vfs-cache-mode full \
   --vfs-cache-max-size 20G \
@@ -32,36 +91,126 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-read-chunk-size-limit off \
   --vfs-read-ahead 128M \
   --vfs-write-back 5s \
+  \
   --dir-cache-time 24h \
-  --poll-interval 1m \
+  --poll-interval 5m \
+  \
   --buffer-size 16M \
   --transfers 4 \
   --checkers 8 \
-  --tpslimit 8 \
-  --tpslimit-burst 10 \
+  \
+  --tpslimit 12 \
+  --tpslimit-burst 15 \
+  \
   --bwlimit ${RCLONE_BWLIMIT} \
+  \
   --use-mmap \
+  \
   --timeout 2m \
   --contimeout 20s \
   --low-level-retries 10 \
   --retries 10 \
+  \
   --attr-timeout 5s \
   --umask 0022 \
+  \
   --log-level NOTICE \
   --log-systemd \
+  \
+  --rc \
+  --rc-addr unix:///run/user/%U/rclone-%i.sock \
+  --rc-no-auth \
+  \
   $RCLONE_FLAGS
 
-ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
+# =============================================================================
+# PARADA DO SERVIÇO
+# =============================================================================
+# Tenta unmount normal primeiro, se falhar usa lazy unmount
+ExecStop=/bin/sh -c 'fusermount3 -u ${RCLONE_MOUNT} 2>/dev/null || fusermount3 -uz ${RCLONE_MOUNT}'
+
+# Limpa diretório de mount se estiver vazio
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
+
+# =============================================================================
+# REINICIALIZAÇÃO
+# =============================================================================
 Restart=on-failure
 RestartSec=15s
-TimeoutStopSec=30s
 
-LimitNOFILE=1048576
-MemoryMax=2G
+# =============================================================================
+# LIMITES DE RECURSOS
+# =============================================================================
+# Soft limit: permite burst até 8G, mas systemd tenta manter abaixo de 4G
+MemoryHigh=4G
+# Hard limit: nunca permite mais que 8G (previne OOM em workloads pesados)
+MemoryMax=8G
+
+# CPU: permite usar até 200% (2 cores) durante transferências pesadas
 CPUQuota=200%
+
+# Arquivos abertos: aumenta limite para 1M (cloud storage com muitos arquivos)
+LimitNOFILE=1048576
+
+# I/O: prioridade baixa para não competir com apps interativos
 IOSchedulingClass=best-effort
 IOSchedulingPriority=4
+
+# =============================================================================
+# SYSTEMD HARDENING (Segurança)
+# =============================================================================
+# Restringe acesso ao filesystem (apenas diretórios necessários)
+ProtectHome=tmpfs
+BindPaths=%h/.config/rclone:%h/.config/rclone
+BindPaths=%h/Cloud:%h/Cloud
+BindPaths=%h/.cache/rclone:%h/.cache/rclone
+BindPaths=/run/user/%U:/run/user/%U
+
+# Previne que o serviço ganhe novos privilégios
+NoNewPrivileges=yes
+
+# Usa /tmp privado para o serviço
+PrivateTmp=yes
+
+# Restringe capabilities (apenas o necessário para FUSE)
+CapabilityBoundingSet=CAP_FOWNER CAP_DAC_OVERRIDE CAP_CHOWN CAP_FSETID CAP_SETFCAP CAP_SYS_ADMIN
+AmbientCapabilities=CAP_FOWNER CAP_DAC_OVERRIDE CAP_CHOWN CAP_FSETID CAP_SETFCAP CAP_SYS_ADMIN
+
+# Previne acesso a dispositivos de hardware sensíveis
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+
+# Previne acesso a clocks do sistema
+ProtectClock=yes
+
+# Previne modificações no hostname
+ProtectHostname=yes
+
+# Previne acesso a personality do kernel
+LockPersonality=yes
+
+# Restringe syscall (apenas as necessárias)
+SystemCallFilter=@system-service
+SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @raw-io @reboot @swap
+SystemCallFilter=@pkey @privileged @resources
+
+# Arquiteturas permitidas (apenas nativa)
+SystemCallArchitectures=native
+
+# Previne criação de namespaces (não necessário para rclone)
+RestrictNamespaces=yes
+
+# Previne real-time scheduling
+RestrictRealtime=yes
+
+# Previne SUID/SGID
+RestrictSUIDSGID=yes
+
+# Modo de proteção do sistema (apenas leitura, exceto BindPaths)
+ProtectSystem=strict
+ReadWritePaths=%h/.config/rclone %h/Cloud %h/.cache/rclone /run/user/%U
 
 [Install]
 WantedBy=default.target
