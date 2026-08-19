@@ -1,91 +1,68 @@
-# =============================================================================
-# SYSTEMD HARDENING (Segurança) - CORRIGIDO PARA FUSE
-# =============================================================================
-# NOTA: FUSE (fusermount3) requer syscalls privilegiadas mesmo sendo SUID root.
-# O SystemCallFilter deve permitir @mount, @chown, @setuid, @setgid.
-# =============================================================================
+[Unit]
+Description=Rclone mount for KDE Plasma - %i
+Documentation=https://rclone.org/commands/rclone_mount/
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=10min
+StartLimitBurst=20
 
-# Restringe acesso ao filesystem (apenas diretórios necessários)
-ProtectHome=tmpfs
-BindPaths=%h/.config/rclone:%h/.config/rclone
-BindPaths=%h/Cloud:%h/Cloud
-BindPaths=%h/.cache/rclone:%h/.cache/rclone
-BindPaths=/run/user/%U:/run/user/%U
+[Service]
+Type=simple
+TimeoutStartSec=15
+Environment=RCLONE_REMOTE=%i:
+Environment=RCLONE_MOUNT=%h/Cloud/%i
+Environment=RCLONE_CACHE=%h/.cache/rclone/%i
+# Remoção do limite padrão de 40M para explorar largura de banda máxima, controlável via .env
+Environment=RCLONE_BWLIMIT=0
+EnvironmentFile=-%h/.config/rclone/env/%i.env
 
-# Previne que o serviço ganhe novos privilégios
-NoNewPrivileges=no  # FUSE precisa de privilégios para mount
-# Alternativa mais segura: usar NoNewPrivileges=yes mas remover ProtectHome
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
 
-# Usa /tmp privado para o serviço
-PrivateTmp=yes
+ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
+  --config %h/.config/rclone/rclone.conf \
+  --exclude /.Trash-1000/** \
+  --exclude /.Trash/** \
+  --exclude /.trashinfo/** \
+  --cache-dir ${RCLONE_CACHE} \
+  --vfs-cache-mode full \
+  --vfs-cache-max-size 20G \
+  --vfs-cache-max-age 72h \
+  --vfs-fast-fingerprint \
+  --vfs-read-chunk-size 64M \
+  --vfs-read-chunk-size-limit off \
+  --vfs-read-ahead 256M \
+  --vfs-write-back 10s \
+  --dir-cache-time 72h \
+  --poll-interval 1m \
+  --buffer-size 128M \
+  --transfers 8 \
+  --checkers 16 \
+  --tpslimit 12 \
+  --tpslimit-burst 20 \
+  --bwlimit ${RCLONE_BWLIMIT} \
+  --use-mmap \
+  --timeout 2m \
+  --contimeout 20s \
+  --low-level-retries 10 \
+  --retries 10 \
+  --attr-timeout 5s \
+  --umask 0022 \
+  --log-level NOTICE \
+  --log-systemd \
+  $RCLONE_FLAGS
 
-# IMPORTANTE: FUSE precisa de CAP_SYS_ADMIN para mount
-CapabilityBoundingSet=CAP_FOWNER CAP_DAC_OVERRIDE CAP_CHOWN CAP_FSETID CAP_SETFCAP CAP_SYS_ADMIN CAP_SETUID CAP_SETGID
-AmbientCapabilities=CAP_FOWNER CAP_DAC_OVERRIDE CAP_CHOWN CAP_FSETID CAP_SETFCAP CAP_SYS_ADMIN CAP_SETUID CAP_SETGID
+ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
+ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
+Restart=on-failure
+RestartSec=30s
+TimeoutStopSec=30s
 
-# Previne acesso a dispositivos de hardware sensíveis
-ProtectKernelTunables=yes
-ProtectKernelModules=yes
-ProtectKernelLogs=yes
-ProtectControlGroups=yes
+LimitNOFILE=1048576
+MemoryMax=2G
+CPUQuota=200%
+IOSchedulingClass=best-effort
+IOSchedulingPriority=4
 
-# Previne acesso a clocks do sistema
-ProtectClock=yes
-
-# Previne modificações no hostname
-ProtectHostname=yes
-
-# Previne acesso a personality do kernel
-LockPersonality=yes
-
-# =============================================================================
-# SYSTEM CALL FILTER - CORRIGIDO PARA FUSE
-# =============================================================================
-# FUSE (fusermount3) precisa de syscalls de mount/unmount e setuid/setgid.
-# Estas syscalls são bloqueadas por padrão em @system-service.
-# =============================================================================
-
-# Permite syscalls básicas de serviço
-SystemCallFilter=@system-service
-
-# IMPORTANTE: Permite syscalls de mount/unmount (necessário para FUSE)
-SystemCallFilter=@mount
-
-# Permite syscalls de mudança de UID/GID (necessário para fusermount3 SUID)
-SystemCallFilter=@chown @setuid @setgid
-
-# Permite syscalls de recursos (mmap, mprotect, etc)
-SystemCallFilter=@resources
-
-# Bloqueia syscalls perigosas (mantém segurança)
-SystemCallFilter=~@clock           # Previne mudança de clock do sistema
-SystemCallFilter=~@cpu-emulation   # Previne emulação de CPU (obsoleto)
-SystemCallFilter=~@debug           # Previne debugging do kernel
-SystemCallFilter=~@module          # Previne carregar módulos do kernel
-SystemCallFilter=~@obsolete        # Previne syscalls obsoletas
-SystemCallFilter=~@raw-io          # Previne I/O raw (ioperm, iopl)
-SystemCallFilter=~@reboot          # Previne reboot do sistema
-SystemCallFilter=~@swap            # Previne manipulação de swap
-SystemCallFilter=~@privileged      # Previne syscalls privilegiadas desnecessárias
-SystemCallFilter=~@pkey            # Previne manipulação de memory protection keys
-
-# Arquiteturas permitidas (apenas nativa)
-SystemCallArchitectures=native
-
-# Previne criação de namespaces (não necessário para rclone)
-RestrictNamespaces=yes
-
-# Previne real-time scheduling
-RestrictRealtime=yes
-
-# Previne SUID/SGID (exceto para fusermount3 que já é SUID)
-RestrictSUIDSGID=no  # Necessário para fusermount3
-
-# Modo de proteção do sistema (apenas leitura, exceto BindPaths)
-ProtectSystem=strict
-ReadWritePaths=%h/.config/rclone %h/Cloud %h/.cache/rclone /run/user/%U
-
-# Alternativa mais segura (mas pode quebrar alguns recursos):
-# ProtectSystem=full
-# ProtectHome=read-only
-# BindReadOnlyPaths=%h/.config/rclone:%h/.config/rclone
+[Install]
+WantedBy=default.target
