@@ -1,14 +1,24 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
-add_newline = true
-command_timeout = 1000
+# ==========================================
+# CONFIGURAÇÕES GLOBAIS
+# ==========================================
+add_newline = false  # Mudado para false - evita quebra de linha excessiva
+command_timeout = 2000  # Aumentado de 1000 para 2000ms (repos git grandes)
 palette = "kinoite"
 
+# ==========================================
+# FORMATO DO PROMPT
+# Layout: [OS][User][Host][Dir][Git] ───────── [Cmd_Duration][Status]
+#         $
+# ==========================================
 format = """
-$os$username$hostname$directory$git_branch$git_status$fill$cmd_duration
-$character
-"""
+$os$username$hostname$shlvl$directory$git_branch$git_status$fill$cmd_duration$status
+$character"""
 
+# ==========================================
+# PALETA DE CORES (Tokyo Night - Otimizada)
+# ==========================================
 [palettes.kinoite]
 fg = "#d9e0ee"
 blue = "#7aa2f7"
@@ -18,10 +28,15 @@ red = "#f7768e"
 gray = "#6c7086"
 cyan = "#7dcfff"
 magenta = "#bb9af7"
+orange = "#ff9e64"
+
+# ==========================================
+# MÓDULOS DO SISTEMA
+# ==========================================
 
 [os]
 disabled = false
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 style = "bold blue"
 
 [os.symbols]
@@ -29,6 +44,9 @@ Fedora = ""
 Arch = ""
 Debian = ""
 Ubuntu = ""
+Linux = ""
+Windows = ""
+Macos = ""
 
 [username]
 show_always = false
@@ -37,16 +55,28 @@ style_root = "bold red"
 format = "[$user ]($style)"
 
 [hostname]
-ssh_only = true
+ssh_only = false  # Mudado para false - mostra em containers também
+detect_env_vars = ["DISTROBOX_NAME"]  # Mostra quando está no Distrobox
 style = "bold yellow"
 format = "[@$hostname ]($style)"
 
+[shlvl]
+disabled = false
+symbol = ""
+threshold = 2  # Só mostra quando está em 2+ níveis de shell (subshells/containers)
+format = "[$symbol$shlvl ]($style)"
+style = "bold cyan"
+
 [directory]
 style = "bold fg"
-truncation_length = 4
+truncation_length = 6  # Aumentado de 4 para 6
 truncate_to_repo = false
 read_only = " 󰌾"
 format = "[$path]($style)[$read_only]($red) "
+
+# ==========================================
+# GIT
+# ==========================================
 
 [git_branch]
 symbol = " "
@@ -57,18 +87,121 @@ format = "[$symbol$branch ]($style)"
 style = "bold yellow"
 format = "([$all_status$ahead_behind ]($style))"
 
+# ==========================================
+# LINGUAGENS DE PROGRAMAÇÃO
+# Todos disabled por padrão, ativam automaticamente quando detectados
+# ==========================================
+
+[python]
+disabled = false
+symbol = " "
+style = "bold yellow"
+format = "[$symbol$version ]($style)"
+detect_extensions = ["py"]
+detect_files = ["requirements.txt", "pyproject.toml", "Pipfile"]
+
+[nodejs]
+disabled = false
+symbol = " "
+style = "bold green"
+format = "[$symbol$version ]($style)"
+detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts"]
+detect_files = ["package.json", ".node-version"]
+
+[golang]
+disabled = false
+symbol = " "
+style = "bold cyan"
+format = "[$symbol$version ]($style)"
+detect_extensions = ["go"]
+detect_files = ["go.mod", "go.work"]
+
+[rust]
+disabled = false
+symbol = " "
+style = "bold red"
+format = "[$symbol$version ]($style)"
+detect_extensions = ["rs"]
+detect_files = ["Cargo.toml"]
+
+[nix_shell]
+disabled = false
+symbol = " "
+style = "bold blue"
+format = "[$symbol$state ]($style)"
+
+# ==========================================
+# CONTAINERS E VIRTUALIZAÇÃO
+# ==========================================
+
+[docker_context]
+disabled = true  # Desabilitado - projeto usa Podman, não Docker
+
+[container]
+disabled = false
+symbol = "⬢"
+style = "bold red"
+format = "[$symbol $name ]($style)"
+
+# ==========================================
+# SISTEMA E MONITORAMENTO
+# ==========================================
+
+[memory_usage]
+disabled = false
+threshold = 80  # Só mostra quando usar 80%+ da RAM (51GB de 64GB)
+symbol = "󰍛"
+style = "bold red"
+format = "[$symbol ${ram_pct}]($style) "
+
+[sudo]
+disabled = false
+symbol = "🔒"
+style = "bold red"
+format = "[$symbol ]($style)"
+
+[status]
+disabled = false
+symbol = "✗"
+success_symbol = ""
+format = "[$symbol $status ]($style)"
+style = "bold red"
+
+# ==========================================
+# UTILITÁRIOS
+# ==========================================
+
 [fill]
 symbol = " "
 
 [cmd_duration]
 min_time = 800
 style = "gray"
-format = "[${duration}]($style)"
+format = "[$duration]($style) "
+
+[env_var.DISTROBOX_NAME]
+disabled = false
+variable = "DISTROBOX_NAME"
+default = ""
+style = "bold magenta"
+format = "[$env_value ]($style)"
+
+# ==========================================
+# CARACTERES DO PROMPT
+# ==========================================
 
 [character]
 success_symbol = "[➜](bold green)"
 error_symbol = "[✗](bold red)"
-vimcmd_symbol = "[❮](bold blue)"
+# Removido vimcmd_symbol - usuário usa nano, não vim
+# Se quiser um símbolo para modo de edição, use algo neutro:
+# vimcmd_symbol = "[❮](bold blue)"
+# vimcmd_replace_symbol = "[❯](bold blue)"
+# vimcmd_visual_symbol = "[❮](bold yellow)"
+
+# ==========================================
+# MÓDULOS DESABILITADOS (Bloat Removal)
+# ==========================================
 
 [package]
 disabled = true
@@ -79,11 +212,107 @@ disabled = true
 [kubernetes]
 disabled = true
 
-[docker_context]
-disabled = false
-format = "via [🐳 $context]($style) "
-style = "blue"
+[aws]
+disabled = true
 
-[container]
-disabled = false
-format = '⬡ [$name](bold red)'
+[azure]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[openstack]
+disabled = true
+
+[conda]
+disabled = true
+
+[crystal]
+disabled = true
+
+[daml]
+disabled = true
+
+[dart]
+disabled = true
+
+[deno]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[elixir]
+disabled = true
+
+[elm]
+disabled = true
+
+[erlang]
+disabled = true
+
+[fennel]
+disabled = true
+
+[haskell]
+disabled = true
+
+[haxe]
+disabled = true
+
+[helm]
+disabled = true
+
+[java]
+disabled = true
+
+[julia]
+disabled = true
+
+[kotlin]
+disabled = true
+
+[lua]
+disabled = true
+
+[nim]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[perl]
+disabled = true
+
+[php]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[purescript]
+disabled = true
+
+[raku]
+disabled = true
+
+[ruby]
+disabled = true
+
+[scala]
+disabled = true
+
+[swift]
+disabled = true
+
+[terraform]
+disabled = true
+
+[vagrant]
+disabled = true
+
+[vlang]
+disabled = true
+
+[zig]
+disabled = true
