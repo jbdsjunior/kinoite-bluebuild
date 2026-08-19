@@ -1,23 +1,15 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # ==========================================
-# CONFIGURAÇÕES GLOBAIS
-# ==========================================
 add_newline = false  # Mudado para false - evita quebra de linha excessiva
 command_timeout = 2000  # Aumentado de 1000 para 2000ms (repos git grandes)
 palette = "kinoite"
 
 # ==========================================
-# FORMATO DO PROMPT
-# Layout: [OS][User][Host][Dir][Git] ───────── [Cmd_Duration][Status]
-#         $
-# ==========================================
 format = """
 $os$username$hostname$shlvl$directory$git_branch$git_status$fill$cmd_duration$status
 $character"""
 
-# ==========================================
-# PALETA DE CORES (Tokyo Night - Otimizada)
 # ==========================================
 [palettes.kinoite]
 fg = "#d9e0ee"
@@ -31,22 +23,19 @@ magenta = "#bb9af7"
 orange = "#ff9e64"
 
 # ==========================================
-# MÓDULOS DO SISTEMA
-# ==========================================
-
 [os]
 disabled = false
 format = "[$symbol ]($style)"
 style = "bold blue"
 
 [os.symbols]
+Linux = ""
 Fedora = ""
 Arch = ""
 Debian = ""
 Ubuntu = ""
-Linux = ""
-Windows = ""
 Macos = ""
+Windows = ""
 
 [username]
 show_always = false
