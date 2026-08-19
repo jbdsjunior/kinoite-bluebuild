@@ -9,10 +9,10 @@ modules:
         - langpacks-pt_BR
         - plasma-firewall
         - icoutils
-        - kf6-kimageformats
-        - kio-admin
-        - ksshaskpass
-        - qt6-qtimageformats
+        # - kf6-kimageformats # is already installed
+        # - kio-admin # is already installed
+        # - ksshaskpass # is already installed
+        # - qt6-qtimageformats # is already installed
         - lm_sensors
         - kate
         - gwenview
