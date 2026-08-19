@@ -20,6 +20,7 @@ modules:
       - vim-minimal
 
       # --- Unused Hardware Drivers & Firmware (Non-AMD/Nvidia) ---
+
       # Intel Hardware (GPU/Video/Audio/Network)
       - intel-gmmlib
       - intel-mediasdk
@@ -33,6 +34,7 @@ modules:
       - iwlwifi-dvm-firmware
       - iwlwifi-mld-firmware
       - iwlwifi-mvm-firmware
+
       # Other Hardware (Broadcom, MediaTek, Marvell, etc.)
       - brcmfmac-firmware
       - mt7xxx-firmware
