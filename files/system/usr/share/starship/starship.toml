@@ -21,7 +21,7 @@ magenta = "#bb9af7"
 
 [os]
 disabled = false
-format = "[$symbol ]($style)"
+format = "[$symbol]($style)"
 style = "bold blue"
 
 [os.symbols]
