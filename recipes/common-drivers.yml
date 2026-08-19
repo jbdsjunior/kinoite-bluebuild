@@ -11,11 +11,14 @@ modules:
 
         - ffmpeg
         - ffmpeg-libs
-        - libavcodec-freeworld
-        - x264-libs
-        - x265-libs
-        - fdk-aac
-        - libfdk-aac
+
+        - libva
+        - libva-utils
+
+        # - x264-libs
+        # - x265-libs
+        # - fdk-aac
+        # - libfdk-aac
 
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
@@ -26,9 +29,6 @@ modules:
         - heif-pixbuf-loader
         - libheif-freeworld
         - libheif-tools
-
-        - libva
-        - libva-utils
 
   - type: dnf
     install:
