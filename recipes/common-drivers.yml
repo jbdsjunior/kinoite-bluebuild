@@ -21,7 +21,6 @@ modules:
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
-
   - type: dnf
     install:
       skip-unavailable: true
