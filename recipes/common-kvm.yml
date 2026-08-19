@@ -22,3 +22,4 @@ modules:
       - kvm_amd.nested=1
       # - iommu=pt
       # - amd_iommu=on
+      # - kvm_amd.nested=1
