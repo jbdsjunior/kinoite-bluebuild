@@ -4,4 +4,3 @@ modules:
   - type: kargs
     kargs:
       - bluetooth.disable_ertm=1
-      # - amd_iommu=on
