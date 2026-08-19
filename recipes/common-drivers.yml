@@ -3,6 +3,7 @@
 modules:
   - type: dnf
     install:
+      allow-erasing: true
       skip-unavailable: true
       packages:
         - mesa-va-drivers-freeworld
@@ -35,6 +36,7 @@ modules:
 
   # - type: dnf
   #   install:
+  #     allow-erasing: true
   #     skip-unavailable: true
   #     packages:
   #       - rocm-smi
@@ -50,6 +52,7 @@ modules:
   #     nonfree: negativo17
   #   replace:
   #     - from-repo: fedora-multimedia
+  #       allow-erasing: true
   #       skip-unavailable: true
   #       packages:
   #         - libva
