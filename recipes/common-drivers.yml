@@ -17,10 +17,10 @@ modules:
         - ffmpeg
         - ffmpeg-libs
 
-        - libva
+        # - libva # is already installed
         - libva-utils
 
-        - gstreamer1-plugin-libav
+        # - gstreamer1-plugin-libav # is already installed
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
@@ -33,7 +33,7 @@ modules:
       packages:
         # Suporte a formatos proprietários comuns
         - pipewire-codec-aptx          # Codec aptX para áudio Bluetooth de alta qualidade
-        - lame                         # Codificador MP3
+        # - lame                         # Codificador MP3 # is already installed
         - twolame                      # Codificador MPEG-2
         - vorbis-tools                 # Ferramentas Ogg Vorbis
 
