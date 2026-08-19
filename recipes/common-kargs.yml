@@ -3,4 +3,5 @@
 modules:
   - type: kargs
     kargs:
+      - amd_pstate=active
       - bluetooth.disable_ertm=1
