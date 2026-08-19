@@ -6,8 +6,8 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - mesa-va-drivers-freeworld
-        - mesa-vulkan-drivers-freeworld
+        - mesa-va-drivers-freeworld  # bling rpmfusion
+        - mesa-vulkan-drivers-freeworld  # bling rpmfusion
 
   - type: dnf
     install:
