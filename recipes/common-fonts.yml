@@ -7,8 +7,8 @@ modules:
       allow-erasing: true
       packages:
         - liberation-fonts 
-        - fontawesome-fonts
-        - jetbrains-mono-fonts
+        # - fontawesome-fonts
+        # - jetbrains-mono-fonts
 
   - type: dnf
     repos:
