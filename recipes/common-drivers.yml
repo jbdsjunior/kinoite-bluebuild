@@ -26,6 +26,17 @@ modules:
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
+  - type: dnf
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        # Suporte a formatos proprietários comuns
+        - pipewire-codec-aptx          # Codec aptX para áudio Bluetooth de alta qualidade
+        - lame                         # Codificador MP3
+        - twolame                      # Codificador MPEG-2
+        - vorbis-tools                 # Ferramentas Ogg Vorbis
+
   # - type: dnf
   #   install:
   #     allow-erasing: true
