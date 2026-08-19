@@ -7,10 +7,10 @@ modules:
         - systemd-remount-fs.service
       disabled:
         # Virtual machine guest services (bare-metal system)
-        - vboxservice.service
-        - vmtoolsd.service
-        - vgauthd.service
-        - qemu-guest-agent.service
+        # - vboxservice.service
+        # - vmtoolsd.service
+        # - vgauthd.service
+        # - qemu-guest-agent.service
 
         # Intel-specific hardware error logging (AMD CPU)
         - mcelog.service
