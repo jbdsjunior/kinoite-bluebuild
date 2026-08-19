@@ -8,21 +8,21 @@ modules:
       packages:
         # --- Compatibilidade e UI Base ---
         - liberation-fonts                 # Clone livre das fontes MS (Arial, Times, Courier)
-        - google-noto-sans-fonts           # Fonte Sans-serif universal (Fallback principal do KDE/Web)
-        - google-noto-serif-fonts          # Fonte Serif universal (Documentos e Web)
+        # - google-noto-sans-fonts           # Fonte Sans-serif universal (Fallback principal do KDE/Web)
+        # - google-noto-serif-fonts          # Fonte Serif universal (Documentos e Web)
         
         # --- Emojis e Símbolos (Crítico para Web/KDE) ---
-        - google-noto-color-emoji-fonts    # Emojis coloridos modernos (Evita emojis preto-e-branco feios)
+        # - google-noto-color-emoji-fonts    # Emojis coloridos modernos (Evita emojis preto-e-branco feios)
         - fontawesome-fonts                # Ícones FontAwesome (Usado em scripts, Polybar, Waybar, etc)
 
         # --- Desenvolvimento (A "Trindade" do Dev) ---
         - jetbrains-mono-fonts             # A melhor fonte para coding (Ligatures, excelente leitura)
-        - google-noto-sans-mono-fonts      # Fallback monospace limpo e universal
+        # - google-noto-sans-mono-fonts      # Fallback monospace limpo e universal
 
         # --- Suporte Internacional (Otimizado) ---
         # Usamos a versão TTC (TrueType Collection) que é muito mais leve que o pacote CJK completo,
         # mas ainda garante que você não veja "quadrados brancos" ao acessar sites asiáticos.
-        - google-noto-sans-cjk-ttc-fonts   # Suporte leve para Chinês, Japonês e Coreano
+        # - google-noto-sans-cjk-ttc-fonts   # Suporte leve para Chinês, Japonês e Coreano
 
   # ==========================================
   # BLOCO 2: Repositório Terra (Third-Party)
