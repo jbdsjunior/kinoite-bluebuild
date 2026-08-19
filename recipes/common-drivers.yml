@@ -3,12 +3,16 @@
 modules:
   - type: dnf
     install:
+      skip-unavailable: true
+      packages:
+        - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
+
+  - type: dnf
+    install:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # - "@multimedia"
-        # - "@sound-and-video"
-
         - ffmpeg
         - ffmpeg-libs
 
@@ -21,12 +25,13 @@ modules:
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
-  - type: dnf
-    install:
-      skip-unavailable: true
-      packages:
-        - mesa-va-drivers-freeworld
-        - mesa-vulkan-drivers-freeworld
+  # - type: dnf
+  #   install:
+  #     allow-erasing: true
+  #     skip-unavailable: true
+  #     packages:
+  #       - "@multimedia"
+  #       - "@sound-and-video"
 
   # - type: dnf
   #   install:
