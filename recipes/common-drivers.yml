@@ -26,14 +26,6 @@ modules:
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
-  - type: rpm-ostree
-    install:
-      - kernel-modules
-      - kernel-modules-extra
-      - linux-firmware
-      - mesa-dri-drivers
-      - libdrm
-
   # - type: dnf
   #   install:
   #     allow-erasing: true
