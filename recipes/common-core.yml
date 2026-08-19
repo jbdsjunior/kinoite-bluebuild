@@ -7,18 +7,18 @@ modules:
       allow-erasing: true
       packages:
         - langpacks-pt_BR
-        - plasma-firewall
-        - icoutils
-        # - kf6-kimageformats # is already installed
-        # - kio-admin # is already installed
-        # - ksshaskpass # is already installed
-        # - qt6-qtimageformats # is already installed
+
         - lm_sensors
+        - plasma-firewall
+
+        - icoutils
+
         - kate
-        - gwenview
         - okular
-        - haruna
+
         - elisa
+        - gwenview
+        - haruna
 
     # replace:
     #   # mitigate upstream packaging bug: https://bugzilla.redhat.com/show_bug.cgi?id=2332429
