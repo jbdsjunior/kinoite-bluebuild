@@ -25,10 +25,9 @@ format = "[$symbol ]($style)"
 style = "bold blue"
 
 [os.symbols]
-Fedora = ""
-Arch = ""
-Debian = ""
-Ubuntu = ""
+Fedora = "󰣛 "
+Kinoite = "󰣛 "
+Bluebuild = "󰣛 "
 
 [username]
 show_always = false
