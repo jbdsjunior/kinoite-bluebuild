@@ -50,3 +50,67 @@ AMD
 
 ```bash
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+
+```
+
+Reboot after completion.
+
+### 2) Enforce signature policy during image switch
+
+AMD
+
+```bash
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+
+```
+
+### 3) Post-installation
+
+Follow: [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md).
+
+---
+
+## Rollback and Disaster Recovery
+
+1. Reboot and select the previous deployment from the GRUB menu (if needed).
+2. Run atomic rollback:
+
+```bash
+sudo bootc rollback
+
+```
+
+### Revert to stock Fedora Kinoite
+
+```bash
+sudo bootc switch quay.io/fedora/fedora-kinoite:latest
+
+```
+
+---
+
+## Repository Structure
+
+| Path | Purpose |
+| --- | --- |
+| `recipes/recipe-amd.yml` | Main AMD recipe variant |
+| `recipes/common-*.yml` | Shared modules (packages, drivers, services, and more) |
+| `files/system/` | Immutable host overlays (policies, units, defaults) |
+| `files/rpm-ostree/` | Optional third-party RPM repo definitions |
+| `.github/workflows/` | CI/CD pipelines and security gates |
+| `cosign.pub` | Public key for signature verification |
+
+---
+
+## Documentation
+
+| Document | Purpose |
+| --- | --- |
+| [`docs/POST_INSTALL.md`](https://www.google.com/search?q=docs/POST_INSTALL.md) | Post-install validation, operations, and maintenance |
+| [`docs/HARDWARE_BASELINE.md`](https://www.google.com/search?q=docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
+
+## License
+
+This project is licensed under [`LICENSE`](https://www.google.com/search?q=LICENSE).
+
+```
