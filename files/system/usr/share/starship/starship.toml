@@ -24,9 +24,6 @@ disabled = false
 format = "[$symbol ]($style)"
 style = "bold blue"
 
-[os]
-disabled = false
-
 [os.symbols]
 Fedora = ""
 Arch = ""
