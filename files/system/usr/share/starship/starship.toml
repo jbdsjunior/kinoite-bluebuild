@@ -24,10 +24,12 @@ disabled = false
 format = "[$symbol ]($style)"
 style = "bold blue"
 
+[os]
+disabled = false
+
 [os.symbols]
-Fedora = "󰣛 "
-Kinoite = "󰣛 "
-Bluebuild = "󰣛 "
+Fedora = " "
+Linux = " "
 
 [username]
 show_always = false
