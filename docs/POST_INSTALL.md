@@ -236,3 +236,4 @@ Expected policy:
 * Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
 * Flatpak updates, rclone mounts, and `bootc` automatic staging wait for `network-online.target` and evaluate `ConditionACPower`.
 * Local Podman prune units do not require network access and run with idle I/O scheduling.
+---
