@@ -7,14 +7,11 @@ StartLimitIntervalSec=10min
 StartLimitBurst=20
 
 [Service]
-# CORREÇÃO: Type=notify garante que o sistema só considere o serviço "ativo"
-# quando o diretório estiver 100% montado e acessível.
 Type=notify
 TimeoutStartSec=30
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
-# Remoção do limite padrão de 40M para explorar largura de banda máxima, controlável via .env
 Environment=RCLONE_BWLIMIT=0
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
@@ -31,13 +28,13 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-max-size 20G \
   --vfs-cache-max-age 72h \
   --vfs-fast-fingerprint \
-  --vfs-read-chunk-size 64M \
+  --vfs-read-chunk-size 8M \
   --vfs-read-chunk-size-limit off \
-  --vfs-read-ahead 256M \
-  --vfs-write-back 10s \
+  --vfs-read-ahead 128M \
+  --vfs-write-back 5s \
   --dir-cache-time 72h \
   --poll-interval 1m \
-  --buffer-size 128M \
+  --buffer-size 64M \
   --transfers 8 \
   --checkers 16 \
   --tpslimit 12 \
@@ -57,10 +54,9 @@ ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
 RestartSec=30s
-TimeoutStopSec=30s
+TimeoutStopSec=15s
 
 LimitNOFILE=1048576
-# CORREÇÃO: Limite de memória aumentado para evitar OOM Kills durante pico de I/O.
 MemoryMax=4G
 CPUQuota=200%
 IOSchedulingClass=best-effort
