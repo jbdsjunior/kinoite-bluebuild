@@ -17,30 +17,30 @@ alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
 
-# Alias utilitário para recarregar o perfil rapidamente após edições
-alias reload-profile='source /etc/profile'
+# Alias utilitário para recarregar o perfil rapidamente (substitui sessão para evitar PATH duplo)
+alias reload-profile='exec $SHELL'
 
-# System update aliases
+# System update aliases (Corrigido para bootc)
 alias update='topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak'
 alias update-all='topgrade -cy --no-ask-retry --auto-retry 2'
-alias sysup='sudo rpm-ostree upgrade'
+alias sysup='sudo bootc update'
 
-# Bootc and rpm-ostree management
+# Bootc and rpm-ostree management (Adicionado sudo no bootc status)
 alias rollback='sudo bootc rollback'
 alias kargs='rpm-ostree kargs'
 alias kargs-edit='sudo rpm-ostree kargs --editor'
 alias config-diff='sudo ostree admin config-diff'
 alias status-ostree='rpm-ostree status'
-alias status-bootc='bootc status'
+alias status-bootc='sudo bootc status'
 
-# Service status shortcuts
+# Service status shortcuts (Corrigido para usar o seu novo timer do bootc)
 alias status-fw='sudo systemctl status firewalld'
 alias status-dns='sudo systemctl status systemd-resolved'
 alias status-kvm='sudo systemctl status libvirtd'
 alias status-podman='systemctl --user status podman-user-prune.timer'
 alias status-flatpak-system='systemctl status flatpak-system-update.timer'
 alias status-flatpak-user='systemctl --user status flatpak-user-update.timer'
-alias status-rpm-ostree='systemctl status rpm-ostreed-automatic.timer'
+alias status-bootc-update='systemctl status bootc-update.timer'
 
 # BTRFS NoCOW tmpfiles management
 alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'

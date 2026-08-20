@@ -5,37 +5,11 @@ on:
 concurrency:
   group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
   cancel-in-progress: true
+
 jobs:
-  security-scan:
-    name: Security scan (AMD)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Run Trivy scan (filesystem)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-      - name: Upload SARIF report
-        if: always()
-        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
-        with:
-          sarif_file: trivy-results.sarif
-
   build-amd:
     name: Build Custom AMD Image
-    needs: security-scan
+    # O job de build agora é o primeiro a rodar
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -49,7 +23,6 @@ jobs:
           persist-credentials: false
 
       - name: Build Custom AMD Image
-        # uses: blue-build/github-action@836161eb076426a451e6a0054f722b1153b8b3ad # v1.12.0
         uses: blue-build/github-action@main
         with:
           recipe: recipe-amd.yml
@@ -63,3 +36,32 @@ jobs:
           max_layers: 256
           chunkah: true
           maximize_build_space: true
+
+  security-scan:
+    name: Security scan (AMD)
+    needs: build-amd # Garante que o build finalize antes do scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      # O Trivy não precisa fazer checkout do código, ele vai puxar a imagem diretamente do registro do GitHub (ghcr.io)
+      - name: Run Trivy scan (Image)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          # Alterado de 'fs' para 'image'
+          scan-type: image
+          # O Trivy vai puxar a imagem recém-construída do seu repositório.
+          # Lembre-se de verificar se o nome bate com o configurado no seu recipe.yml
+          image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload SARIF report
+        if: always()
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+        with:
+          sarif_file: trivy-results.sarif

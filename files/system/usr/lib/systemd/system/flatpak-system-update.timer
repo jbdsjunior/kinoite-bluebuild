@@ -1,14 +1,16 @@
 [Unit]
 Description=Flatpak System Updates Timer
 Documentation=man:flatpak-update(1) man:systemd.timer(5)
-ConditionACPower=true
+# CORREÇÃO: ConditionACPower removido daqui para garantir que o timer inicie no boot.
 
 [Timer]
 Unit=flatpak-system-update.service
 OnBootSec=15m
-OnUnitActiveSec=1h
-RandomizedDelaySec=15m
-AccuracySec=1m
+# CORREÇÃO: Alterado de 1h para 24h para economizar recursos e banda.
+OnUnitActiveSec=24h
+# Adicionado um atraso maior para sincronizar melhor os downloads com servidores do Flathub
+RandomizedDelaySec=1h
+AccuracySec=5m
 Persistent=true
 
 [Install]
