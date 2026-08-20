@@ -7,8 +7,10 @@ StartLimitIntervalSec=10min
 StartLimitBurst=20
 
 [Service]
-Type=simple
-TimeoutStartSec=15
+# CORREÇÃO: Type=notify garante que o sistema só considere o serviço "ativo"
+# quando o diretório estiver 100% montado e acessível.
+Type=notify
+TimeoutStartSec=30
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
@@ -41,7 +43,6 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --tpslimit 12 \
   --tpslimit-burst 20 \
   --bwlimit ${RCLONE_BWLIMIT} \
-  --use-mmap \
   --timeout 2m \
   --contimeout 20s \
   --low-level-retries 10 \
@@ -59,7 +60,8 @@ RestartSec=30s
 TimeoutStopSec=30s
 
 LimitNOFILE=1048576
-MemoryMax=2G
+# CORREÇÃO: Limite de memória aumentado para evitar OOM Kills durante pico de I/O.
+MemoryMax=4G
 CPUQuota=200%
 IOSchedulingClass=best-effort
 IOSchedulingPriority=4

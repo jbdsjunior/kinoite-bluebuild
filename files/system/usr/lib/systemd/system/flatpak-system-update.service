@@ -3,19 +3,23 @@ Description=Apply Flatpak system updates
 Documentation=man:flatpak(1) man:flatpak-update(1)
 After=network-online.target
 Wants=network-online.target
+# Mantemos a condição de energia aqui, para que o timer dispare, mas a ação seja cancelada se estiver na bateria
 ConditionACPower=true
 
 [Service]
 Type=oneshot
+# Excelente checagem via dbus para evitar gastar dados móveis (Metered Connection)
 ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null); [[ "$m" =~ \ (2|4)$ ]]'
 
-ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
+# CORREÇÃO: Ordem invertida. Primeiro atualiza, depois limpa os restos.
 ExecStart=/usr/bin/flatpak --system update -y --noninteractive
+ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
 
 ProtectSystem=full
 ProtectHome=true
 PrivateTmp=true
 
+# Mantido: Prioridade mínima para não travar o PC
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
