@@ -28,8 +28,10 @@ style = "bold blue"
 disabled = false
 
 [os.symbols]
-Fedora = " "
-Linux = " "
+Fedora = ""
+Arch = ""
+Debian = ""
+Ubuntu = ""
 
 [username]
 show_always = false
