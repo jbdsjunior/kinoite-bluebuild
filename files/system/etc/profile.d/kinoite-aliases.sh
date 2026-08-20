@@ -1,5 +1,4 @@
 #!/bin/sh
-# Caminho sugerido: files/system/etc/profile.d/kinoite-aliases.sh
 
 # Ignora se não for um shell interativo
 case "$-" in
