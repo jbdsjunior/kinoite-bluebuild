@@ -6,8 +6,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - liberation-fonts 
-        - fontawesome-fonts
+        - liberation-fonts
         - jetbrains-mono-fonts
 
   - type: dnf
@@ -20,6 +19,6 @@ modules:
       allow-erasing: true
       packages:
         - nerdfontssymbolsonly-nerd-fonts
-        - firacode-nerd-fonts
-        - hack-nerd-fonts
+        # - firacode-nerd-fonts
+        # - hack-nerd-fonts
         - ms-core-fonts
