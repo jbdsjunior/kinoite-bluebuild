@@ -11,14 +11,14 @@ modules:
 
   - type: dnf
     repos:
-      # cleanup: true
+      cleanup: true
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # - nerdfontssymbolsonly-nerd-fonts
         - firacode-nerd-fonts
+        # - nerdfontssymbolsonly-nerd-fonts
         # - hack-nerd-fonts
         - ms-core-fonts
