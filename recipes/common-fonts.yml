@@ -8,8 +8,8 @@ modules:
       packages:
         - liberation-fonts
         - jetbrains-mono-fonts
+        - fira-code-fonts
         - rsms-inter-vf-fonts
-        # - rsms-inter-fonts
 
   - type: dnf
     repos:
@@ -20,7 +20,5 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - firacode-nerd-fonts
         - nerdfontssymbolsonly-nerd-fonts
-        - hack-nerd-fonts
         - ms-core-fonts
