@@ -22,4 +22,5 @@ modules:
       packages:
         - firacode-nerd-fonts
         - nerdfontssymbolsonly-nerd-fonts
+        - hack-nerd-fonts
         - ms-core-fonts
