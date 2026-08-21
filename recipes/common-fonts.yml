@@ -7,8 +7,6 @@ modules:
       allow-erasing: true
       packages:
         - liberation-fonts
-        - jetbrains-mono-fonts
-        - fira-code-fonts
         - rsms-inter-vf-fonts
 
   - type: dnf
@@ -20,5 +18,6 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        - nerdfontssymbolsonly-nerd-fonts
+        - jetbrainsmono-nerd-fonts
+        - firacode-nerd-fonts
         - ms-core-fonts
