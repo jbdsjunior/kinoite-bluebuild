@@ -21,6 +21,7 @@ fi
 
 # =====================================================================
 # CONFIGURAÇÃO DO STARSHIP (PROMPT)
+# Requer fonte com ícones no terminal; a imagem prioriza FiraCode Nerd Font via fontconfig.
 # =====================================================================
 if command -v starship >/dev/null 2>&1; then
     # Define o tema global do sistema APENAS se o usuário não tiver o seu próprio

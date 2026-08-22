@@ -39,6 +39,7 @@ modules:
       packages:
         - fastfetch
         - fuse
+        - kernel-tools
 
   - type: dnf
     repos:

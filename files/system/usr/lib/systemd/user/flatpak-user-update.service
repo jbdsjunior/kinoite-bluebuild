@@ -9,7 +9,7 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 # CORREÇÃO: Substituído o extglob por uma expressão regular segura (a mesma usada no seu outro serviço)
-ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null); [[ "$m" =~ \ (2|4)$ ]]'
+ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true); [[ "$m" != *" 2" && "$m" != *" 4" ]]'
 
 # CORREÇÃO: Removido o sh -c. O systemd roda comandos na ordem listada.
 # Ordem invertida: Atualiza primeiro, remove o lixo órfão depois.
