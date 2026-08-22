@@ -37,10 +37,10 @@ alias status-bootc='sudo bootc status'
 alias status-fw='sudo systemctl status firewalld'
 alias status-dns='sudo systemctl status systemd-resolved'
 alias status-kvm='sudo systemctl status libvirtd'
-alias status-podman='systemctl --user status podman-user-prune.timer'
+alias status-podman='systemctl status podman-auto-update.timer'
 alias status-flatpak-system='systemctl status flatpak-system-update.timer'
 alias status-flatpak-user='systemctl --user status flatpak-user-update.timer'
-alias status-bootc-update='systemctl status bootc-update.timer'
+alias status-bootc-update='systemctl status bootc-fetch-apply-updates.timer'
 
 # BTRFS NoCOW tmpfiles management
 alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'
