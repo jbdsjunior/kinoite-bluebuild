@@ -43,13 +43,29 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `status-fw` | `sudo systemctl status firewalld` |
 | `status-dns` | `sudo systemctl status systemd-resolved` |
 | `status-kvm` | `sudo systemctl status libvirtd` |
-| `status-bootc-update` | `systemctl status bootc-update.timer` |
+| `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer` |
 | `tmpfiles-system` | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf` |
 | `tmpfiles-user` | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
 
 ---
 
-## 3) Essential Services
+## 3) Starship and terminal font
+
+The image installs `firacode-nerd-fonts` from Terra and ships a fontconfig preference for `FiraCode Nerd Font` / `FiraCode Nerd Font Mono` as the default monospace Nerd Font. This is required for the Starship prompt icons in `/usr/share/starship/starship.toml` to render correctly.
+
+If a terminal profile already pins another font, set it manually to `FiraCode Nerd Font` or `FiraCode Nerd Font Mono` after first login.
+
+```bash
+fc-match monospace
+fc-match "FiraCode Nerd Font"
+
+```
+
+Expected: both commands resolve to the installed FiraCode Nerd Font family, unless your user profile overrides fontconfig or the terminal pins another font.
+
+---
+
+## 4) Essential Services
 
 ```bash
 sudo systemctl status firewalld
@@ -66,13 +82,13 @@ sudo systemctl status libvirtd
 
 ---
 
-## 4) Virtualization (KVM/libvirt)
+## 5) Virtualization (KVM/libvirt)
 
 Permissions are managed declaratively via Polkit rules included in the image. Only users in the `wheel` group can manage libvirt without additional authentication. Add non-administrator users deliberately instead of granting access to every active local session.
 
 ---
 
-## 5) BTRFS NoCOW for I/O-heavy workloads
+## 6) BTRFS NoCOW for I/O-heavy workloads
 
 Apply system tmpfiles:
 
@@ -90,7 +106,7 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 
 ---
 
-## 6) OCI-native operation and kernel argument changes
+## 7) OCI-native operation and kernel argument changes
 
 List current kernel arguments:
 
@@ -117,7 +133,7 @@ sudo ostree admin config-diff
 
 ---
 
-## 7) Disaster Recovery / Rollback
+## 8) Disaster Recovery / Rollback
 
 ### When to use
 
@@ -141,7 +157,7 @@ sudo bootc rollback
 
 ```bash
 sudo systemctl status firewalld
-systemctl status bootc-update.timer
+systemctl status bootc-fetch-apply-updates.timer
 
 ```
 
@@ -154,7 +170,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 8) Rclone cloud mounts for KDE Plasma (optional)
+## 9) Rclone cloud mounts for KDE Plasma (optional)
 
 The image ships one dynamic systemd user template for rclone FUSE mounts. Each `rclone@<remote>.service` instance starts with the KDE Plasma graphical session, uses `Type=notify` for perfect initialization timing, and writes logs to the user journal.
 
@@ -187,47 +203,39 @@ journalctl --user -u rclone@GoogleDrive.service -f
 
 ---
 
-## 9) Post-install health check
+## 10) Post-install health check
 
 This validates staged `bootc` policy, maintenance timers, and rootless Podman readiness after the first reboot.
 
 ```bash
-systemctl status bootc-update.timer flatpak-system-update.timer podman-system-prune.timer
-systemctl --user status flatpak-user-update.timer podman-user-prune.timer
+systemctl status bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer
+systemctl --user status flatpak-user-update.timer
 podman info --format '{{.Host.Security.Rootless}}'
 
 ```
 
 Expected timer policy:
 
-* `bootc-update.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
+* `bootc-fetch-apply-updates.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
 * `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
-* `podman-system-prune.timer` and `podman-user-prune.timer`: active with boot-triggered daily cleanup.
+* `podman-auto-update.timer`: active with scheduled container auto-updates.
 * `podman info` returns `true` when run as the desktop user.
 
 ---
 
-## 10) Podman automatic cleanup timers
+## 11) Podman automatic update timer
 
-Validate root-scope timer:
+Validate the system timer:
 
 ```bash
-sudo systemctl status podman-system-prune.timer
+systemctl status podman-auto-update.timer
 
 ```
 
-Validate rootless timer:
+Run a one-shot container auto-update manually when needed:
 
 ```bash
-systemctl --user status podman-user-prune.timer
-
-```
-
-Run one-shot cleanup manually when needed:
-
-```bash
-sudo systemctl start podman-system-prune.service
-systemctl --user start podman-user-prune.service
+sudo systemctl start podman-auto-update.service
 
 ```
 
@@ -235,5 +243,5 @@ Expected policy:
 
 * Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
 * Flatpak updates, rclone mounts, and `bootc` automatic staging wait for `network-online.target` and evaluate `ConditionACPower`.
-* Local Podman prune units do not require network access and run with idle I/O scheduling.
+* Podman auto-update uses the packaged systemd service and requires containers to opt in with the appropriate auto-update labels.
 ---
