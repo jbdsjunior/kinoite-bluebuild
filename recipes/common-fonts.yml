@@ -18,7 +18,7 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # - nerdfontssymbolsonly-nerd-fonts
+        - nerdfontssymbolsonly-nerd-fonts
         - firacode-nerd-fonts
         - jetbrainsmono-nerd-fonts
         - monaspace-nerd-fonts
