@@ -66,7 +66,7 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:l
 
 ### 3) Post-installation
 
-Follow: [`docs/POST_INSTALL.md`](POST_INSTALL.md).
+Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
@@ -106,8 +106,8 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 | Document | Purpose |
 | --- | --- |
-| [`docs/POST_INSTALL.md`](POST_INSTALL.md) | Post-install validation, operations, and maintenance |
-| [`docs/HARDWARE_BASELINE.md`](HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Post-install validation, operations, and maintenance |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
 
 ## License
 
