@@ -22,7 +22,7 @@ modules:
 
         # Container automation (Podman)
         - podman-restart.service
-        - podman-auto-update.service
+        - podman-auto-update.timer
 
         # CPU performance tuning
         - cpupower.service

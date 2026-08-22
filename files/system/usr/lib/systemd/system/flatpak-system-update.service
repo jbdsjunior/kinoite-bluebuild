@@ -9,7 +9,7 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 # Excelente checagem via dbus para evitar gastar dados móveis (Metered Connection)
-ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null); [[ "$m" =~ \ (2|4)$ ]]'
+ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true); [[ "$m" != *" 2" && "$m" != *" 4" ]]'
 
 # CORREÇÃO: Ordem invertida. Primeiro atualiza, depois limpa os restos.
 ExecStart=/usr/bin/flatpak --system update -y --noninteractive
