@@ -6,10 +6,8 @@ Documentation=man:flatpak-update(1) man:systemd.timer(5)
 [Timer]
 Unit=flatpak-system-update.service
 OnBootSec=15m
-# CORREÇÃO: Alterado de 1h para 24h para economizar recursos e banda.
-OnUnitActiveSec=24h
-# Adicionado um atraso maior para sincronizar melhor os downloads com servidores do Flathub
-RandomizedDelaySec=1h
+OnUnitActiveSec=1h
+RandomizedDelaySec=15m
 AccuracySec=5m
 Persistent=true
 
