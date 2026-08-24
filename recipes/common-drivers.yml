@@ -45,14 +45,16 @@ modules:
         - twolame # Codificador MPEG-2
         - vorbis-tools # Ferramentas Ogg Vorbis
 
-
-  # - type: dnf
-  #   install:
-  #     allow-erasing: true
-  #     skip-unavailable: true
-  #     packages:
-  #       - "@multimedia"
-  #       - "@sound-and-video"
+  - type: dnf
+    repos:
+      nonfree: rpmfusion
+      cleanup: true
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        - "@multimedia"
+        - "@sound-and-video"
 
   # - type: dnf
   #   install:
