@@ -2,6 +2,9 @@
 
 modules:
   - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
     install:
       allow-erasing: true
       skip-unavailable: true
@@ -10,6 +13,9 @@ modules:
         - mesa-vulkan-drivers-freeworld  # bling rpmfusion
 
   - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
     install:
       allow-erasing: true
       skip-unavailable: true
@@ -21,8 +27,8 @@ modules:
         - libva-utils
 
         # - gstreamer1-plugin-libav # is already installed
-        - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
