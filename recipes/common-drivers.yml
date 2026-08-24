@@ -33,11 +33,14 @@ modules:
         - gstreamer1-vaapi
 
   - type: dnf
+    repos:
+      nonfree: rpmfusion
+      cleanup: true
     install:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - pipewire-codec-aptx # Codec aptX para áudio Bluetooth de alta qualidade
+        - pipewire-codec-aptx # rpmfusion # Codec aptX para áudio Bluetooth de alta qualidade
         # - lame                         # Codificador MP3 # is already installed
         - twolame # Codificador MPEG-2
         - vorbis-tools # Ferramentas Ogg Vorbis
