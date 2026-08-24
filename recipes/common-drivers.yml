@@ -2,14 +2,6 @@
 
 modules:
   - type: dnf
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - "@multimedia"
-        - "@sound-and-video"
-
-  - type: dnf
     repos:
       nonfree: rpmfusion
       cleanup: true
@@ -28,24 +20,42 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        - ffmpeg
-        - ffmpeg-libs
+        - ffmpeg # rpmfusion
+        - ffmpeg-libs # rpmfusion
 
-        - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-ugly
-        - gstreamer1-vaapi
-
-        - pipewire-codec-aptx
-
-        # - libva #
+        # - libva # is already installed
         - libva-utils
 
+        # - gstreamer1-plugin-libav # is already installed
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad-free-extras # rpmfusion
+        - gstreamer1-plugins-ugly # rpmfusion
+        - gstreamer1-vaapi
+
+  - type: dnf
+    repos:
+      nonfree: rpmfusion
+      cleanup: true
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        - pipewire-codec-aptx # rpmfusion # Codec aptX para áudio Bluetooth de alta qualidade
+        # - lame                         # Codificador MP3 # is already installed
         - twolame # Codificador MPEG-2
         - vorbis-tools # Ferramentas Ogg Vorbis
 
+  - type: dnf
+    repos:
+      nonfree: rpmfusion
+      cleanup: true
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        - "@multimedia"
+        - "@sound-and-video"
 
-  # Drivers de Computação ROCm (Padrão - Comentado)
   # - type: dnf
   #   install:
   #     allow-erasing: true
