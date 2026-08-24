@@ -25,6 +25,9 @@ modules:
 
         # - libva # is already installed
         - libva-utils
+        - libavcodec-freeworld
+
+        - libheif-freeworld
 
         # - gstreamer1-plugin-libav # is already installed
         - gstreamer1-plugins-bad-freeworld
