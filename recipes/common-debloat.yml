@@ -5,30 +5,30 @@ modules:
     remove:
       auto-remove: true
       packages:
-      - firefox
-      - plasma-discover-rpm-ostree
-      - fedora-flathub-remote
-      - plasma-welcome-fedora
-      - fedora-third-party
-      - fedora-workstation-repositories
+        - firefox
+        - plasma-discover-rpm-ostree
+        - fedora-flathub-remote
+        - plasma-welcome-fedora
+        - fedora-third-party
+        - fedora-workstation-repositories
 
-      # --- CLI Tools ---
-      - vim-common
-      - vim-data
-      - vim-enhanced
-      - vim-filesystem
-      - vim-minimal
+        # --- CLI Tools ---
+        - vim-data
+        - vim-minimal
+        # - vim-common
+        # - vim-enhanced
+        # - vim-filesystem
 
-      # --- Virtualization Guest Agents (Bare Metal optimization) ---
-      - open-vm-tools
-      - open-vm-tools-desktop
-      - qemu-guest-agent
-      - virtualbox-guest-additions
-      - hyperv-daemons
-      - hyperv-daemons-license
-      - hypervfcopyd
-      - hypervkvpd
-      - hypervvssd
+        # --- Virtualization Guest Agents (Bare Metal optimization) ---
+        - open-vm-tools
+        - open-vm-tools-desktop
+        - qemu-guest-agent
+        - virtualbox-guest-additions
+        - hyperv-daemons
+        - hyperv-daemons-license
+        - hypervfcopyd
+        - hypervkvpd
+        - hypervvssd
 
       # --- Unused Hardware Drivers & Firmware (Non-AMD/Nvidia) ---
 

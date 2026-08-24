@@ -10,31 +10,24 @@ platforms:
   - linux/amd64
 
 modules:
-  # FASE 1: Preparação e Configuração Base
   - type: files
     files:
       - source: system
         destination: /
-  # - from-file: common-repos.yml
 
-  # FASE 2: Limpeza (Debloat)
   - from-file: common-debloat.yml
 
-  # FASE 3: Instalação de Pacotes Nativos (RPM)
   - from-file: common-core.yml
   - from-file: common-drivers.yml
   - from-file: common-kvm.yml
   - from-file: common-tools.yml
   - from-file: common-fonts.yml
 
-  # FASE 4: Configuração de Serviços e Ecossistemas Secundários
   - from-file: common-systemd.yml
   - from-file: common-brew.yml
   # - from-file: common-flatpaks.yml
 
-  # FASE 5: Ajustes de Kernel e Boot
   - from-file: common-kargs.yml
   - type: initramfs
 
-  # FASE 6: Assinatura da Imagem
   - type: signing
