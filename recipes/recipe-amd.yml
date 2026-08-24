@@ -15,7 +15,7 @@ modules:
     files:
       - source: system
         destination: /
-  - from-file: common-repos.yml
+  # - from-file: common-repos.yml
 
   # FASE 2: Limpeza (Debloat)
   - from-file: common-debloat.yml
