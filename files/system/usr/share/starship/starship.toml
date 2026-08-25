@@ -1,11 +1,11 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 add_newline = true
-command_timeout = 1000
+command_timeout = 500
 palette = "kinoite"
 
 format = """
-$os$username$hostname$directory$git_branch$git_status$fill$cmd_duration
+$os$username$hostname$container$directory$git_branch$git_status$fill$cmd_duration
 $character
 """
 
@@ -21,14 +21,11 @@ magenta = "#bb9af7"
 
 [os]
 disabled = false
-format = "[$symbol ]($style)"
 style = "bold blue"
+format = "[$symbol ]($style)"
 
 [os.symbols]
 Fedora = ""
-Arch = ""
-Debian = ""
-Ubuntu = ""
 
 [username]
 show_always = false
@@ -40,6 +37,10 @@ format = "[$user ]($style)"
 ssh_only = true
 style = "bold yellow"
 format = "[@$hostname ]($style)"
+
+[container]
+format = '[$symbol$name ](bold red)'
+symbol = "⬡ "
 
 [directory]
 style = "bold fg"
@@ -69,21 +70,3 @@ format = "[${duration}]($style)"
 success_symbol = "[➜](bold green)"
 error_symbol = "[✗](bold red)"
 vimcmd_symbol = "[❮](bold blue)"
-
-[package]
-disabled = true
-
-[battery]
-disabled = true
-
-[kubernetes]
-disabled = true
-
-[docker_context]
-disabled = false
-format = "via [🐳 $context]($style) "
-style = "blue"
-
-[container]
-disabled = false
-format = '⬡ [$name](bold red)'
