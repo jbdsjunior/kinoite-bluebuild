@@ -33,7 +33,7 @@ jobs:
           verify_install: true
           use_unstable_cli: false
           skip_checkout: true
-          max_layers: 260
+          max_layers: 512
           chunkah: true
           maximize_build_space: true
 
