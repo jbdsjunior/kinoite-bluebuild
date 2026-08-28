@@ -21,9 +21,9 @@ modules:
         - virtlockd.service           # Gerenciamento de locks de VMs
         - libvirtd-admin.socket       # Socket para administração do libvirt
 
-  - type: kargs
-    kargs:
-      - kvm_amd.nested=1
-      # - iommu=pt
-      # - amd_iommu=on
-      # - kvm_amd.nested=1
+  # - type: kargs
+  #   kargs:
+  #     - kvm_amd.nested=1
+  #     # - iommu=pt
+  #     # - amd_iommu=on
+  #     # - kvm_amd.nested=1
