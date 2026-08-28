@@ -3,6 +3,6 @@
 modules:
   - type: kargs
     kargs:
-      - amd_pstate=active
+      # - amd_pstate=active
       - bluetooth.disable_ertm=1
       - btusb.enable_autosuspend=n
