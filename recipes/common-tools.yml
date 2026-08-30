@@ -4,9 +4,11 @@ modules:
   - type: dnf
     repos:
       cleanup: true
-      copr:
-        - lilay/topgrade
-        - atim/starship
+      files:
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+      # copr:
+      #   - lilay/topgrade
+      #   - atim/starship
     install:
       skip-unavailable: true
       allow-erasing: true
