@@ -10,6 +10,11 @@ platforms:
   - linux/amd64
 
 modules:
+  - type: files
+    files:
+      - source: system
+        destination: /
+
   - from-file: common-debloat.yml
 
   - from-file: common-core.yml
@@ -21,12 +26,6 @@ modules:
   - from-file: common-systemd.yml
   - from-file: common-brew.yml
   # - from-file: common-flatpaks.yml
-
-  - type: files
-    files:
-      - source: system
-        destination: /
-
   # - from-file: common-kargs.yml
   - type: initramfs
 
