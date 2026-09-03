@@ -91,23 +91,22 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Repository Structure
 
-| Path | Purpose |
-| --- | --- |
-| `recipes/recipe-amd.yml` | Main AMD recipe variant |
-| `recipes/common-*.yml` | Shared modules (packages, drivers, services, and more) |
-| `files/system/` | Immutable host overlays (policies, units, defaults) |
-| `files/rpm-ostree/` | Optional third-party RPM repo definitions |
-| `.github/workflows/` | CI/CD pipelines and security gates |
-| `cosign.pub` | Public key for signature verification |
+| Path                     | Purpose                                                |
+| ------------------------ | ------------------------------------------------------ |
+| `recipes/recipe-amd.yml` | Main AMD recipe variant                                |
+| `recipes/common-*.yml`   | Shared modules (packages, drivers, services, and more) |
+| `files/system/`          | Immutable host overlays (policies, units, defaults)    |
+| `.github/workflows/`     | CI/CD pipelines and security gates                     |
+| `cosign.pub`             | Public key for signature verification                  |
 
 ---
 
 ## Documentation
 
-| Document | Purpose |
-| --- | --- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Post-install validation, operations, and maintenance |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits |
+| Document                                                 | Purpose                                              |
+| -------------------------------------------------------- | ---------------------------------------------------- |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits             |
 
 ## License
 

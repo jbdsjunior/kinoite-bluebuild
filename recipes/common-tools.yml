@@ -21,26 +21,18 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # Version control & Sync
         - git
         - rclone
 
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
+        # Containers & Virtualization CLI
         - distrobox
         - docker-compose
         - podman-docker
         - podman-machine
 
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
+        # System Information & Hardware diagnostics
         - fastfetch
-        - fuse
         - kernel-tools
 
   - type: dnf

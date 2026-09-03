@@ -30,22 +30,22 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 ## 2) Available Global Aliases
 
-| Alias | Command/Action |
-| --- | --- |
-| `update` | Run `topgrade -cy --only system flatpak` |
-| `sysup` | `sudo bootc update` |
-| `rollback` | `sudo bootc rollback` |
-| `status-bootc` | `sudo bootc status` |
-| `reload-profile` | `exec $SHELL` |
-| `kargs` | `rpm-ostree kargs` |
-| `kargs-edit` | `sudo rpm-ostree kargs --editor` |
-| `config-diff` | `sudo ostree admin config-diff` |
-| `status-fw` | `sudo systemctl status firewalld` |
-| `status-dns` | `sudo systemctl status systemd-resolved` |
-| `status-kvm` | `sudo systemctl status libvirtd` |
-| `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer` |
-| `tmpfiles-system` | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf` |
-| `tmpfiles-user` | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
+| Alias                 | Command/Action                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `update`              | Run `topgrade -cy --only system flatpak`                                             |
+| `sysup`               | `sudo bootc update`                                                                  |
+| `rollback`            | `sudo bootc rollback`                                                                |
+| `status-bootc`        | `sudo bootc status`                                                                  |
+| `reload-profile`      | `exec $SHELL`                                                                        |
+| `kargs`               | `rpm-ostree kargs`                                                                   |
+| `kargs-edit`          | `sudo rpm-ostree kargs --editor`                                                     |
+| `config-diff`         | `sudo ostree admin config-diff`                                                      |
+| `status-fw`           | `sudo systemctl status firewalld`                                                    |
+| `status-dns`          | `sudo systemctl status systemd-resolved`                                             |
+| `status-kvm`          | `sudo systemctl status libvirtd`                                                     |
+| `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer`                                   |
+| `tmpfiles-system`     | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
+| `tmpfiles-user`       | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
 
 ---
 
@@ -137,10 +137,10 @@ sudo ostree admin config-diff
 
 ### When to use
 
-* Boot failure after update
-* Kernel panic
-* Broken graphical session
-* Critical driver regression
+- Boot failure after update
+- Kernel panic
+- Broken graphical session
+- Critical driver regression
 
 ### Procedure
 
@@ -174,11 +174,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 The image ships one dynamic systemd user template for rclone FUSE mounts. Each `rclone@<remote>.service` instance starts with the KDE Plasma graphical session, uses `Type=notify` for perfect initialization timing, and writes logs to the user journal.
 
-| Service instance | Expected rclone remote | Mount point | Optional override file |
-| --- | --- | --- | --- |
-| `rclone@GoogleDrive.service` | `GoogleDrive:` | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
-| `rclone@OneDrive.service` | `OneDrive:` | `~/Cloud/OneDrive` | `~/.config/rclone/env/OneDrive.env` |
-| `rclone@<remote>.service` | `<remote>:` | `~/Cloud/<remote>` | `~/.config/rclone/env/<remote>.env` |
+| Service instance             | Expected rclone remote | Mount point           | Optional override file                 |
+| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- |
+| `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
+| `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    |
+| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    |
 
 Configure the cloud remotes first. The instance name maps directly to the rclone remote name. To mount a differently named remote or adjust limits, set `RCLONE_REMOTE=<remote>:` in the matching environment file.
 
@@ -216,10 +216,10 @@ podman info --format '{{.Host.Security.Rootless}}'
 
 Expected timer policy:
 
-* `bootc-fetch-apply-updates.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
-* `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
-* `podman-auto-update.timer`: active with scheduled container auto-updates.
-* `podman info` returns `true` when run as the desktop user.
+- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
+- `podman-auto-update.timer`: active with scheduled container auto-updates.
+- `podman info` returns `true` when run as the desktop user.
 
 ---
 
@@ -241,7 +241,8 @@ sudo systemctl start podman-auto-update.service
 
 Expected policy:
 
-* Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
-* Flatpak updates, rclone mounts, and `bootc` automatic staging wait for `network-online.target` and evaluate `ConditionACPower`.
-* Podman auto-update uses the packaged systemd service and requires containers to opt in with the appropriate auto-update labels.
+- Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
+- Flatpak updates, rclone mounts, and `bootc` automatic staging wait for `network-online.target` and evaluate `ConditionACPower`.
+- Podman auto-update uses the packaged systemd service and requires containers to opt in with the appropriate auto-update labels.
+
 ---

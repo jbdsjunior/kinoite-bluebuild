@@ -23,10 +23,8 @@ modules:
         # Container automation (Podman)
         - podman-restart.service
         - podman-auto-update.timer
-
         # CPU performance tuning
-        - cpupower.service
-
+        # - cpupower.service
         # Network and DNS
         - systemd-resolved.service
         - firewalld.service
