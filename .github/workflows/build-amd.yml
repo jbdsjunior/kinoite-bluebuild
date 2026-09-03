@@ -1,19 +1,19 @@
 name: build-amd
 on:
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/workflows/cleanup.yml'
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/workflows/cleanup.yml'
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - '**.md'
+  #     - 'docs/**'
+  #     - '.github/workflows/cleanup.yml'
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - '**.md'
+  #     - 'docs/**'
+  #     - '.github/workflows/cleanup.yml'
   workflow_dispatch:
 
 concurrency:
@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Custom AMD Image
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@main
         with:
           recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
