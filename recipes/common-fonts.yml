@@ -20,7 +20,7 @@ modules:
       allow-erasing: true
       packages:
         - nerdfontssymbolsonly-nerd-fonts
+        - jetbrainsmono-nerd-fonts
         # - firacode-nerd-fonts
-        # - jetbrainsmono-nerd-fonts
         # - monaspace-nerd-fonts
         - ms-core-fonts

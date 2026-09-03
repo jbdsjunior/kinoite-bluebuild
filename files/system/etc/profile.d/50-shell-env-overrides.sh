@@ -4,6 +4,7 @@ export EDITOR="${EDITOR:-nano}"
 export VISUAL="${VISUAL:-nano}"
 export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
 export LESS="-R"
+export COLORTERM="${COLORTERM:-truecolor}"
 
 if [ -n "${HSA_OVERRIDE_GFX_VERSION:-}" ]; then
     export HSA_OVERRIDE_GFX_VERSION

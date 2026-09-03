@@ -1,5 +1,19 @@
 name: build-amd
 on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/cleanup.yml'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/cleanup.yml'
   workflow_dispatch:
 
 concurrency:
@@ -9,7 +23,6 @@ concurrency:
 jobs:
   build-amd:
     name: Build Custom AMD Image
-    # O job de build agora é o primeiro a rodar
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -23,7 +36,7 @@ jobs:
           persist-credentials: false
 
       - name: Build Custom AMD Image
-        uses: blue-build/github-action@main
+        uses: blue-build/github-action@v1
         with:
           recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -39,21 +52,22 @@ jobs:
 
   security-scan:
     name: Security scan (AMD)
-    needs: build-amd # Garante que o build finalize antes do scan
+    needs: build-amd
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
     steps:
-      # O Trivy não precisa fazer checkout do código, ele vai puxar a imagem diretamente do registro do GitHub (ghcr.io)
       - name: Run Trivy scan (Image)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        env:
+          TRIVY_AUTH_URL: ghcr.io
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Alterado de 'fs' para 'image'
           scan-type: image
-          # O Trivy vai puxar a imagem recém-construída do seu repositório.
-          # Lembre-se de verificar se o nome bate com o configurado no seu recipe.yml
           image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
           format: sarif
           output: trivy-results.sarif

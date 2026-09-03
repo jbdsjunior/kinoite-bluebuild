@@ -9,56 +9,37 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
+        # Hardware Acceleration & Mesa Freeworld (AMD GPU)
         - mesa-va-drivers-freeworld
         - mesa-vulkan-drivers-freeworld
 
-  - type: dnf
-    repos:
-      nonfree: rpmfusion
-      cleanup: true
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - ffmpeg # rpmfusion
-        - ffmpeg-libs # rpmfusion
-
-        # - libva # is already installed
+        # Codecs de Vídeo e FFmpeg (RPM Fusion)
+        - ffmpeg
+        - ffmpeg-libs
         - libva-utils
         - libavcodec-freeworld
-
         - libheif-freeworld
 
-        # - gstreamer1-plugin-libav # is already installed
+        # GStreamer Plugins Freeworld
         - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-bad-free-extras # rpmfusion
-        - gstreamer1-plugins-ugly # rpmfusion
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
-  - type: dnf
-    repos:
-      nonfree: rpmfusion
-      cleanup: true
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - pipewire-codec-aptx # rpmfusion # Codec aptX para áudio Bluetooth de alta qualidade
-        # - lame                         # Codificador MP3 # is already installed
-        - twolame # Codificador MPEG-2
-        - vorbis-tools # Ferramentas Ogg Vorbis
-
-  - type: dnf
-    repos:
-      nonfree: rpmfusion
-      cleanup: true
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - "@multimedia"
-        - "@sound-and-video"
-
+        # Codecs de Áudio (Bluetooth aptX e codificadores)
+        - pipewire-codec-aptx
+        - twolame
+        - vorbis-tools
+  # - type: dnf
+  #   repos:
+  #     nonfree: rpmfusion
+  #     cleanup: true
+  #   install:
+  #     allow-erasing: true
+  #     skip-unavailable: true
+  #     packages:
+  #       - "@multimedia"
+  #       - "@sound-and-video"
   # - type: dnf
   #   install:
   #     allow-erasing: true

@@ -6,10 +6,17 @@ case "$-" in
       *) return 0 2>/dev/null || exit 0 ;;
 esac
 
-# Aliases de navegação e listagem (cores padrão ativadas)
-alias ls='ls --color=auto'
-alias ll='ls -l --color=auto'
-alias la='ls -la --color=auto'
+# Aliases de navegação e listagem com suporte a ícones Nerd Fonts via eza
+if command -v eza >/dev/null 2>&1; then
+    alias ls='eza --icons=auto --group-directories-first'
+    alias ll='eza -lh --icons=auto --group-directories-first --git'
+    alias la='eza -lha --icons=auto --group-directories-first --git'
+    alias tree='eza --tree --icons=auto'
+else
+    alias ls='ls --color=auto'
+    alias ll='ls -l --color=auto'
+    alias la='ls -la --color=auto'
+fi
 alias grep='grep --color=auto'
 
 # Proteção contra sobrescrita e remoção acidental de arquivos importantes
