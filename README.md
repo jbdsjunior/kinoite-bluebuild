@@ -110,4 +110,4 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## License
 
-This project is licensed under [`LICENSE`](https://www.google.com/search?q=LICENSE).
+This project is licensed under [Apache License 2.0](LICENSE).

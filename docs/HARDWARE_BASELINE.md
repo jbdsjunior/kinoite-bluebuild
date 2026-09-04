@@ -10,7 +10,7 @@ This project is optimized for a high-capacity workstation profile focused on KDE
 | **Primary GPU (display/Wayland)** | AMD RX 6600 XT |
 | **RAM** | 64 GB |
 | **Storage** | 1 TB NVMe |
-| **Base OS** | Fedora Kinoite |
+| **Base OS** | Fedora Kinoite 44 |
 
 ---
 

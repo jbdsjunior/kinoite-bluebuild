@@ -8,4 +8,4 @@ modules:
   - type: soar
     additional-repos: true
     auto-upgrade: true
-    upgrade-interval: "1h"
+    upgrade-interval: "45m"
