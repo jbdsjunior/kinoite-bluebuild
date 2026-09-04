@@ -35,13 +35,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Normalize repository owner
+        id: repo
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
       - name: Build Custom AMD Image
-        uses: blue-build/github-action@main
+        uses: blue-build/github-action@v1
         with:
           recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
+          registry_namespace: ${{ steps.repo.outputs.owner }}
           pr_event_number: ${{ github.event.number }}
+          use_cache: true
           retry_push_count: 3
           verify_install: true
           use_unstable_cli: false
@@ -58,24 +64,30 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      packages: read
       security-events: write
     steps:
+      - name: Normalize repository owner
+        id: repo
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
       - name: Run Trivy scan (Image)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         env:
           TRIVY_AUTH_URL: ghcr.io
           TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          TRIVY_PASSWORD: ${{ github.token }}
         with:
           scan-type: image
-          image-ref: ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest
+          image-ref: ghcr.io/${{ steps.repo.outputs.owner }}/kinoite-amd:latest
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
 
+
       - name: Upload SARIF report
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           sarif_file: trivy-results.sarif

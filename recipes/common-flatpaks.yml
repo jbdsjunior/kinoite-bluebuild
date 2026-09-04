@@ -61,5 +61,4 @@ modules:
           # - com.stremio.Stremio
           # - dev.fredol.open-tv
 
-          
-      # - scope: user # Also add Flathub user repo, but no user packages
+      - scope: user # Initialize Flathub repo for user-level flatpaks

@@ -25,15 +25,29 @@ modules:
         - git
         - rclone
 
+        # Modern CLI & Terminal Workflow
+        - eza
+        - bat
+        - btop
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+
         # Containers & Virtualization CLI
         - distrobox
         - docker-compose
         - podman-docker
         - podman-machine
 
-        # System Information & Hardware diagnostics
+        # System Information & Hardware Diagnostics
         - fastfetch
         - kernel-tools
+        - mesa-libOpenCL
+        - clinfo
+        - vulkan-tools
+        - nvtop
+        - radeontop
 
   - type: dnf
     repos:

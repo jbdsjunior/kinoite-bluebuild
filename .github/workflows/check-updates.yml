@@ -1,7 +1,7 @@
 name: check-updates
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -30,8 +30,10 @@ jobs:
       - name: Install dependencies
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends skopeo
+          if ! command -v skopeo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends skopeo
+          fi
 
       - name: Ensure gh auth
         run: gh auth status
@@ -43,8 +45,8 @@ jobs:
         run: |
           set -euo pipefail
           RECIPE_FILE="recipes/recipe-${{ matrix.flavor }}.yml"
-          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE")
-          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE")
+          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
+          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
           FULL_IMG="${BASE_IMG}:${IMG_VER}"
 
           if [[ -z "${BASE_IMG}" ]]; then
@@ -53,6 +55,7 @@ jobs:
           fi
 
           echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
+
 
       - name: Check base image digest (${{ matrix.flavor }})
         id: check
@@ -63,7 +66,7 @@ jobs:
 
       - name: Check cache (${{ matrix.flavor }})
         id: cache
-        uses: actions/cache@v6
+        uses: actions/cache@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
           path: ~/.cache-${{ matrix.flavor }}
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}

@@ -8,19 +8,19 @@ modules:
       packages:
         - "@virtualization"
         - gnome-boxes
+        - swtpm
+        - swtpm-tools
       exclude:
         - virt-viewer
 
   - type: systemd
     system:
       enabled:
-        # - libvirtd.service
-        # - virtlogd.service
-        - libvirtd.service            # Daemon principal do libvirt
-        - virtlogd.service            # Gerenciamento de logs de VMs
-        - virtlockd.service           # Gerenciamento de locks de VMs
-        - libvirtd-admin.socket       # Socket para administração do libvirt
-
+        - virtqemud.socket
+        - virtnetworkd.socket
+        - virtstoraged.socket
+        - virtnodedevd.socket
+        - virtproxyd.socket
   # - type: kargs
   #   kargs:
   #     - kvm_amd.nested=1

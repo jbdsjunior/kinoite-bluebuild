@@ -3,28 +3,19 @@ Description=Apply Flatpak user updates
 Documentation=man:flatpak-update(1)
 After=network-online.target
 Wants=network-online.target
-
 ConditionACPower=true
 
 [Service]
 Type=oneshot
-# CORREÇÃO: Substituído o extglob por uma expressão regular segura (a mesma usada no seu outro serviço)
-ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true); [[ "$m" != *" 2" && "$m" != *" 4" ]]'
+# Skip automatic update if NetworkManager reports connection is metered (1=yes, 3=guess-yes)
+ExecCondition=/bin/bash -c 'm=$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true); [[ "$m" != *" 1" && "$m" != *" 3" ]]'
 
-# CORREÇÃO: Removido o sh -c. O systemd roda comandos na ordem listada.
-# Ordem invertida: Atualiza primeiro, remove o lixo órfão depois.
 ExecStart=/usr/bin/flatpak --user update -y --noninteractive
 ExecStart=/usr/bin/flatpak --user uninstall --unused -y --noninteractive
-
-# CORREÇÃO: Removidos Restart= e RestartSec= (inválidos para Type=oneshot)
-
-CapabilityBoundingSet=
-ProtectSystem=full
 
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
 
 [Install]
-# CORREÇÃO: Serviços de usuário usam default.target, não multi-user.target
 WantedBy=default.target
