@@ -1,11 +1,11 @@
-# Mouse VXE / Receptores Compx
+# Peripheral access: VXE Mouse / Compx receivers
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", MODE="0660", TAG+="uaccess"
 
-# Fone MCHOSE X9
+# Peripheral access: MCHOSE X9 headset
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3837", MODE="0660", TAG+="uaccess"
 
-# Teclado Gamer BY Tech
+# Peripheral access: BY Tech gaming keyboard
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", MODE="0660", TAG+="uaccess"
 
-# Controlador RGB ITE (Placa-mãe / LEDs)
+# Peripheral access: ITE RGB motherboard and LED controller
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", MODE="0660", TAG+="uaccess"

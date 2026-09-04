@@ -13,24 +13,23 @@ modules:
         - mesa-va-drivers-freeworld
         - mesa-vulkan-drivers-freeworld
 
-        # Codecs de Vídeo e FFmpeg (RPM Fusion)
+        # Video Codecs & FFmpeg (RPM Fusion)
         - ffmpeg
         - ffmpeg-libs
         - libva-utils
         - libavcodec-freeworld
         - libheif-freeworld
 
-        # GStreamer Plugins Freeworld
+        # GStreamer Freeworld Plugins
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-ugly
         - gstreamer1-vaapi
 
-        # Codecs de Áudio (Bluetooth aptX e codificadores)
+        # Audio Codecs (Bluetooth aptX & encoders)
         - pipewire-codec-aptx
         - twolame
         - vorbis-tools
-
   # - type: dnf
   #   repos:
   #     nonfree: rpmfusion

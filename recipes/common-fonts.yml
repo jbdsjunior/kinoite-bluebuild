@@ -2,22 +2,6 @@
 
 modules:
   - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - liberation-fonts-all
-        - fira-code-fonts
-        - rsms-inter-vf-fonts
-
-  - type: fonts
-    fonts:
-      nerd-fonts:
-        - FiraCode
-        - JetBrainsMono
-        - NerdFontsSymbolsOnly
-
-  - type: dnf
     repos:
       cleanup: true
       files:
@@ -26,8 +10,14 @@ modules:
       skip-unavailable: true
       allow-erasing: true
       packages:
-        # - nerdfontssymbolsonly-nerd-fonts
-        # - jetbrainsmono-nerd-fonts
-        # - firacode-nerd-fonts
-        # - monaspace-nerd-fonts
+        - liberation-fonts-all
+        - fira-code-fonts
+        - rsms-inter-vf-fonts
         - ms-core-fonts
+
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - FiraCode
+        - JetBrainsMono
+        - NerdFontsSymbolsOnly
