@@ -24,9 +24,12 @@ This project is optimized for a high-capacity workstation profile focused on KDE
 
 ## Tuned Defaults
 
-- Kernel arguments keep `amd_pstate=active` for Zen 3 frequency scaling, enable AMD IOMMU passthrough defaults for libvirt, and keep CPU vulnerability mitigations on `auto`.
-- ZRAM policy is capped for a 64 GB workstation to absorb pressure spikes without creating an oversized compressed swap device.
-- BTRFS NoCOW tmpfiles cover libvirt image directories and Podman/Distrobox storage roots before heavy write paths are populated.
+- Kernel arguments keep `amd_pstate=active` for Zen 3 frequency scaling, `preempt=full` for dynamic low-latency desktop preemption, enable AMD IOMMU passthrough defaults (`amd_iommu=on`, `iommu=pt`, `kvm_amd.nested=1`) for libvirt, and enforce CIS/KSPP exploit mitigations (`slab_nomerge`, `page_alloc.shuffle=1`, `vsyscall=none`, `randomize_kstack_offset=on`).
+- GPU and ROCm runtime defaults set `HSA_OVERRIDE_GFX_VERSION=10.3.0` (mapping Navi 23 / gfx1032 to gfx1030 for local LLMs and PyTorch) and `AMD_VULKAN_ICD=RADV` across all user sessions via systemd `environment.d`.
+- ZRAM policy allocates up to 32 GB of zstd-compressed swap for a 64 GB workstation (`min(ram / 2, 32768)`) to absorb memory pressure spikes under local LLM and VM virtualization without premature OOM.
+- BTRFS NoCOW tmpfiles cover libvirt image directories (system and user session) and Podman/Distrobox storage roots before heavy write paths are populated.
+- Network stack enables BBR + FQ congestion control, IP forwarding for containers, libvirt, and Tailscale mesh routing, paired with SYN cookies and reverse path filtering.
+
 
 ## Expected Operational Limits
 

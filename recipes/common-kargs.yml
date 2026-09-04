@@ -3,6 +3,23 @@
 modules:
   - type: kargs
     kargs:
-      # - amd_pstate=active
+      # AMD Zen 3 CPU frequency scaling & performance (Ryzen 9 5950X)
+      - amd_pstate=active
+
+      # Virtualization / KVM / IOMMU passthrough defaults (docs/HARDWARE_BASELINE.md)
+      - amd_iommu=on
+      - iommu=pt
+      - kvm_amd.nested=1
+
+      # Desktop responsiveness under heavy VM/compilation load
+      - preempt=full
+
+      # Peripheral stability (gamepads & Bluetooth audio)
       - bluetooth.disable_ertm=1
       - btusb.enable_autosuspend=n
+
+      # Kernel & memory exploit mitigations (CIS Benchmark & KSPP)
+      - slab_nomerge
+      - page_alloc.shuffle=1
+      - vsyscall=none
+      - randomize_kstack_offset=on

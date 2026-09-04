@@ -2,11 +2,11 @@
 Description=Timer for User Flatpak Updates
 
 [Timer]
-# CORREÇÃO: Tempos expandidos para evitar checagens agressivas na rede
-OnBootSec=15m
-OnUnitActiveSec=24h
-RandomizedDelaySec=1h
-AccuracySec=5m
+# Alinhado com prompt.md: atualizacoes recorrentes a cada hora e 5 minutos apos o boot
+OnBootSec=5m
+OnUnitActiveSec=1h
+RandomizedDelaySec=5m
+AccuracySec=1m
 Unit=flatpak-user-update.service
 Persistent=true
 

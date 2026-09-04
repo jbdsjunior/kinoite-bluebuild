@@ -5,9 +5,9 @@ Documentation=man:flatpak-update(1) man:systemd.timer(5)
 [Timer]
 Unit=flatpak-system-update.service
 OnBootSec=5m
-OnUnitActiveSec=45m
-RandomizedDelaySec=15m
-AccuracySec=5m
+OnUnitActiveSec=1h
+RandomizedDelaySec=5m
+AccuracySec=1m
 Persistent=true
 
 [Install]

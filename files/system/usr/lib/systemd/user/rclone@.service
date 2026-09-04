@@ -50,11 +50,12 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --log-systemd \
   $RCLONE_FLAGS
 
-ExecStop=/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
+ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
 RestartSec=30s
 TimeoutStopSec=15s
+
 
 LimitNOFILE=1048576
 MemoryMax=4G

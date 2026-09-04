@@ -19,7 +19,7 @@ jobs:
         image-name: [kinoite-amd]
     steps:
       - name: Delete old package versions
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
         with:
           package-name: ${{ matrix.image-name }}
           package-type: "container"

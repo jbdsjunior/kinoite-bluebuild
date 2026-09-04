@@ -32,36 +32,54 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 | Alias                 | Command/Action                                                                       |
 | --------------------- | ------------------------------------------------------------------------------------ |
-| `update`              | Run `topgrade -cy --only system flatpak`                                             |
+| `update`              | Run `topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak`               |
+| `update-all`          | Run `topgrade -cy --no-ask-retry --auto-retry 2`                                     |
 | `sysup`               | `sudo bootc update`                                                                  |
 | `rollback`            | `sudo bootc rollback`                                                                |
 | `status-bootc`        | `sudo bootc status`                                                                  |
 | `reload-profile`      | `exec $SHELL`                                                                        |
+| `ls`, `ll`, `la`      | Enhanced file listings with git status and icons via `eza`                           |
+| `lt`, `tree`          | Hierarchical directory trees via `eza --tree`                                        |
+| `cat`                 | Syntax-highlighted pagerless and borderless file viewing via `bat -p`                |
+| `top`                 | Modern interactive GPU & 32-thread CPU monitor via `btop`                            |
+| `fzf`                 | Fuzzy interactive search (integrated with Ctrl+R history, Ctrl+T files, Alt+C cd)    |
 | `kargs`               | `rpm-ostree kargs`                                                                   |
 | `kargs-edit`          | `sudo rpm-ostree kargs --editor`                                                     |
 | `config-diff`         | `sudo ostree admin config-diff`                                                      |
-| `status-fw`           | `sudo systemctl status firewalld`                                                    |
-| `status-dns`          | `sudo systemctl status systemd-resolved`                                             |
-| `status-kvm`          | `sudo systemctl status libvirtd`                                                     |
+| `status-fw`           | `systemctl status firewalld`                                                         |
+| `status-dns`          | `systemctl status systemd-resolved`                                                  |
+| `status-kvm`          | `systemctl status virtqemud.socket virtqemud.service`                                |
+| `status-tailscale`    | `tailscale status`                                                                   |
+| `status-podman`       | `systemctl status podman-auto-update.timer`                                          |
+| `status-flatpak-system`| `systemctl status flatpak-system-update.timer`                                       |
+| `status-flatpak-user` | `systemctl --user status flatpak-user-update.timer`                                  |
 | `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer`                                   |
+| `status-soar`         | `systemctl --user status soar-upgrade.timer`                                         |
+| `gpu-top`             | Interactive real-time GPU/VRAM engine monitor via `nvtop`                            |
+| `gpu-stat`            | Low-level AMD Radeon hardware activity monitor via `radeontop`                       |
 | `tmpfiles-system`     | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
-| `tmpfiles-user`       | `systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf` |
+| `tmpfiles-user`       | `systemd-tmpfiles --user --create`                                                   |
+| `tmpfiles-all`        | Execute both system and user BTRFS NoCOW tmpfiles rules                              |
+| `podman-cleanup`      | Clean up unused Podman containers, images, and volumes                               |
+
+
 
 ---
 
 ## 3) Starship and terminal font
 
-The image installs `firacode-nerd-fonts` from Terra and ships a fontconfig preference for `FiraCode Nerd Font` / `FiraCode Nerd Font Mono` as the default monospace Nerd Font. This is required for the Starship prompt icons in `/usr/share/starship/starship.toml` to render correctly.
+The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`). Konsole is configured by default with the `Kinoite` profile and custom `Kinoite Tokyo Night` color scheme using `JetBrainsMono Nerd Font` (with `FiraCode Nerd Font` available).
 
-If a terminal profile already pins another font, set it manually to `FiraCode Nerd Font` or `FiraCode Nerd Font Mono` after first login.
+Test font resolution:
 
 ```bash
 fc-match monospace
+fc-match "JetBrainsMono Nerd Font"
 fc-match "FiraCode Nerd Font"
 
 ```
 
-Expected: both commands resolve to the installed FiraCode Nerd Font family, unless your user profile overrides fontconfig or the terminal pins another font.
+Expected: `fc-match monospace` resolves to `JetBrainsMono Nerd Font` (or `FiraCode Nerd Font`), rendering all Starship and modern CLI glyphs crisply.
 
 ---
 
@@ -76,7 +94,7 @@ sudo systemctl status systemd-resolved
 If you use virtualization:
 
 ```bash
-sudo systemctl status libvirtd
+systemctl status virtqemud.socket virtqemud.service
 
 ```
 
@@ -216,9 +234,10 @@ podman info --format '{{.Host.Security.Rootless}}'
 
 Expected timer policy:
 
-- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
-- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=15m`, `OnUnitActiveSec=24h`.
+- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (with drop-in trigger resets and 5m jitter).
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (with 5m jitter).
 - `podman-auto-update.timer`: active with scheduled container auto-updates.
+- `soar` auto-upgrade timer: aligned to 1h maintenance cadence.
 - `podman info` returns `true` when run as the desktop user.
 
 ---
@@ -246,3 +265,49 @@ Expected policy:
 - Podman auto-update uses the packaged systemd service and requires containers to opt in with the appropriate auto-update labels.
 
 ---
+
+## 12) Security Hardening and Kernel Module Verification
+
+The image includes declarative security drop-ins:
+
+- **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`dccp`, `sctp`, `rds`, `tipc`), vulnerable legacy file systems (`cramfs`, `freevxfs`, `jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers.
+- **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
+- **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
+- **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.yama.ptrace_scope=1`, `kernel.kptr_restrict=1`, and `fs.suid_dumpable=0`.
+
+Verify kernel module blacklist:
+
+```bash
+modprobe -n -v sctp
+# Output: install /bin/true
+```
+
+---
+
+## 13) AMD GPU and ROCm Runtime Verification
+
+Systemd user sessions automatically load `/usr/lib/environment.d/60-kinoite-environment.conf`:
+
+```bash
+echo $HSA_OVERRIDE_GFX_VERSION
+# Expected: 10.3.0
+
+echo $AMD_VULKAN_ICD
+# Expected: RADV
+```
+
+Verify GPU acceleration and monitoring:
+
+```bash
+# Verify VA-API hardware video decode on RX 6600 XT
+vainfo
+
+# Verify OpenCL platforms
+clinfo
+
+# Interactive GPU engine & VRAM monitor
+gpu-top
+```
+
+---
+
