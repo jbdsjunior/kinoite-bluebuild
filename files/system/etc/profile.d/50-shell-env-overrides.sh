@@ -15,6 +15,11 @@ export FREETYPE_PROPERTIES="${FREETYPE_PROPERTIES:-cff:no-stem-darkening=0 autof
 export ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}"
 
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:---height 40% --layout=reverse --border --inline-info}"
+if command -v fd >/dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-fd --type f --strip-cwd-prefix --hidden --follow --exclude .git}"
+    export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
+    export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fd --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
+fi
 
 # Critical flow: bypass non-interactive shell sessions
 case "$-" in

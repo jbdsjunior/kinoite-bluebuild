@@ -69,18 +69,19 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 ## 3) Starship, terminal UX, and font rendering
 
-The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`, `embeddedbitmap=false`) and FreeType stem darkening (`FREETYPE_PROPERTIES`) for crisp, macOS-equivalent typography. Electron applications are configured to run natively under Wayland (`ELECTRON_OZONE_PLATFORM_HINT=auto`) to eliminate fractional scaling blur. Konsole is configured by default with the `Kinoite` profile (`TerminalMargin=4`, `LineSpacing=1`), `Kinoite Tokyo Night` color scheme, and background blur using `JetBrainsMono Nerd Font` (with `FiraCode Nerd Font` available).
+The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`, `embeddedbitmap=false`, `autohint=false`), FreeType stem darkening (`FREETYPE_PROPERTIES`), and fontconfig aliases mapping macOS system fonts (`system-ui`, `-apple-system`, `BlinkMacSystemFont`, `ui-sans-serif`, `SF Pro Text`) to `Inter Variable`, and code fonts (`ui-monospace`, `Menlo`, `SF Mono`, `Cascadia Code`) to `JetBrainsMono Nerd Font`. Electron applications run natively under Wayland (`ELECTRON_OZONE_PLATFORM_HINT=auto`) to eliminate fractional scaling blur. Konsole is configured by default with the `Kinoite` profile (`TerminalMargin=4`, `LineSpacing=1`, smooth blinking cursor, link underlines, full URL/path word selection), `Kinoite Tokyo Night` color scheme, and background blur.
 
 Test font resolution:
 
 ```bash
+fc-match sans-serif
+fc-match "SF Pro Text"
 fc-match monospace
-fc-match "JetBrainsMono Nerd Font"
-fc-match "FiraCode Nerd Font"
+fc-match ":family=ui-monospace"
 
 ```
 
-Expected: `fc-match monospace` resolves to `JetBrainsMono Nerd Font` (or `FiraCode Nerd Font`), rendering all Starship and modern CLI glyphs crisply.
+Expected: `fc-match sans-serif` and `fc-match "SF Pro Text"` resolve to `Inter Variable`, and `fc-match monospace` and `fc-match ":family=ui-monospace"` resolve to `JetBrainsMono Nerd Font`, rendering all Starship and modern CLI glyphs crisply.
 
 ---
 
@@ -122,6 +123,8 @@ Apply user tmpfiles:
 systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
 
 ```
+
+This sets the BTRFS NoCOW (`+C`) attribute on libvirt/GNOME Boxes images, Podman/Distrobox container layers, rclone cache, and local LLM model caches (`~/.ollama/models`, `~/.cache/huggingface`) before heavy multi-gigabyte files are written, preventing disk fragmentation.
 
 ---
 
@@ -264,7 +267,7 @@ systemctl --user start podman-auto-update.service
 Expected policy:
 
 - Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
-- Flatpak updates, rclone mounts, `bootc` automatic staging, and Podman updates wait for `network-online.target`, evaluate `ConditionACPower`, and enforce `ExecCondition` resilience against metered connections and captive portals.
+- Scheduled update timers (`bootc`, Flatpak system/user, Podman auto-update system/user, `soar`) wait for `network-online.target`, evaluate `ConditionACPower`, and enforce `ExecCondition` resilience against metered connections and captive portals.
 - Podman auto-update uses packaged system and user systemd services and requires containers to opt in with the appropriate auto-update labels (`io.containers.autoupdate=image` or `registry`).
 
 ---

@@ -51,9 +51,10 @@ style = "bold fg"
 truncation_length = 4
 truncate_to_repo = false
 read_only = " 󰌾"
+read_only_style = "bold red"
 home_symbol = " ~"
 truncation_symbol = "…/"
-format = "[$path]($style)[$read_only]($red) "
+format = "[$path]($style)[$read_only]($read_only_style) "
 
 [git_branch]
 symbol = " "
