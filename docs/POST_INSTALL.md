@@ -67,9 +67,9 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 ---
 
-## 3) Starship and terminal font
+## 3) Starship, terminal UX, and font rendering
 
-The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`). Konsole is configured by default with the `Kinoite` profile and custom `Kinoite Tokyo Night` color scheme using `JetBrainsMono Nerd Font` (with `FiraCode Nerd Font` available).
+The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`, `embeddedbitmap=false`) and FreeType stem darkening (`FREETYPE_PROPERTIES`) for crisp, macOS-equivalent typography. Electron applications are configured to run natively under Wayland (`ELECTRON_OZONE_PLATFORM_HINT=auto`) to eliminate fractional scaling blur. Konsole is configured by default with the `Kinoite` profile (`TerminalMargin=4`, `LineSpacing=1`), `Kinoite Tokyo Night` color scheme, and background blur using `JetBrainsMono Nerd Font` (with `FiraCode Nerd Font` available).
 
 Test font resolution:
 
@@ -235,10 +235,10 @@ podman info --format '{{.Host.Security.Rootless}}'
 
 Expected timer policy:
 
-- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
-- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
-- `podman-auto-update.timer` (system and user session): active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
-- `soar` auto-upgrade timer: aligned to 1h maintenance cadence.
+- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
+- `podman-auto-update.timer` (system and user session): active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
+- `soar` auto-upgrade timer: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
 - `podman info` returns `true` when run as the desktop user.
 
 ---

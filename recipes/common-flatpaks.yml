@@ -6,13 +6,13 @@ modules:
       - notify: false
         scope: system
         install:
-          # OpenH264 (Compatibilidade WebRTC / H.264 em navegadores e players)
+          # OpenH264 (WebRTC / H.264 compatibility in browsers and media players)
           # - org.freedesktop.Platform.openh264/x86_64/2.4.1
 
-          # Drivers Gráficos Mesa / VA-API AMD (Garante sincronização de versão com os runtimes)
+          # Mesa / VA-API graphics drivers for AMD (runtime version synchronization)
           # - org.freedesktop.Platform.GL.default/x86_64/24.08
 
-          # Codecs de Vídeo / FFmpeg (Freedesktop Runtimes 23.08 e 24.08)
+          # Video codecs / FFmpeg (Freedesktop runtimes)
           # - org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
 
           # --- CORE DESKTOP ENVIRONMENTS ---

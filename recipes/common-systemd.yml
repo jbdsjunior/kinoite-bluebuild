@@ -10,7 +10,8 @@ modules:
         # - vboxservice.service
         # - vmtoolsd.service
         # - vgauthd.service
-        # - qemu-guest-agent.service        # Intel-specific hardware error logging (AMD CPU)
+        # - qemu-guest-agent.service
+        # Intel-specific hardware error logging (AMD CPU)
         - mcelog.service
 
       enabled:
@@ -32,3 +33,4 @@ modules:
         - flatpak-user-update.timer
         - podman-auto-update.timer
         - podman-restart.service
+        - soar-upgrade-packages.timer
