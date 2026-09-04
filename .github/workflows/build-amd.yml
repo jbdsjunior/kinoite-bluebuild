@@ -1,19 +1,5 @@
 name: build-amd
 on:
-  # pull_request:
-  #   branches:
-  #     - main
-  #   paths-ignore:
-  #     - '**.md'
-  #     - 'docs/**'
-  #     - '.github/workflows/cleanup.yml'
-  # push:
-  #   branches:
-  #     - main
-  #   paths-ignore:
-  #     - '**.md'
-  #     - 'docs/**'
-  #     - '.github/workflows/cleanup.yml'
   workflow_dispatch:
 
 concurrency:

@@ -6,22 +6,21 @@ modules:
       cleanup: true
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+        - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
       # copr:
       #   - lilay/topgrade
       #   - atim/starship
+
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # External Repository Packages (Terra & Tailscale)
         - topgrade
         - starship
+        - tailscale
 
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        # Version control & Sync
+        # Version Control & Cloud Sync
         - git
         - rclone
 
@@ -48,14 +47,3 @@ modules:
         - vulkan-tools
         - nvtop
         - radeontop
-
-  - type: dnf
-    repos:
-      cleanup: true
-      files:
-        - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - tailscale

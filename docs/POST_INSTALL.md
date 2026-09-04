@@ -51,10 +51,11 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `status-kvm`          | `systemctl status virtqemud.socket virtqemud.service`                                |
 | `status-tailscale`    | `tailscale status`                                                                   |
 | `status-podman`       | `systemctl status podman-auto-update.timer`                                          |
+| `status-podman-user`  | `systemctl --user status podman-auto-update.timer`                                   |
 | `status-flatpak-system`| `systemctl status flatpak-system-update.timer`                                       |
 | `status-flatpak-user` | `systemctl --user status flatpak-user-update.timer`                                  |
 | `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer`                                   |
-| `status-soar`         | `systemctl --user status soar-upgrade.timer`                                         |
+| `status-soar`         | `systemctl --user status soar-upgrade-packages.timer`                                |
 | `gpu-top`             | Interactive real-time GPU/VRAM engine monitor via `nvtop`                            |
 | `gpu-stat`            | Low-level AMD Radeon hardware activity monitor via `radeontop`                       |
 | `tmpfiles-system`     | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
@@ -227,16 +228,16 @@ This validates staged `bootc` policy, maintenance timers, and rootless Podman re
 
 ```bash
 systemctl status bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer
-systemctl --user status flatpak-user-update.timer
+systemctl --user status flatpak-user-update.timer podman-auto-update.timer
 podman info --format '{{.Host.Security.Rootless}}'
 
 ```
 
 Expected timer policy:
 
-- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (with drop-in trigger resets and 5m jitter).
-- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (with 5m jitter).
-- `podman-auto-update.timer`: active with scheduled container auto-updates.
+- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
+- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
+- `podman-auto-update.timer` (system and user session): active with `OnBootSec=5m`, `OnUnitActiveSec=1h` (starting 5m post-boot, cycling hourly, 0 delay jitter).
 - `soar` auto-upgrade timer: aligned to 1h maintenance cadence.
 - `podman info` returns `true` when run as the desktop user.
 
@@ -244,10 +245,11 @@ Expected timer policy:
 
 ## 11) Podman automatic update timer
 
-Validate the system timer:
+Validate system and user timers:
 
 ```bash
 systemctl status podman-auto-update.timer
+systemctl --user status podman-auto-update.timer
 
 ```
 
@@ -255,14 +257,15 @@ Run a one-shot container auto-update manually when needed:
 
 ```bash
 sudo systemctl start podman-auto-update.service
+systemctl --user start podman-auto-update.service
 
 ```
 
 Expected policy:
 
 - Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
-- Flatpak updates, rclone mounts, and `bootc` automatic staging wait for `network-online.target` and evaluate `ConditionACPower`.
-- Podman auto-update uses the packaged systemd service and requires containers to opt in with the appropriate auto-update labels.
+- Flatpak updates, rclone mounts, `bootc` automatic staging, and Podman updates wait for `network-online.target`, evaluate `ConditionACPower`, and enforce `ExecCondition` resilience against metered connections and captive portals.
+- Podman auto-update uses packaged system and user systemd services and requires containers to opt in with the appropriate auto-update labels (`io.containers.autoupdate=image` or `registry`).
 
 ---
 

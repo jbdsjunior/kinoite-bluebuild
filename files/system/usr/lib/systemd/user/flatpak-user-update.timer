@@ -1,13 +1,13 @@
 [Unit]
 Description=Timer for User Flatpak Updates
+Documentation=man:flatpak-update(1) man:systemd.timer(5)
 
 [Timer]
-# Alinhado com prompt.md: atualizacoes recorrentes a cada hora e 5 minutos apos o boot
+Unit=flatpak-user-update.service
 OnBootSec=5m
 OnUnitActiveSec=1h
-RandomizedDelaySec=5m
+RandomizedDelaySec=0
 AccuracySec=1m
-Unit=flatpak-user-update.service
 Persistent=true
 
 [Install]
