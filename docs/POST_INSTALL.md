@@ -75,13 +75,14 @@ Test font resolution:
 
 ```bash
 fc-match sans-serif
+fc-match system-ui
+fc-match -- "-apple-system"
 fc-match "SF Pro Text"
 fc-match monospace
 fc-match ":family=ui-monospace"
-
 ```
 
-Expected: `fc-match sans-serif` and `fc-match "SF Pro Text"` resolve to `Inter Variable`, and `fc-match monospace` and `fc-match ":family=ui-monospace"` resolve to `JetBrainsMono Nerd Font`, rendering all Starship and modern CLI glyphs crisply.
+Expected: `fc-match sans-serif`, `fc-match system-ui`, `fc-match -- "-apple-system"`, and `fc-match "SF Pro Text"` resolve to `Inter Variable`, and `fc-match monospace` and `fc-match ":family=ui-monospace"` resolve to `JetBrainsMono Nerd Font`, rendering all Starship and modern CLI glyphs crisply.
 
 ---
 
