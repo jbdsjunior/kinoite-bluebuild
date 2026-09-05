@@ -107,6 +107,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | -------------------------------------------------------- | ---------------------------------------------------- |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits             |
+| [`docs/SUGGESTIONS.md`](docs/SUGGESTIONS.md)             | Architectural improvement proposals & future roadmap |
 
 ## License
 
