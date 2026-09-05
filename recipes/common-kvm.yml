@@ -12,18 +12,3 @@ modules:
         - swtpm-tools
       exclude:
         - virt-viewer
-
-  - type: systemd
-    system:
-      enabled:
-        - virtqemud.socket
-        - virtnetworkd.socket
-        - virtstoraged.socket
-        - virtnodedevd.socket
-        - virtproxyd.socket
-  # - type: kargs
-  #   kargs:
-  #     - kvm_amd.nested=1
-  #     # - iommu=pt
-  #     # - amd_iommu=on
-  #     # - kvm_amd.nested=1

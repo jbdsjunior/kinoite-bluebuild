@@ -28,6 +28,13 @@ modules:
         - firewalld.service
         - tailscaled.service
 
+        # Virtualization / KVM sockets (modular libvirt daemons)
+        - virtqemud.socket
+        - virtnetworkd.socket
+        - virtstoraged.socket
+        - virtnodedevd.socket
+        - virtproxyd.socket
+
     user:
       enabled:
         - flatpak-user-update.timer
