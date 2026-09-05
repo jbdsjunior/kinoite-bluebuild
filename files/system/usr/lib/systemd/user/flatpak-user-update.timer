@@ -7,7 +7,7 @@ Unit=flatpak-user-update.service
 OnBootSec=5m
 OnUnitActiveSec=45m
 RandomizedDelaySec=0
-AccuracySec=1m
+AccuracySec=1s
 Persistent=true
 
 [Install]
