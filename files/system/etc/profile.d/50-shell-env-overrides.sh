@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# Critical flow: bypass non-interactive shell sessions
-case "$-" in
-    *i*) ;;
-      *) return 0 2>/dev/null || exit 0 ;;
-esac
-
 export EDITOR="${EDITOR:-nano}"
 export VISUAL="${VISUAL:-nano}"
 export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
@@ -30,6 +24,12 @@ elif command -v fdfind >/dev/null 2>&1; then
     export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
     export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fdfind --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
 fi
+
+# Critical flow: bypass non-interactive shell sessions
+case "$-" in
+    *i*) ;;
+      *) return 0 2>/dev/null || exit 0 ;;
+esac
 
 if command -v starship >/dev/null 2>&1; then
     if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/starship.toml" ] && [ -f "/usr/share/starship/starship.toml" ]; then
