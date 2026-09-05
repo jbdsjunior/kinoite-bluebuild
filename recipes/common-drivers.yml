@@ -9,8 +9,7 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # Hardware Acceleration & Mesa Freeworld (AMD GPU)
-        - mesa-va-drivers-freeworld
+        # Hardware Acceleration & Mesa (AMD GPU)
         - mesa-vulkan-drivers-freeworld
 
         # Video Codecs & FFmpeg (RPM Fusion)
@@ -24,7 +23,6 @@ modules:
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-ugly
-        - gstreamer1-vaapi
 
         # Audio Codecs (Bluetooth aptX & encoders)
         - pipewire-codec-aptx
