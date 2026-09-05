@@ -30,6 +30,7 @@ modules:
         - pipewire-codec-aptx
         - twolame
         - vorbis-tools
+
   # - type: dnf
   #   repos:
   #     nonfree: rpmfusion
@@ -40,6 +41,7 @@ modules:
   #     packages:
   #       - "@multimedia"
   #       - "@sound-and-video"
+  
   # - type: dnf
   #   install:
   #     allow-erasing: true
