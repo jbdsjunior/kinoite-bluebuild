@@ -41,7 +41,7 @@ modules:
   #     packages:
   #       - "@multimedia"
   #       - "@sound-and-video"
-  
+
   # - type: dnf
   #   install:
   #     allow-erasing: true
