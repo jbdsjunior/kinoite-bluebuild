@@ -12,10 +12,6 @@ modules:
         - fedora-third-party
         - fedora-workstation-repositories
 
-        # --- CLI Tools ---
-        - vim-data
-        - vim-minimal
-
         # --- Virtualization Guest Agents (Bare Metal optimization) ---
         - open-vm-tools
         - open-vm-tools-desktop

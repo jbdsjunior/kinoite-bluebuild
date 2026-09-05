@@ -13,4 +13,4 @@ cosign.key
 *.tmp
 *.cache
 tmp/
-prompt.md
+agent.md
