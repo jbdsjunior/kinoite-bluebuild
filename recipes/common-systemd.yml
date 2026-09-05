@@ -34,6 +34,8 @@ modules:
         - virtstoraged.socket
         - virtnodedevd.socket
         - virtproxyd.socket
+        - virtsecretd.socket
+        - virtnwfilterd.socket
 
     user:
       enabled:
