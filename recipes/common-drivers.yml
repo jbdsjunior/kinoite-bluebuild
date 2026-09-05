@@ -9,7 +9,8 @@ modules:
       allow-erasing: true
       skip-unavailable: true
       packages:
-        # Hardware Acceleration & Mesa (AMD GPU)
+        # Hardware Acceleration & Mesa Freeworld (AMD GPU)
+        - mesa-va-drivers-freeworld
         - mesa-vulkan-drivers-freeworld
 
         # Video Codecs & FFmpeg (RPM Fusion)
