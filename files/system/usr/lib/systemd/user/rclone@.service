@@ -22,6 +22,7 @@ Environment=RCLONE_VFS_READ_AHEAD=32M
 Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
 Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
+EnvironmentFile=-%h/.config/rclone/env/%i.local.env
 
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}

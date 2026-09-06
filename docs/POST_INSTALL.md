@@ -219,7 +219,7 @@ Default resource and performance parameters in `[Service]` are parametrized and 
 
 ### Remote Mappings and Per-Remote Environment Files
 
-Before `ExecStart`, the unit loads `EnvironmentFile=-%h/.config/rclone/env/%i.env`. Starter templates from `/usr/share/rclone/env/` are automatically provisioned to `~/.config/rclone/env/` on login via systemd user tmpfiles (`/usr/share/user-tmpfiles.d/70-rclone-env.conf`), or manually via the `tmpfiles-user` alias.
+Before `ExecStart`, the unit loads the authoritative base configuration `EnvironmentFile=-%h/.config/rclone/env/%i.env` followed by an optional local override file `EnvironmentFile=-%h/.config/rclone/env/%i.local.env`. Default templates from `/usr/share/rclone/env/` are authoritatively synchronized to `~/.config/rclone/env/%i.env` on boot via systemd user tmpfiles (`/usr/share/user-tmpfiles.d/70-rclone-env.conf`), while persistent custom flags, credentials, or overrides can be placed in `~/.config/rclone/env/%i.local.env` without being overwritten on boot.
 
 | Service instance             | Expected rclone remote | Mount point           | Environment configuration file         | System starter template                |
 | ---------------------------- | ---------------------- | --------------------- | -------------------------------------- | -------------------------------------- |
@@ -294,10 +294,9 @@ systemctl --user enable --now rclone@OneDrive.service
 
 KDE Baloo file indexer must **never** index cloud FUSE mountpoints (`$HOME/Cloud`). If Baloo scans cloud mounts, it attempts to read and index all remote files, triggering massive network bandwidth usage, local CPU spikes, and rapid API quota exhaustion / temporary account bans from Google and Microsoft.
 
-The image automatically ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` excluded by default. For existing users or active sessions, apply the exclusion to your user configuration and purge any previously indexed metadata:
+The image authoritatively ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` excluded and locked via KConfig immutability (`[$ei]`). This prevents Baloo from scanning cloud mountpoints even if a local user configuration exists. If cloud files were previously indexed before applying this configuration, purge the metadata:
 
 ```bash
-kwriteconfig6 --file baloofilerc --group General --key "exclude folders[\$e]" "$HOME/Cloud"
 balooctl6 purge
 ```
 
