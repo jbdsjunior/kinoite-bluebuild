@@ -13,6 +13,14 @@ Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
 Environment=RCLONE_BWLIMIT=0
+Environment=RCLONE_BUFFER_SIZE=16M
+Environment=RCLONE_TRANSFERS=4
+Environment=RCLONE_CHECKERS=8
+Environment=RCLONE_TPSLIMIT=10
+Environment=RCLONE_TPSLIMIT_BURST=10
+Environment=RCLONE_VFS_READ_AHEAD=32M
+Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
+Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
@@ -29,16 +37,16 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-max-age 72h \
   --vfs-fast-fingerprint \
   --vfs-read-chunk-size 8M \
-  --vfs-read-chunk-size-limit off \
-  --vfs-read-ahead 128M \
+  --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
+  --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
   --vfs-write-back 5s \
   --dir-cache-time 72h \
   --poll-interval 1m \
-  --buffer-size 64M \
-  --transfers 8 \
-  --checkers 16 \
-  --tpslimit 12 \
-  --tpslimit-burst 20 \
+  --buffer-size ${RCLONE_BUFFER_SIZE} \
+  --transfers ${RCLONE_TRANSFERS} \
+  --checkers ${RCLONE_CHECKERS} \
+  --tpslimit ${RCLONE_TPSLIMIT} \
+  --tpslimit-burst ${RCLONE_TPSLIMIT_BURST} \
   --bwlimit ${RCLONE_BWLIMIT} \
   --timeout 2m \
   --contimeout 20s \

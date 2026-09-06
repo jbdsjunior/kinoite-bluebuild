@@ -195,33 +195,122 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## 9) Rclone cloud mounts for KDE Plasma (optional)
 
-The image ships one dynamic systemd user template for rclone FUSE mounts. Each `rclone@<remote>.service` instance starts with the KDE Plasma graphical session, uses `Type=notify` for perfect initialization timing, and writes logs to the user journal.
+The image ships a modernized, dynamic systemd user template (`rclone@<remote>.service`) for rclone FUSE mounts. Each instance starts with the KDE Plasma graphical session, uses `Type=notify` for accurate mount readiness, and logs directly to the systemd user journal.
 
-| Service instance             | Expected rclone remote | Mount point           | Optional override file                 |
-| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- |
-| `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` |
-| `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    |
-| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    |
+### Modernized Unit Architecture & Parameterization
 
-Configure the cloud remotes first. The instance name maps directly to the rclone remote name. To mount a differently named remote or adjust limits, set `RCLONE_REMOTE=<remote>:` in the matching environment file.
+Default resource and performance parameters in `[Service]` are parametrized and interpolated directly into `ExecStart`:
+
+- `RCLONE_BUFFER_SIZE=16M` (interpolated into `--buffer-size`)
+- `RCLONE_TRANSFERS=4` (interpolated into `--transfers`)
+- `RCLONE_CHECKERS=8` (interpolated into `--checkers`)
+- `RCLONE_TPSLIMIT=10` (interpolated into `--tpslimit`)
+- `RCLONE_TPSLIMIT_BURST=10` (interpolated into `--tpslimit-burst`)
+- `RCLONE_VFS_READ_AHEAD=32M` (interpolated into `--vfs-read-ahead`)
+- `RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M` (interpolated into `--vfs-read-chunk-size-limit`)
+- `RCLONE_BWLIMIT=0` (interpolated into `--bwlimit`)
+- Clean teardown: `ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}` and `ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}`
+- Extra flags: `$RCLONE_FLAGS` is appended to `ExecStart` for any custom arguments.
+
+### Remote Mappings and Per-Remote Environment Files
+
+Before `ExecStart`, the unit loads `EnvironmentFile=-%h/.config/rclone/env/%i.env`. Starter templates from `/usr/share/rclone/env/` are automatically provisioned to `~/.config/rclone/env/` on login via systemd user tmpfiles (`/usr/share/user-tmpfiles.d/70-rclone-env.conf`), or manually via the `tmpfiles-user` alias.
+
+| Service instance             | Expected rclone remote | Mount point           | Environment configuration file         | System starter template                |
+| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- | -------------------------------------- |
+| `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` | `/usr/share/rclone/env/GoogleDrive.env` |
+| `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    | `/usr/share/rclone/env/OneDrive.env`    |
+| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    | Custom user-defined                    |
+
+#### Google Drive Configuration (`GoogleDrive.env`)
+
+Optimized for Google Drive API quotas and safety:
+
+```env
+RCLONE_TPSLIMIT=10
+RCLONE_TPSLIMIT_BURST=10
+RCLONE_TRANSFERS=4
+RCLONE_CHECKERS=8
+RCLONE_BUFFER_SIZE=16M
+RCLONE_VFS_READ_AHEAD=32M
+RCLONE_DRIVE_SKIP_GDOCS=true
+RCLONE_DRIVE_USE_TRASH=true
+RCLONE_DRIVE_CHUNK_SIZE=64M
+```
+
+- `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion.
+- `RCLONE_DRIVE_USE_TRASH=true`: Sends deleted files to Google Drive web trash rather than permanently deleting them immediately.
+- `RCLONE_DRIVE_CHUNK_SIZE=64M`: Improves upload throughput for large files.
+
+#### Microsoft OneDrive Configuration (`OneDrive.env`)
+
+Optimized to avoid Microsoft Graph API HTTP 429 throttling:
+
+```env
+RCLONE_TPSLIMIT=5
+RCLONE_TPSLIMIT_BURST=6
+RCLONE_TRANSFERS=2
+RCLONE_CHECKERS=4
+RCLONE_BUFFER_SIZE=16M
+RCLONE_VFS_READ_AHEAD=32M
+RCLONE_ONEDRIVE_CHUNK_SIZE=50M
+RCLONE_ONEDRIVE_DELTA=true
+```
+
+- `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=6`: Enforces strict transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties.
+- `RCLONE_TRANSFERS=2` / `RCLONE_CHECKERS=4`: Conservative concurrency to maintain stable connection pools.
+- `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (must be a multiple of 320 KiB).
+- `RCLONE_ONEDRIVE_DELTA=true`: Uses the OneDrive delta API for fast incremental change detection.
+
+### Quick Setup
+
+1. Configure your remote in rclone (name must match the service instance name, e.g. `GoogleDrive` or `OneDrive`):
 
 ```bash
 rclone config
-mkdir -p ~/.config/rclone/env
-printf 'RCLONE_BWLIMIT=40M\n' > ~/.config/rclone/env/GoogleDrive.env
-systemctl --user daemon-reload
-systemctl --user enable --now rclone@GoogleDrive.service
-
 ```
 
-**Tuning Notes:** The template uses `--vfs-cache-mode full` and is optimized for local RAM constraints (`MemoryMax=4G`) and KDE Dolphin compatibility (small `8M` read chunks to prevent thumbnail generation freezes). It also excludes `/.Trash-1000/**` so KDE's per-mount trash directory is not synchronized.
+2. Ensure environment templates are provisioned in user home:
 
-Check logs and status with:
+```bash
+tmpfiles-user
+```
+
+3. Enable and start the user mount service:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now rclone@GoogleDrive.service
+# or for OneDrive:
+systemctl --user enable --now rclone@OneDrive.service
+```
+
+### Baloo File Indexer Exclusion (Crucial)
+
+KDE Baloo file indexer must **never** index cloud FUSE mountpoints (`$HOME/Cloud`). If Baloo scans cloud mounts, it attempts to read and index all remote files, triggering massive network bandwidth usage, local CPU spikes, and rapid API quota exhaustion / temporary account bans from Google and Microsoft.
+
+The image automatically ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` excluded by default. For existing users or active sessions, apply the exclusion to your user configuration and purge any previously indexed metadata:
+
+```bash
+kwriteconfig6 --file baloofilerc --group General --key "exclude folders[\$e]" "$HOME/Cloud"
+balooctl6 purge
+```
+
+### KDE Dolphin Trash Recommendation (Shift + Delete)
+
+In KDE Dolphin, normal deletion moves files into a local or per-mount trash folder (`.Trash-1000`). Because `/.Trash-1000/**` is intentionally excluded in the rclone mount configuration to prevent sync loops and quota waste, standard trash operations on cloud mounts can be slow or trigger filesystem errors.
+
+**Recommendation:** Always use **`Shift + Delete`** when removing files in `~/Cloud/`:
+- On **Google Drive**: When `Shift + Delete` is invoked, rclone receives the delete call and moves the item into Google Drive's cloud trash bin because `RCLONE_DRIVE_USE_TRASH=true` is enabled.
+- On **OneDrive**: The file is removed remotely without local FUSE trash overhead.
+
+### Monitoring and Status
+
+Check service status and follow logs:
 
 ```bash
 systemctl --user status rclone@GoogleDrive.service
 journalctl --user -u rclone@GoogleDrive.service -f
-
 ```
 
 ---
