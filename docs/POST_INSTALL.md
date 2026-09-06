@@ -41,11 +41,14 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `ls`, `ll`, `la`      | Enhanced file listings with git status and icons via `eza`                           |
 | `lt`, `tree`          | Hierarchical directory trees via `eza --tree`                                        |
 | `cat`                 | Syntax-highlighted pagerless and borderless file viewing via `bat -p`                |
-| `top`                 | Modern interactive GPU & 32-thread CPU monitor via `btop`                            |
+| `top`, `htop`        | Modern interactive GPU & 32-thread CPU monitor via `btop`                            |
+| `grep`                | `grep --color=auto`                                                                  |
+| `cp`, `mv`, `rm`      | Safe interactive file operations with confirmation (`-i`)                            |
 | `fzf`                 | Fuzzy interactive search (integrated with Ctrl+R history, Ctrl+T files, Alt+C cd)    |
 | `kargs`               | `rpm-ostree kargs`                                                                   |
 | `kargs-edit`          | `sudo rpm-ostree kargs --editor`                                                     |
 | `config-diff`         | `sudo ostree admin config-diff`                                                      |
+| `status-ostree`       | `rpm-ostree status`                                                                  |
 | `status-fw`           | `systemctl status firewalld`                                                         |
 | `status-dns`          | `systemctl status systemd-resolved`                                                  |
 | `status-kvm`          | `systemctl status virtqemud.socket virtqemud.service`                                |
@@ -62,6 +65,8 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `tmpfiles-user`       | `systemd-tmpfiles --user --create`                                                   |
 | `tmpfiles-all`        | Execute both system and user BTRFS NoCOW tmpfiles rules                              |
 | `podman-cleanup`      | Clean up unused Podman containers, images, and volumes                               |
+| `podman-ps`           | `podman ps -a`                                                                       |
+| `distrobox-list`      | `distrobox list`                                                                     |
 
 
 
