@@ -1,6 +1,6 @@
 [Unit]
 Description=Apply Flatpak user updates
-Documentation=man:flatpak-update(1)
+Documentation=man:flatpak(1) man:flatpak-update(1)
 After=network-online.target
 Wants=network-online.target
 ConditionACPower=true
