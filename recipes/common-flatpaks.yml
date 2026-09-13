@@ -6,7 +6,7 @@ modules:
       - notify: false
         scope: system
         install:
-          # KDE Plasma Base
+          # --- KDE Plasma Base ---
           # - org.kde.elisa
           # - org.kde.gwenview
           # - org.kde.haruna
@@ -14,7 +14,7 @@ modules:
           # - org.kde.kcalc
           # - org.kde.okular
 
-          # GNOME Core
+          # --- GNOME Core ---
           - org.gnome.Calculator
           # - org.gnome.DejaDup
           # - org.gnome.Weather
@@ -33,7 +33,7 @@ modules:
           # - com.github.marhkb.Pods
           # - io.github.DenysMb.Kontainer
 
-          # # --- SYSTEM UTILITIES & TELEMETRY ---
+          # --- SYSTEM UTILITIES & TELEMETRY ---
           - com.github.tchx84.Flatseal
           - com.github.wwmm.easyeffects
           - io.missioncenter.MissionCenter
@@ -46,7 +46,7 @@ modules:
           # --- PRODUCTIVITY & ENTERTAINMENT ---
           - org.onlyoffice.desktopeditors
 
-          # Streaming & P2P Protocols
+          # --- Streaming & P2P Protocols ---
           - org.qbittorrent.qBittorrent
           - com.stremio.Stremio
           # - dev.fredol.open-tv
