@@ -3,18 +3,14 @@
 modules:
   - type: default-flatpaks
     configurations:
+      - scope: user
+        repo:
+          title: Flathub (user)
       - notify: false
         scope: system
+        repo:
+          title: Flathub (system)
         install:
-          # OpenH264 (WebRTC / H.264 compatibility in browsers and media players)
-          # - org.freedesktop.Platform.openh264/x86_64/2.4.1
-
-          # Mesa / VA-API graphics drivers for AMD (runtime version synchronization)
-          # - org.freedesktop.Platform.GL.default/x86_64/24.08
-
-          # Video codecs / FFmpeg (Freedesktop runtimes)
-          # - org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
-
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
           # - org.kde.elisa
@@ -60,5 +56,3 @@ modules:
           # - org.qbittorrent.qBittorrent
           # - com.stremio.Stremio
           # - dev.fredol.open-tv
-
-      - scope: user # Initialize Flathub repo for user-level flatpaks
