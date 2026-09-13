@@ -3,8 +3,8 @@
 modules:
   - type: systemd
     system:
-      # masked:
-      #   - systemd-remount-fs.service
+      masked:
+        - systemd-remount-fs.service
       disabled:
         # Virtual machine guest services (bare-metal system)
         # - vboxservice.service
