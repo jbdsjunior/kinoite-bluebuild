@@ -3,13 +3,8 @@
 modules:
   - type: default-flatpaks
     configurations:
-      - scope: user
-        repo:
-          title: Flathub (user)
       - notify: false
         scope: system
-        repo:
-          title: Flathub (system)
         install:
           # --- CORE DESKTOP ENVIRONMENTS ---
           # KDE Plasma Base
