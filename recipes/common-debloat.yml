@@ -6,6 +6,7 @@ modules:
       auto-remove: true
       packages:
         - firefox
+        - plasma-discover
         - plasma-discover-rpm-ostree
         - fedora-flathub-remote
         - plasma-welcome-fedora
