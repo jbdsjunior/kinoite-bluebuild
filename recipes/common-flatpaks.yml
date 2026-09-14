@@ -6,18 +6,11 @@ modules:
       - notify: false
         scope: system
         install:
-          # --- KDE PLASMA BASE ---
-          # - org.kde.elisa
-          # - org.kde.gwenview
-          # - org.kde.haruna
-          # - org.kde.kate
-          # - org.kde.kcalc
-          # - org.kde.okular
-
-          # --- GNOME CORE ---
-          - org.gnome.Calculator
-          # - org.gnome.DejaDup
-          # - org.gnome.Weather
+          # --- PACKAGE & APPLICATION MANAGEMENT ---
+          - io.github.kolunmi.Bazaar
+          - io.github.flattool.Warehouse
+          - com.github.tchx84.Flatseal
+          - it.mijorus.gearlever
 
           # --- BROWSERS & INTERNET ---
           - com.brave.Browser
@@ -28,25 +21,23 @@ modules:
 
           # --- DEVELOPMENT & INFRASTRUCTURE ---
           - com.visualstudio.code
-
-          # --- CONTAINERS & DEVOPS TOOLING ---
           # - com.github.marhkb.Pods
           # - io.github.DenysMb.Kontainer
 
-          # --- SYSTEM UTILITIES & TELEMETRY ---
-          - com.github.tchx84.Flatseal
-          - com.github.wwmm.easyeffects
-          - io.github.kolunmi.Bazaar
-          - io.missioncenter.MissionCenter
-          - io.github.flattool.Warehouse
-          - it.mijorus.gearlever
-          - org.fkoehler.KTailctl
+          # --- PRODUCTIVITY & KNOWLEDGE ---
           - md.obsidian.Obsidian
-
-          # --- PRODUCTIVITY & ENTERTAINMENT ---
           - org.onlyoffice.desktopeditors
+          - org.gnome.Calculator
+          # - org.gnome.DejaDup
 
-          # --- STREAMING & P2P PROTOCOLS ---
-          - org.qbittorrent.qBittorrent
+          # --- SYSTEM MONITORING & TELEMETRY ---
+          - io.missioncenter.MissionCenter
+
+          # --- NETWORKING & VPN ---
+          - org.fkoehler.KTailctl
+
+          # --- AUDIO, MULTIMEDIA & P2P ---
+          - com.github.wwmm.easyeffects
           - com.stremio.Stremio
+          - org.qbittorrent.qBittorrent
           # - dev.fredol.open-tv
