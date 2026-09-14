@@ -36,12 +36,12 @@ modules:
           # --- SYSTEM UTILITIES & TELEMETRY ---
           - com.github.tchx84.Flatseal
           - com.github.wwmm.easyeffects
+          - io.github.kolunmi.Bazaar
           - io.missioncenter.MissionCenter
           - io.github.flattool.Warehouse
           - it.mijorus.gearlever
           - org.fkoehler.KTailctl
           - md.obsidian.Obsidian
-          - org.fkoehler.KTailctl
 
           # --- PRODUCTIVITY & ENTERTAINMENT ---
           - org.onlyoffice.desktopeditors
