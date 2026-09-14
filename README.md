@@ -103,11 +103,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Documentation
 
-| Document                                                 | Purpose                                              |
-| -------------------------------------------------------- | ---------------------------------------------------- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)           | Post-install validation, operations, and maintenance |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) | Hardware baseline and operational limits             |
-
+| Document                                                           | Purpose                                                 |
+| ------------------------------------------------------------------ | ------------------------------------------------------- |
+| [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) | Technical Architecture Document (TAD) and system design |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                     | Post-install validation, operations, and maintenance    |
+| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)           | Hardware baseline and operational limits                |
 
 ## License
 
