@@ -6,38 +6,29 @@ modules:
       - notify: false
         scope: system
         install:
-          # --- PACKAGE & APPLICATION MANAGEMENT ---
-          # - io.github.kolunmi.Bazaar
-          # - io.github.flattool.Warehouse
+          # Application & Package Management
           - com.github.tchx84.Flatseal
           - it.mijorus.gearlever
 
-          # --- BROWSERS & INTERNET ---
+          # Browsers & Web
           - com.brave.Browser
           - com.google.Chrome
-          # - com.microsoft.Edge
-          # - org.mozilla.firefox
-          # - org.mozilla.Thunderbird
 
-          # --- DEVELOPMENT & INFRASTRUCTURE ---
+          # Development & IDE
           - com.visualstudio.code
-          # - com.github.marhkb.Pods
-          # - io.github.DenysMb.Kontainer
 
-          # --- PRODUCTIVITY & KNOWLEDGE ---
+          # Productivity & Office
           - md.obsidian.Obsidian
           - org.onlyoffice.desktopeditors
           - org.gnome.Calculator
-          # - org.gnome.DejaDup
 
-          # --- SYSTEM MONITORING & TELEMETRY ---
+          # System Monitoring
           - io.missioncenter.MissionCenter
 
-          # --- NETWORKING & VPN ---
+          # Networking & VPN
           - org.fkoehler.KTailctl
 
-          # --- AUDIO, MULTIMEDIA & P2P ---
+          # Audio, Media & Streaming
           - com.github.wwmm.easyeffects
           - com.stremio.Stremio
           - org.qbittorrent.qBittorrent
-          # - dev.fredol.open-tv

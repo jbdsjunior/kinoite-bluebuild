@@ -455,8 +455,7 @@ Add the following repository secrets to your GitHub repository:
 - `UPDATE_HMAC_SECRET`: The exact secret string generated above.
 - `UPDATE_RECEIVER_URL`: Your device address:
   - **Option A (Direct Tailscale Mesh)**: `http://<tailscale-ip-or-magicdns>:58080` (e.g. `http://kinoite:58080` or `http://100.x.y.z:58080`)
-  - **Option B (Tailscale Funnel)**: `https://<node-name>.<tailnet>.ts.net:58080/update`
-- `TAILSCALE_AUTHKEY`: Ephemeral, pre-authorized reusable auth key generated in Tailscale Admin Console (tagged with `tag:ci`).
+- `TS_OAUTH_CLIENT_ID` & `TS_OAUTH_SECRET`: OAuth API Client credentials generated in Tailscale Admin Console ([tailscale.com/s/oauth-clients](https://tailscale.com/s/oauth-clients)) with `Devices: Write` scope and tag `tag:ci` (never expires).
 
 ### 4. Verify Socket Activation Status
 
