@@ -1,10 +1,8 @@
 [Unit]
 Description=Kinoite Push Update Trigger Socket (FCM-style)
 Documentation=https://github.com/jbdsjunior/kinoite-bluebuild
-After=network.target tailscaled.service
 
 [Socket]
-ListenStream=8080
 ListenStream=58080
 FreeBind=true
 Accept=yes
@@ -12,4 +10,3 @@ MaxConnections=5
 
 [Install]
 WantedBy=sockets.target
-
