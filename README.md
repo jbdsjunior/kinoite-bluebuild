@@ -34,8 +34,9 @@ This repository publishes **one variant**:
 
 Automation workflows (`.github/workflows/`):
 
-- `build-amd.yml`: manual image build via `workflow_dispatch`;
-- `check-updates.yml`: scheduled check that can trigger builds when a new upstream digest is detected;
+- `build-amd.yml`: automated image build triggered on push to `main` (ignoring doc-only commits) or `workflow_dispatch`;
+- `check-updates.yml`: scheduled check that triggers builds when a new upstream digest is detected;
+- `lint.yml`: static syntax analysis, YAML validation, and ShellCheck on PRs and commits;
 - `cleanup.yml`: continuous operational hygiene.
 
 Each build executes a Trivy security scan on the container image. The pipeline ensures security gates are passed before finalizing the deployment.
@@ -107,7 +108,10 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | ------------------------------------------------------------------ | ------------------------------------------------------- |
 | [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) | Technical Architecture Document (TAD) and system design |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                     | Post-install validation, operations, and maintenance    |
+| [`docs/TAILSCALE_PUSH_SETUP.md`](docs/TAILSCALE_PUSH_SETUP.md)     | Instant push updates setup via Tailscale and systemd    |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)           | Hardware baseline and operational limits                |
+| [`docs/PROJECT_AUDIT_PLAN.md`](docs/PROJECT_AUDIT_PLAN.md)         | Architecture audit and continuous maintenance plan      |
+| [`Justfile`](Justfile)                                             | Command-line task automation shortcuts                  |
 
 ## License
 

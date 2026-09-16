@@ -23,6 +23,3 @@ modules:
       - page_alloc.shuffle=1
       - vsyscall=none
       - randomize_kstack_offset=on
-
-      # Transparent hugepages tuning: madvise avoids background khugepaged compaction stalls on 64GB RAM
-      # - transparent_hugepage=madvise

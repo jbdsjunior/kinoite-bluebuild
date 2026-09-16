@@ -50,19 +50,27 @@ Para que o GitHub Actions consiga acessar seu dispositivo de forma segura via ma
 
 3. Clique em **Save**.
 
-### 1.2 Gerar Auth Key Efêmera e Descartável
+### 1.2 Gerar Credenciais de Acesso (OAuth Client Recomendado vs Auth Key)
+
+A Tailscale recomenda oficialmente o uso de **OAuth API Clients** para GitHub Actions, pois eles nunca expiram e criam conexões efêmeras automaticamente sob demanda.
+
+#### Opção A (Recomendada pela Tailscale): OAuth API Client
+
+1. Acesse [Tailscale Admin Console > Settings > OAuth clients](https://login.tailscale.com/admin/settings/oauth) (ou [tailscale.com/s/oauth-clients](https://tailscale.com/s/oauth-clients)).
+2. Clique em **Generate OAuth client...**.
+3. Configure:
+   - **Description:** `GitHub Actions CI Update Trigger`
+   - **Scopes:** Em **Devices**, marque **Write** (para criar nós efêmeros na rede).
+   - **Tags:** Selecione `tag:ci`.
+4. Clique em **Generate client**.
+5. Guarde o **Client ID** e o **Client Secret** gerados (`tskey-client-...`).
+
+#### Opção B (Alternativa): Auth Key Efêmera
 
 1. Acesse [Tailscale Admin Console > Settings > Keys](https://login.tailscale.com/admin/settings/keys).
-2. Clique no botão **Generate auth key...**.
-3. Configure os seguintes parâmetros com atenção:
-   - **Description:** `GitHub Actions CI Update Trigger`
-   - **Reusable:** **ON** _(permite que a mesma chave seja usada em cada execução do GitHub Actions)_.
-   - **Expiration:** Defina a validade desejada (ex: 90 dias ou 1 ano).
-   - **Ephemeral:** **ON** _(FUNDAMENTAL: faz com que o runner do GitHub seja automaticamente apagado da sua tailnet assim que o job for finalizado)_.
-   - **Pre-authorized:** **ON** _(evita necessidade de aprovar manualmente cada runner)_.
-   - **Tags:** Selecione `tag:ci`.
-4. Clique em **Generate key**.
-5. Copie a chave gerada (inicia com `tskey-auth-...`). Guarde-a temporariamente.
+2. Clique em **Generate auth key...**.
+3. Marque **Reusable: ON**, **Ephemeral: ON**, **Pre-authorized: ON** e adicione a tag `tag:ci`.
+4. _Nota:_ A Tailscale exibirá um aviso no log do GitHub Actions recomendando a migração para OAuth Client, e chaves de autenticação expiram periodicamente (máximo de 90 dias a 1 ano).
 
 ---
 
@@ -99,14 +107,18 @@ No repositório do projeto no GitHub:
 1. Acesse **Settings** > **Secrets and variables** > **Actions**.
 2. Na seção **Repository secrets**, clique em **New repository secret** e adicione as 3 variáveis:
 
-| Nome do Secret        | Valor                               | Exemplo / Descrição                                                     |
-| :-------------------- | :---------------------------------- | :---------------------------------------------------------------------- |
-| `TAILSCALE_AUTHKEY`   | `tskey-auth-...`                    | Chave efêmera gerada no Passo 1.                                        |
-| `UPDATE_HMAC_SECRET`  | Chave de 64 caracteres hexadecimais | O valor gerado em `/etc/kinoite-update.secret` (mostrado pelo script).  |
-| `UPDATE_RECEIVER_URL` | `http://<IP-TAILSCALE>:58080`       | URL do seu dispositivo na rede Tailscale, ex: `http://100.x.y.z:58080`. |
+| Nome do Secret                           | Valor                               | Exemplo / Descrição                                                        |
+| :--------------------------------------- | :---------------------------------- | :------------------------------------------------------------------------- |
+| **`TS_OAUTH_CLIENT_ID`** _(Recomendado)_ | Client ID do OAuth Tailscale        | Obtido em Settings > OAuth clients. Não expira.                            |
+| **`TS_OAUTH_SECRET`** _(Recomendado)_    | Client Secret do OAuth Tailscale    | `tskey-client-...`. Não expira e elimina avisos no CI.                     |
+| **`TAILSCALE_AUTHKEY`** _(Alternativa)_  | `tskey-auth-...`                    | Chave efêmera manual (expira periodicamente).                              |
+| **`UPDATE_HMAC_SECRET`**                 | Chave de 64 caracteres hexadecimais | O valor gerado em `/etc/kinoite-update.secret` (mostrado pelo assistente). |
+| **`UPDATE_RECEIVER_URL`**                | `http://<IP-TAILSCALE>:58080`       | URL do seu dispositivo na rede Tailscale, ex: `http://100.x.y.z:58080`.    |
 
 > [!NOTE]
-> Se qualquer um desses secrets não estiver configurado, a esteira do GitHub Actions pulará o passo de notificação de forma silenciosa e segura, sem falhar a compilação da imagem.
+> Você pode usar o par **OAuth** (`TS_OAUTH_CLIENT_ID` e `TS_OAUTH_SECRET`) **OU** a chave **`TAILSCALE_AUTHKEY`**.
+> Se utilizar o OAuth Client, nenhum aviso será gerado no GitHub Actions e você não precisará renovar chaves periodicamente.
+> Se os secrets não estiverem configurados, o passo de notificação é pulado com segurança sem quebrar o build.
 
 ---
 
