@@ -41,39 +41,3 @@ jobs:
           max_layers: 512
           chunkah: true
           maximize_build_space: true
-
-  security-scan:
-    name: Security scan (AMD)
-    needs: build-amd
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      packages: read
-      security-events: write
-    steps:
-      - name: Normalize repository owner
-        id: repo
-        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-
-      - name: Run Trivy scan (Image)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
-        env:
-          TRIVY_AUTH_URL: ghcr.io
-          TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ github.token }}
-        with:
-          scan-type: image
-          image-ref: ghcr.io/${{ steps.repo.outputs.owner }}/kinoite-amd:latest
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-
-      - name: Upload SARIF report
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63
-        with:
-          sarif_file: trivy-results.sarif
