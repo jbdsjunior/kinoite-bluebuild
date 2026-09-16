@@ -23,7 +23,7 @@ This repository publishes **one variant**:
 
 - **Immutable-first:** apply customizations through `recipes/*.yml` + `files/system/`, not direct `dnf install` on the host.
 - **OCI-native:** switch/update images with `bootc switch` and rollback with `bootc rollback`.
-- **Shift-left security:** run Trivy in CI to scan the final OCI image, upload SARIF reports, and sign images with Cosign in build pipelines.
+- **Integrity & Trust:** sign images with Cosign in build pipelines and enforce container signature policy on deployment.
 - **Fail fast, recover faster:** use atomic rollback to the previous deployment when regressions occur.
 
 > ⚠️ **Warning:** this profile is optimized for workstations with **64 GB RAM**. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md).
@@ -36,10 +36,7 @@ Automation workflows (`.github/workflows/`):
 
 - `build-amd.yml`: manual image build via `workflow_dispatch`;
 - `check-updates.yml`: scheduled check that triggers builds when a new upstream digest is detected;
-- `lint.yml`: static syntax analysis, YAML validation, and ShellCheck on PRs and commits;
 - `cleanup.yml`: continuous operational hygiene.
-
-Each build executes a Trivy security scan on the container image. The pipeline ensures security gates are passed before finalizing the deployment.
 
 ---
 
@@ -97,7 +94,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | `recipes/recipe-amd.yml` | Main AMD recipe variant                                |
 | `recipes/common-*.yml`   | Shared modules (packages, drivers, services, and more) |
 | `files/system/`          | Immutable host overlays (policies, units, defaults)    |
-| `.github/workflows/`     | CI/CD pipelines and security gates                     |
+| `.github/workflows/`     | CI/CD pipelines and automation                         |
 | `cosign.pub`             | Public key for signature verification                  |
 
 ---
@@ -109,8 +106,6 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) | Technical Architecture Document (TAD) and system design |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                     | Post-install validation, operations, and maintenance    |
 | [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)           | Hardware baseline and operational limits                |
-| [`docs/PROJECT_AUDIT_PLAN.md`](docs/PROJECT_AUDIT_PLAN.md)         | Architecture audit and continuous maintenance plan      |
-| [`Justfile`](Justfile)                                             | Command-line task automation shortcuts                  |
 
 ## License
 

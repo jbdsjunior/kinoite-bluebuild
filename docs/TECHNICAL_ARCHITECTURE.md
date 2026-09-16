@@ -27,7 +27,7 @@ Sistemas operacionais de estações de trabalho para engenharia (DevSecOps, dese
 
 O projeto implementa uma **estação de trabalho nativa em contêiner (OCI-native immutable workstation)** utilizando o ecossistema Fedora Kinoite (KDE Plasma 6 Wayland) orquestrado pelo framework **BlueBuild** e gerenciado via **bootc / ostree**.
 
-O sistema operacional inteiro é tratado como um artefato imutável, versionado no Git, construído via GitHub Actions, auditado com análise estática de vulnerabilidades (Trivy), criptograficamente assinado com Cosign e implantado no host via substituição de imagem transacional atômica (`bootc switch` / `bootc update`), garantindo rollback instantâneo e tempo de recuperação próximo de zero.
+O sistema operacional inteiro é tratado como um artefato imutável, versionado no Git, construído via GitHub Actions, criptograficamente assinado com Cosign e implantado no host via substituição de imagem transacional atômica (`bootc switch` / `bootc update`), garantindo rollback instantâneo e tempo de recuperação próximo de zero.
 
 ### 1.3 Princípios Arquiteturais Cardeais
 
@@ -35,17 +35,17 @@ O sistema operacional inteiro é tratado como um artefato imutável, versionado 
 +---------------------------------------------------------------------------------------+
 |                               PRINCÍPIOS ARQUITETURAIS                                |
 +-----------------------+-----------------------+-----------------------+---------------+
-|   1. Imutabilidade    |   2. Shift-Left       |   3. Atomicidade &    |  4. KISS &    |
-|      First            |      Security         |      Resiliência      |  Zero-Overhead|
-| Modificações apenas   | Varredura Trivy e     | Transição atômica de  | Sem daemons   |
-| via Git/CI/CD;        | assinatura Cosign no  | imagens e rollback    | redundantes;  |
-| /usr montado somente  | pipeline antes da     | instantâneo com       | uso de flags  |
-| leitura no host.      | liberação no registry.| bootc/ostree.         | nativas Linux.|
+|   1. Imutabilidade    |   2. Integridade &    |   3. Atomicidade &    |  4. KISS &    |
+|      First            |      Assinatura       |      Resiliência      |  Zero-Overhead|
+| Modificações apenas   | Assinatura Cosign no  | Transição atômica de  | Sem daemons   |
+| via Git/CI/CD;        | pipeline antes da     | imagens e rollback    | redundantes;  |
+| /usr montado somente  | liberação no registry.| instantâneo com       | uso de flags  |
+| leitura no host.      |                       | bootc/ostree.         | nativas Linux.|
 +-----------------------+-----------------------+-----------------------+---------------+
 ```
 
 1. **Imutabilidade First:** O sistema base (`/usr`, `/etc` gerenciado) é imutável. Softwares adicionais residem em contêineres rootless (Podman/Distrobox) ou pacotes isolados (Flatpak).
-2. **Shift-Left Security:** Segurança incorporada no processo de compilação. Vulnerabilidades críticas bloqueiam a esteira via relatórios SARIF; imagens só são aceitas se assinadas por chave criptográfica confiável.
+2. **Integridade & Assinatura:** Segurança incorporada no processo de compilação. Imagens só são aceitas se assinadas por chave criptográfica confiável (Cosign).
 3. **Atomicidade e Resiliência:** Atualizações são preparadas em staging em segundo plano. O host nunca fica em estado intermediário corrompido. Qualquer falha operacional é revertida com um único comando (`bootc rollback`).
 4. **KISS & Zero-Overhead:** Preferência estrita por interfaces de kernel e systemd nativas (drop-ins, systemd-tmpfiles, sysctl, environment.d) em vez de utilitários de terceiros ou daemons residentes em background desnecessários.
 
@@ -81,7 +81,6 @@ flowchart TD
         CHECK["check-updates.yml\n(Inspeção de Digest Upstream)"]
         BUILD["build-amd.yml\n(BlueBuild Engine v1)"]
         SIGN["Cosign Signer\n(Assinatura com Chave Privada)"]
-        SCAN["Trivy Security Gate\n(SARIF Scan Severity HIGH/CRITICAL)"]
     end
 
     subgraph Registry["Registro OCI Seguro (GHCR)"]
@@ -101,8 +100,6 @@ flowchart TD
     CHECK -->|Gatilho Automático| BUILD
     BUILD --> SIGN
     SIGN --> OCI_IMG
-    OCI_IMG --> SCAN
-    SCAN -->|Upload SARIF| GitRepo
     OCI_IMG -->|Puxado e Verificado via Cosign| BOOTC
     BOOTC --> KERNEL
     KERNEL --> DESKTOP
@@ -220,14 +217,13 @@ O sistema implementa uma automação de atualização sem precedentes em estaç�
 
 Durante a auditoria exaustiva do repositório realizada pela perspectiva do Arquiteto Revisor, identificou-se os seguintes pontos de atenção e melhoria imediata:
 
-|   Item   | Arquivo / Componente                  | Natureza do Problema                                                                                                                                          | Impacto / Risco                                                       |
-| :------: | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------- |
-| **A-01** | `recipes/common-flatpaks.yml`         | Duplicação do pacote `org.fkoehler.KTailctl` nas linhas 42 e 44.                                                                                              | Baixo (idempotência no Flatpak, mas denota falta de linting estrito). |
-| **A-02** | `.github/workflows/check-updates.yml` | Agendamento via cron `0 */2 * * *` (a cada 2 horas), enquanto a diretriz do `agent.md` especifica checagem a cada hora (`0 * * * *`).                         | Médio (atraso na detecção de patches de segurança upstream).          |
-| **A-03** | `recipes/common-drivers.yml`          | Pacotes ROCm do sistema comentados (`rocm-smi`, `rocm-hip`, `rocm-opencl`). Usuário precisa de IA local, mas as libs não estão na imagem base.                | Alto para Developer Experience (obriga setup manual em contêineres).  |
-| **A-04** | `.github/workflows/build-amd.yml`     | Build manual exclusivo (`workflow_dispatch`), sem disparo automático em push na branch principal (`main`).                                                    | Médio (desalinhamento com GitOps contínuo).                           |
-| **A-05** | `recipes/common-brew.yml`             | Módulo `soar` habilitado com auto-upgrade a cada `45m`, gerando concorrência desnecessária com o timer do systemd.                                            | Baixo / Médio (potencial contenção de lock no diretório de usuário).  |
-| **A-06** | `.github/workflows/build-amd.yml`     | O Trivy escaneia com severidade `CRITICAL,HIGH`, mas não quebra a esteira se encontrar vulnerabilidades críticas não mitigáveis (falta política de exceções). | Médio (falso senso de portão de qualidade bloqueante).                |
+|   Item   | Arquivo / Componente                  | Natureza do Problema                                                                                                                           | Impacto / Risco                                                       |
+| :------: | :------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| **A-01** | `recipes/common-flatpaks.yml`         | Duplicação do pacote `org.fkoehler.KTailctl` nas linhas 42 e 44.                                                                               | Baixo (idempotência no Flatpak, mas denota falta de linting estrito). |
+| **A-02** | `.github/workflows/check-updates.yml` | Agendamento via cron `0 */2 * * *` (a cada 2 horas), enquanto a diretriz do `agent.md` especifica checagem a cada hora (`0 * * * *`).          | Médio (atraso na detecção de patches de segurança upstream).          |
+| **A-03** | `recipes/common-drivers.yml`          | Pacotes ROCm do sistema comentados (`rocm-smi`, `rocm-hip`, `rocm-opencl`). Usuário precisa de IA local, mas as libs não estão na imagem base. | Alto para Developer Experience (obriga setup manual em contêineres).  |
+| **A-04** | `.github/workflows/build-amd.yml`     | Build manual exclusivo (`workflow_dispatch`), sem disparo automático em push na branch principal (`main`).                                     | Médio (desalinhamento com GitOps contínuo).                           |
+| **A-05** | `recipes/common-brew.yml`             | Módulo `soar` habilitado com auto-upgrade a cada `45m`, gerando concorrência desnecessária com o timer do systemd.                             | Baixo / Médio (potencial contenção de lock no diretório de usuário).  |
 
 ---
 
@@ -240,7 +236,7 @@ Durante a auditoria exaustiva do repositório realizada pela perspectiva do Arqu
 
 ### 7.2 Melhoria 2: CI/CD GitOps com Validação Automatizada de Boot (Boot Validation Gate)
 
-- **Contexto:** Atualmente, a imagem é compilada e testada com Trivy, mas se um módulo de kernel ou argumento do GRUB corromper o initramfs, o erro só será notado pelo usuário após a reinicialização da máquina física.
+- **Contexto:** Atualmente, a imagem é compilada no GitHub Actions, mas se um módulo de kernel ou argumento do GRUB corromper o initramfs, o erro só será notado pelo usuário após a reinicialização da máquina física.
 - **Proposta Arquitetural:** Integrar um job de teste no GitHub Actions utilizando `qemu-system-x86_64` ou `bootc-image-builder` em modo headless (KVM nos runners do GitHub) para realizar um boot de validação (Sanity Boot Check) antes de mover a tag `:latest` no GHCR.
 
 ### 7.3 Melhoria 3: Automação Integrada de Políticas Flatpak Overrides

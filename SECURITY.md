@@ -4,8 +4,8 @@
 
 This project builds customized Fedora Kinoite container images using BlueBuild. Security updates are tracked and applied automatically through upstream base image updates and daily package builds.
 
-| Variant | Reference Target | Supported |
-| :--- | :--- | :---: |
+| Variant              | Reference Target                        |     Supported      |
+| :------------------- | :-------------------------------------- | :----------------: |
 | `kinoite-amd:latest` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | :white_check_mark: |
 
 ## Image Verification and Integrity
@@ -16,8 +16,6 @@ You can verify the image authenticity before rebasing or switching:
 ```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
-
-Automated image vulnerability scans are performed on every build using **Trivy**, flagging and reporting high/critical severity CVEs via GitHub Security SARIF reports.
 
 ## Reporting a Vulnerability
 
