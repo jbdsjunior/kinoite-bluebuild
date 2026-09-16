@@ -1,21 +1,5 @@
 name: build-amd
 on:
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'LICENSE'
-      - '.gitignore'
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'LICENSE'
-      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
@@ -93,41 +77,3 @@ jobs:
         uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63
         with:
           sarif_file: trivy-results.sarif
-
-  notify-push:
-    name: Notify Tailscale Device (Push)
-    needs: [build-amd, security-scan]
-    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Connect to Tailscale (OAuth Mesh)
-        if: env.TS_OAUTH_CLIENT_ID != '' && env.TS_OAUTH_SECRET != ''
-        uses: tailscale/github-action@v3
-        env:
-          TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-
-      - name: Send Authenticated Push Trigger
-        if: env.UPDATE_RECEIVER_URL != '' && env.UPDATE_HMAC_SECRET != ''
-        env:
-          UPDATE_RECEIVER_URL: ${{ secrets.UPDATE_RECEIVER_URL }}
-          UPDATE_HMAC_SECRET: ${{ secrets.UPDATE_HMAC_SECRET }}
-        run: |
-          TIMESTAMP=$(date +%s)
-          IMAGE_REF="ghcr.io/${{ github.repository_owner }}/kinoite-amd:latest"
-          PAYLOAD="{\"timestamp\": $TIMESTAMP, \"image\": \"$IMAGE_REF\", \"event\": \"image_published\"}"
-          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$UPDATE_HMAC_SECRET" | cut -d' ' -f2)
-
-          echo "Dispatching authenticated push notification to $UPDATE_RECEIVER_URL..."
-          curl -f -sS -X POST "$UPDATE_RECEIVER_URL" \
-            -H "Content-Type: application/json" \
-            -H "X-Signature: $SIGNATURE" \
-            -H "X-Timestamp: $TIMESTAMP" \
-            -d "$PAYLOAD" \
-            --retry 3 --max-time 15
-          echo "Push notification dispatched successfully."
