@@ -37,8 +37,8 @@ jobs:
 
       - name: Validate Shell Scripts (ShellCheck & bash -n)
         run: |
-          find scripts/ files/system/usr/bin/ -type f -name "*.sh" -o -perm /111 -exec bash -n {} +
-          shellcheck scripts/*.sh files/system/usr/bin/* --severity=warning || true
+          find scripts/ files/system/usr/bin/ -type f \( -name "*.sh" -o -perm /111 \) -exec bash -n {} +
+          find scripts/ files/system/usr/bin/ -type f \( -name "*.sh" -o -perm /111 \) -exec shellcheck --severity=warning {} + || true
 
       - name: Validate Python Scripts
         run: |
