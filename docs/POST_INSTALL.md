@@ -410,3 +410,77 @@ gpu-top
 ```
 
 ---
+
+## 14) Instant Push Updates via Tailscale (FCM-style)
+
+The system includes a push notification receiver powered by **systemd socket activation** (`kinoite-update-trigger.socket`). Instead of polling OCI registries continuously, the system maintains 0 MB of RAM in idle and wakes up instantly when GitHub Actions finishes compiling and signing a new image.
+
+### 1. Automated Setup Assistant (Recommended)
+
+Run the built-in configuration assistant:
+
+```bash
+# On installed Kinoite system:
+sudo kinoite-setup-push-update
+
+# Or from cloned repository:
+sudo ./scripts/setup-push-update.sh
+```
+
+This assistant automatically generates the secret in `/etc/kinoite-update.secret`, detects your Tailscale IP, enables the systemd socket, performs a local test, and prints the exact values to paste into GitHub Secrets.
+
+> [!NOTE]
+> The traditional polling timer (`bootc-fetch-apply-updates.timer`) remains active in parallel as a fallback safety net. Once you verify that push updates work reliably, you can optionally disable it with:
+> `sudo systemctl disable --now bootc-fetch-apply-updates.timer`
+>
+> See the full step-by-step guide in [TAILSCALE_PUSH_SETUP.md](TAILSCALE_PUSH_SETUP.md).
+
+### 2. Manual Secret Setup
+
+If you prefer to configure manually:
+
+```bash
+# Generate high-entropy secret
+SECRET=$(openssl rand -hex 32)
+
+# Save to system secret file with root-only permissions
+sudo bash -c "echo '$SECRET' > /etc/kinoite-update.secret"
+sudo chmod 0400 /etc/kinoite-update.secret
+```
+
+### 3. GitHub Secrets Setup (`Settings > Secrets and variables > Actions`)
+
+Add the following repository secrets to your GitHub repository:
+
+- `UPDATE_HMAC_SECRET`: The exact secret string generated above.
+- `UPDATE_RECEIVER_URL`: Your device address:
+  - **Option A (Direct Tailscale Mesh)**: `http://<tailscale-ip-or-magicdns>:58080` (e.g. `http://kinoite:58080` or `http://100.x.y.z:58080`)
+  - **Option B (Tailscale Funnel)**: `https://<node-name>.<tailnet>.ts.net:58080/update`
+- `TAILSCALE_AUTHKEY`: Ephemeral, pre-authorized reusable auth key generated in Tailscale Admin Console (tagged with `tag:ci`).
+
+### 4. Verify Socket Activation Status
+
+```bash
+# Check socket listener status (0 MB memory in idle)
+systemctl status kinoite-update-trigger.socket
+
+# View receiver journal logs
+journalctl -u "kinoite-update-trigger@*" -f
+```
+
+### 5. Manual Test Trigger
+
+You can test authentication directly from another device on your Tailnet:
+
+```bash
+TIMESTAMP=$(date +%s)
+PAYLOAD="{\"timestamp\": $TIMESTAMP, \"test\": true}"
+SIG=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$SECRET" | cut -d' ' -f2)
+
+curl -i -X POST http://<tailscale-ip>:58080 \
+  -H "Content-Type: application/json" \
+  -H "X-Signature: $SIG" \
+  -H "X-Timestamp: $TIMESTAMP" \
+  -d "$PAYLOAD"
+# Expected response: HTTP/1.1 200 OK
+```

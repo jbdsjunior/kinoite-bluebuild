@@ -1,0 +1,16 @@
+[Unit]
+Description=Kinoite Push Update Receiver & Verifier (%i)
+Documentation=https://github.com/jbdsjunior/kinoite-bluebuild
+After=network.target tailscaled.service
+StartLimitIntervalSec=10min
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/kinoite-update-receiver
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+MemoryMax=64M
+CPUQuota=10%
+

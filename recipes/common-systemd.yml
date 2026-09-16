@@ -16,9 +16,10 @@ modules:
         - mcelog.service
 
       enabled:
-        # Base update timers
+        # Base update automation & timers
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
+        - kinoite-update-trigger.socket
 
         # Container automation (Podman)
         - podman-restart.service
