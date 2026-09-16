@@ -7,7 +7,7 @@ modules:
         scope: system
         install:
           # --- PACKAGE & APPLICATION MANAGEMENT ---
-          - io.github.kolunmi.Bazaar
+          # - io.github.kolunmi.Bazaar
           - io.github.flattool.Warehouse
           - com.github.tchx84.Flatseal
           - it.mijorus.gearlever
