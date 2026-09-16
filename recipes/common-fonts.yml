@@ -14,6 +14,8 @@ modules:
         - fira-code-fonts
         - rsms-inter-vf-fonts
         - ms-core-fonts
+        - wqy-zenhei-fonts # Fallback CJK universal para Flatpaks e WebKitGTK
+        - google-noto-sans-cjk-fonts # Noto CJK tradicional (estático)
 
   - type: fonts
     fonts:
