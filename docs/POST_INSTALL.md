@@ -30,45 +30,43 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 
 ## 2) Available Global Aliases
 
-| Alias                 | Command/Action                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| `update`              | Run `topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak`               |
-| `update-all`          | Run `topgrade -cy --no-ask-retry --auto-retry 2`                                     |
-| `sysup`               | `sudo bootc update`                                                                  |
-| `rollback`            | `sudo bootc rollback`                                                                |
-| `status-bootc`        | `sudo bootc status`                                                                  |
-| `reload-profile`      | `exec $SHELL`                                                                        |
-| `ls`, `ll`, `la`      | Enhanced file listings with git status and icons via `eza`                           |
-| `lt`, `tree`          | Hierarchical directory trees via `eza --tree`                                        |
-| `cat`                 | Syntax-highlighted pagerless and borderless file viewing via `bat -p`                |
-| `top`, `htop`        | Modern interactive GPU & 32-thread CPU monitor via `btop`                            |
-| `grep`                | `grep --color=auto`                                                                  |
-| `cp`, `mv`, `rm`      | Safe interactive file operations with confirmation (`-i`)                            |
-| `fzf`                 | Fuzzy interactive search (integrated with Ctrl+R history, Ctrl+T files, Alt+C cd)    |
-| `kargs`               | `rpm-ostree kargs`                                                                   |
-| `kargs-edit`          | `sudo rpm-ostree kargs --editor`                                                     |
-| `config-diff`         | `sudo ostree admin config-diff`                                                      |
-| `status-ostree`       | `rpm-ostree status`                                                                  |
-| `status-fw`           | `systemctl status firewalld`                                                         |
-| `status-dns`          | `systemctl status systemd-resolved`                                                  |
-| `status-kvm`          | `systemctl status virtqemud.socket virtqemud.service`                                |
-| `status-tailscale`    | `tailscale status`                                                                   |
-| `status-podman`       | `systemctl status podman-auto-update.timer`                                          |
-| `status-podman-user`  | `systemctl --user status podman-auto-update.timer`                                   |
-| `status-flatpak-system`| `systemctl status flatpak-system-update.timer`                                       |
-| `status-flatpak-user` | `systemctl --user status flatpak-user-update.timer`                                  |
-| `status-bootc-update` | `systemctl status bootc-fetch-apply-updates.timer`                                   |
-| `status-soar`         | `systemctl --user status soar-upgrade-packages.timer`                                |
-| `gpu-top`             | Interactive real-time GPU/VRAM engine monitor via `nvtop`                            |
-| `gpu-stat`            | Low-level AMD Radeon hardware activity monitor via `radeontop`                       |
-| `tmpfiles-system`     | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`        |
-| `tmpfiles-user`       | `systemd-tmpfiles --user --create`                                                   |
-| `tmpfiles-all`        | Execute both system and user BTRFS NoCOW tmpfiles rules                              |
-| `podman-cleanup`      | Clean up unused Podman containers, images, and volumes                               |
-| `podman-ps`           | `podman ps -a`                                                                       |
-| `distrobox-list`      | `distrobox list`                                                                     |
-
-
+| Alias                   | Command/Action                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `update`                | Run `topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak`            |
+| `update-all`            | Run `topgrade -cy --no-ask-retry --auto-retry 2`                                  |
+| `sysup`                 | `sudo bootc update`                                                               |
+| `rollback`              | `sudo bootc rollback`                                                             |
+| `status-bootc`          | `sudo bootc status`                                                               |
+| `reload-profile`        | `exec $SHELL`                                                                     |
+| `ls`, `ll`, `la`        | Enhanced file listings with git status and icons via `eza`                        |
+| `lt`, `tree`            | Hierarchical directory trees via `eza --tree`                                     |
+| `cat`                   | Syntax-highlighted pagerless and borderless file viewing via `bat -p`             |
+| `top`, `htop`           | Modern interactive GPU & 32-thread CPU monitor via `btop`                         |
+| `grep`                  | `grep --color=auto`                                                               |
+| `cp`, `mv`, `rm`        | Safe interactive file operations with confirmation (`-i`)                         |
+| `fzf`                   | Fuzzy interactive search (integrated with Ctrl+R history, Ctrl+T files, Alt+C cd) |
+| `kargs`                 | `rpm-ostree kargs`                                                                |
+| `kargs-edit`            | `sudo rpm-ostree kargs --editor`                                                  |
+| `config-diff`           | `sudo ostree admin config-diff`                                                   |
+| `status-ostree`         | `rpm-ostree status`                                                               |
+| `status-fw`             | `systemctl status firewalld`                                                      |
+| `status-dns`            | `systemctl status systemd-resolved`                                               |
+| `status-kvm`            | `systemctl status virtqemud.socket virtqemud.service`                             |
+| `status-tailscale`      | `tailscale status`                                                                |
+| `status-podman`         | `systemctl status podman-auto-update.timer`                                       |
+| `status-podman-user`    | `systemctl --user status podman-auto-update.timer`                                |
+| `status-flatpak-system` | `systemctl status flatpak-system-update.timer`                                    |
+| `status-flatpak-user`   | `systemctl --user status flatpak-user-update.timer`                               |
+| `status-bootc-update`   | `systemctl status bootc-fetch-apply-updates.timer`                                |
+| `status-soar`           | `systemctl --user status soar-upgrade-packages.timer`                             |
+| `gpu-top`               | Interactive real-time GPU/VRAM engine monitor via `nvtop`                         |
+| `gpu-stat`              | Low-level AMD Radeon hardware activity monitor via `radeontop`                    |
+| `tmpfiles-system`       | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`     |
+| `tmpfiles-user`         | `systemd-tmpfiles --user --create`                                                |
+| `tmpfiles-all`          | Execute both system and user BTRFS NoCOW tmpfiles rules                           |
+| `podman-cleanup`        | Clean up unused Podman containers, images, and volumes                            |
+| `podman-ps`             | `podman ps -a`                                                                    |
+| `distrobox-list`        | `distrobox list`                                                                  |
 
 ---
 
@@ -212,6 +210,7 @@ Default resource and performance parameters in `[Service]` are parametrized and 
 - `RCLONE_TPSLIMIT=10` (interpolated into `--tpslimit`)
 - `RCLONE_TPSLIMIT_BURST=10` (interpolated into `--tpslimit-burst`)
 - `RCLONE_VFS_READ_AHEAD=32M` (interpolated into `--vfs-read-ahead`)
+- `RCLONE_VFS_READ_CHUNK_SIZE=8M` (interpolated into `--vfs-read-chunk-size`)
 - `RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M` (interpolated into `--vfs-read-chunk-size-limit`)
 - `RCLONE_BWLIMIT=0` (interpolated into `--bwlimit`)
 - Clean teardown: `ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}` and `ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}`
@@ -221,11 +220,11 @@ Default resource and performance parameters in `[Service]` are parametrized and 
 
 Before `ExecStart`, the unit loads the authoritative base configuration `EnvironmentFile=-%h/.config/rclone/env/%i.env` followed by an optional local override file `EnvironmentFile=-%h/.config/rclone/env/%i.local.env`. Default templates from `/usr/share/rclone/env/` are authoritatively synchronized to `~/.config/rclone/env/%i.env` on boot via systemd user tmpfiles (`/usr/share/user-tmpfiles.d/70-rclone-env.conf`), while persistent custom flags, credentials, or overrides can be placed in `~/.config/rclone/env/%i.local.env` without being overwritten on boot.
 
-| Service instance             | Expected rclone remote | Mount point           | Environment configuration file         | System starter template                |
-| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- | -------------------------------------- |
+| Service instance             | Expected rclone remote | Mount point           | Environment configuration file         | System starter template                 |
+| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- | --------------------------------------- |
 | `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` | `/usr/share/rclone/env/GoogleDrive.env` |
 | `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    | `/usr/share/rclone/env/OneDrive.env`    |
-| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    | Custom user-defined                    |
+| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    | Custom user-defined                     |
 
 #### Google Drive Configuration (`GoogleDrive.env`)
 
@@ -305,6 +304,7 @@ balooctl6 purge
 In KDE Dolphin, normal deletion moves files into a local or per-mount trash folder (`.Trash-1000`). Because `/.Trash-1000/**` is intentionally excluded in the rclone mount configuration to prevent sync loops and quota waste, standard trash operations on cloud mounts can be slow or trigger filesystem errors.
 
 **Recommendation:** Always use **`Shift + Delete`** when removing files in `~/Cloud/`:
+
 - On **Google Drive**: When `Shift + Delete` is invoked, rclone receives the delete call and moves the item into Google Drive's cloud trash bin because `RCLONE_DRIVE_USE_TRASH=true` is enabled.
 - On **OneDrive**: The file is removed remotely without local FUSE trash overhead.
 
@@ -410,4 +410,3 @@ gpu-top
 ```
 
 ---
-
