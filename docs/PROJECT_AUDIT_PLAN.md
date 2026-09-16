@@ -21,7 +21,6 @@ Uma auditoria exaustiva de todos os componentes do projeto revelou os seguintes 
 
 1. **Duplicidade de Variáveis de Ambiente**: As mesmas variáveis (`HSA_OVERRIDE_GFX_VERSION`, `AMD_VULKAN_ICD`, `EDITOR`, `VISUAL`, `PAGER`, `FREETYPE_PROPERTIES`, `ELECTRON_OZONE_PLATFORM_HINT`) estão definidas identicamente em `/usr/lib/environment.d/60-kinoite-environment.conf` e em `/etc/profile.d/50-shell-env-overrides.sh`. No Linux moderno com systemd, `environment.d` é a fonte canônica para sessões gráficas e de usuário; o `profile.d` deve apenas complementar shells interativos sem redeclarar variáveis globais.
 2. **Princípio do SO Stateless (Hermético)**: Arquivos estáticos de configuração como `/etc/containers/nodocker` podem residir sob `/usr/share/containers/nodocker`, preservando `/etc` limpo para configurações modificáveis pelo usuário.
-3. **Duplicação de Scripts**: O script `scripts/setup-push-update.sh` é uma cópia literal de `files/system/usr/bin/kinoite-setup-push-update`. Alterações futuras em um podem deixar o outro defasado se não houver vinculação canônica.
 
 ### 1.3 Esteira CI/CD e Automação de Atualizações (`.github/workflows/`)
 
@@ -62,8 +61,6 @@ Uma auditoria exaustiva de todos os componentes do projeto revelou os seguintes 
 - **Ação 2.1 - Eliminação de Redundância nas Variáveis de Ambiente:**
   - Manter `/usr/lib/environment.d/60-kinoite-environment.conf` como **fonte canônica** de variáveis do sistema (GPU AMD, editores, fontes FreeType, Electron Wayland).
   - Limpar `/etc/profile.d/50-shell-env-overrides.sh` para focar exclusivamente na interatividade do shell (Starship, Zoxide, FZF bindings e Fastfetch), consumindo as variáveis já exportadas pelo systemd sem duplicá-las.
-- **Ação 2.2 - Vinculação Canônica do Script de Pós-Instalação:**
-  - Fazer com que `scripts/setup-push-update.sh` aponte ou invoque diretamente `files/system/usr/bin/kinoite-setup-push-update`, eliminando redundância de código e risco de descompasso na manutenção.
 
 ---
 
@@ -97,9 +94,8 @@ Uma auditoria exaustiva de todos os componentes do projeto revelou os seguintes 
 - **Ação 4.1 - Criar um `Justfile` na raiz do projeto:**
   - Prover comandos declarativos diretos:
     - `just check`: Executa validação de sintaxe e lint local.
-    - `just setup-push`: Dispara o assistente de configuração Push Tailscale.
-    - `just test-push`: Envia uma notificação de teste HMAC para a porta 58080.
-    - `just status`: Exibe status consolidado do bootc, timers, sockets e Flatpaks.
+    - `just status`: Exibe status consolidado do bootc, timers e Flatpaks.
+    - `just update`: Aciona a atualização do sistema (bootc e flatpaks).
 
 ---
 
@@ -109,21 +105,19 @@ Uma auditoria exaustiva de todos os componentes do projeto revelou os seguintes 
   - No `README.md`, referenciar de forma modular:
     - [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) (Arquitetura e Decisões de Design)
     - [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md) (Dimensionamento e Hardware AMD)
-    - [`docs/TAILSCALE_PUSH_SETUP.md`](docs/TAILSCALE_PUSH_SETUP.md) (Guia do Push FCM-style via Tailscale)
     - [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) (Checklist de pós-instalação e uso diário)
 
 ---
 
 ## 3. Matriz de Segurança e Não-Regressão
 
-| Recurso / Componente                  | Estado Atual                                  | Estado Pós-Plano   | Garantia de Não-Regressão                         |
-| :------------------------------------ | :-------------------------------------------- | :----------------- | :------------------------------------------------ |
-| **Atualização Antiga (Polling)**      | Ativo (`bootc-fetch-apply-updates.timer` 45m) | Mantido 100% ativo | Sem remoções no systemd; continua como fallback.  |
-| **Atualização Nova (Push Tailscale)** | Ativo (porta 58080, socket activation)        | Mantido 100% ativo | Script assistente e documentação intactos.        |
-| **Drivers AMD / Mesa Freeworld**      | Configurado em `common-drivers.yml`           | Mantido 100% ativo | Pacotes de aceleração de vídeo e GPU preservados. |
-| **Virtualização KVM / Libvirt**       | Modular libvirt daemons e regras NoCOW        | Mantido 100% ativo | Zero alteração em pacotes e tmpfiles.d.           |
-| **Fontes & CJK**                      | Fontconfig 64 + pacotes CJK estáticos         | Mantido 100% ativo | Noto CJK, WQY e Inter mantidos.                   |
-| **Rclone Sync**                       | `rclone@.service` + env files declarativos    | Mantido 100% ativo | Sem alteração nos templates de serviço.           |
+| Recurso / Componente                 | Estado Atual                                  | Estado Pós-Plano   | Garantia de Não-Regressão                         |
+| :----------------------------------- | :-------------------------------------------- | :----------------- | :------------------------------------------------ |
+| **Atualização do Sistema (Polling)** | Ativo (`bootc-fetch-apply-updates.timer` 45m) | Mantido 100% ativo | Sem alterações no timer padrão do bootc.          |
+| **Drivers AMD / Mesa Freeworld**     | Configurado em `common-drivers.yml`           | Mantido 100% ativo | Pacotes de aceleração de vídeo e GPU preservados. |
+| **Virtualização KVM / Libvirt**      | Modular libvirt daemons e regras NoCOW        | Mantido 100% ativo | Zero alteração em pacotes e tmpfiles.d.           |
+| **Fontes & CJK**                     | Fontconfig 64 + pacotes CJK estáticos         | Mantido 100% ativo | Noto CJK, WQY e Inter mantidos.                   |
+| **Rclone Sync**                      | `rclone@.service` + env files declarativos    | Mantido 100% ativo | Sem alteração nos templates de serviço.           |
 
 ---
 

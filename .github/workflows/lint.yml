@@ -10,7 +10,6 @@ on:
       - 'recipes/**'
       - '.github/workflows/**'
       - 'files/**'
-      - 'scripts/**'
   workflow_dispatch:
 
 concurrency:
@@ -37,10 +36,5 @@ jobs:
 
       - name: Validate Shell Scripts (ShellCheck & bash -n)
         run: |
-          find scripts/ files/system/usr/bin/ -type f \( -name "*.sh" -o -perm /111 \) -exec bash -n {} +
-          find scripts/ files/system/usr/bin/ -type f \( -name "*.sh" -o -perm /111 \) -exec shellcheck --severity=warning {} + || true
-
-      - name: Validate Python Scripts
-        run: |
-          python3 -m py_compile files/system/usr/libexec/kinoite-update-receiver
-
+          find files/ -type f -name "*.sh" -exec bash -n {} +
+          find files/ -type f -name "*.sh" -exec shellcheck --severity=warning {} + || true
