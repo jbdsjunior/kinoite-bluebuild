@@ -19,6 +19,7 @@ Environment=RCLONE_CHECKERS=8
 Environment=RCLONE_TPSLIMIT=10
 Environment=RCLONE_TPSLIMIT_BURST=10
 Environment=RCLONE_VFS_READ_AHEAD=32M
+Environment=RCLONE_VFS_READ_CHUNK_SIZE=8M
 Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
 Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
@@ -37,7 +38,7 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-max-size 20G \
   --vfs-cache-max-age 72h \
   --vfs-fast-fingerprint \
-  --vfs-read-chunk-size 8M \
+  --vfs-read-chunk-size ${RCLONE_VFS_READ_CHUNK_SIZE} \
   --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
   --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
   --vfs-write-back 5s \
