@@ -1,6 +1,7 @@
 [Unit]
 Description=Rclone mount for KDE Plasma - %i
 Documentation=https://rclone.org/commands/rclone_mount/
+ConditionPathExists=%h/.config/rclone/rclone.conf
 After=network-online.target
 Wants=network-online.target
 StartLimitIntervalSec=10min
@@ -25,14 +26,12 @@ Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 EnvironmentFile=-%h/.config/rclone/env/%i.local.env
 
+ExecStartPre=-/usr/bin/fusermount3 -uzq ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
 ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
 
 ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --config %h/.config/rclone/rclone.conf \
-  --exclude /.Trash-1000/** \
-  --exclude /.Trash/** \
-  --exclude /.trashinfo/** \
   --cache-dir ${RCLONE_CACHE} \
   --vfs-cache-mode full \
   --vfs-cache-max-size 20G \
@@ -64,7 +63,8 @@ ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
 RestartSec=30s
-TimeoutStopSec=15s
+KillMode=mixed
+TimeoutStopSec=180s
 
 
 LimitNOFILE=1048576
