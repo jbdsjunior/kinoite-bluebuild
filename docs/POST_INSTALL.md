@@ -238,12 +238,12 @@ RCLONE_CHECKERS=8
 RCLONE_BUFFER_SIZE=16M
 RCLONE_VFS_READ_AHEAD=32M
 RCLONE_DRIVE_SKIP_GDOCS=true
-RCLONE_DRIVE_USE_TRASH=true
+RCLONE_DRIVE_USE_TRASH=false
 RCLONE_DRIVE_CHUNK_SIZE=64M
 ```
 
 - `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion.
-- `RCLONE_DRIVE_USE_TRASH=true`: Sends deleted files to Google Drive web trash rather than permanently deleting them immediately.
+- `RCLONE_DRIVE_USE_TRASH=false`: Deletes files permanently on the remote instead of moving them to the Google Drive cloud trash bin.
 - `RCLONE_DRIVE_CHUNK_SIZE=64M`: Improves upload throughput for large files.
 
 #### Microsoft OneDrive Configuration (`OneDrive.env`)
@@ -299,23 +299,35 @@ The image authoritatively ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` exclud
 balooctl6 purge
 ```
 
-### KDE Dolphin Trash Recommendation (Shift + Delete)
+### KDE Dolphin File Deletion (Permanent Deletion)
 
-In KDE Dolphin, normal deletion moves files into a local or per-mount trash folder (`.Trash-1000`). Because `/.Trash-1000/**` is intentionally excluded in the rclone mount configuration to prevent sync loops and quota waste, standard trash operations on cloud mounts can be slow or trigger filesystem errors.
+In KDE Dolphin, normal deletion moves files into a per-mount trash folder (`.Trash-1000`). To prevent cloud drives from being polluted with hidden trash folders:
 
-**Recommendation:** Always use **`Shift + Delete`** when removing files in `~/Cloud/`:
-
-- On **Google Drive**: When `Shift + Delete` is invoked, rclone receives the delete call and moves the item into Google Drive's cloud trash bin because `RCLONE_DRIVE_USE_TRASH=true` is enabled.
-- On **OneDrive**: The file is removed remotely without local FUSE trash overhead.
+1. The system configures `ShowDeleteCommand=true` in `/etc/xdg/kdeglobals`, which adds the **"Excluir" (Delete)** option directly to Dolphin's context menu.
+2. Use **`Shift + Delete`** or right-click and select **"Excluir"** when removing files inside `~/Cloud/`:
+   - Files are unlinked immediately via standard POSIX `unlink`, bypassing the local `.Trash-1000` directory.
+   - On **Google Drive**, files are deleted permanently without being redirected to the Google Drive cloud trash bin (`RCLONE_DRIVE_USE_TRASH=false`).
+   - On **OneDrive** and other remotes, files are deleted permanently without FUSE trash directory overhead.
 
 ### Monitoring and Status
 
-Check service status and follow logs:
+Quick operational aliases (defined in `60-kinoite-aliases.sh`):
+
+```bash
+status-rclone   # systemctl --user status "rclone@*"
+logs-rclone     # journalctl --user -u "rclone@*" -f
+restart-rclone  # systemctl --user restart "rclone@*"
+```
+
+Or target specific remotes:
 
 ```bash
 systemctl --user status rclone@GoogleDrive.service
 journalctl --user -u rclone@GoogleDrive.service -f
 ```
+
+> [!TIP]
+> **Dolphin Thumbnails / Previews**: Because `~/Cloud/` is a FUSE mount, generating thumbnails for folders with heavy videos or RAW images can consume bandwidth and cache space. In Dolphin, configure **Settings → Configure Dolphin → General → Previews** to limit preview file sizes or disable video previews for remote mounts.
 
 ---
 
