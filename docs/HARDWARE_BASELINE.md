@@ -4,13 +4,13 @@
 
 This project is optimized for a high-capacity workstation profile focused on KDE Plasma, virtualization, containers, and development workloads.
 
-| Component | Reference Specification |
-| :-- | :-- |
-| **CPU** | AMD Ryzen 9 5950X |
-| **Primary GPU (display/Wayland)** | AMD RX 6600 XT |
-| **RAM** | 64 GB |
-| **Storage** | 1 TB NVMe |
-| **Base OS** | Fedora Kinoite 44 |
+| Component                         | Reference Specification |
+| :-------------------------------- | :---------------------- |
+| **CPU**                           | AMD Ryzen 9 5950X       |
+| **Primary GPU (display/Wayland)** | AMD RX 6600 XT          |
+| **RAM**                           | 64 GB                   |
+| **Storage**                       | 1 TB NVMe               |
+| **Base OS**                       | Fedora Kinoite 44       |
 
 ---
 
@@ -30,7 +30,6 @@ This project is optimized for a high-capacity workstation profile focused on KDE
 - BTRFS NoCOW tmpfiles cover libvirt image directories (system and user session) and Podman/Distrobox storage roots before heavy write paths are populated.
 - Network stack enables BBR + FQ congestion control, IP forwarding for containers, libvirt, and Tailscale mesh routing, paired with SYN cookies and reverse path filtering.
 
-
 ## Expected Operational Limits
 
 On hardware below this baseline, you may observe:
@@ -45,9 +44,9 @@ On hardware below this baseline, you may observe:
 
 ## Relationship to Recipes and Variants
 
-| Variant | Pipeline | Profile |
-| :-- | :-- | :-- |
-| `amd` | `.github/workflows/build-amd.yml` | AMD-only systems |
+| Variant | Pipeline                          | Profile          |
+| :------ | :-------------------------------- | :--------------- |
+| `amd`   | `.github/workflows/build-amd.yml` | AMD-only systems |
 
 - Main recipe: `recipes/recipe-amd.yml`.
 - Shared modules: `recipes/common-*.yml`.
