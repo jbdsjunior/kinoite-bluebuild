@@ -3,7 +3,7 @@
 # Critical flow: bypass non-interactive shell sessions
 case "$-" in
     *i*) ;;
-      *) return 0 2>/dev/null || exit 0 ;;
+      *) return 0 2>/dev/null ;;
 esac
 
 if command -v eza >/dev/null 2>&1; then

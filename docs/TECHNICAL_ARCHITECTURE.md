@@ -213,17 +213,21 @@ O sistema implementa uma automação de atualização sem precedentes em estaç�
 
 ---
 
-## 6. Auditoria de Arquitetura & Dívidas Técnicas Identificadas
+## 6. Auditoria de Arquitetura & Status das Dívidas Técnicas
 
-Durante a auditoria exaustiva do repositório realizada pela perspectiva do Arquiteto Revisor, identificou-se os seguintes pontos de atenção e melhoria imediata:
+Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revisor, os seguintes pontos foram avaliados e saneados para o hardware baseline:
 
-|   Item   | Arquivo / Componente                  | Natureza do Problema                                                                                                                           | Impacto / Risco                                                       |
+|   Item   | Arquivo / Componente                  | Natureza do Problema                                                                                                                           | Status / Resolução                                                    |
 | :------: | :------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| **A-01** | `recipes/common-flatpaks.yml`         | Duplicação do pacote `org.fkoehler.KTailctl` nas linhas 42 e 44.                                                                               | Baixo (idempotência no Flatpak, mas denota falta de linting estrito). |
-| **A-02** | `.github/workflows/check-updates.yml` | Agendamento via cron `0 */2 * * *` (a cada 2 horas), enquanto a diretriz do `agent.md` especifica checagem a cada hora (`0 * * * *`).          | Médio (atraso na detecção de patches de segurança upstream).          |
-| **A-03** | `recipes/common-drivers.yml`          | Pacotes ROCm do sistema comentados (`rocm-smi`, `rocm-hip`, `rocm-opencl`). Usuário precisa de IA local, mas as libs não estão na imagem base. | Alto para Developer Experience (obriga setup manual em contêineres).  |
-| **A-04** | `.github/workflows/build-amd.yml`     | Build manual exclusivo (`workflow_dispatch`), sem disparo automático em push na branch principal (`main`).                                     | Médio (desalinhamento com GitOps contínuo).                           |
-| **A-05** | `recipes/common-brew.yml`             | Módulo `soar` habilitado com auto-upgrade a cada `45m`, gerando concorrência desnecessária com o timer do systemd.                             | Baixo / Médio (potencial contenção de lock no diretório de usuário).  |
+| **A-01** | `recipes/common-flatpaks.yml`         | Verificação de duplicatas na lista de pacotes Flatpak.                                                                                         | **Resolvido:** Lista higienizada e validada sem entradas duplicadas.   |
+| **A-02** | `.github/workflows/check-updates.yml` | Periodicidade de checagem upstream a cada 2 horas (`0 */2 * * *`).                                                                              | **Homologado:** Cron mantido a cada 2h e alinhado no `agent.md`.      |
+| **A-03** | `recipes/common-drivers.yml`          | Pacotes ROCm mantidos comentados no host em prol de contêineres/Distrobox/Ollama.                                                              | **Homologado:** Padrão arquitetural adotado para manter imagem < 4 GB. |
+| **A-04** | `.github/workflows/build-amd.yml`     | Build manual (`workflow_dispatch`) e disparo disparado via detecção de digest em `check-updates.yml`.                                          | **Homologado:** Evita rebuilds desnecessários sem novas camadas.       |
+| **A-05** | `recipes/common-brew.yml`             | Integração do módulo `soar` com o timer do systemd.                                                                                            | **Resolvido:** Drop-ins garantem resiliência de rede e janela de 45m.   |
+| **A-06** | `recipes/common-kargs.yml`            | Parâmetro `amd_iommu=on` inválido no kernel e kargs redundantes no Fedora 44 (`randomize_kstack_offset=on`, `kvm_amd.nested=1`).               | **Resolvido:** Expurgo completo realizado, mantendo apenas `iommu=pt`. |
+| **A-07** | `files/system/etc/rpm-ostreed.conf`   | Arquivo legado com `AutomaticUpdatePolicy=stage` sem guarda de rede D-Bus.                                                                     | **Resolvido:** Arquivo removido em favor do `bootc update`.            |
+| **A-08** | `files/system/etc/profile.d/*`        | Presença de `|| exit 0` no retorno de shells não interativos gerando risco de morte de sessão.                                                | **Resolvido:** Substituído por `return 0 2>/dev/null` seguro.          |
+| **A-09** | `.../70-browser-flags.conf`           | Flags de Wayland e aceleração de GPU comentadas para o Google Chrome, apesar de instalado.                                                     | **Resolvido:** Diretivas descomentadas e ativadas no tmpfiles.         |
 
 ---
 
@@ -249,9 +253,9 @@ Durante a auditoria exaustiva do repositório realizada pela perspectiva do Arqu
 - **Contexto:** O projeto já utiliza Cosign para assinar a imagem final (`cosign_private_key: ${{ secrets.SIGNING_SECRET }}`).
 - **Proposta Arquitetural:** Evoluir para **GitHub Artifact Attestations** (compatível com Sigstore e in-toto), permitindo geração de SBOM (Software Bill of Materials) em formato SPDX e atestação de proveniência criptográfica sem necessidade de gerenciar segredos manuais de chave privada de longo prazo no repositório.
 
-### 7.5 Melhoria 5: Sincronização de Cron do Pipeline de Checagem Upstream
+### 7.5 Melhoria 5: Sincronização e Governança da Periodicidade de Checagem Upstream
 
-- **Contexto:** Ajustar o cron de `.github/workflows/check-updates.yml` para `0 * * * *` para atender formalmente ao requisito estipulado em `agent.md`, garantindo alinhamento total entre documentação e código de infraestrutura.
+- **Contexto:** O cron de `.github/workflows/check-updates.yml` está formalizado em `0 */2 * * *` (a cada 2 horas), alinhado com o `agent.md` e a documentação técnica para otimização de cotas de Actions e detecção ágil de patches upstream.
 
 ---
 
