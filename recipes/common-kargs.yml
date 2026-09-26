@@ -7,9 +7,7 @@ modules:
       - amd_pstate=active
 
       # Virtualization / KVM / IOMMU passthrough defaults (docs/HARDWARE_BASELINE.md)
-      - amd_iommu=on
       - iommu=pt
-      - kvm_amd.nested=1
 
       # Desktop responsiveness under heavy VM/compilation load
       - preempt=full
@@ -22,4 +20,3 @@ modules:
       - slab_nomerge
       - page_alloc.shuffle=1
       - vsyscall=none
-      - randomize_kstack_offset=on
