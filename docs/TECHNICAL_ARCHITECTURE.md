@@ -226,7 +226,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-05** | `recipes/common-brew.yml`             | Integração do módulo `soar` com o timer do systemd.                                                                              | **Resolvido:** Drop-ins garantem resiliência de rede e janela de 45m.  |
 | **A-06** | `recipes/common-kargs.yml`            | Parâmetro `amd_iommu=on` inválido no kernel e kargs redundantes no Fedora 44 (`randomize_kstack_offset=on`, `kvm_amd.nested=1`). | **Resolvido:** Expurgo completo realizado, mantendo apenas `iommu=pt`. |
 | **A-07** | `files/system/etc/rpm-ostreed.conf`   | Arquivo legado com `AutomaticUpdatePolicy=stage` sem guarda de rede D-Bus.                                                       | **Resolvido:** Arquivo removido em favor do `bootc update`.            |
-| **A-08** | `files/system/etc/profile.d/*`        | Presença de `                                                                                                                    |                                                                        | exit 0` no retorno de shells não interativos gerando risco de morte de sessão. | **Resolvido:** Substituído por `return 0 2>/dev/null` seguro. |
+| **A-08** | `files/system/etc/profile.d/*`        | Presença de `\|\| exit 0` no retorno de shells não interativos gerando risco de encerramento de sessão. | **Resolvido:** Substituído por `return 0 2>/dev/null` seguro.          |
 | **A-09** | `.../70-browser-flags.conf`           | Flags de Wayland e aceleração de GPU comentadas para o Google Chrome, apesar de instalado.                                       | **Resolvido:** Diretivas descomentadas e ativadas no tmpfiles.         |
 
 ---
@@ -235,8 +235,9 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 
 ### 7.1 Melhoria 1: Implementação de CDI (Container Device Interface) para Aceleração ROCm
 
+- **Status:** **Implementado** declarativamente na imagem base (`files/system/etc/cdi/amdgpu.yaml`).
 - **Contexto:** Manter o runtime do ROCm limpo do sistema base é uma excelente prática para evitar inflar a imagem OCI em mais de 4 GB. No entanto, passar a GPU AMD RX 6600 XT para contêineres Podman frequentemente exige permissões excessivas (`--privileged`, `--device /dev/kfd`, `--device /dev/dri`).
-- **Proposta Arquitetural:** Adicionar uma especificação declarativa de **CDI (Container Device Interface)** em `/etc/cdi/amdgpu.yaml`. Isso permite executar contêineres de inferência (como Ollama ou vLLM) com a flag limpa e segura `podman run --device amd.com/gpu=all`.
+- **Implementação:** Especificação declarativa de **CDI (Container Device Interface)** em `/etc/cdi/amdgpu.yaml` (CDI spec v0.5.0, kind `amd.com/gpu`). Permite executar contêineres de inferência (como Ollama, vLLM ou PyTorch) com a flag limpa e segura `podman run --device amd.com/gpu=all`, mapeando os nós `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card1` com injeção automática de `HSA_OVERRIDE_GFX_VERSION=10.3.0`.
 
 ### 7.2 Melhoria 2: CI/CD GitOps com Validação Automatizada de Boot (Boot Validation Gate)
 
@@ -245,8 +246,9 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 
 ### 7.3 Melhoria 3: Automação Integrada de Políticas Flatpak Overrides
 
+- **Status:** **Implementado** declarativamente na imagem base (`files/system/etc/flatpak/overrides/com.visualstudio.code`).
 - **Contexto:** Aplicativos Flatpak (como VS Code e navegadores) executam sob sandboxing restrito. Frequentemente, o desenvolvedor precisa de permissões de acesso ao socket do Podman, Wayland nativo e diretórios de projetos.
-- **Proposta Arquitetural:** Criar um módulo declarativo em `/files/system/etc/flatpak/overrides/` fornecendo permissões calibradas pré-configuradas para o VS Code acessar o socket de contêiner e o agente SSH, reduzindo atrito pós-instalação.
+- **Implementação:** Módulo declarativo em `/etc/flatpak/overrides/com.visualstudio.code` fornecendo permissões calibradas (`filesystems=xdg-run/podman:ro;xdg-run/docker.sock:ro;`) para o VS Code acessar o socket de contêiner do Podman e Docker em modo somente leitura (princípio de menor privilégio), viabilizando Dev Containers sem atrito pós-instalação.
 
 ### 7.4 Melhoria 4: Autenticação de Supply Chain com Attestation SLSA L3
 
