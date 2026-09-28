@@ -23,6 +23,7 @@ This skill defines the mandatory Git workflow for all tasks in this repository.
      - `chore`: Tooling, workflow, CI, or dependency adjustments.
    - Body: Bulleted list explaining technical rationale, parameters changed, and operational impact.
    - Example:
+
      ```text
      feat(rclone): optimize VFS cache hygiene and add Google Drive official client parity
 

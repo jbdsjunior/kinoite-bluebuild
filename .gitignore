@@ -5,6 +5,7 @@ cosign.key
 *.p12
 *.pfx
 *.priv
+
 # BlueBuild temporary files
 /.bluebuild-scripts_*
 /Containerfile
@@ -16,4 +17,10 @@ cosign.key
 *.pyc
 __pycache__/
 tmp/
-agent.md
+
+# Agent local overrides and runtime caches (Security & Cleanliness)
+.agents/local/
+.agents/**/*.tmp
+.agents/**/*.log
+*.local.md
+agent.local.md
