@@ -202,7 +202,7 @@ The image ships a modernized, dynamic systemd user template (`rclone@<remote>.se
 
 ### Modernized Unit Architecture & Parameterization
 
-Default resource and performance parameters in `[Service]` are parametrized and interpolated directly into `ExecStart`:
+Default resource, performance, and cache parameters in `[Service]` are parametrized and interpolated directly into `ExecStart`:
 
 - `RCLONE_BUFFER_SIZE=16M` (interpolated into `--buffer-size`)
 - `RCLONE_TRANSFERS=4` (interpolated into `--transfers`)
@@ -212,6 +212,13 @@ Default resource and performance parameters in `[Service]` are parametrized and 
 - `RCLONE_VFS_READ_AHEAD=32M` (interpolated into `--vfs-read-ahead`)
 - `RCLONE_VFS_READ_CHUNK_SIZE=8M` (interpolated into `--vfs-read-chunk-size`)
 - `RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M` (interpolated into `--vfs-read-chunk-size-limit`)
+- `RCLONE_VFS_CACHE_MAX_SIZE=15G` (interpolated into `--vfs-cache-max-size`: hard cap on local cache size)
+- `RCLONE_VFS_CACHE_MAX_AGE=24h` (interpolated into `--vfs-cache-max-age`: evicts files unused for 24h, keeping NVMe clean)
+- `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G` (interpolated into `--vfs-cache-min-free-space`: auto-evicts cache if host free space drops below 15G)
+- `RCLONE_VFS_CACHE_POLL_INTERVAL=1m` (interpolated into `--vfs-cache-poll-interval`: periodic cache eviction cycle)
+- `RCLONE_VFS_WRITE_BACK=5s` (interpolated into `--vfs-write-back`: fast 5-second cloud sync after local file save)
+- `RCLONE_DIR_CACHE_TIME=24h` (interpolated into `--dir-cache-time`: directory tree cache duration)
+- `RCLONE_POLL_INTERVAL=1m` (interpolated into `--poll-interval`: provider change detection interval)
 - `RCLONE_BWLIMIT=0` (interpolated into `--bwlimit`)
 - Clean teardown: `ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}` and `ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}`
 - Extra flags: `$RCLONE_FLAGS` is appended to `ExecStart` for any custom arguments.
@@ -228,7 +235,7 @@ Before `ExecStart`, the unit loads the authoritative base configuration `Environ
 
 #### Google Drive Configuration (`GoogleDrive.env`)
 
-Optimized for Google Drive API quotas and safety:
+Optimized for official desktop client feature parity, rapid cloud synchronization, and local disk cleanliness:
 
 ```env
 RCLONE_TPSLIMIT=10
@@ -237,18 +244,28 @@ RCLONE_TRANSFERS=4
 RCLONE_CHECKERS=8
 RCLONE_BUFFER_SIZE=16M
 RCLONE_VFS_READ_AHEAD=32M
+RCLONE_VFS_CACHE_MAX_SIZE=15G
+RCLONE_VFS_CACHE_MAX_AGE=24h
+RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
+RCLONE_VFS_CACHE_POLL_INTERVAL=1m
+RCLONE_VFS_WRITE_BACK=5s
+RCLONE_DIR_CACHE_TIME=24h
+RCLONE_POLL_INTERVAL=15s
 RCLONE_DRIVE_SKIP_GDOCS=true
-RCLONE_DRIVE_USE_TRASH=false
+RCLONE_DRIVE_USE_TRASH=true
 RCLONE_DRIVE_CHUNK_SIZE=64M
 ```
 
-- `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion.
-- `RCLONE_DRIVE_USE_TRASH=false`: Deletes files permanently on the remote instead of moving them to the Google Drive cloud trash bin.
-- `RCLONE_DRIVE_CHUNK_SIZE=64M`: Improves upload throughput for large files.
+- `RCLONE_DRIVE_USE_TRASH=true`: Files deleted locally are moved to the Google Drive Cloud Trash bin (with 30-day retention), mirroring the official Google Drive desktop client and preventing accidental data loss.
+- `RCLONE_POLL_INTERVAL=15s`: Employs Google Drive Changes API with 15-second polling for near real-time synchronization of remote changes made from mobile or web.
+- `RCLONE_VFS_WRITE_BACK=5s`: Commits locally saved files to cloud storage within 5 seconds of file close.
+- `RCLONE_VFS_CACHE_MAX_AGE=24h` & `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Prevents local disk exhaustion by evicting cached files inactive for more than 24 hours, and immediately pruning the cache if host free space falls below 15 GB.
+- `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion. (To expose Docs as clickable web shortcuts like the official client, set `RCLONE_DRIVE_SKIP_GDOCS=false` and `RCLONE_FLAGS="--drive-export-formats link.html"` in `GoogleDrive.local.env`).
+- `RCLONE_DRIVE_CHUNK_SIZE=64M`: High throughput chunk size (power of 2) for large file uploads.
 
 #### Microsoft OneDrive Configuration (`OneDrive.env`)
 
-Optimized to avoid Microsoft Graph API HTTP 429 throttling:
+Optimized to avoid Microsoft Graph API HTTP 429 throttling while maintaining identical disk hygiene:
 
 ```env
 RCLONE_TPSLIMIT=5
@@ -257,13 +274,20 @@ RCLONE_TRANSFERS=2
 RCLONE_CHECKERS=4
 RCLONE_BUFFER_SIZE=16M
 RCLONE_VFS_READ_AHEAD=32M
+RCLONE_VFS_CACHE_MAX_SIZE=15G
+RCLONE_VFS_CACHE_MAX_AGE=24h
+RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
+RCLONE_VFS_CACHE_POLL_INTERVAL=1m
+RCLONE_VFS_WRITE_BACK=5s
+RCLONE_DIR_CACHE_TIME=24h
+RCLONE_POLL_INTERVAL=1m
 RCLONE_ONEDRIVE_CHUNK_SIZE=50M
 RCLONE_ONEDRIVE_DELTA=true
 ```
 
 - `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=6`: Enforces strict transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties.
-- `RCLONE_TRANSFERS=2` / `RCLONE_CHECKERS=4`: Conservative concurrency to maintain stable connection pools.
-- `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (must be a multiple of 320 KiB).
+- `RCLONE_POLL_INTERVAL=1m`: Safe polling cadence using the OneDrive Delta API for incremental change detection without triggering rate limits.
+- `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (exact multiple of 320 KiB: 160 × 320 KiB = 52.428.800 bytes).
 - `RCLONE_ONEDRIVE_DELTA=true`: Uses the OneDrive delta API for fast incremental change detection.
 
 ### Quick Setup
@@ -299,15 +323,15 @@ The image authoritatively ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` exclud
 balooctl6 purge
 ```
 
-### KDE Dolphin File Deletion (Permanent Deletion)
+### KDE Dolphin File Deletion and Cloud Trash
 
-In KDE Dolphin, normal deletion moves files into a per-mount trash folder (`.Trash-1000`). To prevent cloud drives from being polluted with hidden trash folders:
+In KDE Dolphin, standard deletion attempts to move files into a per-mount trash folder (`.Trash-1000`). To prevent cloud drives from being polluted with hidden trash folders while maintaining safety:
 
 1. The system configures `ShowDeleteCommand=true` in `/etc/xdg/kdeglobals`, which adds the **"Excluir" (Delete)** option directly to Dolphin's context menu.
 2. Use **`Shift + Delete`** or right-click and select **"Excluir"** when removing files inside `~/Cloud/`:
-   - Files are unlinked immediately via standard POSIX `unlink`, bypassing the local `.Trash-1000` directory.
-   - On **Google Drive**, files are deleted permanently without being redirected to the Google Drive cloud trash bin (`RCLONE_DRIVE_USE_TRASH=false`).
-   - On **OneDrive** and other remotes, files are deleted permanently without FUSE trash directory overhead.
+   - Files are unlinked immediately via standard POSIX `unlink`, bypassing local `.Trash-1000` directory overhead.
+   - On **Google Drive**, rclone automatically redirects deleted files to the **Google Drive Cloud Trash** (`RCLONE_DRIVE_USE_TRASH=true`), where files are retained for 30 days and can be restored from the web UI if needed.
+   - On **OneDrive** and other remotes, files are unlinked cleanly without local FUSE trash clutter.
 
 ### Monitoring and Status
 
