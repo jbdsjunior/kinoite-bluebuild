@@ -220,7 +220,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 |   Item   | Arquivo / Componente                  | Natureza do Problema                                                                                                             | Status / Resolução                                                     |
 | :------: | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
 | **A-01** | `recipes/common-flatpaks.yml`         | Verificação de duplicatas na lista de pacotes Flatpak.                                                                           | **Resolvido:** Lista higienizada e validada sem entradas duplicadas.   |
-| **A-02** | `.github/workflows/check-updates.yml` | Periodicidade de checagem upstream a cada 2 horas (`0 */2 * * *`).                                                               | **Homologado:** Cron mantido a cada 2h e alinhado no `agent.md`.       |
+| **A-02** | `.github/workflows/check-updates.yml` | Periodicidade de checagem upstream a cada 2 horas (`0 */2 * * *`).                                                               | **Homologado:** Cron mantido a cada 2h e alinhado no `AGENTS.md`.       |
 | **A-03** | `recipes/common-drivers.yml`          | Pacotes ROCm mantidos comentados no host em prol de contêineres/Distrobox/Ollama.                                                | **Homologado:** Padrão arquitetural adotado para manter imagem < 4 GB. |
 | **A-04** | `.github/workflows/build-amd.yml`     | Build manual (`workflow_dispatch`) e disparo disparado via detecção de digest em `check-updates.yml`.                            | **Homologado:** Evita rebuilds desnecessários sem novas camadas.       |
 | **A-05** | `recipes/common-brew.yml`             | Integração do módulo `soar` com o timer do systemd.                                                                              | **Resolvido:** Drop-ins garantem resiliência de rede e janela de 45m.  |
@@ -257,7 +257,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 
 ### 7.5 Melhoria 5: Sincronização e Governança da Periodicidade de Checagem Upstream
 
-- **Contexto:** O cron de `.github/workflows/check-updates.yml` está formalizado em `0 */2 * * *` (a cada 2 horas), alinhado com o `agent.md` e a documentação técnica para otimização de cotas de Actions e detecção ágil de patches upstream.
+- **Contexto:** O cron de `.github/workflows/check-updates.yml` está formalizado em `0 */2 * * *` (a cada 2 horas), alinhado com o `AGENTS.md` e a documentação técnica para otimização de cotas de Actions e detecção ágil de patches upstream.
 
 ---
 
