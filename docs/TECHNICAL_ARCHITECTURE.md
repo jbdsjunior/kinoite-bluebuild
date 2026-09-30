@@ -201,7 +201,7 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 - **Calibração de Áudio & Periféricos (WirePlumber 0.5):**
   - **Headset MCHOSE X9:** Bypass de atenuação ALSA via hardware (`api.alsa.soft-mixer = false`, `api.alsa.ignore-dB = true` em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS (ex: Baseus Bass EP10 Pro):** Manutenção estrita da sincronização de hardware AVRCP (`bluez5.hw-volume`). Fones True Wireless Stereo possuem DACs e limitadores dinâmicos (DRC/AGC) independentes por auricular; desativar o controle de volume em hardware provoca bombeamento assimétrico de ganho e descalibração do equilíbrio estéreo L/R durante picos musicais. A atenuação para audição em volumes baixos deve operar acima do degrau de quantização de firmware (baseline $\ge$ 15%) com controle fino de ganho delegado aos sliders de aplicação.
-  - **Política Global Bluetooth:** Prevenção de rebaixamento de qualidade para HSP/HFP mono via `bluetooth.autoswitch-to-headset-profile = false` em `80-bluetooth-policy.conf`.
+  - **Política Global Bluetooth & Codecs Hi-Res:** Prevenção de rebaixamento de qualidade para HSP/HFP mono via `bluetooth.autoswitch-to-headset-profile = false` e priorização declarativa de codecs de alta resolução (`LDAC > AAC > SBC-XQ > SBC`) com taxa de bits adaptativa (`bluez5.a2dp.ldac.quality = "auto"`) em `80-bluetooth-policy.conf`, garantindo streaming de até 990 kbps (24-bit/96kHz) com estabilidade de conexão contínua.
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
 
