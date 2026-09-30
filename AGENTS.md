@@ -64,6 +64,8 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - Em sistemas imutáveis/bootc, templates de override devem residir em `/usr/share/flatpak/overrides/` e ser sincronizados autoritativamente para `/var/lib/flatpak/overrides/` no boot via tmpfiles (`60-flatpak-overrides.conf`).
 - **Segurança de Permissões em Caches de Usuário:**
   - Diretórios de cache de dados e sincronização em nuvem (`%h/.cache/rclone`) devem possuir estritamente permissões `0700` em todas as diretivas de tmpfiles, eliminando permissões mundiais `0755`.
+- **Calibração e Quirks de Áudio Bluetooth (WirePlumber 0.5):**
+  - Fones Bluetooth com quantização grosseira de volume em hardware (AVRCP Absolute Volume) devem ter o volume de hardware desativado declarativamente via WirePlumber (`bluez5.hw-volume = [ ]`), delegando a atenuação ao mixer de ponto flutuante de 32 bits do PipeWire para garantir transições suaves e contínuas de 0 a 100%.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 

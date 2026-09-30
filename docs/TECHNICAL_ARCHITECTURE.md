@@ -198,6 +198,9 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 - **Suporte a IA / ROCm:** O hardware host conta com a GPU RX 6600 XT (arquitetura Navi 23 / `gfx1032`). Por padrão, runtimes de IA (ROCm/HIP, PyTorch, llama.cpp) suportam primariamente arquiteturas comerciais da linha CDNA ou Navi 21 (`gfx1030`). A variável:
   $$\text{HSA\_OVERRIDE\_GFX\_VERSION} = 10.3.0$$
   está propagada em `/etc/profile.d` e `/usr/lib/environment.d`, permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
+- **Calibração de Áudio & Periféricos (WirePlumber 0.5):**
+  - **Headset MCHOSE X9:** Bypass de atenuação ALSA via hardware (`api.alsa.soft-mixer = false`, `api.alsa.ignore-dB = true` em `51-mchose-x9.conf`).
+  - **Headset Baseus Bass EP10 Pro:** Mitigação de penhasco abrupto de volume na transição 12% $\to$ 11% (queda de ~18 dB por degrau defeituoso na tabela LUT de 16 passos do DAC interno em AVRCP Absolute Volume). A regra declarativa `bluez5.hw-volume = [ ]` provisionada em `/usr/share/wireplumber/wireplumber.conf.d/52-baseus-ep10-pro.conf` desativa o volume de hardware e delega a atenuação ao mixer de software de 32 bits em ponto flutuante do PipeWire (`softVolumes`), provendo curva perceptual cúbica suave e 100 passos contínuos de volume.
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
 
