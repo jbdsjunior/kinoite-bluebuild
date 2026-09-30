@@ -66,6 +66,7 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - Diretórios de cache de dados e sincronização em nuvem (`%h/.cache/rclone`) devem possuir estritamente permissões `0700` em todas as diretivas de tmpfiles, eliminando permissões mundiais `0755`.
 - **Calibração e Quirks de Áudio Bluetooth (WirePlumber 0.5):**
   - Fones de ouvido TWS (True Wireless Stereo) utilizam processadores DSP independentes e controle de ganho por canal. A sincronização de hardware AVRCP (`hw-volume`) é obrigatória para manter a calibração de ganho analógico idêntica em ambos os lados e prevenir o bombeamento assimétrico do limitador dinâmico (DRC/AGC) entre os canais esquerdo e direito. É terminantemente proibido desativar `bluez5.hw-volume` em fones TWS.
+  - Para evitar degradação involuntária da saída estéreo de alta fidelidade (A2DP AAC/SBC-XQ) para perfis mono de chamada (HSP/HFP) por sondagem de microfones em navegadores ou aplicações, a política declarativa do WirePlumber deve fixar `bluetooth.autoswitch-to-headset-profile = false`.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 
