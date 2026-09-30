@@ -200,7 +200,7 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
   está propagada em `/etc/profile.d` e `/usr/lib/environment.d`, permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
 - **Calibração de Áudio & Periféricos (WirePlumber 0.5):**
   - **Headset MCHOSE X9:** Bypass de atenuação ALSA via hardware (`api.alsa.soft-mixer = false`, `api.alsa.ignore-dB = true` em `51-mchose-x9.conf`).
-  - **Headset Baseus Bass EP10 Pro:** Mitigação de penhasco abrupto de volume na transição 12% $\to$ 11% (queda de ~18 dB por degrau defeituoso na tabela LUT de 16 passos do DAC interno em AVRCP Absolute Volume). A regra declarativa `bluez5.hw-volume = [ ]` provisionada em `/usr/share/wireplumber/wireplumber.conf.d/52-baseus-ep10-pro.conf` desativa o volume de hardware e delega a atenuação ao mixer de software de 32 bits em ponto flutuante do PipeWire (`softVolumes`), provendo curva perceptual cúbica suave e 100 passos contínuos de volume.
+  - **Fones Bluetooth TWS (ex: Baseus Bass EP10 Pro):** Manutenção estrita da sincronização de hardware AVRCP (`bluez5.hw-volume`). Fones True Wireless Stereo possuem DACs e limitadores dinâmicos (DRC/AGC) independentes por auricular; desativar o controle de volume em hardware provoca bombeamento assimétrico de ganho e descalibração do equilíbrio estéreo L/R durante picos musicais. A atenuação para audição em volumes baixos deve operar acima do degrau de quantização de firmware (baseline $\ge$ 15%) com controle fino de ganho delegado aos sliders de aplicação.
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
 
