@@ -59,6 +59,11 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - Proteger contra perda acidental de dados no Google Drive mantendo `RCLONE_DRIVE_USE_TRASH=true` por padrão (paridade com o cliente oficial na lixeira em nuvem).
   - Proteger contra throttling HTTP 429 no Microsoft OneDrive limitando transações (`tpslimit=5`, `chunk-size=50M` múltiplo de 320 KiB) e utilizando a Delta API com polling controlado (1m).
   - É estritamente proibido remover a exclusão imutável do indexador Baloo para `$HOME/Cloud` em `/etc/xdg/baloofilerc` (`[$ei]`).
+- **Provisionamento Declarativo de Overrides Flatpak:**
+  - O Flatpak monitora overrides de sistema exclusivamente em `/var/lib/flatpak/overrides/`. É expressamente proibido provisioná-los em `/etc/flatpak/overrides/` (caminho ignorado pelo Flatpak).
+  - Em sistemas imutáveis/bootc, templates de override devem residir em `/usr/share/flatpak/overrides/` e ser sincronizados autoritativamente para `/var/lib/flatpak/overrides/` no boot via tmpfiles (`60-flatpak-overrides.conf`).
+- **Segurança de Permissões em Caches de Usuário:**
+  - Diretórios de cache de dados e sincronização em nuvem (`%h/.cache/rclone`) devem possuir estritamente permissões `0700` em todas as diretivas de tmpfiles, eliminando permissões mundiais `0755`.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 
