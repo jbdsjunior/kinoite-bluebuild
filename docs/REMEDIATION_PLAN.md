@@ -154,7 +154,7 @@
 | WP3 | `refactor(systemd): remove preset-redundant unit enables` | F4 | ✅ `41569f3` |
 | WP4 | `refactor(system): remove redundant defaults and dead configuration` | F5, F6, F7, F8 | ✅ `9255496` |
 | WP5 | `refactor(kargs)` / `refactor(recipes)` / `feat(sshd)` | D4, D5, D7 | ✅ `8c87d32`, `ec90f6f`, `45434c5` |
-| WP6 | `docs: sync health-checks, kargs verification and tuned interaction notes` | F9, F10, decisões | ✅ este commit |
+| WP6 | `docs: sync health-checks, kargs verification and tuned interaction notes` | F9, F10, decisões | ✅ `b53f8dd` |
 | WP7 | Ação única no host (F10) + validação `cat /proc/cmdline` | Fora do repo | ⏳ pendente (executar manualmente) |
 
 **Pós-merge:** disparar `build-amd` manualmente (`workflow_dispatch`) — o gatilho por digest §7 não dispara para mudanças de repositório.
