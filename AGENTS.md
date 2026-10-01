@@ -126,7 +126,7 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 | Cache Permissions 0700 | [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
 | Áudio Bluetooth TWS | [`files/system/usr/share/wireplumber/wireplumber.conf.d/80-bluetooth-policy.conf`](files/system/usr/share/wireplumber/wireplumber.conf.d/80-bluetooth-policy.conf) |
 | Headset MCHOSE X9 | [`files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf`](files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf) |
-| Higiene de Pacotes | [`recipes/common-tools.yml`](recipes/common-tools.yml) |
+| Higiene de Pacotes | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-drivers.yml`](recipes/common-drivers.yml), [`recipes/common-fonts.yml`](recipes/common-fonts.yml) |
 | Aceleração de Vídeo Browsers | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf) |
 | Fonte Única Env Vars | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf) |
 | Proibição Redeclaração Defaults | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/) |
