@@ -1,19 +1,6 @@
 #!/bin/sh
 
-export EDITOR="${EDITOR:-nano}"
-export VISUAL="${VISUAL:-nano}"
-export SUDO_EDITOR="${SUDO_EDITOR:-nano}"
-export PAGER="${PAGER:-less}"
-export LESS="${LESS:--R}"
-export COLORTERM="${COLORTERM:-truecolor}"
-
-# Critical flow: AMD Navi 23 ROCm compatibility override
-export HSA_OVERRIDE_GFX_VERSION="${HSA_OVERRIDE_GFX_VERSION:-10.3.0}"
-export AMD_VULKAN_ICD="${AMD_VULKAN_ICD:-RADV}"
-
-export FREETYPE_PROPERTIES="${FREETYPE_PROPERTIES:-cff:no-stem-darkening=0 autofitter:no-stem-darkening=0}"
-export ELECTRON_OZONE_PLATFORM_HINT="${ELECTRON_OZONE_PLATFORM_HINT:-auto}"
-
+# FZF configuration (requires conditional binary detection, cannot use environment.d)
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:---height 40% --layout=reverse --border --inline-info}"
 if command -v fd >/dev/null 2>&1; then
     export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-fd --type f --strip-cwd-prefix --hidden --follow --exclude .git}"

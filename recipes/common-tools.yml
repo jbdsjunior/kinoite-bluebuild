@@ -37,7 +37,6 @@ modules:
         - distrobox
         - docker-compose
         - podman-docker
-        - podman-machine
 
         # System Information & Hardware Diagnostics
         - fastfetch
