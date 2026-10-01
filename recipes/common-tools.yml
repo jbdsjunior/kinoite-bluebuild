@@ -7,9 +7,6 @@ modules:
       files:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
         - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
-      # copr:
-      #   - lilay/topgrade
-      #   - atim/starship
 
     install:
       skip-unavailable: true
