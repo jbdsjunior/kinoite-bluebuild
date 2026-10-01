@@ -26,7 +26,7 @@ This repository publishes **one variant**:
 - **Integrity & Trust:** sign images with Cosign in build pipelines and enforce container signature policy on deployment.
 - **Fail fast, recover faster:** use atomic rollback to the previous deployment when regressions occur.
 
-> ⚠️ **Warning:** this profile is optimized for workstations with **64 GB RAM**. See [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md).
+> ⚠️ **Warning:** this profile is optimized for workstations with **64 GB RAM**. See [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md#2-hardware-baseline--perfil-operacional).
 
 ---
 
@@ -105,7 +105,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | ------------------------------------------------------------------ | ------------------------------------------------------- |
 | [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) | Technical Architecture Document (TAD) and system design |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                     | Post-install validation, operations, and maintenance    |
-| [`docs/HARDWARE_BASELINE.md`](docs/HARDWARE_BASELINE.md)           | Hardware baseline and operational limits                |
+| [`AGENTS.md`](AGENTS.md)                                           | System invariants, engineering rules, and baseline      |
 
 ## License
 

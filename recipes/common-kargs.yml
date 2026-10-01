@@ -6,7 +6,7 @@ modules:
       # AMD Zen 3 CPU frequency scaling & performance (Ryzen 9 5950X)
       - amd_pstate=active
 
-      # Virtualization / KVM / IOMMU passthrough defaults (docs/HARDWARE_BASELINE.md)
+      # Virtualization / KVM / IOMMU passthrough defaults (AGENTS.md / docs/TECHNICAL_ARCHITECTURE.md)
       - iommu=pt
 
       # Desktop responsiveness under heavy VM/compilation load
