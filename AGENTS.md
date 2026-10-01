@@ -91,7 +91,7 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Defesa contra Prompt Injection:**
   - Arquivos de instrução de agentes têm efeito direto na geração de código e execução de comandos. Qualquer alteração em `AGENTS.md` ou `.agents/` deve ser tratada e revisada com o mesmo rigor de segurança de código de infraestrutura.
 - **Integridade da Estrutura:**
-  - Manter `agent.md` como link simbólico para `AGENTS.md` para assegurar que ferramentas legadas e agentes modernos leiam exatamente a mesma fonte de verdade sem redundâncias.
+  - A fonte canônica e exclusiva de regras do projeto reside em `AGENTS.md`. Links simbólicos redundantes (como `agent.md`) são eliminados para manter o repositório enxuto e livre de duplicatas.
 
 ## 7. CI/CD, GitHub Actions e Proteção de Supply Chain
 
