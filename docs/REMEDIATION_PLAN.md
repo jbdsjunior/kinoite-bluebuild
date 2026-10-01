@@ -73,13 +73,13 @@
 ## 3. Ação de runtime no host (fora do repositório)
 
 ### F10 · Kargs declarados na imagem nunca chegaram ao bootconfig (deadlock de bootstrap do bootc)
-- **Evidência empírica:** `/proc/cmdline` e ambas as entradas BLS (`/boot/loader/entries/ostree-{1,2}.conf`) **não contêm** nenhum dos 8 kargs; `usr/lib/bootc/kargs.d/bluebuild-kargs.toml` **está presente** no deployment iniciado.
+- **Evidência empírica:** `/proc/cmdline` e ambas as entradas BLS (`/boot/loader/entries/ostree-{1,2}.conf`) **não contêm** nenhum dos kargs declarados; `usr/lib/bootc/kargs.d/bluebuild-kargs.toml` **está presente** no deployment iniciado.
 - **Causa-raiz (código-fonte `crates/lib/src/bootc_kargs.rs`):** bootc aplica aos novos deployments o **diff** entre o `kargs.d` do deployment atual e o da nova imagem. Como o conjunto é idêntico em todas as imagens desde a primeira implantação (feita por um bootc anterior ao suporte a `kargs.d`), o diff é vazio e os kargs ficam permanentemente fora do bootconfig. Instalações novas via `bootc install` não são afetadas.
 - **Ação única no host (aplica ao deployment em execução e propaga como baseline):**
   ```bash
   sudo rpm-ostree kargs \
     --append=amd_pstate=active --append=iommu=pt --append=preempt=full \
-    --append=bluetooth.disable_ertm=1 --append=btusb.enable_autosuspend=n \
+    --append=btusb.enable_autosuspend=n \
     --append=slab_nomerge --append=page_alloc.shuffle=1 --append=vsyscall=none
   ```
   Reiniciar e validar com `cat /proc/cmdline`.
@@ -98,17 +98,17 @@
 
 ---
 
-## 5. Itens de decisão do proprietário (D1–D7)
+## 5. Itens de decisão do proprietário (D1–D7) — **decididos em 2026-10-01**
 
-| ID | Item | Recomendação |
+| ID | Item | Decisão do proprietário |
 | :-- | :-- | :-- |
-| D1 | `image-version: latest` vs baseline "Kinoite 44" do AGENTS.md — `latest` causa upgrade de major version não auditado quando o Fedora 49 for publicado | Fixar `image-version: 44` com bump manual planejado por release (conforme baseline §3) |
-| D2 | tuned × política de memória (F9) | (A) documentar e aceitar a escolha de perfil do usuário |
-| D3 | `net.ipv4.ip_forward=1` + `net.ipv6.conf.all.forwarding=1` (default do Fedora: 0; CIS recomenda desativado em workstation; libvirt/netavark habilitam dinamicamente quando necessário) | Remover do sysctl estático e validar empiricamente NAT de KVM e rede de containers (Segurança > Conveniência); reintroduzir se houver regressão funcional |
-| D4 | `bluetooth.disable_ertm=1` — quirk legado de gamepads antigos; nenhum gamepad homologado; TWS áudio (A2DP/AVRCP) não usa ERTM | Remover (§4 Eliminação de Instabilidade); `btusb.enable_autosuspend=n` permanece (estabilidade de áudio) |
-| D5 | Higiene de pacotes: `pipewire-codec-aptx` (nenhum dispositivo aptX homologado), `twolame` + `vorbis-tools` (encoders CLI sem justificativa funcional), `wqy-zenhei-fonts` (redundante com `google-noto-sans-cjk-fonts`) | Remover os quatro (§5 Higiene); manter `icoutils` (ícones de atalhos), `gnome-boxes` (provisionado com NoCOW e documentado) |
-| D6 | `DNSOverTLS=opportunistic` vs `yes` — a redação do invariante §5 ("prevenir rebaixamento para texto plano") é satisfeita literalmente apenas por `yes` (Cloudflare e Quad9 suportam DoT); `opportunistic` degrada silenciosamente para texto plano se a porta 853 for bloqueada | `DNSOverTLS=yes` com alerta: em rede que bloqueie 853 o DNS falha (rollback: restaurar `opportunistic`) |
-| D7 | SSHD: adicionar `PasswordAuthentication no` + `KbdInteractiveAuthentication no` (CIS) | Aplicar apenas se o acesso for exclusivamente por chaves (confirmação do fluxo de SSH do usuário) |
+| D1 | `image-version: latest` vs baseline "Kinoite 44" do AGENTS.md — `latest` causa upgrade de major version não auditado quando o Fedora 49 for publicado | **Manter `latest`** (rastreio automático de security updates da major corrente) |
+| D2 | tuned × política de memória (F9) | **Documentar e aceitar** a escolha de perfil do usuário (nota incluída no POST_INSTALL §10 e TECHNICAL_ARCHITECTURE §5.1) |
+| D3 | `net.ipv4.ip_forward=1` + `net.ipv6.conf.all.forwarding=1` (default do Fedora: 0; CIS recomenda desativado em workstation; libvirt/netavark habilitam dinamicamente quando necessário) | **Manter estático** (funcional para KVM/Podman/Tailscale) |
+| D4 | `bluetooth.disable_ertm=1` — quirk legado de gamepads antigos; nenhum gamepad homologado; TWS áudio (A2DP/AVRCP) não usa ERTM | **Removido** (commit `8c87d32`); `btusb.enable_autosuspend=n` permanece |
+| D5 | Higiene de pacotes: `pipewire-codec-aptx`, `twolame` + `vorbis-tools`, `wqy-zenhei-fonts` | **Remover `twolame`, `vorbis-tools` e `wqy-zenhei-fonts`** (commit `ec90f6f`); **manter `pipewire-codec-aptx`** para dispositivos aptX de terceiros |
+| D6 | `DNSOverTLS=opportunistic` vs `yes` | **Manter `opportunistic`** (resiliência em redes que bloqueiam a porta 853) |
+| D7 | SSHD: adicionar `PasswordAuthentication no` + `KbdInteractiveAuthentication no` (CIS) | **Aplicado** (commit `45434c5`) — acesso exclusivamente por chaves confirmado |
 
 ---
 
@@ -147,15 +147,15 @@
 
 ## 8. Sequência de execução
 
-| WP | Commits (ordem) | Conteúdo |
-| :-- | :-- | :-- |
-| WP1 | `fix(audio): provision LDAC quality via device rules section` | F1 |
-| WP2 | `chore(ci): pin blue-build action by commit SHA and drop persistent checkout credentials` | F2, F3 |
-| WP3 | `refactor(systemd): remove preset-redundant unit enables` | F4 |
-| WP4 | `refactor(system): remove redundant defaults and dead configuration` | F5, F6, F7, F8 |
-| WP5 | `docs: sync health-checks, kargs verification and tuned interaction notes` | F9, F10 (+ saída de D1–D7) |
-| WP6 | Commits por decisão aprovada (D1–D7) | Conforme respostas |
-| WP7 | Ação única no host (F10) + validação `cat /proc/cmdline` | Fora do repo |
+| WP | Commits (ordem) | Conteúdo | Status |
+| :-- | :-- | :-- | :-- |
+| WP1 | `fix(audio): provision LDAC quality via device rules section` | F1 | ✅ `cb0ec2f` |
+| WP2 | `chore(ci): pin blue-build action by commit SHA and drop persistent checkout credentials` | F2, F3 | ✅ `13d3be0` |
+| WP3 | `refactor(systemd): remove preset-redundant unit enables` | F4 | ✅ `41569f3` |
+| WP4 | `refactor(system): remove redundant defaults and dead configuration` | F5, F6, F7, F8 | ✅ `9255496` |
+| WP5 | `refactor(kargs)` / `refactor(recipes)` / `feat(sshd)` | D4, D5, D7 | ✅ `8c87d32`, `ec90f6f`, `45434c5` |
+| WP6 | `docs: sync health-checks, kargs verification and tuned interaction notes` | F9, F10, decisões | ✅ este commit |
+| WP7 | Ação única no host (F10) + validação `cat /proc/cmdline` | Fora do repo | ⏳ pendente (executar manualmente) |
 
 **Pós-merge:** disparar `build-amd` manualmente (`workflow_dispatch`) — o gatilho por digest §7 não dispara para mudanças de repositório.
 
@@ -163,4 +163,4 @@
 
 ---
 
-**Estado deste documento:** plano aprovado para execução após decisões D1–D7. Remove-lo quando todas as frentes forem concluídas (WP1–WP7).
+**Estado deste documento:** decisões D1–D7 registradas; WP1–WP6 executados (2026-10-01). Removê-lo quando WP7 (ação única de kargs no host) for concluído e validado.

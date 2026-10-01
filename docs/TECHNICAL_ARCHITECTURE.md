@@ -180,6 +180,7 @@ A decomposição das receitas em `recipes/` adota alta coesão e baixo acoplamen
   - `vm.swappiness = 150`: Prioriza a transferência de páginas anônimas ociosas para o ZRAM antes de descartar o cache de arquivos (pagecache), mantendo o sistema responsivo durante compilações e execução de LLMs.
   - `vm.page-cluster = 0`: Desativa a leitura em bloco sequencial de páginas de swap; como o ZRAM é RAM de acesso aleatório, a paginação 1:1 elimina amplificação de leitura inútil e latência.
   - `vm.watermark_scale_factor = 125`: Mantém uma margem segura de páginas livres, acionando o `kswapd` antecipadamente para evitar picos de latência (direct reclamation stalls).
+- **Interação com `tuned` (Fedora 41+):** o Plasma direciona perfis de energia via `tuned-ppd`. Com o perfil *Performance* ativo, `throughput-performance` sobrepõe `vm.swappiness` (10) e os limites de `vm.dirty_*` em runtime — escolha deliberada do usuário no KDE, documentada como interação conhecida e não como drift. Nos demais perfis (`balanced`/`desktop`), a política declarada da imagem prevalece.
 
 ### 5.2 Subsistema de Armazenamento e Btrfs NoCOW
 
@@ -237,6 +238,14 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-11** | `recipes/common-tools.yml`            | Pacote `podman-machine` exclusivo para macOS/Windows instalado em host Linux nativo.                                             | **Resolvido:** Pacote removido em favor do Podman nativo.              |
 | **A-12** | `files/system/.../chromium-flags.conf`| Ausência de flags para decodificação e codificação de vídeo aceleradas por hardware no Chromium.                                  | **Resolvido:** Flags VA-API zero-copy GL ativadas declarativamente.    |
 | **A-13** | `files/system/etc/containers/nodocker`| Supressão declarativa de alertas de emulação Podman-Docker para compatibilidade CLI transparente.                                 | **Homologado:** Arquivo mantido e documentado na arquitetura.          |
+| **A-14** | `.../wireplumber.conf.d/80-bluetooth-policy.conf` | `bluez5.a2dp.ldac.quality` declarada em `monitor.bluez.properties` (no-op); por `pipewire-props(7)` é propriedade de dispositivo. | **Resolvido:** Movida para `monitor.bluez.rules` com match `~bluez_card.*`. |
+| **A-15** | `.github/workflows/build-amd.yml`     | `blue-build/github-action@v1` referenciada por tag mutável, violando pinagem SHA de supply chain.                                 | **Resolvido:** Pinada em `c295af86` (v1) com comentário de versão.     |
+| **A-16** | `recipes/common-systemd.yml`          | Habilitações redundantes com presets do Fedora 44 (`resolved`, `firewalld`, 7 sockets libvirt).                                   | **Resolvido:** Removidas; presets comprovadamente aplicados no build.  |
+| **A-17** | `files/system/usr/lib/sysctl.d/*` + `resolved.conf.d` + override Flatpak VS Code | Redeclarações de defaults (`fs.suid_dumpable`, `accept_ra=default`, `Cache=yes`, `CacheFromLocalhost`) e entrada morta `xdg-run/docker.sock`. | **Resolvido:** Expurgo de defaults e remoção da entrada morta.         |
+| **A-18** | `recipes/common-kargs.yml`            | `bluetooth.disable_ertm=1`: quirk legado de gamepads pré-5.12, sem gamepad homologado; TWS A2DP/AVRCP não usa ERTM.               | **Resolvido:** Karg removido; `btusb.enable_autosuspend=n` mantido.    |
+| **A-19** | `recipes/common-drivers.yml` / `common-fonts.yml` | `twolame`, `vorbis-tools` e `wqy-zenhei-fonts` sem função homologada (encoders redundantes; CJK coberto pelo Noto).         | **Resolvido:** Pacotes removidos; `pipewire-codec-aptx` mantido por decisão. |
+| **A-20** | `.../ssh/sshd_config.d/50-kinoite-hardening.conf` | Autenticação por senha habilitada por padrão no sshd (superfície de brute-force).                                                 | **Resolvido:** `PasswordAuthentication no` + `KbdInteractiveAuthentication no`. |
+| **A-21** | Host (runtime)                        | Kargs da imagem ausentes do bootconfig: diff de `kargs.d` vazio desde a primeira implantação (deadlock de bootstrap do bootc).    | **Ação:** `rpm-ostree kargs --append` único + reboot (ver POST_INSTALL §7). |
 
 ---
 

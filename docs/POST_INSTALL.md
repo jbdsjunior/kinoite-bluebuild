@@ -157,6 +157,26 @@ sudo ostree admin config-diff
 
 > ⚠️ **Warning:** on immutable systems, prefer declarative changes in `recipes/*.yml` and versioned files instead of repeated manual host adjustments.
 
+**Expected image kargs** (declared in `recipes/common-kargs.yml`, delivered through `/usr/lib/bootc/kargs.d/bluebuild-kargs.toml`):
+
+`amd_pstate=active` · `iommu=pt` · `preempt=full` · `btusb.enable_autosuspend=n` · `slab_nomerge` · `page_alloc.shuffle=1` · `vsyscall=none`
+
+Verify the deployed boot configuration:
+
+```bash
+cat /proc/cmdline
+
+```
+
+> ⚠️ **Bootstrap gap (bootc `kargs.d`):** bootc applies image kargs as a *diff* between the running deployment's `kargs.d` and the new image's. Systems whose first custom deployment predates bootc `kargs.d` support never receive them (empty diff). One-time host fix — applies to the running deployment and becomes the baseline for future upgrades:
+
+```bash
+sudo rpm-ostree kargs --append=amd_pstate=active --append=iommu=pt --append=preempt=full --append=btusb.enable_autosuspend=n --append=slab_nomerge --append=page_alloc.shuffle=1 --append=vsyscall=none
+
+```
+
+Rollback (per argument, then reboot): `sudo rpm-ostree kargs --delete=<karg>`
+
 ---
 
 ## 8) Disaster Recovery / Rollback
@@ -374,6 +394,11 @@ Expected timer policy:
 - `soar` auto-upgrade timer: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
 - `podman info` returns `true` when run as the desktop user.
 
+Memory policy note (`vm.swappiness`):
+
+- Expected value is `150` (aggressive ZRAM) unless a performance tuned profile is active.
+- On Fedora 41+ the Plasma power profiles run through `tuned-ppd`: selecting **Performance** activates tuned's `throughput-performance`, which intentionally overrides `vm.swappiness` to `10` and raises `vm.dirty_*` limits at runtime. This is a deliberate KDE power-profile choice, not configuration drift.
+
 ---
 
 ## 11) Podman automatic update timer
@@ -407,7 +432,7 @@ Expected policy:
 The image includes declarative security drop-ins:
 
 - **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`dccp`, `sctp`, `rds`, `tipc`), vulnerable legacy file systems (`cramfs`, `freevxfs`, `jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers.
-- **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
+- **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces key-only authentication (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`), enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
 - **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
 - **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.kptr_restrict=1`, `fs.suid_dumpable=0`, and `kernel.nmi_watchdog=0` (eliminates CPU watchdog jitter across 32 threads).
 - **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
