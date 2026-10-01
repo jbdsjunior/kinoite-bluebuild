@@ -61,9 +61,9 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `status-soar`           | `systemctl --user status soar-upgrade-packages.timer`                             |
 | `gpu-top`               | Interactive real-time GPU/VRAM engine monitor via `nvtop`                         |
 | `gpu-stat`              | Low-level AMD Radeon hardware activity monitor via `radeontop`                    |
-| `tmpfiles-system`       | `sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf`     |
+| `tmpfiles-system`       | `sudo systemd-tmpfiles --create`                                                  |
 | `tmpfiles-user`         | `systemd-tmpfiles --user --create`                                                |
-| `tmpfiles-all`          | Execute both system and user BTRFS NoCOW tmpfiles rules                           |
+| `tmpfiles-all`          | `sudo systemd-tmpfiles --create && systemd-tmpfiles --user --create`              |
 | `podman-cleanup`        | Clean up unused Podman containers, images, and volumes                            |
 | `podman-ps`             | `podman ps -a`                                                                    |
 | `distrobox-list`        | `distrobox list`                                                                  |
@@ -117,7 +117,7 @@ Permissions are managed declaratively via Polkit rules included in the image. On
 Apply system tmpfiles:
 
 ```bash
-sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf
+sudo systemd-tmpfiles --create
 
 ```
 
@@ -409,7 +409,9 @@ The image includes declarative security drop-ins:
 - **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`dccp`, `sctp`, `rds`, `tipc`), vulnerable legacy file systems (`cramfs`, `freevxfs`, `jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers.
 - **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
 - **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
-- **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.yama.ptrace_scope=1`, `kernel.kptr_restrict=1`, and `fs.suid_dumpable=0`.
+- **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.kptr_restrict=1`, `fs.suid_dumpable=0`, and `kernel.nmi_watchdog=0` (eliminates CPU watchdog jitter across 32 threads).
+- **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
+- **Docker CLI Compatibility (`/etc/containers/nodocker`)**: Suppresses Podman emulation warning for seamless Docker CLI workflows.
 
 Verify kernel module blacklist:
 

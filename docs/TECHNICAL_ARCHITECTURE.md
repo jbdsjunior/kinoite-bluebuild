@@ -197,11 +197,12 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 - **Aceleração 3D / Vulkan:** `AMD_VULKAN_ICD=RADV`, selecionando o driver de código aberto de alto desempenho da comunidade Mesa.
 - **Suporte a IA / ROCm:** O hardware host conta com a GPU RX 6600 XT (arquitetura Navi 23 / `gfx1032`). Por padrão, runtimes de IA (ROCm/HIP, PyTorch, llama.cpp) suportam primariamente arquiteturas comerciais da linha CDNA ou Navi 21 (`gfx1030`). A variável:
   $$\text{HSA\_OVERRIDE\_GFX\_VERSION} = 10.3.0$$
-  está propagada em `/etc/profile.d` e `/usr/lib/environment.d`, permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
-- **Calibração de Áudio & Periféricos (WirePlumber 0.5):**
+  está definida como fonte única de verdade em `/usr/lib/environment.d/60-kinoite-environment.conf` (e injetada em contêineres via especificação CDI `/etc/cdi/amdgpu.yaml`), permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
+- **Calibração de Áudio & Periféricos (WirePlumber 0.5 & Udev):**
   - **Headset MCHOSE X9:** Bypass de atenuação ALSA via hardware (`api.alsa.soft-mixer = false`, `api.alsa.ignore-dB = true` em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS (ex: Baseus Bass EP10 Pro):** Manutenção estrita da sincronização de hardware AVRCP (`bluez5.hw-volume`). Fones True Wireless Stereo possuem DACs e limitadores dinâmicos (DRC/AGC) independentes por auricular; desativar o controle de volume em hardware provoca bombeamento assimétrico de ganho e descalibração do equilíbrio estéreo L/R durante picos musicais. A atenuação para audição em volumes baixos deve operar acima do degrau de quantização de firmware (baseline $\ge$ 15%) com controle fino de ganho delegado aos sliders de aplicação.
   - **Política Global Bluetooth & Codecs Hi-Res:** Prevenção de rebaixamento de qualidade para HSP/HFP mono via `bluetooth.autoswitch-to-headset-profile = false` e priorização declarativa de codecs de alta resolução (`LDAC > AAC > SBC-XQ > SBC`) com taxa de bits adaptativa (`bluez5.a2dp.ldac.quality = "auto"`) em `80-bluetooth-policy.conf`, garantindo streaming de até 990 kbps (24-bit/96kHz) com estabilidade de conexão contínua.
+  - **Acesso Direto a Periféricos HID (`70-peripherals.rules`):** Regras udev com tag `uaccess` em `/usr/lib/udev/rules.d/70-peripherals.rules` concedem permissões seguras sem necessidade de privilégios de root para controle de dispositivos de entrada de baixa latência (headset MCHOSE X9, mouse gamer VXE, teclado mecânico BY Tech e controladora RGB de placa-mãe ITE).
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
 
@@ -232,6 +233,10 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-07** | `files/system/etc/rpm-ostreed.conf`   | Arquivo legado com `AutomaticUpdatePolicy=stage` sem guarda de rede D-Bus.                                                       | **Resolvido:** Arquivo removido em favor do `bootc update`.            |
 | **A-08** | `files/system/etc/profile.d/*`        | Presença de `\|\| exit 0` no retorno de shells não interativos gerando risco de encerramento de sessão.                          | **Resolvido:** Substituído por `return 0 2>/dev/null` seguro.          |
 | **A-09** | `.../70-browser-flags.conf`           | Flags de Wayland e aceleração de GPU comentadas para o Google Chrome, apesar de instalado.                                       | **Resolvido:** Diretivas descomentadas e ativadas no tmpfiles.         |
+| **A-10** | `files/system/usr/lib/sysctl.d/*`     | Sysctls redundantes com defaults do Fedora 44 (`ptrace_scope=1`, `protected_fifos=2`, `use_tempaddr=2`).                          | **Resolvido:** Expurgo realizado, mantendo apenas tuning explícito.    |
+| **A-11** | `recipes/common-tools.yml`            | Pacote `podman-machine` exclusivo para macOS/Windows instalado em host Linux nativo.                                             | **Resolvido:** Pacote removido em favor do Podman nativo.              |
+| **A-12** | `files/system/.../chromium-flags.conf`| Ausência de flags para decodificação e codificação de vídeo aceleradas por hardware no Chromium.                                  | **Resolvido:** Flags VA-API zero-copy GL ativadas declarativamente.    |
+| **A-13** | `files/system/etc/containers/nodocker`| Supressão declarativa de alertas de emulação Podman-Docker para compatibilidade CLI transparente.                                 | **Homologado:** Arquivo mantido e documentado na arquitetura.          |
 
 ---
 
