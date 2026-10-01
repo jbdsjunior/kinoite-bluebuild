@@ -64,9 +64,9 @@ alias restart-rclone='systemctl --user restart "rclone@*"'
 alias gpu-top='nvtop'
 alias gpu-stat='radeontop'
 
-alias tmpfiles-system='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf'
+alias tmpfiles-system='sudo systemd-tmpfiles --create'
 alias tmpfiles-user='systemd-tmpfiles --user --create'
-alias tmpfiles-all='sudo systemd-tmpfiles --create /usr/lib/tmpfiles.d/60-io-tuning-system.conf && systemd-tmpfiles --user --create'
+alias tmpfiles-all='sudo systemd-tmpfiles --create && systemd-tmpfiles --user --create'
 
 alias podman-cleanup='podman system prune -af && podman volume prune -f'
 alias distrobox-list='distrobox list'
