@@ -25,10 +25,14 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 
 ## 3. Ambiente e Hardware Baseline
 
-- **Processador & Gráficos:** AMD Ryzen 9 5950X, AMD Radeon RX 6600 XT.
-- **Memória & Armazenamento:** 64GB RAM DDR4, 1TB NVMe.
-- **Sistema Operacional:** Fedora Kinoite 44 (imutável, Wayland nativo, modelo `bootc`).
-- **Workloads do Usuário:** DevSecOps, desenvolvimento de software, inferência local de LLMs (ROCm/HIP via CDI em contêineres), navegação intensiva.
+- **Processador & Gráficos:** AMD Ryzen 9 5950X (16C/32T, Zen 3), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2).
+- **Memória & Armazenamento:** 64GB RAM DDR4, 1TB NVMe PCIe Gen4 (Btrfs).
+- **Sistema Operacional:** Fedora Kinoite 44 (imutável, Wayland nativo, modelo `bootc`, KDE Plasma 6).
+- **Workloads do Usuário:** DevSecOps, desenvolvimento de software, inferência local de LLMs (ROCm/HIP via CDI em contêineres), navegação intensiva, virtualização KVM.
+- **Periféricos Homologados:**
+  - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
+  - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
+  - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
 
 ## 4. Restrições do Projeto
 
@@ -68,6 +72,16 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - O subsistema de áudio deve priorizar permanentemente a **máxima fidelidade e estabilidade sonora**, provisionando a hierarquia estrita de codecs (`LDAC > AAC > SBC-XQ > SBC`) com taxa de bits adaptativa (`bluez5.a2dp.ldac.quality = "auto"`) para garantir até 990 kbps (24-bit/96kHz) sem perda de pacotes ou engasgos.
   - Fones de ouvido TWS (True Wireless Stereo) utilizam processadores DSP independentes e controle de ganho por canal. A sincronização de hardware AVRCP (`hw-volume`) é obrigatória para manter a calibração de ganho analógico idêntica em ambos os lados e prevenir o bombeamento assimétrico do limitador dinâmico (DRC/AGC) entre os canais esquerdo e direito. É terminantemente proibido desativar `bluez5.hw-volume` em fones TWS.
   - Para evitar degradação involuntária da saída estéreo de alta fidelidade (A2DP LDAC/AAC/SBC-XQ) para perfis mono de chamada (HSP/HFP) por sondagem de microfones em navegadores ou aplicações, a política declarativa do WirePlumber deve fixar `bluetooth.autoswitch-to-headset-profile = false`.
+- **Higiene de Pacotes RPM na Imagem Base:**
+  - É proibido instalar pacotes exclusivos de outros SO (ex.: `podman-machine` é macOS/Windows only) ou pacotes debug-only/dev-only sem utilidade funcional em produção.
+  - Todo pacote incluído em `recipes/common-*.yml` deve ter justificativa funcional documentável para o perfil operacional Linux nativo.
+- **Aceleração de Vídeo por Hardware em Navegadores Chromium:**
+  - Todo navegador Chromium-based provisionado em `70-browser-flags.conf` deve incluir, além de Wayland (`--ozone-platform-hint=auto`) e GPU rasterization, flags de aceleração de vídeo por hardware (`AcceleratedVideoDecodeLinuxGL`, `AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoEncoder`) para explorar VA-API zero-copy GL com a GPU AMD.
+- **Fonte Única de Verdade para Variáveis de Ambiente:**
+  - Variáveis de ambiente de sessão (GPU, editor, tipografia, Wayland) devem ser definidas exclusivamente em `environment.d` (`60-kinoite-environment.conf`). É proibido redeclarar essas variáveis em scripts `profile.d`.
+  - Scripts `profile.d` devem conter apenas lógica interativa condicional (inicialização de shells, detecção de binários, FZF/starship/zoxide) impossível de replicar em `environment.d`.
+- **Proibição de Redeclaração de Defaults do Sistema:**
+  - É proibido incluir em `sysctl.d`, `kargs`, ou qualquer arquivo de configuração parâmetros que já sejam defaults do Fedora 44, systemd, ou NetworkManager. Sempre verificar o valor efetivo via `sysctl`, `cat /proc/cmdline` ou documentação upstream antes de propor qualquer adição.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 
@@ -78,3 +92,36 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - Arquivos de instrução de agentes têm efeito direto na geração de código e execução de comandos. Qualquer alteração em `AGENTS.md` ou `.agents/` deve ser tratada e revisada com o mesmo rigor de segurança de código de infraestrutura.
 - **Integridade da Estrutura:**
   - Manter `agent.md` como link simbólico para `AGENTS.md` para assegurar que ferramentas legadas e agentes modernos leiam exatamente a mesma fonte de verdade sem redundâncias.
+
+## 7. CI/CD, GitHub Actions e Proteção de Supply Chain
+
+- **Gatilho de Build por Digest:**
+  - O workflow `check-updates.yml` executa a cada 2 horas (`0 */2 * * *`) e dispara o build apenas quando o digest upstream muda, usando cache de Actions para evitar rebuilds redundantes. É proibido alterar esta cadência sem justificativa de cota.
+- **Concorrência e Cancelamento:**
+  - Todo workflow de build deve ter `concurrency` com `cancel-in-progress: true` para evitar execuções paralelas concorrentes desperdiçando minutos de CI.
+- **Pinagem de Actions:**
+  - Todas as GitHub Actions de terceiros devem ser pinadas por hash SHA completo (não por tag mutável) para proteção contra supply chain attacks. O Dependabot monitora atualizações diariamente.
+- **Retenção e Limpeza:**
+  - O workflow `cleanup.yml` executa diariamente, retendo no máximo 7 versões de pacotes e 3 dias de runs. É proibido desativar a limpeza automática sem justificativa de espaço.
+- **Permissões Mínimas:**
+  - Cada workflow deve declarar explicitamente o conjunto mínimo de `permissions` necessário (ex.: `contents: read`, `packages: write`). É proibido usar `permissions: write-all`.
+
+## 8. Rastreabilidade: Invariantes → Implementação
+
+| Invariante | Arquivo(s) de Implementação |
+| :--------- | :-------------------------- |
+| Validação de Kernel Arguments | [`recipes/common-kargs.yml`](recipes/common-kargs.yml) |
+| Arquitetura Transacional bootc | [`files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`](files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf) |
+| Blindagem profile.d | [`files/system/etc/profile.d/50-shell-env-overrides.sh`](files/system/etc/profile.d/50-shell-env-overrides.sh), [`files/system/etc/profile.d/60-kinoite-aliases.sh`](files/system/etc/profile.d/60-kinoite-aliases.sh) |
+| Paridade de Navegadores Flatpak | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf), [`files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`](files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf) |
+| Aceleração IA / ROCm via CDI | [`files/system/etc/cdi/amdgpu.yaml`](files/system/etc/cdi/amdgpu.yaml) |
+| Montagens FUSE Rclone | [`files/system/usr/lib/systemd/user/rclone@.service`](files/system/usr/lib/systemd/user/rclone@.service), [`files/system/usr/share/rclone/env/*.env`](files/system/usr/share/rclone/env/) |
+| Overrides Flatpak Declarativos | [`files/system/usr/share/flatpak/overrides/*`](files/system/usr/share/flatpak/overrides/), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf) |
+| Cache Permissions 0700 | [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
+| Áudio Bluetooth TWS | [`files/system/usr/share/wireplumber/wireplumber.conf.d/80-bluetooth-policy.conf`](files/system/usr/share/wireplumber/wireplumber.conf.d/80-bluetooth-policy.conf) |
+| Headset MCHOSE X9 | [`files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf`](files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf) |
+| Higiene de Pacotes | [`recipes/common-tools.yml`](recipes/common-tools.yml) |
+| Aceleração de Vídeo Browsers | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf) |
+| Fonte Única Env Vars | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf) |
+| Proibição Redeclaração Defaults | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/) |
+| CI/CD Proteção | [`.github/workflows/*.yml`](.github/workflows/), [`.github/dependabot.yml`](.github/dependabot.yml) |
