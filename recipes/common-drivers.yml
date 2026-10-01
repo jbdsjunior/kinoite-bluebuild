@@ -25,7 +25,5 @@ modules:
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-ugly
 
-        # Audio Codecs (Bluetooth aptX & encoders)
+        # Audio Codecs (Bluetooth aptX for third-party devices)
         - pipewire-codec-aptx
-        - twolame
-        - vorbis-tools
