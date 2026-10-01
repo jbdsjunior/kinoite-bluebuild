@@ -245,7 +245,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-18** | `recipes/common-kargs.yml`            | `bluetooth.disable_ertm=1`: quirk legado de gamepads pré-5.12, sem gamepad homologado; TWS A2DP/AVRCP não usa ERTM.               | **Resolvido:** Karg removido; `btusb.enable_autosuspend=n` mantido.    |
 | **A-19** | `recipes/common-drivers.yml` / `common-fonts.yml` | `twolame`, `vorbis-tools` e `wqy-zenhei-fonts` sem função homologada (encoders redundantes; CJK coberto pelo Noto).         | **Resolvido:** Pacotes removidos; `pipewire-codec-aptx` mantido por decisão. |
 | **A-20** | `.../ssh/sshd_config.d/50-kinoite-hardening.conf` | Autenticação por senha habilitada por padrão no sshd (superfície de brute-force).                                                 | **Resolvido:** `PasswordAuthentication no` + `KbdInteractiveAuthentication no`. |
-| **A-21** | Host (runtime)                        | Kargs da imagem ausentes do bootconfig: diff de `kargs.d` vazio desde a primeira implantação (deadlock de bootstrap do bootc).    | **Ação:** `rpm-ostree kargs --append` único + reboot (ver POST_INSTALL §7). |
+| **A-21** | Host (runtime)                        | Kargs da imagem ausentes do bootconfig: diff de `kargs.d` vazio desde a primeira implantação (deadlock de bootstrap do bootc).    | **Ação:** `rpm-ostree kargs --append-if-missing` idempotente + reboot (ver POST_INSTALL §7). |
 
 ---
 
