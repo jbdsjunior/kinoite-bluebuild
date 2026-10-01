@@ -12,8 +12,7 @@ modules:
       # Desktop responsiveness under heavy VM/compilation load
       - preempt=full
 
-      # Peripheral stability (gamepads & Bluetooth audio)
-      - bluetooth.disable_ertm=1
+      # Peripheral stability (Bluetooth audio)
       - btusb.enable_autosuspend=n
 
       # Kernel & memory exploit mitigations (CIS Benchmark & KSPP)
