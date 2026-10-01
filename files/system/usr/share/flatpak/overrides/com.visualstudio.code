@@ -1,2 +1,2 @@
 [Context]
-filesystems=xdg-run/podman:ro;xdg-run/docker.sock:ro;
+filesystems=xdg-run/podman:ro;
