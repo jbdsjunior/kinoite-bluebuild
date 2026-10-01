@@ -6,7 +6,7 @@ modules:
       masked:
         - systemd-remount-fs.service
       enabled:
-        # Base update automation & timers
+        # Base update automation & timers (no upstream preset)
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
 
@@ -14,19 +14,14 @@ modules:
         - podman-restart.service
         - podman-auto-update.timer
 
-        # Network and DNS
-        - systemd-resolved.service
-        - firewalld.service
+        # Mesh VPN (tailscale package ships no systemd preset)
         - tailscaled.service
 
-        # Virtualization / KVM sockets (modular libvirt daemons)
-        - virtqemud.socket
-        - virtnetworkd.socket
-        - virtstoraged.socket
-        - virtnodedevd.socket
-        - virtproxyd.socket
-        - virtsecretd.socket
-        - virtnwfilterd.socket
+        # NOTE: systemd-resolved, firewalld and the modular libvirt sockets
+        # (virtqemud/virtnetworkd/virtstoraged/virtnodedevd/virtproxyd/
+        # virtsecretd/virtnwfilterd) are preset-enabled by Fedora 44
+        # (90-default.preset) and applied at build time; re-declaring them
+        # is forbidden (AGENTS.md section 5).
 
     user:
       enabled:
