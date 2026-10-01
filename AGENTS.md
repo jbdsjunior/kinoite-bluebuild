@@ -82,6 +82,12 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
   - Scripts `profile.d` devem conter apenas lógica interativa condicional (inicialização de shells, detecção de binários, FZF/starship/zoxide) impossível de replicar em `environment.d`.
 - **Proibição de Redeclaração de Defaults do Sistema:**
   - É proibido incluir em `sysctl.d`, `kargs`, ou qualquer arquivo de configuração parâmetros que já sejam defaults do Fedora 44, systemd, ou NetworkManager. Sempre verificar o valor efetivo via `sysctl`, `cat /proc/cmdline` ou documentação upstream antes de propor qualquer adição.
+- **Segurança de Resolução de Nomes (DoT & Fallback Resiliente):**
+  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas com `DNSSEC=allow-downgrade`. É obrigatório manter `FallbackDNS` ativo e configurado com múltiplos servidores DoT de alta disponibilidade (Quad9) para prevenir indisponibilidade ou rebaixamento para texto plano desprotegido.
+- **Isolamento de Dispositivos e Menor Privilégio em Periféricos HID:**
+  - Acesso a dispositivos HID brutos (`/dev/hidraw*`) de periféricos de alta performance (headsets USB, mouses gamers, teclados mecânicos e controladoras RGB) deve ser concedido unicamente via `TAG+="uaccess"` em `70-peripherals.rules`. É estritamente proibido conceder permissões mundiais `0666` ou exigir execução com privilégios de root para controle de hardware de usuário.
+- **Prevenção de Fragmentação em Armazenamento CoW (Btrfs NoCOW):**
+  - Imagens de máquinas virtuais, camadas e volumes de contêineres, cache VFS de nuvem e modelos de inteligência artificial de grande porte (Ollama, HuggingFace) devem ter o atributo `+C` (NoCOW) provisionado preventivamente antes da gravação de dados via `tmpfiles.d` de sistema e usuário (`60-io-tuning-*.conf`), prevenindo fragmentação severa e amplificação de escrita no Btrfs.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 
@@ -125,3 +131,9 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 | Fonte Única Env Vars | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf) |
 | Proibição Redeclaração Defaults | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/) |
 | CI/CD Proteção | [`.github/workflows/*.yml`](.github/workflows/), [`.github/dependabot.yml`](.github/dependabot.yml) |
+| Resiliência DNS e DoT | [`files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`](files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf) |
+| Menor Privilégio Periféricos HID | [`files/system/usr/lib/udev/rules.d/70-peripherals.rules`](files/system/usr/lib/udev/rules.d/70-peripherals.rules) |
+| Btrfs NoCOW Storage | [`files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`](files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf), [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
+| Hardening SSHD e Blacklist Kernel | [`files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`](files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf), [`files/system/usr/lib/modprobe.d/60-security-blacklist.conf`](files/system/usr/lib/modprobe.d/60-security-blacklist.conf) |
+| ZRAM Swap Policy | [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf) |
+| Compatibilidade CLI Docker | [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
