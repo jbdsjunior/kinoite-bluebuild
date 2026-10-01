@@ -171,11 +171,17 @@ cat /proc/cmdline
 > ⚠️ **Bootstrap gap (bootc `kargs.d`):** bootc applies image kargs as a *diff* between the running deployment's `kargs.d` and the new image's. Systems whose first custom deployment predates bootc `kargs.d` support never receive them (empty diff). One-time host fix — applies to the running deployment and becomes the baseline for future upgrades:
 
 ```bash
-sudo rpm-ostree kargs --append=amd_pstate=active --append=iommu=pt --append=preempt=full --append=btusb.enable_autosuspend=n --append=slab_nomerge --append=page_alloc.shuffle=1 --append=vsyscall=none
-
+sudo rpm-ostree kargs \
+  --append-if-missing=amd_pstate=active \
+  --append-if-missing=iommu=pt \
+  --append-if-missing=preempt=full \
+  --append-if-missing=btusb.enable_autosuspend=n \
+  --append-if-missing=slab_nomerge \
+  --append-if-missing=page_alloc.shuffle=1 \
+  --append-if-missing=vsyscall=none
 ```
 
-Rollback (per argument, then reboot): `sudo rpm-ostree kargs --delete=<karg>`
+Rollback (per argument, then reboot): `sudo rpm-ostree kargs --delete-if-present=<karg>`
 
 ---
 
