@@ -26,7 +26,7 @@ jobs:
         run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Build Custom AMD Image
-        uses: blue-build/github-action@v1
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1
         with:
           recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
