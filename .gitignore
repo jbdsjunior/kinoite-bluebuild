@@ -23,4 +23,3 @@ tmp/
 .agents/**/*.tmp
 .agents/**/*.log
 *.local.md
-agent.local.md

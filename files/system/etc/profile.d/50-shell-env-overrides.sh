@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Critical flow: bypass non-interactive shell sessions immediately
+case "$-" in
+    *i*) ;;
+      *) return 0 2>/dev/null ;;
+esac
+
 # FZF configuration (requires conditional binary detection, cannot use environment.d)
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:---height 40% --layout=reverse --border --inline-info}"
 if command -v fd >/dev/null 2>&1; then
@@ -11,12 +17,6 @@ elif command -v fdfind >/dev/null 2>&1; then
     export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
     export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fdfind --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
 fi
-
-# Critical flow: bypass non-interactive shell sessions
-case "$-" in
-    *i*) ;;
-      *) return 0 2>/dev/null ;;
-esac
 
 if command -v starship >/dev/null 2>&1; then
     if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/starship.toml" ] && [ -f "/usr/share/starship/starship.toml" ]; then
