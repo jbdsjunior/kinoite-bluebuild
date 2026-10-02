@@ -65,7 +65,7 @@ jobs:
 
       - name: Check cache (${{ matrix.flavor }})
         id: cache
-        uses: actions/cache@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
+        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
           path: ~/.cache-${{ matrix.flavor }}
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
@@ -75,9 +75,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          gh workflow run "build-${{ matrix.flavor }}.yml" --ref main --repo "${{ github.repository }}"
+          # Avoid duplicate execution if build is already queued or running
+          RUNNING=$(gh run list --repo "${{ github.repository }}" --workflow="build-${{ matrix.flavor }}.yml" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
+          if [[ -n "${RUNNING}" ]]; then
+            echo "Build workflow build-${{ matrix.flavor }}.yml is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
+            exit 0
+          fi
 
-          mkdir -p ~/.cache-${{ matrix.flavor }}
-          echo "${{ steps.check.outputs.digest }}" > ~/.cache-${{ matrix.flavor }}/upstream-digest.txt
+          echo "Cache miss for digest ${{ steps.check.outputs.digest }}. Triggering build-${{ matrix.flavor }}.yml..."
+          gh workflow run "build-${{ matrix.flavor }}.yml" \
+            --ref main \
+            --repo "${{ github.repository }}" \
+            -f upstream_digest="${{ steps.check.outputs.digest }}"
         env:
           GH_TOKEN: ${{ github.token }}
