@@ -104,14 +104,17 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Gatilho de Build por Digest:**
   - O workflow `check-updates.yml` executa a cada 2 horas (`0 */2 * * *`) e dispara o build apenas quando o digest upstream muda, usando cache de Actions para evitar rebuilds redundantes. É proibido alterar esta cadência sem justificativa de cota.
   - O cache de digest upstream opera de forma desacoplada: `check-updates.yml` atua estritamente em modo de leitura (`actions/cache/restore`) e verifica se já existem execuções ativas (`in_progress` ou `queued`) antes de disparar; a gravação do cache (`actions/cache/save`) ocorre exclusivamente após a conclusão com sucesso do build em `build-amd.yml`, garantindo que falhas de compilação ou rede sejam retentadas automaticamente na checagem seguinte.
-- **Concorrência e Cancelamento:**
-  - Todo workflow de build deve ter `concurrency` com `cancel-in-progress: true` para evitar execuções paralelas concorrentes desperdiçando minutos de CI.
-- **Pinagem de Actions:**
-  - Todas as GitHub Actions de terceiros devem ser pinadas por hash SHA completo (não por tag mutável) para proteção contra supply chain attacks. O Dependabot monitora atualizações diariamente.
-- **Retenção e Limpeza:**
-  - O workflow `cleanup.yml` executa diariamente, retendo no máximo 7 versões de pacotes e 3 dias de runs. É proibido desativar a limpeza automática sem justificativa de espaço.
-- **Permissões Mínimas:**
-  - Cada workflow deve declarar explicitamente o conjunto mínimo de `permissions` necessário (ex.: `contents: read`, `packages: write`). É proibido usar `permissions: write-all`.
+- **Concorrência, Timeouts e Proteção de Quota Free:**
+  - Todo workflow deve declarar `concurrency` com `cancel-in-progress: true` para evitar execuções paralelas que desperdicem minutos de CI.
+  - É obrigatório declarar `timeout-minutes` restritivo em 100% dos jobs (máximo de 5m para checagens de atualização, 10m para rotinas de limpeza e 45m para build de imagem OCI), eliminando o risco de jobs zumbis consumirem cotas da conta gratuita do GitHub.
+- **Pinagem de Actions e Higiene do Dependabot:**
+  - Todas as GitHub Actions de terceiros devem ser pinadas por hash SHA completo (não por tag mutável) para proteção contra supply chain attacks.
+  - O Dependabot deve operar em cadência semanal (`weekly`, segundas-feiras) com agrupamento unificado (`groups: github-actions`) e prefixo Conventional Commits (`chore(deps)`), limitando-se a no máximo 3 PRs abertos simultaneamente para manter a aba de Pull Requests limpa e evitar dispersão de testes de CI.
+- **Retenção, Limpeza e Caches Órfãos:**
+  - O workflow `cleanup.yml` executa diariamente, retendo no máximo 3 versões de imagens de contêiner no GHCR (a imagem ativa e até 2 versões de rollback), 3 dias de execuções de workflows (mínimo de 3 runs preservadas) e realizando expurgo proativo de caches de Actions obsoletos (`gh cache delete`). É proibido desativar a limpeza automática ou manter retenção excessiva.
+- **Segurança de Shell e Menor Privilégio:**
+  - Cada workflow deve declarar explicitamente o conjunto mínimo de `permissions` necessário (ex.: `contents: read`, `packages: write`, `actions: write`). É terminantemente proibido utilizar `permissions: write-all`.
+  - Parâmetros e contextos dinâmicos do GitHub Actions (`${{ ... }}`) nunca devem ser concatenados diretamente no corpo de scripts shell executáveis (`run: |`); devem ser sanitizados e injetados estritamente via variáveis de ambiente no bloco `env:` para prevenção contra command injection.
 
 ## 8. Rastreabilidade: Invariantes → Implementação
 

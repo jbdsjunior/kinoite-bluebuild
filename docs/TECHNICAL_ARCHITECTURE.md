@@ -247,6 +247,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-20** | `.../ssh/sshd_config.d/50-kinoite-hardening.conf` | Autenticação por senha habilitada por padrão no sshd (superfície de brute-force).                                                 | **Resolvido:** `PasswordAuthentication no` + `KbdInteractiveAuthentication no`. |
 | **A-21** | Host (runtime)                        | Kargs da imagem ausentes do bootconfig: diff de `kargs.d` vazio desde a primeira implantação (deadlock de bootstrap do bootc).    | **Ação:** `rpm-ostree kargs --append-if-missing` idempotente + reboot (ver POST_INSTALL §7). |
 | **A-22** | `.github/workflows/check-updates.yml` e `build-amd.yml` | Desacoplamento do cache de upstream: `check-updates.yml` apenas consulta (`actions/cache/restore`) e previne disparos concorrentes caso já haja build ativo; a gravação do cache (`actions/cache/save`) ocorre unicamente após sucesso de `build-amd.yml`. | **Resolvido:** Garante re-execução automática de updates caso ocorra falha de build. |
+| **A-23** | `.github/` (`cleanup.yml`, `dependabot.yml`, `check-updates.yml`) | Otimização para GitHub Free Tier e máxima higiene: timeouts estritos (5m/10m), retenção de 3 imagens no GHCR, expurgo de caches órfãos, PRs agrupados no Dependabot e eliminação de injeção de shell. | **Resolvido:** Quotas protegidas, aba Actions e PRs limpos e segurança fortalecida. |
 
 ---
 
