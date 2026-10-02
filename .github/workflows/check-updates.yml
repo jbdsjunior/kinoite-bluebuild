@@ -10,15 +10,12 @@ concurrency:
 
 jobs:
   check-and-trigger:
+    name: Check Upstream Updates
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     permissions:
       actions: write
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [amd]
 
     steps:
       - name: Checkout repo
@@ -39,11 +36,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Resolve base image (${{ matrix.flavor }})
+      - name: Resolve base image
         id: resolve
         run: |
           set -euo pipefail
-          RECIPE_FILE="recipes/recipe-${{ matrix.flavor }}.yml"
+          RECIPE_FILE="recipes/recipe-amd.yml"
           BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
           IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
           FULL_IMG="${BASE_IMG}:${IMG_VER}"
@@ -55,37 +52,41 @@ jobs:
 
           echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
 
-
-      - name: Check base image digest (${{ matrix.flavor }})
+      - name: Check base image digest
         id: check
+        env:
+          IMAGE_NAME: ${{ steps.resolve.outputs.image }}
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect "docker://${{ steps.resolve.outputs.image }}" --format '{{.Digest}}')
+          DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check cache (${{ matrix.flavor }})
+      - name: Check cache
         id: cache
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
-          path: ~/.cache-${{ matrix.flavor }}
-          key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
+          path: ~/.cache-amd
+          key: upstream-amd-${{ steps.check.outputs.digest }}
 
-      - name: Trigger build (${{ matrix.flavor }})
+      - name: Trigger build
         if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_FILE: build-amd.yml
         run: |
           set -euo pipefail
 
           # Avoid duplicate execution if build is already queued or running
-          RUNNING=$(gh run list --repo "${{ github.repository }}" --workflow="build-${{ matrix.flavor }}.yml" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
+          RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
           if [[ -n "${RUNNING}" ]]; then
-            echo "Build workflow build-${{ matrix.flavor }}.yml is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
+            echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
             exit 0
           fi
 
-          echo "Cache miss for digest ${{ steps.check.outputs.digest }}. Triggering build-${{ matrix.flavor }}.yml..."
-          gh workflow run "build-${{ matrix.flavor }}.yml" \
+          echo "Cache miss for digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
+          gh workflow run "$WORKFLOW_FILE" \
             --ref main \
-            --repo "${{ github.repository }}" \
-            -f upstream_digest="${{ steps.check.outputs.digest }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
+            --repo "$REPO" \
+            -f upstream_digest="${UPSTREAM_DIGEST}"

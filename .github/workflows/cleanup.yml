@@ -4,27 +4,31 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: cleanup-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   delete-old-images:
+    name: Delete Old Container Images
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        image-name: [kinoite-amd]
     steps:
       - name: Delete old package versions
         uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
         with:
-          package-name: ${{ matrix.image-name }}
+          package-name: "kinoite-amd"
           package-type: "container"
-          min-versions-to-keep: 7
+          min-versions-to-keep: 3
           delete-only-untagged-versions: "false"
 
-  delete-old-runs:
+  delete-old-runs-and-caches:
+    name: Delete Old Runs and Stale Caches
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       actions: write
       contents: read
@@ -36,3 +40,22 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 3
           keep_minimum_runs: 3
+
+      - name: Prune superseded actions caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "Scanning for superseded Actions caches in $REPO..."
+          CACHES_TO_DELETE=$(gh cache list --repo "$REPO" --limit 100 --json id,key,createdAt -q '.[] | select(.key | startswith("upstream-"))' | jq -s -r 'sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
+          if [[ -n "${CACHES_TO_DELETE}" ]]; then
+            echo "$CACHES_TO_DELETE" | while read -r cache_id; do
+              if [[ -n "$cache_id" ]]; then
+                echo "Deleting superseded cache ID: $cache_id"
+                gh cache delete "$cache_id" --repo "$REPO" || true
+              fi
+            done
+          else
+            echo "No superseded caches found to prune."
+          fi
