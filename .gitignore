@@ -1,10 +1,25 @@
-# Secrets and signing material
+# Secrets, credentials, and signing material
 cosign.key
 *.pem
 *.key
 *.p12
 *.pfx
 *.priv
+*.gpg
+!cosign.pub
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+rclone.conf
+*.token
+*.secret
+
+# Local environment and override files
+.env
+.env.*
+*.env.local
+*.local.env
 
 # BlueBuild temporary files
 /.bluebuild-scripts_*
@@ -17,6 +32,17 @@ cosign.key
 *.pyc
 __pycache__/
 tmp/
+*.bak
+*.orig
+*~
+*.swp
+*.swo
+
+# IDE and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
 
 # Agent local overrides and runtime caches (Security & Cleanliness)
 .agents/local/
