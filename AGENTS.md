@@ -103,6 +103,7 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 
 - **Gatilho de Build por Digest:**
   - O workflow `check-updates.yml` executa a cada 2 horas (`0 */2 * * *`) e dispara o build apenas quando o digest upstream muda, usando cache de Actions para evitar rebuilds redundantes. É proibido alterar esta cadência sem justificativa de cota.
+  - O cache de digest upstream opera de forma desacoplada: `check-updates.yml` atua estritamente em modo de leitura (`actions/cache/restore`) e verifica se já existem execuções ativas (`in_progress` ou `queued`) antes de disparar; a gravação do cache (`actions/cache/save`) ocorre exclusivamente após a conclusão com sucesso do build em `build-amd.yml`, garantindo que falhas de compilação ou rede sejam retentadas automaticamente na checagem seguinte.
 - **Concorrência e Cancelamento:**
   - Todo workflow de build deve ter `concurrency` com `cancel-in-progress: true` para evitar execuções paralelas concorrentes desperdiçando minutos de CI.
 - **Pinagem de Actions:**

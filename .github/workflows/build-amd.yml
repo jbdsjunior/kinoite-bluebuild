@@ -1,6 +1,11 @@
 name: build-amd
 on:
   workflow_dispatch:
+    inputs:
+      upstream_digest:
+        description: "Upstream base image digest that triggered the build (optional, resolved automatically if blank)"
+        required: false
+        default: ""
 
 concurrency:
   group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
@@ -15,6 +20,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      actions: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,3 +45,32 @@ jobs:
           use_unstable_cli: false
           skip_checkout: true
           max_layers: 512
+
+      - name: Resolve upstream digest for cache
+        id: digest
+        run: |
+          set -euo pipefail
+          DIGEST="${{ inputs.upstream_digest }}"
+          if [[ -z "${DIGEST}" ]]; then
+            RECIPE_FILE="recipes/recipe-amd.yml"
+            BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
+            IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
+            FULL_IMG="${BASE_IMG}:${IMG_VER}"
+            if ! command -v skopeo >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y --no-install-recommends skopeo
+            fi
+            DIGEST=$(skopeo inspect "docker://${FULL_IMG}" --format '{{.Digest}}')
+          fi
+
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          mkdir -p ~/.cache-amd
+          echo "${DIGEST}" > ~/.cache-amd/upstream-digest.txt
+
+      - name: Save upstream cache on build success
+        if: steps.digest.outputs.digest != ''
+        continue-on-error: true
+        uses: actions/cache/save@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
+        with:
+          path: ~/.cache-amd
+          key: upstream-amd-${{ steps.digest.outputs.digest }}
