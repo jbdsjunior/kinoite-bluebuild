@@ -60,6 +60,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: ${{ steps.repo.outputs.owner }}
+          pr_event_number: ${{ github.event.number }}
           use_cache: true
           retry_push_count: 3
           verify_install: true
