@@ -89,13 +89,15 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Repository Structure
 
-| Path                     | Purpose                                                |
-| ------------------------ | ------------------------------------------------------ |
-| `recipes/recipe-amd.yml` | Main AMD recipe variant                                |
-| `recipes/common-*.yml`   | Shared modules (packages, drivers, services, and more) |
-| `files/system/`          | Immutable host overlays (policies, units, defaults)    |
-| `.github/workflows/`     | CI/CD pipelines and automation                         |
-| `cosign.pub`             | Public key for signature verification                  |
+| Path                          | Purpose                                                                |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `recipes/recipe-amd.yml`      | Main AMD recipe variant                                                |
+| `recipes/common-*.yml`        | Shared modules (packages, drivers, services, and more)                 |
+| `files/system/`               | Immutable host overlays (policies, units, defaults)                    |
+| `files/system/usr/libexec/`   | Centralized resilience scripts (network-guard)                         |
+| `files/system/usr/share/`     | Polkit authorization rules, Flatpak overrides, and desktop configs    |
+| `.github/workflows/`          | CI/CD pipelines and automation                                         |
+| `cosign.pub`                  | Public key for signature verification                                  |
 
 ---
 

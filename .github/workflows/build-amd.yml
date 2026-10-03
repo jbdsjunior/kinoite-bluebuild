@@ -60,6 +60,7 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: ${{ steps.repo.outputs.owner }}
+          # Required by blue-build/github-action action.yml schema (even if empty on workflow_dispatch)
           pr_event_number: ${{ github.event.number }}
           use_cache: true
           retry_push_count: 3
