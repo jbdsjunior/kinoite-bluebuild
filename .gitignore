@@ -49,4 +49,3 @@ Thumbs.db
 .agents/**/*.tmp
 .agents/**/*.log
 *.local.md
-/plano_execucao.md
