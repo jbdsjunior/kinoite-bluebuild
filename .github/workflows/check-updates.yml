@@ -30,12 +30,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends skopeo
           fi
-
-      - name: Ensure gh auth
-        run: gh auth status
-        env:
-          GH_TOKEN: ${{ github.token }}
-
       - name: Resolve base image
         id: resolve
         run: |
