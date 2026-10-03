@@ -37,7 +37,7 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 ## 4. Restrições do Projeto
 
 - **Sem Redundâncias de SO:** Não incluir ajustes ou configurações redundantes já presentes por padrão no Linux/Fedora Kinoite 44.
-- **Automação de Atualizações:** Timers de atualização (`bootc`, Flatpak do sistema e usuário, Podman, soar) iniciam exatamente 5 minutos após o boot (`OnBootSec=5m`) e repetem a cada 45 minutos (`OnUnitActiveSec=45m`). Devem possuir guarda de resiliência de rede obrigatória via `busctl`/`NetworkManager` para abortar sem erro em conexões limitadas/offline.
+- **Automação de Atualizações:** Timers de atualização (`bootc`, Flatpak do sistema e usuário, Podman, soar) iniciam exatamente 5 minutos após o boot (`OnBootSec=5m`) e repetem a cada 45 minutos (`OnUnitActiveSec=45m`). Devem possuir guarda de resiliência de rede obrigatória via script executável centralizado `/usr/libexec/kinoite/network-guard` (`ExecCondition`), inspecionando o `NetworkManager` via D-Bus para abortar sem erro em conexões limitadas/offline.
 - **Checagem de Atualização Upstream:** Executada via GitHub Actions (`check-updates.yml`) a cada 2 horas (`0 */2 * * *`) de forma otimizada para cotas de CI.
 - **Qualidade Visual:** Garantir qualidade mínima equivalente ou superior a sistemas modernos (estilo macOS), com foco em terminal, Konsole e tipografia.
 - **Referência Técnica:** Soluções e melhorias podem utilizar como base referências comprovadas do projeto Bazzite Linux.
@@ -83,7 +83,9 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Proibição de Redeclaração de Defaults do Sistema:**
   - É proibido incluir em `sysctl.d`, `kargs`, ou qualquer arquivo de configuração parâmetros que já sejam defaults do Fedora 44, systemd, ou NetworkManager. Sempre verificar o valor efetivo via `sysctl`, `cat /proc/cmdline` ou documentação upstream antes de propor qualquer adição.
 - **Segurança de Resolução de Nomes (DoT & Fallback Resiliente):**
-  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas com `DNSSEC=allow-downgrade`. É obrigatório manter `FallbackDNS` ativo e configurado com múltiplos servidores DoT de alta disponibilidade (Quad9) para prevenir indisponibilidade ou rebaixamento para texto plano desprotegido.
+  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas com `DNSSEC=allow-downgrade`. É obrigatório manter `FallbackDNS` ativo e configurado com múltiplos servidores DoT de alta disponibilidade do Quad9 (`dns.quad9.net` com bloqueio de malware e suporte a DNSSEC) para prevenir indisponibilidade ou rebaixamento para texto plano desprotegido.
+- **Prevenção de Colisão com Pacotes RPM Upstream:**
+  - Configurações e regras do sistema (como regras de Polkit em `/usr/share/polkit-1/rules.d/`) devem utilizar prefixos e nomes exclusivos (ex.: `51-kinoite-libvirt.rules`). É terminantemente proibido sobrescrever arquivos pertencentes a pacotes RPM upstream (ex.: `50-libvirt.rules` de `libvirt-daemon-common`), preservando a integridade das assinaturas e validação de pacotes (`rpm -V`).
 - **Isolamento de Dispositivos e Menor Privilégio em Periféricos HID:**
   - Acesso a dispositivos HID brutos (`/dev/hidraw*`) de periféricos de alta performance (headsets USB, mouses gamers, teclados mecânicos e controladoras RGB) deve ser concedido unicamente via `TAG+="uaccess"` em `70-peripherals.rules`. É estritamente proibido conceder permissões mundiais `0666` ou exigir execução com privilégios de root para controle de hardware de usuário.
 - **Prevenção de Fragmentação em Armazenamento CoW (Btrfs NoCOW):**
@@ -141,3 +143,5 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 | Hardening SSHD e Blacklist Kernel | [`files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`](files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf), [`files/system/usr/lib/modprobe.d/60-security-blacklist.conf`](files/system/usr/lib/modprobe.d/60-security-blacklist.conf) |
 | ZRAM Swap Policy | [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf) |
 | Compatibilidade CLI Docker | [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
+| Guarda de Resiliência de Rede | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard) |
+| Menor Privilégio Libvirt Polkit | [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules) |

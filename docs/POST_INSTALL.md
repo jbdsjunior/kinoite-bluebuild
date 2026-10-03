@@ -428,7 +428,7 @@ systemctl --user start podman-auto-update.service
 Expected policy:
 
 - Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
-- Scheduled update timers (`bootc`, Flatpak system/user, Podman auto-update system/user, `soar`) wait for `network-online.target`, evaluate `ConditionACPower`, and enforce `ExecCondition` resilience against metered connections and captive portals.
+- Scheduled update timers (`bootc`, Flatpak system/user, Podman auto-update system/user, `soar`) wait for `network-online.target`, evaluate `ConditionACPower`, and enforce network resilience via `/usr/libexec/kinoite/network-guard` against metered connections and captive portals.
 - Podman auto-update uses packaged system and user systemd services and requires containers to opt in with the appropriate auto-update labels (`io.containers.autoupdate=image` or `registry`).
 
 ---
@@ -437,18 +437,20 @@ Expected policy:
 
 The image includes declarative security drop-ins:
 
-- **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`dccp`, `sctp`, `rds`, `tipc`), vulnerable legacy file systems (`cramfs`, `freevxfs`, `jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers.
+- **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`sctp`, `tipc`), vulnerable legacy file systems (`jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers via `/bin/false` (CIS Benchmark compliance).
 - **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces key-only authentication (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`), enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
 - **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
 - **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.kptr_restrict=1`, and `kernel.nmi_watchdog=0` (eliminates CPU watchdog jitter across 32 threads).
 - **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
+- **Libvirt Polkit Rules (`/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`)**: Grants passwordless virtualization management strictly to members of the `wheel` administrative group without colliding with upstream RPM files.
+- **Resilient Encrypted DNS (`/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`)**: Cloudflare primary with Quad9 DoT fallback (`dns.quad9.net`) providing automated malware blocking and DNSSEC integrity.
 - **Docker CLI Compatibility (`/etc/containers/nodocker`)**: Suppresses Podman emulation warning for seamless Docker CLI workflows.
 
 Verify kernel module blacklist:
 
 ```bash
 modprobe -n -v sctp
-# Output: install /bin/true
+# Output: install /bin/false
 ```
 
 ---
@@ -461,8 +463,8 @@ Systemd user sessions automatically load `/usr/lib/environment.d/60-kinoite-envi
 echo $HSA_OVERRIDE_GFX_VERSION
 # Expected: 10.3.0
 
-echo $AMD_VULKAN_ICD
-# Expected: RADV
+vulkaninfo --summary | grep driverName
+# Expected: radv
 ```
 
 Verify GPU acceleration and monitoring:
