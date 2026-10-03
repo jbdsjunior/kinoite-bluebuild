@@ -189,13 +189,11 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 - **Enforcement Automático:** Aplicado via `systemd-tmpfiles` antes da criação de arquivos nos seguintes caminhos:
   - `/var/lib/libvirt/images` (`+C`)
   - `/var/lib/containers/storage` e volumes (`+C`)
-  - `/var/lib/docker` (`+C`)
-  - `/var/lib/distrobox` (`+C`)
   - Espaços de usuário correspondentes (`~/.local/share/containers/storage`, `~/.local/share/libvirt/images`).
 
 ### 5.3 Subsistema Gráfico, IA Local & Multimídia
 
-- **Aceleração 3D / Vulkan:** `AMD_VULKAN_ICD=RADV`, selecionando o driver de código aberto de alto desempenho da comunidade Mesa.
+- **Aceleração 3D / Vulkan:** Driver Mesa RADV de alto desempenho (`radeon_icd.x86_64.json`) como padrão nativo, sem necessidade de overrides de ambiente redundantes.
 - **Suporte a IA / ROCm:** O hardware host conta com a GPU RX 6600 XT (arquitetura Navi 23 / `gfx1032`). Por padrão, runtimes de IA (ROCm/HIP, PyTorch, llama.cpp) suportam primariamente arquiteturas comerciais da linha CDNA ou Navi 21 (`gfx1030`). A variável:
   $$\text{HSA\_OVERRIDE\_GFX\_VERSION} = 10.3.0$$
   está definida como fonte única de verdade em `/usr/lib/environment.d/60-kinoite-environment.conf` (e injetada em contêineres via especificação CDI `/etc/cdi/amdgpu.yaml`), permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
@@ -210,11 +208,11 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 O sistema implementa uma automação de atualização sem precedentes em estações Linux:
 
 - **Janela de Execução:** Os timers de atualização (`bootc-fetch-apply-updates`, `flatpak-system-update`, `podman-auto-update`, `soar-upgrade-packages`) iniciam **5 minutos após o boot** (`OnBootSec=5m`) e executam **a cada 45 minutos** (`OnUnitActiveSec=45m`).
-- **Resiliência D-Bus / NetworkManager:** Para impedir consumo indevido de franquias móveis ou falhas ruidosas quando offline, o serviço executa a verificação prévia:
+- **Resiliência D-Bus / NetworkManager:** Para impedir consumo indevido de franquias móveis ou falhas ruidosas quando offline, os serviços executam a verificação modular via guarda central:
   ```bash
-  ExecCondition=/usr/bin/bash -c 'm=$(/usr/bin/busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true); c=$(/usr/bin/busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Connectivity 2>/dev/null || true); [[ -n "$m" && -n "$c" && "$m" != *" 1" && "$m" != *" 3" && "$c" != *" 1" && "$c" != *" 2" && "$c" != *" 3" ]]'
+  ExecCondition=/usr/libexec/kinoite/network-guard
   ```
-  Se a conexão estiver tarifada (Metered) ou em estado de portal cativo/sem internet (Connectivity != 4), o serviço aborta de forma limpa com código zero (skip), sem poluir o journal com mensagens de erro.
+  O script centralizado (`/usr/libexec/kinoite/network-guard`) consulta o NetworkManager via D-Bus (`busctl`). Se a conexão estiver tarifada (Metered) ou em estado de portal cativo/sem internet (Connectivity != 4), o serviço aborta de forma limpa com código zero (skip), sem poluir o journal com mensagens de erro.
 - **Priorização de Recursos:** O processo de download e descompressão de camadas opera em classe de I/O e CPU idle (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`), garantindo impacto nulo na renderização do desktop a 144Hz+.
 
 ---
@@ -248,6 +246,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-21** | Host (runtime)                        | Kargs da imagem ausentes do bootconfig: diff de `kargs.d` vazio desde a primeira implantação (deadlock de bootstrap do bootc).    | **Ação:** `rpm-ostree kargs --append-if-missing` idempotente + reboot (ver POST_INSTALL §7). |
 | **A-22** | `.github/workflows/check-updates.yml` e `build-amd.yml` | Desacoplamento do cache de upstream: `check-updates.yml` apenas consulta (`actions/cache/restore`) e previne disparos concorrentes caso já haja build ativo; a gravação do cache (`actions/cache/save`) ocorre unicamente após sucesso de `build-amd.yml`. | **Resolvido:** Garante re-execução automática de updates caso ocorra falha de build. |
 | **A-23** | `.github/` (`cleanup.yml`, `dependabot.yml`, `check-updates.yml`) | Otimização para GitHub Free Tier e máxima higiene: timeouts estritos (5m/10m), retenção de 3 imagens no GHCR, expurgo de caches órfãos, PRs agrupados no Dependabot e eliminação de injeção de shell. | **Resolvido:** Quotas protegidas, aba Actions e PRs limpos e segurança fortalecida. |
+| **A-24** | `sysctl`, `modprobe`, `tmpfiles`, `polkit`, `resolved`, `systemd` | Expurgo de defaults redundantes (`inotify`, `ip_forward`, Vulkan ICD, paths NoCOW mortos, `r!` tmpfiles), colisão polkit (`51-kinoite-libvirt.rules`), guarda de rede modular (`/usr/libexec/kinoite/network-guard`) e fallback DoT seguro (`dns.quad9.net`). | **Resolvido:** Sistema higienizado, paridade estrita com Fedora 44, CIS e menor privilégio. |
 
 ---
 
