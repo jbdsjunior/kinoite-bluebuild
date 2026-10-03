@@ -267,7 +267,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 
 - **Status:** **Implementado** declarativamente na imagem base (`files/system/usr/share/flatpak/overrides/com.visualstudio.code` sincronizado para `/var/lib/flatpak/overrides/` via tmpfiles).
 - **Contexto:** Aplicativos Flatpak (como VS Code e navegadores) executam sob sandboxing restrito. Frequentemente, o desenvolvedor precisa de permissões de acesso ao socket do Podman, Wayland nativo e diretórios de projetos.
-- **Implementação:** Template declarativo em `/usr/share/flatpak/overrides/com.visualstudio.code` sincronizado autoritativamente para `/var/lib/flatpak/overrides/com.visualstudio.code` no boot via tmpfiles do sistema (`/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`), fornecendo permissões calibradas (`filesystems=xdg-run/podman:ro;xdg-run/docker.sock:ro;`) para o VS Code acessar o socket de contêiner do Podman e Docker em modo somente leitura (princípio de menor privilégio), viabilizando Dev Containers sem atrito pós-instalação.
+- **Implementação:** Template declarativo em `/usr/share/flatpak/overrides/com.visualstudio.code` sincronizado autoritativamente para `/var/lib/flatpak/overrides/com.visualstudio.code` no boot via tmpfiles do sistema (`/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`), fornecendo permissões calibradas (`filesystems=xdg-run/podman:ro;`) para o VS Code acessar o socket de contêiner do Podman em modo somente leitura (princípio de menor privilégio), viabilizando Dev Containers sem atrito pós-instalação.
 
 ### 7.4 Melhoria 4: Autenticação de Supply Chain com Attestation SLSA L3
 
