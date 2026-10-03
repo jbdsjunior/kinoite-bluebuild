@@ -89,7 +89,17 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Isolamento de Dispositivos e Menor Privilégio em Periféricos HID:**
   - Acesso a dispositivos HID brutos (`/dev/hidraw*`) de periféricos de alta performance (headsets USB, mouses gamers, teclados mecânicos e controladoras RGB) deve ser concedido unicamente via `TAG+="uaccess"` em `70-peripherals.rules`. É estritamente proibido conceder permissões mundiais `0666` ou exigir execução com privilégios de root para controle de hardware de usuário.
 - **Prevenção de Fragmentação em Armazenamento CoW (Btrfs NoCOW):**
-  - Imagens de máquinas virtuais, camadas e volumes de contêineres, cache VFS de nuvem e modelos de inteligência artificial de grande porte (Ollama, HuggingFace) devem ter o atributo `+C` (NoCOW) provisionado preventivamente antes da gravação de dados via `tmpfiles.d` de sistema e usuário (`60-io-tuning-*.conf`), prevenindo fragmentação severa e amplificação de escrita no Btrfs.
+  - Imagens de máquinas virtuais, camadas e volumes de contêineres, cache VFS de nuvem e modelos de inteligência artificial de grande porte (Ollama, HuggingFace) devem ter o atributo `+C` (NoCOW) provisionado preventivamente antes da gravação de dados via `tmpfiles.d` de sistema e usuário (`60-io-tuning-*.conf`), prevenindo fragmentação severa e amplificação de escrita no Btrfs. É proibido declarar caminhos NoCOW (`+C`) para runtimes não homologados ou inexistentes (`/var/lib/docker`, `/var/lib/distrobox`).
+- **Auto-scaling de Recursos do Kernel vs Limites Manuais:**
+  - Proibido introduzir limites manuais restritivos em parâmetros do kernel que realizam dimensionamento dinâmico proporcional à memória física (ex.: `fs.inotify.max_user_watches` auto-escala acima de 650.000 instâncias no kernel Linux 5.11+ com 64 GB de RAM; fixar 524.288 artificialmente limita e degrada o sistema).
+- **Encaminhamento de Rede e Isolamento de Nós Clientes:**
+  - Em estações de trabalho e clientes Tailscale, é expressamente proibido habilitar `net.ipv4.ip_forward` ou `net.ipv6.conf.all.forwarding` globalmente via `sysctl.d`. O encaminhamento IP deve ser ativado exclusivamente sob demanda pelos daemons de contêineres e virtualização (Netavark/Podman, Libvirt) nas pontes virtuais designadas, prevenindo a quebra de SLAAC (RFC 4862) e a exposição indevida do host como gateway de trânsito.
+- **Blacklist CIS e Higiene de Módulos do Kernel:**
+  - A desativação de protocolos de rede e sistemas de arquivos vulneráveis ou legados (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`) deve utilizar estritamente a diretiva `install <modulo> /bin/false` (CIS Benchmark) para retornar erro explícito caso invocada. É expressamente proibido incluir módulos já expurgados ou inexistentes no kernel ativo (ex.: `dccp`, `cramfs`, `freevxfs` no Linux 7.2) ou que já possuam regras nativas upstream (ex.: `rds`).
+- **Semântica e Higiene de Timers do Systemd:**
+  - Timers monotônicos baseados em tempo de boot ou inatividade (`OnBootSec=`, `OnUnitActiveSec=`) não devem declarar `Persistent=true` (diretiva funcional exclusivamente em timers calendáricos com `OnCalendar=`). Timers não devem redeclarar `Unit=` quando acionam o serviço homônimo padrão, nem definir `RandomizedDelaySec=0` quando já for o padrão nativo da distribuição.
+- **Atomicidade e Idempotência em Diretivas Tmpfiles:**
+  - Diretivas do tipo `C+` (cópia/substituição atômica no systemd 255+) sobrescrevem o destino de forma segura e atômica; é expressamente proibido adicionar diretivas `r!` precedentes redundantes.
 
 ## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
 
@@ -117,6 +127,8 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Segurança de Shell e Menor Privilégio:**
   - Cada workflow deve declarar explicitamente o conjunto mínimo de `permissions` necessário (ex.: `contents: read`, `packages: write`, `actions: write`). É terminantemente proibido utilizar `permissions: write-all`.
   - Parâmetros e contextos dinâmicos do GitHub Actions (`${{ ... }}`) nunca devem ser concatenados diretamente no corpo de scripts shell executáveis (`run: |`); devem ser sanitizados e injetados estritamente via variáveis de ambiente no bloco `env:` para prevenção contra command injection.
+- **Contrato de Schemas e Preservação de Inputs Obrigatórios:**
+  - Parâmetros declarados como obrigatórios (`required: true`) nos manifestos `action.yml` de GitHub Actions (ex.: `pr_event_number` em `blue-build/github-action`) devem ser mantidos explicitamente declarados no bloco `with:` mesmo em disparos manuais (`workflow_dispatch`) onde seu valor avalia como nulo, garantindo conformidade com o validador de schema.
 
 ## 8. Rastreabilidade: Invariantes → Implementação
 
