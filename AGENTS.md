@@ -101,8 +101,8 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
   - Scripts `profile.d` devem conter apenas lógica interativa condicional (inicialização de shells, detecção de binários, FZF/starship/zoxide) impossível de replicar em `environment.d`.
 - **Proibição de Redeclaração de Defaults do Sistema:**
   - É proibido incluir em `sysctl.d`, `kargs`, ou qualquer arquivo de configuração parâmetros que já sejam defaults do Fedora 44, systemd, ou NetworkManager. Sempre verificar o valor efetivo via `sysctl`, `cat /proc/cmdline` ou documentação upstream antes de propor qualquer adição.
-- **Segurança de Resolução de Nomes (DoT & Fallback Resiliente):**
-  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas com `DNSSEC=allow-downgrade`. É obrigatório manter `FallbackDNS` ativo e configurado com múltiplos servidores DoT de alta disponibilidade do Quad9 (`dns.quad9.net` com bloqueio de malware e suporte a DNSSEC) para prevenir indisponibilidade ou rebaixamento para texto plano desprotegido.
+- **Segurança de Resolução de Nomes (DoT & Resiliência DNS):**
+  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas (`DNSOverTLS=opportunistic`) com validação `DNSSEC=allow-downgrade` ancoradas nos servidores primários de alto desempenho da Cloudflare (`1.1.1.1` e `1.0.0.1` com SNI `cloudflare-dns.com`).
 - **Prevenção de Colisão com Pacotes RPM Upstream:**
   - Configurações e regras do sistema (como regras de Polkit em `/usr/share/polkit-1/rules.d/`) devem utilizar prefixos e nomes exclusivos (ex.: `51-kinoite-libvirt.rules`). É terminantemente proibido sobrescrever arquivos pertencentes a pacotes RPM upstream (ex.: `50-libvirt.rules` de `libvirt-daemon-common`), preservando a integridade das assinaturas e validação de pacotes (`rpm -V`).
 - **Isolamento de Dispositivos e Menor Privilégio em Periféricos HID:**
