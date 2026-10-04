@@ -229,8 +229,26 @@ O sistema implementa uma automação de atualização sem precedentes em estaç�
   ```bash
   ExecCondition=/usr/libexec/kinoite/network-guard
   ```
-  O script centralizado (`/usr/libexec/kinoite/network-guard`) consulta o NetworkManager via D-Bus (`busctl`). Se a conexão estiver tarifada (Metered) ou em estado de portal cativo/sem internet (Connectivity != 4), o serviço aborta de forma limpa com código zero (skip), sem poluir o journal com mensagens de erro.
 - **Priorização de Recursos:** O processo de download e descompressão de camadas opera em classe de I/O e CPU idle (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`), garantindo impacto nulo na renderização do desktop a 144Hz+.
+
+### 5.5 Subsistema de Montagens de Nuvem FUSE (Rclone)
+
+O acesso a armazenamentos em nuvem (Google Drive, Microsoft OneDrive) é arquitetado sobre um template de serviço de usuário dinâmico (`rclone@<remote>.service`), garantindo ciclo de vida atrelado à sessão gráfica KDE Plasma, notificação de prontidão (`Type=notify`) e desacoplamento de credenciais:
+
+- **Parametrização VFS e Resguardo de Armazenamento:**
+  - `RCLONE_VFS_CACHE_MAX_SIZE=15G`: Limite máximo do cache VFS local.
+  - `RCLONE_VFS_CACHE_MAX_AGE=24h`: Expiração e expurgo de arquivos ociosos por 24h, prevenindo acúmulo no NVMe.
+  - `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Evicção preventiva de emergência se o espaço livre do host cair abaixo de 15 GB.
+  - `RCLONE_VFS_WRITE_BACK=5s`: Persistência de escrita local para a nuvem em até 5 segundos.
+  - `RCLONE_BUFFER_SIZE=16M`, `RCLONE_VFS_READ_AHEAD=32M`: Leitura sequencial otimizada para latência de desktop.
+- **Hierarquia de Ambientes e Extensibilidade:**
+  - Template base imutável em `/usr/share/rclone/env/%i.env` provisionado no boot para `~/.config/rclone/env/%i.env` via `user-tmpfiles.d` (`70-rclone-env.conf`).
+  - Extensões e chaves particulares persistem em `~/.config/rclone/env/%i.local.env` sem sofrer sobrescrita.
+- **Proteção do Provedor e Integridade de Dados:**
+  - **Google Drive:** `RCLONE_DRIVE_USE_TRASH=true` redireciona exclusões à lixeira em nuvem com retenção de 30 dias (paridade com o cliente oficial desktop); `RCLONE_POLL_INTERVAL=15s` utiliza a Changes API para sincronização quase em tempo real.
+  - **OneDrive:** Rate limiting calibrado (`RCLONE_TPSLIMIT=5`, `RCLONE_TPSLIMIT_BURST=6`) para eliminar erros HTTP 429 de throttling; `RCLONE_ONEDRIVE_CHUNK_SIZE=50M` (múltiplo exato de 320 KiB); detecção delta periódica de 1m.
+- **Blindagem do Indexador Baloo:**
+  - Exclusão explícita e imutável de `$HOME/Cloud` em `/etc/xdg/baloofilerc` via marcação `[$ei]`, prevenindo varreduras recursivas que induzam saturação de banda, alta carga de CPU e bloqueio de cotas de API.
 
 ---
 
