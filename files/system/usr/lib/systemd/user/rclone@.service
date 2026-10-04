@@ -9,7 +9,9 @@ StartLimitBurst=20
 
 [Service]
 Type=notify
-TimeoutStartSec=30
+TimeoutStartSec=90s
+# Abort cleanly without error if connection is offline, captive portal, or metered
+ExecCondition=/usr/libexec/kinoite/network-guard
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
@@ -71,7 +73,7 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
 ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
 ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
 Restart=on-failure
-RestartSec=30s
+RestartSec=10s
 KillMode=mixed
 TimeoutStopSec=180s
 

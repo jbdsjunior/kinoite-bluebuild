@@ -241,6 +241,10 @@ O acesso a armazenamentos em nuvem (Google Drive, Microsoft OneDrive) é arquite
   - `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Evicção preventiva de emergência se o espaço livre do host cair abaixo de 15 GB.
   - `RCLONE_VFS_WRITE_BACK=5s`: Persistência de escrita local para a nuvem em até 5 segundos.
   - `RCLONE_BUFFER_SIZE=16M`, `RCLONE_VFS_READ_AHEAD=32M`: Leitura sequencial otimizada para latência de desktop.
+- **Resiliência de Inicialização e Guarda de Rede:**
+  - `ExecCondition=/usr/libexec/kinoite/network-guard`: Verifica conectividade e portal cativo via D-Bus antes de iniciar, abortando de forma limpa sem erro quando offline.
+  - `TimeoutStartSec=90s`: Janela de prontidão adequada para autenticação OAuth2, renovação de token e montagem FUSE mesmo sob latência de rede.
+  - `RestartSec=10s`: Recuperação ágil em caso de desconexões temporárias de rede.
 - **Hierarquia de Ambientes e Extensibilidade:**
   - Template base imutável em `/usr/share/rclone/env/%i.env` provisionado no boot para `~/.config/rclone/env/%i.env` via `user-tmpfiles.d` (`70-rclone-env.conf`).
   - Extensões e chaves particulares persistem em `~/.config/rclone/env/%i.local.env` sem sofrer sobrescrita.
