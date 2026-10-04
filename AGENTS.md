@@ -45,6 +45,11 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
   - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
   - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
+- **Anti-Patterns de Hardware Proibidos:**
+  - **CPU (Zen 3 5950X):** Proibido `preempt=full` (induz contenção e latência de escalonamento em 32 threads/2 CCDs), omitir `tsc=reliable` / `nowatchdog` (causa falso positivo do watchdog de clocksource `Watchdog remote CPU read timed out` e congelamento total) ou utilizar `amd_iommu=on` (parâmetro inexistente).
+  - **GPU (Navi 23 6600 XT):** Proibido ativar flags experimentais de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), causadoras de GPU hangs e deadlocks no driver Mesa/AMDGPU, e proibido instalar stacks pesadas de ROCm no host (usar estritamente CDI containerizado).
+  - **Memória & Armazenamento:** Proibido `page_alloc.shuffle=1` (fragmentação do alocador de páginas), limites manuais restritivos em parâmetros auto-escaláveis (`inotify`) e gravação com CoW ativo em VMs, contêineres e modelos de IA (obrigatório NoCOW `+C`).
+  - **Áudio & Conectividade:** Proibido desativar `bluez5.hw-volume` em fones TWS (induz assimetria de ganho analógico) e proibido ativar encaminhamento IP global (`net.ipv4.ip_forward`) no sysctl.
 
 ## 4. Restrições do Projeto
 
