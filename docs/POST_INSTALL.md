@@ -227,28 +227,9 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 The image ships a modernized, dynamic systemd user template (`rclone@<remote>.service`) for rclone FUSE mounts. Each instance starts with the KDE Plasma graphical session, uses `Type=notify` for accurate mount readiness, and logs directly to the systemd user journal.
 
-### Modernized Unit Architecture & Parameterization
+### Unit Parameterization and Runtime Overrides
 
-Default resource, performance, and cache parameters in `[Service]` are parametrized and interpolated directly into `ExecStart`:
-
-- `RCLONE_BUFFER_SIZE=16M` (interpolated into `--buffer-size`)
-- `RCLONE_TRANSFERS=4` (interpolated into `--transfers`)
-- `RCLONE_CHECKERS=8` (interpolated into `--checkers`)
-- `RCLONE_TPSLIMIT=10` (interpolated into `--tpslimit`)
-- `RCLONE_TPSLIMIT_BURST=10` (interpolated into `--tpslimit-burst`)
-- `RCLONE_VFS_READ_AHEAD=32M` (interpolated into `--vfs-read-ahead`)
-- `RCLONE_VFS_READ_CHUNK_SIZE=8M` (interpolated into `--vfs-read-chunk-size`)
-- `RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M` (interpolated into `--vfs-read-chunk-size-limit`)
-- `RCLONE_VFS_CACHE_MAX_SIZE=15G` (interpolated into `--vfs-cache-max-size`: hard cap on local cache size)
-- `RCLONE_VFS_CACHE_MAX_AGE=24h` (interpolated into `--vfs-cache-max-age`: evicts files unused for 24h, keeping NVMe clean)
-- `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G` (interpolated into `--vfs-cache-min-free-space`: auto-evicts cache if host free space drops below 15G)
-- `RCLONE_VFS_CACHE_POLL_INTERVAL=1m` (interpolated into `--vfs-cache-poll-interval`: periodic cache eviction cycle)
-- `RCLONE_VFS_WRITE_BACK=5s` (interpolated into `--vfs-write-back`: fast 5-second cloud sync after local file save)
-- `RCLONE_DIR_CACHE_TIME=24h` (interpolated into `--dir-cache-time`: directory tree cache duration)
-- `RCLONE_POLL_INTERVAL=1m` (interpolated into `--poll-interval`: provider change detection interval)
-- `RCLONE_BWLIMIT=0` (interpolated into `--bwlimit`)
-- Clean teardown: `ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}` and `ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}`
-- Extra flags: `$RCLONE_FLAGS` is appended to `ExecStart` for any custom arguments.
+Operational parameters (`--vfs-cache-max-size`, `--vfs-cache-max-age`, `--buffer-size`, `--poll-interval`, `--tpslimit`) are declared as environment defaults in `/usr/lib/systemd/user/rclone@.service` and tuned per provider. For in-depth architectural justification and cache policy mechanics, see [`docs/TECHNICAL_ARCHITECTURE.md`](TECHNICAL_ARCHITECTURE.md#55-subsistema-de-montagens-de-nuvem-fuse-rclone).
 
 ### Remote Mappings and Per-Remote Environment Files
 
