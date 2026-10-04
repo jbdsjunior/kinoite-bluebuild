@@ -4,12 +4,24 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 
 ## 1. Diretriz Obrigatória de Versionamento Git
 
-- **Skill Obrigatória Ativa:** A skill [`git-workflow`](.agents/skills/git-workflow/SKILL.md) está permanentemente ativa para o projeto.
-- **Commit Obrigatório em Modificações:** Toda e qualquer tarefa que altere, adicione ou remova arquivos no repositório DEVE ser finalizada com a execução de commit Git estruturado antes de considerar a tarefa concluída.
+Este repositório consolida autoritativamente todas as convenções e disciplinas de Git neste arquivo, eliminando arquivos e diretórios redundantes de skills.
+
+- **Commit Obrigatório em Modificações:** Toda e qualquer tarefa que altere, adicione ou remova arquivos no repositório DEVE ser finalizada com a execução de commit Git estruturado antes de considerar a tarefa concluída. Nunca encerre uma interação deixando alterações pendentes ou `working tree dirty`.
 - **Padrão de Mensagem (Conventional Commits):**
-  - Todo commit deve possuir mensagem clara no formato `<type>(<scope>): <descrição>` com detalhamento em tópicos (bullet points) das decisões técnicas e arquivos impactados.
-  - Tipos válidos: `feat`, `fix`, `docs`, `refactor`, `chore`.
-- **Árvore de Trabalho Limpa:** Nunca encerre uma interação deixando alterações pendentes ou `working tree dirty`.
+  - Formato estrito: `<type>(<scope>): <descrição sucinta no presente>`
+  - Tipos válidos:
+    - `feat`: Nova funcionalidade, recurso ou capacidade.
+    - `fix`: Correção de bug, vulnerabilidade de segurança ou ajuste de estabilidade.
+    - `docs`: Modificações exclusivamente em arquivos de documentação e governança.
+    - `refactor`: Alteração estrutural em código/configurações sem alteração de comportamento funcional.
+    - `chore`: Ajustes de ferramentas, workflows de CI, dependências ou governança.
+  - Corpo obrigatório: Lista em tópicos (*bullet points*) detalhando as decisões técnicas, parâmetros alterados, impacto operacional e arquivos afetados.
+- **Disciplina de Staging e Higiene de Arquivos:**
+  - Adicionar arquivos explicitamente (`git add <arquivo1> <arquivo2>`). É proibido adicionar arquivos em lote cegamente (`git add .`) quando houver arquivos de rascunho, chaves privadas ou credenciais.
+  - Validar previamente o estado com `git status` e inspecionar o diff preparado com `git diff --cached` antes de consolidar o commit.
+- **Validação de Integridade da Árvore de Trabalho:**
+  - Executar `git status` pós-commit para certificar que a working tree está rigorosamente limpa (`working tree clean`).
+  - Reportar ao usuário o hash gerado e o comando exato de sincronização remota (`git push origin <branch>`).
 
 ## 2. Papel dos Agentes e Princípios de Execução
 
@@ -102,15 +114,15 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Atomicidade e Idempotência em Diretivas Tmpfiles:**
   - Diretivas do tipo `C+` (cópia/substituição atômica no systemd 255+) sobrescrevem o destino de forma segura e atômica; é expressamente proibido adicionar diretivas `r!` precedentes redundantes.
 
-## 6. Práticas de Segurança para Arquivos de Agentes (`.agents/`, `AGENTS.md`)
+## 6. Práticas de Segurança e Governança de Instruções (`AGENTS.md`)
 
+- **Fonte Canônica Única (Single Source of Truth):**
+  - A fonte canônica, exclusiva e auto-suficiente de regras do projeto reside em `AGENTS.md`. Diretórios redundantes de skills (como `.agents/`) e links simbólicos (como `agent.md`) são eliminados para manter o repositório 100% DRY, enxuto e livre de duplicatas.
 - **Segregação de Segredos:**
-  - Arquivos de regras (`AGENTS.md`) e skills (`.agents/skills/*`) são versionados no Git e NUNCA devem conter chaves privadas, senhas, tokens de API ou credenciais pessoais.
-  - Configurações locais privadas de agentes devem residir em arquivos ignorados pelo Git (ex.: `.agents/local/`, `*.local.md`).
+  - Arquivos de regras (`AGENTS.md`) são versionados no Git e NUNCA devem conter chaves privadas, senhas, tokens de API ou credenciais pessoais.
+  - Configurações locais privadas de agentes devem residir em arquivos ignorados pelo Git (ex.: `*.local.md`).
 - **Defesa contra Prompt Injection:**
-  - Arquivos de instrução de agentes têm efeito direto na geração de código e execução de comandos. Qualquer alteração em `AGENTS.md` ou `.agents/` deve ser tratada e revisada com o mesmo rigor de segurança de código de infraestrutura.
-- **Integridade da Estrutura:**
-  - A fonte canônica e exclusiva de regras do projeto reside em `AGENTS.md`. Links simbólicos redundantes (como `agent.md`) são eliminados para manter o repositório enxuto e livre de duplicatas.
+  - Arquivos de instrução de agentes têm efeito direto na geração de código e execução de comandos. Qualquer alteração em `AGENTS.md` deve ser tratada e revisada com o mesmo rigor de segurança de código de infraestrutura.
 
 ## 7. CI/CD, GitHub Actions e Proteção de Supply Chain
 
