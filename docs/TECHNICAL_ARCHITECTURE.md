@@ -63,6 +63,23 @@ O dimensionamento de kernel, VFS, ZRAM e subsistemas de I/O foi rigorosamente ca
 | **Armazenamento**     | 1 TB NVMe SSD (PCIe Gen4)                             | Btrfs com regras NoCOW (`+C`) em diretórios de gravação pesada de VMs e contêineres via tmpfiles.d.                      |
 | **Base do SO**        | Fedora Kinoite 44 (KDE Plasma 6, Wayland puro, bootc) | Remoção completa de daemons legados de virtualização guest, telemetria e navegadores mutáveis no host.                   |
 
+### 2.1 Matriz de Blindagem do Hardware (Configurações Homologadas vs Proibidas)
+
+Para prevenir regressões, falhas de sincronização, degradação de desempenho e congelamentos totais do sistema (*hard lockups*), a tabela abaixo estabelece as invariantes estritas para este hardware:
+
+| Componente | Configuração Proibida (Anti-Pattern) | Causa / Impacto da Falha | Configuração Homologada (Estável) |
+| :--- | :--- | :--- | :--- |
+| **CPU (Ryzen 9 5950X)** | `preempt=full` | Contenção severa do escalonador e latência excessiva de IPI entre os 2 CCDs em 32 threads. | Preempção dinâmica padrão do kernel Fedora (`preempt=voluntary`/`lazy`). |
+| **CPU (Ryzen 9 5950X)** | Omitir `tsc=reliable` ou `nowatchdog` | Falso positivo do watchdog de clocksource (`Watchdog remote CPU read timed out`) em C-States (C6), induzindo congelamento total do sistema (*hard freeze*). | `tsc=reliable` e `nowatchdog` fixados em [`recipes/common-kargs.yml`](../recipes/common-kargs.yml). |
+| **CPU / IOMMU** | `amd_iommu=on` | Parâmetro inexistente na árvore do kernel Linux. | `iommu=pt` para passthrough direto de dispositivos sem emulação. |
+| **GPU (RX 6600 XT)** | `AcceleratedVideoDecodeLinuxZeroCopyGL` / `AcceleratedVideoDecodeLinuxGL` | Falhas de alocação de superfície GL, timeouts do driver e *GPU deadlocks* sob o driver Mesa/Wayland. | Decodificação nativa estável via Wayland/PipeWire sem overrides experimentais em [`chromium-flags.conf`](../files/system/usr/share/browser-configs/chromium-flags.conf). |
+| **GPU / IA** | Instalação de pacotes ROCm monóliticos no host | Inchaço excessivo da imagem base (> 15 GB) e conflitos de empacotamento. | Aceleração containerizada via CDI (`/etc/cdi/amdgpu.yaml`) com injeção de `HSA_OVERRIDE_GFX_VERSION=10.3.0`. |
+| **Memória (64 GB)** | `page_alloc.shuffle=1` | Fragmentação do alocador de páginas buddy e sobrecarga de CPU desnecessária para estações de trabalho. | Alocação sequencial padrão de alta taxa de acerto de cache L3. |
+| **Memória (64 GB)** | `fs.inotify.max_user_watches=524288` | Limitação artificial abaixo do auto-dimensionamento nativo do kernel (auto-escala > 650.000 em 64 GB). | Omissão de valor fixo no sysctl para permitir auto-scaling ótimo pelo kernel. |
+| **Armazenamento (Btrfs)** | Gravação de imagens de VM, contêineres e modelos de IA com CoW ativo | Fragmentação severa de blocos Btrfs, amplificação de escrita e desgaste prematuro do NVMe. | Provisionamento preventivo de atributo `+C` (NoCOW) via tmpfiles em [`60-io-tuning-*.conf`](../files/system/usr/lib/tmpfiles.d/). |
+| **Áudio Bluetooth** | `bluez5.hw-volume = false` em fones TWS | Assimetria no ganho analógico dos canais esquerdo/direito e bombeamento involuntário do limitador (DRC/AGC). | `bluez5.hw-volume = true` obrigatório para periféricos True Wireless Stereo (TWS). |
+| **Rede** | `net.ipv4.ip_forward=1` global no sysctl | Quebra da auto-configuração de endereços IPv6 SLAAC (RFC 4862) e exposição indevida do host como roteador de trânsito. | Encaminhamento ativado exclusivamente sob demanda pelos daemons de rede (Podman/Netavark, Libvirt) nas pontes dedicadas. |
+
 ---
 
 ## 3. Visão Estrutural da Arquitetura (C4 Model - Nível de Camadas)
