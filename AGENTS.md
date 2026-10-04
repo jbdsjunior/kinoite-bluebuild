@@ -45,9 +45,10 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 
 ## 5. Invariantes e Regras de Engenharia do Sistema
 
-- **Validação de Kernel Arguments:**
+- **Validação e Estabilidade de Kernel Arguments:**
   - Proibido introduzir parâmetros inexistentes no kernel Linux (ex.: `amd_iommu=on` não existe; utilizar apenas `iommu=pt` para passthrough).
   - Proibido introduzir kargs redundantes já ativos por padrão no Fedora 44 (ex.: `CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT=y`, `kvm_amd.nested=1`). Sempre verificar os padrões do kernel antes de propor kargs.
+  - Para a CPU AMD Ryzen 9 5950X (Zen 3, 16C/32T dual-CCD), é obrigatório fixar `tsc=reliable` e `nowatchdog` para prevenir timeouts de IPI do watchdog de clocksource entre CCDs (`clocksource: Watchdog remote CPU read timed out`) e travamentos totais do sistema. É proibido utilizar `preempt=full` (induz contenção e latência de escalonamento em 32 threads) ou `page_alloc.shuffle=1` (fragmentação de memória).
 - **Arquitetura Transacional OCI / bootc:**
   - O sistema opera sob o modelo `bootc`. Atualizações automáticas de sistema são orquestradas unicamente via `bootc-fetch-apply-updates.timer` com guarda de resiliência de rede D-Bus.
   - É proibido manter ou recriar configurações legadas de staging no `/etc/rpm-ostreed.conf`.
@@ -75,8 +76,8 @@ Este arquivo define as regras permanentes de arquitetura, princípios de execuç
 - **Higiene de Pacotes RPM na Imagem Base:**
   - É proibido instalar pacotes exclusivos de outros SO (ex.: `podman-machine` é macOS/Windows only) ou pacotes debug-only/dev-only sem utilidade funcional em produção.
   - Todo pacote incluído em `recipes/common-*.yml` deve ter justificativa funcional documentável para o perfil operacional Linux nativo.
-- **Aceleração de Vídeo por Hardware em Navegadores Chromium:**
-  - Todo navegador Chromium-based provisionado em `70-browser-flags.conf` deve incluir, além de Wayland (`--ozone-platform-hint=auto`) e GPU rasterization, flags de aceleração de vídeo por hardware (`AcceleratedVideoDecodeLinuxGL`, `AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoEncoder`) para explorar VA-API zero-copy GL com a GPU AMD.
+- **Estabilidade Gráfica em Navegadores Chromium:**
+  - Todo navegador Chromium-based provisionado em `70-browser-flags.conf` deve utilizar Wayland nativo (`--ozone-platform-hint=auto`), GPU rasterization e aceleração de captura via PipeWire. É terminantemente proibido introduzir flags experimentais instáveis de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), que causam falhas de alocação de superfície, travamentos de GPU (GPU hang) e congelamento do sistema no driver AMDGPU/Mesa.
 - **Fonte Única de Verdade para Variáveis de Ambiente:**
   - Variáveis de ambiente de sessão (GPU, editor, tipografia, Wayland) devem ser definidas exclusivamente em `environment.d` (`60-kinoite-environment.conf`). É proibido redeclarar essas variáveis em scripts `profile.d`.
   - Scripts `profile.d` devem conter apenas lógica interativa condicional (inicialização de shells, detecção de binários, FZF/starship/zoxide) impossível de replicar em `environment.d`.

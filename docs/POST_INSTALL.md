@@ -159,13 +159,12 @@ sudo ostree admin config-diff
 
 **Expected image kargs** (declared in `recipes/common-kargs.yml`, delivered through `/usr/lib/bootc/kargs.d/bluebuild-kargs.toml`):
 
-`amd_pstate=active` · `iommu=pt` · `preempt=full` · `btusb.enable_autosuspend=n` · `slab_nomerge` · `page_alloc.shuffle=1` · `vsyscall=none`
+`amd_pstate=active` · `tsc=reliable` · `nowatchdog` · `iommu=pt` · `btusb.enable_autosuspend=n` · `slab_nomerge` · `vsyscall=none`
 
 Verify the deployed boot configuration:
 
 ```bash
 cat /proc/cmdline
-
 ```
 
 > ⚠️ **Bootstrap gap (bootc `kargs.d`):** bootc applies image kargs as a *diff* between the running deployment's `kargs.d` and the new image's. Systems whose first custom deployment predates bootc `kargs.d` support never receive them (empty diff). One-time host fix — applies to the running deployment and becomes the baseline for future upgrades:
@@ -173,12 +172,14 @@ cat /proc/cmdline
 ```bash
 sudo rpm-ostree kargs \
   --append-if-missing=amd_pstate=active \
+  --append-if-missing=tsc=reliable \
+  --append-if-missing=nowatchdog \
   --append-if-missing=iommu=pt \
-  --append-if-missing=preempt=full \
   --append-if-missing=btusb.enable_autosuspend=n \
   --append-if-missing=slab_nomerge \
-  --append-if-missing=page_alloc.shuffle=1 \
-  --append-if-missing=vsyscall=none
+  --append-if-missing=vsyscall=none \
+  --delete-if-present=preempt=full \
+  --delete-if-present=page_alloc.shuffle=1
 ```
 
 Rollback (per argument, then reboot): `sudo rpm-ostree kargs --delete-if-present=<karg>`

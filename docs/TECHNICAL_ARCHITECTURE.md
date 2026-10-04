@@ -57,7 +57,7 @@ O dimensionamento de kernel, VFS, ZRAM e subsistemas de I/O foi rigorosamente ca
 
 | Subsistema            | Especificação Homologada                              | Impacto Arquitetural                                                                                                     |
 | :-------------------- | :---------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| **Processador (CPU)** | AMD Ryzen 9 5950X (16 núcleos / 32 threads Zen 3)     | `preempt=full`, `amd_pstate=active`, desativação de NMI watchdog para eliminar jitter em 32 threads.                     |
+| **Processador (CPU)** | AMD Ryzen 9 5950X (16 núcleos / 32 threads Zen 3)     | `amd_pstate=active`, `tsc=reliable`, `nowatchdog` para eliminar jitter e timeouts de clocksource entre CCDs.             |
 | **Gráficos (GPU)**    | AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2)   | Driver Mesa RADV, aceleração VA-API Freeworld, override HIP/ROCm `HSA_OVERRIDE_GFX_VERSION=10.3.0` (gfx1032 -> gfx1030). |
 | **Memória (RAM)**     | 64 GB DDR4                                            | ZRAM com algoritmo `zstd` limitado a 32 GB (`min(ram / 2, 32768)`), `vm.swappiness=150`, `watermark_scale_factor=125`.   |
 | **Armazenamento**     | 1 TB NVMe SSD (PCIe Gen4)                             | Btrfs com regras NoCOW (`+C`) em diretórios de gravação pesada de VMs e contêineres via tmpfiles.d.                      |
@@ -137,7 +137,7 @@ graph TD
     end
 
     subgraph L1["Camada 1: Kernel, Memória & Subsistema de I/O"]
-        K_ARGS["Kargs: amd_pstate=active, preempt=full, iommu=pt, CIS mitigations"]
+        K_ARGS["Kargs: amd_pstate=active, tsc=reliable, nowatchdog, iommu=pt, CIS mitigations"]
         SYSCTL_TUNE["Sysctl: TCP BBR+FQ, VFS cache 50, dirty ratios NVMe, inotify 512k"]
         ZRAM_GEN["ZRAM zstd: 32 GB Swap / swappiness=150 / page-cluster=0"]
     end
@@ -234,7 +234,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-09** | `.../70-browser-flags.conf`           | Flags de Wayland e aceleração de GPU comentadas para o Google Chrome, apesar de instalado.                                       | **Resolvido:** Diretivas descomentadas e ativadas no tmpfiles.         |
 | **A-10** | `files/system/usr/lib/sysctl.d/*`     | Sysctls redundantes com defaults do Fedora 44 (`ptrace_scope=1`, `protected_fifos=2`, `use_tempaddr=2`).                          | **Resolvido:** Expurgo realizado, mantendo apenas tuning explícito.    |
 | **A-11** | `recipes/common-tools.yml`            | Pacote `podman-machine` exclusivo para macOS/Windows instalado em host Linux nativo.                                             | **Resolvido:** Pacote removido em favor do Podman nativo.              |
-| **A-12** | `files/system/.../chromium-flags.conf`| Ausência de flags para decodificação e codificação de vídeo aceleradas por hardware no Chromium.                                  | **Resolvido:** Flags VA-API zero-copy GL ativadas declarativamente.    |
+| **A-12** | `files/system/.../chromium-flags.conf`| Flags instáveis de decodificação zero-copy GL provocando GPU deadlocks no driver AMDGPU/Mesa.                                     | **Resolvido:** Expurgo das flags instáveis, mantendo aceleração estável por GPU e PipeWire. |
 | **A-13** | `files/system/etc/containers/nodocker`| Supressão declarativa de alertas de emulação Podman-Docker para compatibilidade CLI transparente.                                 | **Homologado:** Arquivo mantido e documentado na arquitetura.          |
 | **A-14** | `.../wireplumber.conf.d/80-bluetooth-policy.conf` | `bluez5.a2dp.ldac.quality` declarada em `monitor.bluez.properties` (no-op); por `pipewire-props(7)` é propriedade de dispositivo. | **Resolvido:** Movida para `monitor.bluez.rules` com match `~bluez_card.*`. |
 | **A-15** | `.github/workflows/build-amd.yml`     | `blue-build/github-action@v1` referenciada por tag mutável, violando pinagem SHA de supply chain.                                 | **Resolvido:** Pinada em `c295af86` (v1) com comentário de versão.     |
@@ -247,6 +247,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-22** | `.github/workflows/check-updates.yml` e `build-amd.yml` | Desacoplamento do cache de upstream: `check-updates.yml` apenas consulta (`actions/cache/restore`) e previne disparos concorrentes caso já haja build ativo; a gravação do cache (`actions/cache/save`) ocorre unicamente após sucesso de `build-amd.yml`. | **Resolvido:** Garante re-execução automática de updates caso ocorra falha de build. |
 | **A-23** | `.github/` (`cleanup.yml`, `dependabot.yml`, `check-updates.yml`) | Otimização para GitHub Free Tier e máxima higiene: timeouts estritos (5m/10m), retenção de 3 imagens no GHCR, expurgo de caches órfãos, PRs agrupados no Dependabot e eliminação de injeção de shell. | **Resolvido:** Quotas protegidas, aba Actions e PRs limpos e segurança fortalecida. |
 | **A-24** | `sysctl`, `modprobe`, `tmpfiles`, `polkit`, `resolved`, `systemd` | Expurgo de defaults redundantes (`inotify`, `ip_forward`, Vulkan ICD, paths NoCOW mortos, `r!` tmpfiles), colisão polkit (`51-kinoite-libvirt.rules`), guarda de rede modular (`/usr/libexec/kinoite/network-guard`) e fallback DoT seguro (`dns.quad9.net`). | **Resolvido:** Sistema higienizado, paridade estrita com Fedora 44, CIS e menor privilégio. |
+| **A-25** | `recipes/common-kargs.yml`            | Timeouts crônicos do watchdog de clocksource (`Watchdog remote CPU read timed out`) e travamento em Ryzen 9 5950X (dual-CCD).     | **Resolvido:** Fixados `tsc=reliable` e `nowatchdog`; expurgados `preempt=full` e `page_alloc.shuffle=1`. |
 
 ---
 
