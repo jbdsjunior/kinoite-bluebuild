@@ -77,6 +77,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
   - Manter a imagem base enxuta (< 4 GB). A aceleração da GPU AMD RX 6600 XT para cargas de IA locais (Ollama, PyTorch, llama.cpp) deve utilizar CDI (`--device amd.com/gpu=all` via `/etc/cdi/amdgpu.yaml`), com injeção automática de `HSA_OVERRIDE_GFX_VERSION=10.3.0`.
 - **Montagens FUSE de Nuvem e Higiene de Cache (Rclone):**
   - Todo parâmetro operacional e de cache VFS (`max-size`, `max-age`, `min-free-space`, `write-back`, `dir-cache-time`, `poll-interval`) deve ser estritamente parametrizado via variáveis de ambiente no template `rclone@.service` com defaults seguros e extensível via arquivos `.env` e `.local.env`.
+  - O template de serviço `rclone@.service` deve conter guarda de rede `ExecCondition=/usr/libexec/kinoite/network-guard` (evitando timeouts e loops de falha quando offline) e `TimeoutStartSec=90s` para acomodar renovação de tokens OAuth2 e handshake TLS.
   - Garantir proteção ativa do armazenamento local através de `--vfs-cache-min-free-space` (mínimo de 15G livres resguardados) e `--vfs-cache-max-age 24h` para evitar retenção indefinida de arquivos obsoletos no SSD.
   - Proteger contra perda acidental de dados no Google Drive mantendo `RCLONE_DRIVE_USE_TRASH=true` por padrão (paridade com o cliente oficial na lixeira em nuvem).
   - Proteger contra throttling HTTP 429 no Microsoft OneDrive limitando transações (`tpslimit=5`, `chunk-size=50M` múltiplo de 320 KiB) e utilizando a Delta API com polling controlado (1m).
