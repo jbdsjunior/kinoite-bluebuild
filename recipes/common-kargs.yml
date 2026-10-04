@@ -6,16 +6,16 @@ modules:
       # AMD Zen 3 CPU frequency scaling & performance (Ryzen 9 5950X)
       - amd_pstate=active
 
+      # AMD Zen 3 TSC stability & watchdog jitter elimination (Ryzen 9 5950X, 16C/32T dual-CCD)
+      - tsc=reliable
+      - nowatchdog
+
       # Virtualization / KVM / IOMMU passthrough defaults (AGENTS.md / docs/TECHNICAL_ARCHITECTURE.md)
       - iommu=pt
-
-      # Desktop responsiveness under heavy VM/compilation load
-      - preempt=full
 
       # Peripheral stability (Bluetooth audio)
       - btusb.enable_autosuspend=n
 
       # Kernel & memory exploit mitigations (CIS Benchmark & KSPP)
       - slab_nomerge
-      - page_alloc.shuffle=1
       - vsyscall=none
