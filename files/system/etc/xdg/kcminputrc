@@ -1,0 +1,16 @@
+[Libinput][13652][62862][Compx VXE Mouse 1K Dongle]
+PointerAccelerationProfile=1
+ScrollFactor=5
+
+[Libinput][13652][62862][Compx VXE Mouse 1K Dongle Consumer Control]
+ScrollFactor=5
+
+[Libinput][13652][62863][Compx VXE R1]
+PointerAccelerationProfile=1
+ScrollFactor=5
+
+[Libinput][13652][62863][Compx VXE R1 Consumer Control]
+ScrollFactor=4
+
+[Libinput][9610][268][BY Tech Gaming Keyboard Mouse]
+PointerAccelerationProfile=1

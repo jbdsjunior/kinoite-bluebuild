@@ -176,3 +176,4 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Compatibilidade CLI Docker | [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
 | Guarda de Resiliência de Rede | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard) |
 | Menor Privilégio Libvirt Polkit | [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules) |
+| Configurações Plasma KDE | [`files/system/etc/xdg/*`](files/system/etc/xdg/) |
