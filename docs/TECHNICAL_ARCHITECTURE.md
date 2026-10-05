@@ -80,7 +80,7 @@ Para prevenir regressões, falhas de sincronização, degradação de desempenho
 | **Áudio Bluetooth** | `bluez5.hw-volume = false` em fones TWS | Assimetria no ganho analógico dos canais esquerdo/direito e bombeamento involuntário do limitador (DRC/AGC). | `bluez5.hw-volume = true` obrigatório para periféricos True Wireless Stereo (TWS). |
 | **Rede** | `net.ipv4.ip_forward=1` global no sysctl | Quebra da auto-configuração de endereços IPv6 SLAAC (RFC 4862) e exposição indevida do host como roteador de trânsito. | Encaminhamento ativado exclusivamente sob demanda pelos daemons de rede (Podman/Netavark, Libvirt) nas pontes dedicadas. |
 | **Confiabilidade / Kernel** | `kernel.panic_on_oops=0` / `kernel.panic=0` | Sistema trava indefinidamente em estado zumbi contaminado com interrupções desabilitadas após Oops, forçando corte abrupto de energia e arriscando corrupção do Btrfs. | `kernel.panic_on_oops=1`, `kernel.panic=10` e `kernel.sysrq=1` em [`90-kernel-tuning.conf`](../files/system/usr/lib/sysctl.d/90-kernel-tuning.conf) para auto-reboot limpo e recuperação segura via SysRq REISUB. |
-| **Diagnóstico de Hardware** | Ausência de monitoramento RAS/EDAC | Erros de memória RAM (bit flips no barramento DQ), falhas de barramento PCIe e MCEs são perdidos sem diagnóstico. | Daemon `rasdaemon.service` e `ras-mc-ctl.service` ativos em [`common-systemd.yml`](../recipes/common-systemd.yml) com persistência em SQLite de eventos MCE/EDAC/AER. |
+| **Diagnóstico de Hardware** | Ausência de monitoramento RAS / atribuir a `rasdaemon` cobertura de DRAM | MCEs (core/cache/Data Fabric) e PCIe AER perdidos sem registro; em DIMMs não-ECC o `amd64_edac` não carrega e erros de DRAM nunca chegam ao kernel. | `rasdaemon.service` + `ras-mc-ctl.service` ([`common-systemd.yml`](../recipes/common-systemd.yml)) para MCE/AER; DRAM validada apenas por teste ativo (MemTest86, `stressapptest`) conforme [`POST_INSTALL.md` §14](POST_INSTALL.md). |
 
 ---
 
@@ -277,7 +277,7 @@ Para assegurar estabilidade máxima em cargas intensivas no processador AMD Ryze
   - `kernel.sysrq = 1`: Habilita a sequência completa de emergência Magic SysRq (`REISUB`), concedendo ao operador a capacidade de descarregar buffers em disco (`Sync`), remontar partições em modo somente leitura (`Unmount`) e reiniciar o host de forma segura.
 - **Monitoramento Confiável de Hardware (`rasdaemon`):**
   - Serviços de sistema `rasdaemon.service` e `ras-mc-ctl.service` ativos por padrão em [`common-systemd.yml`](../recipes/common-systemd.yml).
-  - O daemon monitora tracepoints do kernel para eventos de EDAC (controlador de memória DRAM e barramento DQ), MCE (Machine Check Exceptions) e PCIe AER, persistindo logs estruturados no banco de dados SQLite local (`/var/lib/rasdaemon/ras-mc_event.db`) para consulta imediata via `ras-mc-ctl --errors` e `ras-mc-ctl --summary`.
+  - O daemon monitora tracepoints do kernel para MCE (core, cache, Data Fabric), PCIe AER e erros de bloco, persistindo em SQLite (`/var/lib/rasdaemon/ras-mc_event.db`; consulta via `sudo ras-mc-ctl --errors`). Os DIMMs desta estação são **não-ECC**: o `amd64_edac` não carrega e erros de DRAM não são reportados — a validação de memória depende de MemTest86 e `stressapptest` ([`POST_INSTALL.md` §14](POST_INSTALL.md)).
 
 ---
 

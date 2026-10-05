@@ -422,7 +422,7 @@ The image includes declarative security drop-ins:
 - **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`sctp`, `tipc`), vulnerable legacy file systems (`jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers via `/bin/false` (CIS Benchmark compliance).
 - **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces key-only authentication (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`), enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
 - **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
-- **Sysctl Hardening (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `dev.tty.ldisc_autoload=0`, `kernel.kptr_restrict=1`, and `kernel.nmi_watchdog=0` (eliminates CPU watchdog jitter across 32 threads).
+- **Sysctl Hardening & Resilience (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1` and `kernel.sysrq=1` (`dev.tty.ldisc_autoload=0` is already the Fedora 44 default; the NMI watchdog is disabled by the `nowatchdog` karg).
 - **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
 - **Libvirt Polkit Rules (`/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`)**: Grants passwordless virtualization management strictly to members of the `wheel` administrative group without colliding with upstream RPM files.
 - **Resilient Encrypted DNS (`/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`)**: Cloudflare primary DoT resolvers (`cloudflare-dns.com`) with automated DNSSEC integrity and opportunistic TLS.
@@ -464,61 +464,105 @@ gpu-top
 
 ---
 
-## 14) Gigabyte X570 AORUS PRO & AMD Ryzen 9 5950X Hardware & BIOS Calibration
+## 14) BIOS Calibration — Gigabyte X570 AORUS PRO WIFI + Ryzen 9 5950X + 64 GB DDR4
 
-To ensure absolute system stability, eliminate transient DRAM data-line bit flips (DQ bus errors), and prevent idle/C-State freezes on the 16-core / 32-thread AMD Ryzen 9 5950X with 64 GB DDR4:
+### 14.0 Detected hardware (source of every value below)
 
-### 14.1 Motherboard BIOS / UEFI Calibration (BIOS F39+)
+| Item | Value (from `udevadm info -e` / DMI / kernel log) |
+| :--- | :--- |
+| Board / BIOS | X570 AORUS PRO WIFI, **F39** (10/28/2025), AGESA ComboV2 1.2.0.x, microcode `0xa201213` |
+| A1 / B1 (`DIMM 0`) | Generic `DDR4 16GB 3200MHz`, **single-rank (1R)** |
+| A2 / B2 (`DIMM 1`) | KingSpec `KS3200D4R13516G`, 16 GB, **dual-rank (2R)**, DDR4-3200 1.2V JEDEC |
+| ECC | **No** — `amd64_edac` does not load; DRAM errors are invisible to `rasdaemon` |
+| Topology | 2 DIMMs/channel, **3 ranks/channel, mixed kits** — hardest load for the Zen 3 IMC |
 
-Reboot into UEFI setup (press `Del` during POST) and configure the following parameters:
+> [!WARNING]
+> Root-cause note for the 2026-10-05 10:30 freeze: the oops dumps showed corrupted kernel instruction bytes read from **two different cores on both CCDs** (CPU 17 / CCD1 and CPU 4 / CCD0), while the same `.text` read back intact moments later. That pattern is **transient corruption in the memory/fabric path**, not a single bad core nor a permanently bad DRAM cell. Top suspect: mixed 1R+2R 4-DIMM topology with `Auto` VSOC/ProcODT. Secondary: any PBO/Curve Optimizer offset; idle C6 voltage sag.
 
-#### 1. Power Supply & C-States (Critical for Zen 3 Idle Stability)
-* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `CPU Common Options` $\rightarrow$ `Power Supply Idle Control`
-  * **Value:** **`Typical Current Idle`** *(Default is "Auto" / "Low Current Idle")*.
-  * **Rationale:** Prevents VRM power rail sags below the minimum threshold during deep C6 idle transitions on dual-CCD Zen 3 CPUs, resolving random desktop idle lockups.
-* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `CPU Common Options` $\rightarrow$ `Global C-state Control`
-  * **Value:** **`Enabled`**.
-* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `NBIO Common Options` $\rightarrow$ `SMU Common Options` $\rightarrow$ `CPPC` / `CPPC Preferred Cores`
-  * **Value:** **`Enabled`** *(Required for autonomous `amd-pstate-epp` frequency scaling)*.
+> [!TIP]
+> **Maximum performance *and* stability fix (hardware):** replace the 4 mixed DIMMs with a **matched 2×32 GB dual-rank DDR4-3600 CL16/CL18 kit** in A2/B2. Same 64 GB, 1 DIMM/channel with rank interleaving, FCLK 1800 1:1 — lower latency, higher bandwidth and a far larger stability margin than any BIOS tuning of the current set can deliver.
 
-#### 2. Memory & Infinity Fabric (64 GB DDR4 Stability)
-* **Path:** `Tweaker` $\rightarrow$ `Extreme Memory Profile (X.M.P.)`
-  * **Value:** **`Profile 1`**.
-* **Path:** `Tweaker` $\rightarrow$ `Advanced CPU Settings` $\rightarrow$ `Infinity Fabric Frequency and Dividers (FCLK)`
-  * **Value:** **`1600 MHz`** (for DDR4-3200) or **`1800 MHz`** (for DDR4-3600), coupled 1:1 with `UCLK DIV1 MODE = UCLK=MEMCLK`.
-* **Path:** `Tweaker` $\rightarrow$ `CPU VCORE SOC`
-  * **Value:** Set to **`Manual` / `1.050V` - `1.100V`** *(Do not leave below 1.025V for 64 GB dual-rank / 4-DIMM loads)*.
-* **Path:** `Tweaker` $\rightarrow$ `DRAM Voltage`
-  * **Value:** **`1.350V` - `1.360V`** *(A slight +10-20mV bump stabilizes high-density 64GB DDR4 memory buses under thermal fluctuations)*.
+Menu labels below follow F3x builds; minor wording may differ. Change one block at a time, `F10` to save, and validate (§14.3) before the next block.
 
-#### 3. PCIe, Resizable BAR & Virtualization
-* **Path:** `Settings` $\rightarrow$ `IO Ports` $\rightarrow$ `Above 4G Decoding` $\rightarrow$ **`Enabled`**
-* **Path:** `Settings` $\rightarrow$ `IO Ports` $\rightarrow$ `Re-Size BAR Support` $\rightarrow$ **`Auto` / `Enabled`** *(Unlocks full VRAM access for AMD RX 6600 XT via SAM)*.
-* **Path:** `Tweaker` $\rightarrow$ `Advanced CPU Settings` $\rightarrow$ `SVM Mode` $\rightarrow$ **`Enabled`** *(Hardware virtualization for KVM and Podman)*.
-* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `NBIO Common Options` $\rightarrow$ `IOMMU` $\rightarrow$ **`Enabled`** *(Required for `iommu=pt`)*.
+### 14.1 Profile A — Stable baseline (apply now)
 
----
+**CPU & power** (`Tweaker → Advanced CPU Settings` and `Settings → AMD CBS`)
 
-### 14.2 Host Verification & Diagnostics Commands
+| Setting | Value | Why |
+| :--- | :--- | :--- |
+| Precision Boost Overdrive | `Auto` (stock 142 W PPT) | No extra voltage/current while stability is unproven |
+| Curve Optimizer | `Disabled` (all cores 0) | Negative CO is the #1 cause of random Zen 3 oopses at light load |
+| Core Performance Boost | `Auto` | Required for boost **and** for the BIOS to publish ACPI `_CPC` |
+| AMD Cool&Quiet function | `Enabled` | Disabling it on Gigabyte also removes P-state/CPPC tables |
+| Global C-state Control | `Enabled` | Required for idle power and boost headroom |
+| Power Supply Idle Control | `Typical Current Idle` | Prevents C6 idle voltage sag (classic Zen 3 idle freeze) |
+| CPPC / CPPC Preferred Cores (`AMD CBS → NBIO Common Options → SMU Common Options`) | `Enabled` / `Enabled` | Without them: `amd_pstate: the _CPC object is not present in SBIOS` and no boost |
+| CPU Vcore Loadline Calibration | `Auto` | Avoid `Extreme/Turbo` overshoot |
+| SMT Mode | `Auto` | 32 threads |
 
-Validate the runtime configuration after applying BIOS adjustments:
+**Memory & Infinity Fabric** (`Tweaker`, `Tweaker → Advanced Memory Settings`, `Settings → AMD CBS → UMC Common Options`)
+
+| Setting | Value | Why |
+| :--- | :--- | :--- |
+| Extreme Memory Profile (X.M.P.) | `Disabled` | Kits differ; XMP of one kit is not valid for the other |
+| System Memory Multiplier | `32.00` (DDR4-3200) | Both kits rated 3200 |
+| Timings | `Auto` (SPD/JEDEC ≈ 22-22-22-52) | Slowest common denominator for mixed kits |
+| Infinity Fabric Frequency (FCLK) | `1600 MHz` | Synchronous 1:1 with MEMCLK 1600 |
+| UCLK DIV1 MODE | `UCLK==MEMCLK` | Avoid 2:1 latency penalty |
+| DRAM Voltage (CH A/B) | `1.350 V` | +150 mV margin over 1.2 V JEDEC; standard safe DDR4 value |
+| CPU VCORE SOC | `1.100 V` (hard ceiling `1.150 V`) | Feeds the IMC driving 3 ranks/channel |
+| VCORE SOC Loadline Calibration | `Auto` / `Medium` | Stable SOC under load steps |
+| VDDG CCD / VDDG IOD | `Auto` (≈ 0.90 / 1.00 V at FCLK 1600) | Only touch if errors persist |
+| ProcODT | `40.0 Ω` (fallback `36.9 Ω`) | Typical sweet spot for 4 DIMMs / dual-rank |
+| Gear Down Mode | `Enabled` | Command-bus margin with 4 DIMMs |
+| Cmd2T | `Auto` (1T with GDM) | — |
+| Power Down Enable | `Disabled` | Removes DRAM power-down transitions as an instability source |
+| Memory Context Restore | `Disabled` | Forces full retraining every boot; no masked marginal training |
+
+**PCIe, GPU & virtualization**
+
+| Setting | Path | Value |
+| :--- | :--- | :--- |
+| CSM Support | `Boot` | `Disabled` (required for Re-Size BAR) |
+| Above 4G Decoding | `Settings → IO Ports` | `Enabled` |
+| Re-Size BAR Support | `Settings → IO Ports` | `Auto` (expect `BAR=8192M` for the RX 6600 XT) |
+| SVM Mode | `Tweaker → Advanced CPU Settings` | `Enabled` |
+| IOMMU | `Settings → Miscellaneous` | `Enabled` (pairs with karg `iommu=pt`) |
+| PCIe slot configuration | `Settings → IO Ports` | `Auto` (Gen4) |
+
+**Escalation only if freezes persist with Profile A:** `DF Cstates = Disabled` (`AMD CBS → NBIO Common Options → SMU Common Options`; ≈ +10 W idle), then ProcODT `36.9 Ω`, then VSOC `1.125 V`. As a last resort drop to DDR4-2933 / FCLK 1467 — or remove the 1R pair (A1/B1) and run 32 GB 2R to confirm the topology is the cause.
+
+### 14.2 Profile B — Performance step (only after Profile A passes §14.3 cleanly)
+
+Apply one item at a time and re-run §14.3 after each:
+
+1. **PBO with stock limits:** `Precision Boost Overdrive = Enabled`, `PBO Limits = Auto`, `Scalar = Auto`. Never `Motherboard` limits.
+2. **Curve Optimizer per core**, never all-core: start at `-5` only on the cores reported as *non-preferred*, keep preferred cores (highest `acpi_cppc/highest_perf`) at `0`.
+3. **Memory timings:** `CL20-20-20-40` at 1.35 V → validate → optionally `CL18-22-22-42`. Do **not** raise frequency above 3200 with this mixed set.
+
+Rollback at any point: `F7` (Load Optimized Defaults) and re-apply Profile A, or `Save & Exit → Save Profiles` (store Profile A as profile 1 before starting Profile B).
+
+### 14.3 Validation (mandatory after every BIOS change)
 
 ```bash
-# 1. Verify amd-pstate-epp scaling driver
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-# Expected: amd-pstate-epp
+# Runtime state
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver        # amd-pstate-epp
+cat /sys/devices/system/cpu/amd_pstate/status                  # active
+cat /sys/devices/system/cpu/cpufreq/boost                      # 1
+journalctl -k -b 0 | grep -E "amdgpu.*BAR=|iommu: Default domain"   # BAR=8192M, Passthrough
+sysctl kernel.panic kernel.panic_on_oops kernel.sysrq          # 10 / 1 / 1
 
-# 2. Verify Kernel Resilience & Panic settings
-sysctl kernel.panic kernel.panic_on_oops kernel.sysrq
-# Expected: kernel.panic = 10, kernel.panic_on_oops = 1, kernel.sysrq = 1
+# Stress (immutable host: run tools inside a toolbox)
+toolbox create -y stab
+toolbox run -c stab sudo dnf install -y stressapptest stress-ng
+toolbox run -c stab stressapptest -s 3600 -M 52000 -W          # 1 h memory + fabric stress, must end "Status: PASS"
+toolbox run -c stab stress-ng --cpu 32 --cpu-method all --verify --timeout 30m --metrics-brief
 
-# 3. Verify hardware RAS daemon and query error logs
-sudo systemctl status rasdaemon.service ras-mc-ctl.service
-sudo ras-mc-ctl --errors
-sudo ras-mc-ctl --summary
-
-# 4. Emergency SysRq Sequence (if desktop freezes):
-# Press: Alt + SysRq + R -> E -> I -> S -> U -> B
-# Safely unraws keyboard, terminates processes, syncs disks, remounts read-only, and reboots without Btrfs corruption.
+# Evidence after stress
+journalctl -k -b 0 -p 3 --no-pager                             # no MCE / oops
+sudo ras-mc-ctl --errors                                       # no new MCE records
 ```
 
+Offline DRAM test (only way to see DRAM errors on non-ECC): boot **MemTest86** (UEFI, Secure Boot-signed USB) and require **≥ 4 full passes with 0 errors**.
+
+Emergency (desktop frozen, kernel alive): `Alt + SysRq` then `R E I S U B` — unraw keyboard, terminate, kill, sync, remount read-only, reboot.

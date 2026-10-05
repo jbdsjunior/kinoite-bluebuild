@@ -37,18 +37,22 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 
 ## 3. Ambiente e Hardware Baseline
 
-- **Processador & Gráficos:** AMD Ryzen 9 5950X (16C/32T, Zen 3), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2).
-- **Memória & Armazenamento:** 64GB RAM DDR4, 1TB NVMe PCIe Gen4 (Btrfs).
+- **Processador & Gráficos:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2).
+- **Placa-mãe:** Gigabyte X570 AORUS PRO WIFI, BIOS F39 (AGESA ComboV2 1.2.0.x), microcode `0xa201213`.
+- **Memória:** 64 GB DDR4 **não-ECC, kits mistos** (4×16 GB, 2 DIMMs/canal): `DIMM 0` (A1/B1) = genérico 16 GB 1R 3200; `DIMM 1` (A2/B2) = KingSpec `KS3200D4R13516G` 16 GB 2R 3200 (1.2V JEDEC). Topologia 3 ranks/canal — a mais sensível do IMC Zen 3 (Infinity Fabric/ProcODT/VSOC).
+- **Armazenamento:** 1 TB NVMe PCIe Gen4 (Btrfs).
 - **Sistema Operacional:** Fedora Kinoite 44 (imutável, Wayland nativo, modelo `bootc`, KDE Plasma 6).
 - **Workloads do Usuário:** DevSecOps, desenvolvimento de software, inferência local de LLMs (ROCm/HIP via CDI em contêineres), navegação intensiva, virtualização KVM.
 - **Periféricos Homologados:**
   - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
-- **Diagnóstico e Resiliência de Hardware (Zen 3 / 64GB DDR4):**
-  - **Monitoramento de RAS/EDAC:** Registro contínuo de confiabilidade de hardware via daemon nativo `rasdaemon.service` e `ras-mc-ctl.service` (MCE, EDAC para controlador de memória, PCIe AER e falhas de barramento DRAM) persistido em `/var/lib/rasdaemon/ras-mc_event.db`.
-  - **Calibração de BIOS para C6 / Zen 3:** Para prevenir sags de tensão em idle/transições C6 no Ryzen 9 5950X e erros de linha de dados (DQ) no barramento de 64GB DDR4 (dual-CCD), calibrar `Power Supply Idle Control = Typical Current Idle` na BIOS e assegurar tensões operacionais estáveis em VSOC (1.05V–1.10V) e DRAM.
+  - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
+- **Diagnóstico e Resiliência de Hardware:**
+  - **RAS (`rasdaemon`):** Registra MCE (cache/core/Data Fabric), PCIe AER e erros de bloco em `/var/lib/rasdaemon/ras-mc_event.db` (consulta via `sudo ras-mc-ctl --errors`). Com DIMMs não-ECC o `amd64_edac` não carrega: **erros de DRAM são invisíveis ao kernel** e só podem ser detectados por teste ativo (MemTest86 / `stressapptest`). É proibido afirmar cobertura EDAC de DRAM nesta plataforma.
+  - **Calibração de BIOS:** Fonte única e detalhada em [`docs/POST_INSTALL.md` §14](docs/POST_INSTALL.md). Invariantes mínimas: `Power Supply Idle Control = Typical Current Idle`; `CPPC` + `CPPC Preferred Cores` = `Enabled` (sem eles o `amd-pstate-epp` não carrega — `_CPC object is not present in SBIOS`); FCLK:UCLK:MEMCLK 1:1; PBO/Curve Optimizer em padrão até validação de estabilidade; `CSM = Disabled`, `Above 4G Decoding` + `Re-Size BAR` + `SVM` + `IOMMU` = `Enabled`.
 - **Anti-Patterns de Hardware Proibidos:**
-  - **CPU (Zen 3 5950X):** Proibido `preempt=full` (induz contenção e latência de escalonamento em 32 threads/2 CCDs), omitir `tsc=reliable` / `nowatchdog` (causa falso positivo do watchdog de clocksource `Watchdog remote CPU read timed out` e congelamento total) ou utilizar `amd_iommu=on` (parâmetro inexistente).
+  - **CPU (Zen 3 5950X):** Proibido `preempt=full` (contenção e latência de escalonamento em 32 threads/2 CCDs), omitir `tsc=reliable` (desativa o watchdog de clocksource, evitando falsos positivos `Watchdog remote CPU read timed out` que rebaixam o TSC para HPET entre CCDs) ou utilizar `amd_iommu=on` (parâmetro inexistente). `nowatchdog` desativa os detectores de soft/hard lockup (elimina jitter de NMI em 32 threads); trade-off aceito: hard lockups puros não disparam `kernel.panic`, restando SysRq REISUB.
+  - **BIOS / Memória:** Proibido Curve Optimizer negativo, PBO com limites "Motherboard"/scalar elevado ou XMP/timings apertados nesta topologia de kits mistos 1R+2R sem validação prévia (MemTest86 ≥ 4 passes + `stressapptest` ≥ 1 h). Proibido `Memory Context Restore = Enabled` com 4 DIMMs mistos (pula retreinamento e mascara margens marginais).
   - **GPU (Navi 23 6600 XT):** Proibido ativar flags experimentais de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), causadoras de GPU hangs e deadlocks no driver Mesa/AMDGPU, e proibido instalar stacks pesadas de ROCm no host (usar estritamente CDI containerizado).
   - **Memória & Armazenamento:** Proibido `page_alloc.shuffle=1` (fragmentação do alocador de páginas), limites manuais restritivos em parâmetros auto-escaláveis (`inotify`) e gravação com CoW ativo em VMs, contêineres e modelos de IA (obrigatório NoCOW `+C`).
   - **Áudio & Conectividade:** Proibido desativar `bluez5.hw-volume` em fones TWS (induz assimetria de ganho analógico) e proibido ativar encaminhamento IP global (`net.ipv4.ip_forward`) no sysctl.
@@ -67,7 +71,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 - **Validação e Estabilidade de Kernel Arguments:**
   - Proibido introduzir parâmetros inexistentes no kernel Linux (ex.: `amd_iommu=on` não existe; utilizar apenas `iommu=pt` para passthrough).
   - Proibido introduzir kargs redundantes já ativos por padrão no Fedora 44 (ex.: `CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT=y`, `kvm_amd.nested=1`). Sempre verificar os padrões do kernel antes de propor kargs.
-  - Para a CPU AMD Ryzen 9 5950X (Zen 3, 16C/32T dual-CCD), é obrigatório fixar `tsc=reliable` e `nowatchdog` para prevenir timeouts de IPI do watchdog de clocksource entre CCDs (`clocksource: Watchdog remote CPU read timed out`) e travamentos totais do sistema. É proibido utilizar `preempt=full` (induz contenção e latência de escalonamento em 32 threads) ou `page_alloc.shuffle=1` (fragmentação de memória).
+  - Para a CPU AMD Ryzen 9 5950X (Zen 3, 16C/32T dual-CCD), é obrigatório fixar `tsc=reliable` (suprime o watchdog de clocksource e os falsos positivos `clocksource: Watchdog remote CPU read timed out` entre CCDs) e `nowatchdog` (desativa soft/hard lockup detectors e o NMI watchdog). Como `nowatchdog` já zera `kernel.nmi_watchdog`, é proibido redeclará-lo em `sysctl.d`. É proibido utilizar `preempt=full` (induz contenção e latência de escalonamento em 32 threads) ou `page_alloc.shuffle=1` (fragmentação de memória).
 - **Arquitetura Transacional OCI / bootc:**
   - O sistema opera sob o modelo `bootc`. Atualizações automáticas de sistema são orquestradas unicamente via `bootc-fetch-apply-updates.timer` com guarda de resiliência de rede D-Bus.
   - É proibido manter ou recriar configurações legadas de staging no `/etc/rpm-ostreed.conf`.
