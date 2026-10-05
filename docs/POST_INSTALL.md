@@ -497,6 +497,13 @@ Physical Daisy-Chain Memory Trace Architecture:
 > **Hardware Upgrade Recommendation (Maximum Headroom):**
 > Replacing the 4 mixed DIMMs with a **matched 2×32 GB dual-rank DDR4-3600 CL16/CL18 kit** in slots A2/B2 provides 64 GB with 1 DIMM/channel and rank interleaving, unlocking synchronous FCLK 1800 MHz 1:1 with vastly superior electrical margins and lower latency than any 4-DIMM mixed configuration can achieve.
 
+**Thermal Dynamics & Capacitive Refresh Invariants (4-DIMM High Density):**
+- **Joule Dissipation & Voltage Sensitivity ($P \propto V^2$):** With 4 DIMMs packed tightly into adjacent slots, radiant dissipation between sticks is severely restricted. Overvolting DRAM beyond 1.350 V increases thermal output quadratically ($P \propto V^2$).
+- **Socket AM4 Copper Plane Coupling (cIOD to Slots A1/A2):** The I/O Die (SoC) on the Ryzen 9 5950X dissipates significant heat into the AM4 socket. Motherboard `Auto` settings typically overvolt `CPU VCORE SOC` to 1.20 V – 1.25 V under XMP loads. This thermal load conducts directly into the internal copper power planes of the motherboard immediately adjacent to memory slots A1 and A2, baking the inner DIMMs from below. Setting a strict manual cap of `1.100 V` on `VSOC` isolates and suppresses this thermal transfer.
+- **Capacitive Charge Retention & Refresh Timings (`tRFC` / `tREFI`):** DRAM cells store bits as charge in microscopic trench capacitors. High operating temperatures accelerate charge leakage exponentially. Refresh timings (`tRFC` and `tREFI`) must remain on `Auto` to ensure sufficient recharge cycles and prevent temperature-induced bit flips.
+- **Auto Self Refresh (ASR) / Extended Temperature Range:** Enabling ASR in AMD CBS allows the IMC to enforce a 2x refresh cadence when DIMM temperatures approach 85 °C, preserving data integrity under prolonged load.
+- **Active Chassis Airflow:** Dedicated chassis airflow over the 4 memory modules is strictly required to prevent heat pockets from forming between the tightly packed modules.
+
 ---
 
 ### 14.1 Profile A — Stable Baseline Calibration (Step-by-Step)
@@ -522,7 +529,7 @@ Navigate to the **`Tweaker`** tab using the top navigation bar:
 
 2. **Advanced Memory Settings (`Tweaker → Advanced Memory Settings`):**
    - `Memory Boot Mode`: `Normal`.
-   - `Standard Timing Control`: `Auto` (applies calibrated XMP Profile1 primary timings).
+   - `Standard Timing Control`: `Auto` (applies calibrated XMP Profile1 primary timings; refresh parameters `tRFC` and `tREFI` must remain strictly on `Auto` to ensure capacitor recharge cycles).
    - `Command Rate (Cmd2T)`: `Auto` (operates at 1T under GDM).
    - `Gear Down Mode`: `Enabled` (mandatory for address/command bus margins under XMP timings on 4 DIMMs).
    - `Power Down Enable`: `Disabled` (eliminates CKE power-down transitions and memory wakeup latency).
@@ -539,8 +546,8 @@ Navigate to the **`Tweaker`** tab using the top navigation bar:
      - `RttPark`: `RZQ/5 (48 Ω)` (fallback: `RZQ/1 (240 Ω)`).
 
 3. **Advanced Voltage Settings (`Tweaker → Advanced Voltage Settings`):**
-   - `DRAM Voltage (CH A/B)`: `1.350 V` (verified XMP operating voltage; provides required headroom for 4 DIMMs).
-   - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — strictly prevents motherboard `Auto` from overvolting to >1.20 V or dropping below 1.05 V under XMP load).
+   - `DRAM Voltage (CH A/B)`: `1.350 V` (verified XMP operating voltage; strict ceiling at `1.350 V` to contain quadratic thermal dissipation $P \propto V^2$; stable undervolt to `1.300 V`–`1.320 V` is permitted if validated).
+   - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — strictly prevents motherboard `Auto` from overvolting to 1.20 V–1.25 V, which dumps excessive heat into the AM4 socket copper plane adjacent to memory slots A1/A2).
    - `CPU/VRM Settings`:
      - `Vcore Loadline Calibration`: `Auto`.
      - `VCORE SOC Loadline Calibration`: `Auto` (or `Medium` to prevent voltage droop under heavy memory load).
@@ -570,6 +577,8 @@ Navigate to the **`Settings`** tab:
 3. **AMD CBS Sub-menu (`Settings → AMD CBS`):**
    - `CPU Common Options`: `Global C-state Control = Enabled`.
    - `NBIO Common Options`: `IOMMU = Enabled` (pairs with host `iommu=pt` karg).
+   - `DRAM Controller Configuration` / `DDR Common Options`:
+     - `Auto Self Refresh (ASR)` / `Extended Temperature Range`: `Enabled` (forces 2x refresh cadence when approaching 85 °C to guard against capacitive charge leakage bit flips).
    - `SMU Common Options`:
      - `CPPC`: `Enabled` (mandatory for `amd-pstate-epp` driver).
      - `CPPC Preferred Cores`: `Enabled` (exposes silicon binning to Linux scheduler).
@@ -614,7 +623,7 @@ Profile A already runs factory XMP DDR4-3200 with calibrated voltages. If seekin
    - Set `tRCDWR`: `20`
    - Set `tRP`: `20`
    - Set `tRAS`: `40`
-   - Keep `tRC` and `tRFC` on `Auto` (prevents capacitive refresh retention bit flips on 8Gb ICs).
+   - Keep `tRC`, `tRFC`, and `tREFI` strictly on `Auto` (manual tightening of refresh parameters in a 4-DIMM mixed topology is strictly prohibited; prevents temperature-induced capacitive refresh retention bit flips on 8Gb ICs).
    - Keep `Gear Down Mode = Enabled`.
 2. Save (`F10`) and execute §14.3 validation.
 3. *Optional secondary tightening (only if Phase 1 passes 1 h stress testing):*
