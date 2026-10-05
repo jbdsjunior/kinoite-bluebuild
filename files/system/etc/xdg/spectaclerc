@@ -1,8 +1,2 @@
 [GuiConfig]
 quitAfterSaveCopyExport=true
-
-[ImageSave]
-translatedScreenshotsFolder=Capturas de tela
-
-[VideoSave]
-translatedScreencastsFolder=Capturas de vídeo
