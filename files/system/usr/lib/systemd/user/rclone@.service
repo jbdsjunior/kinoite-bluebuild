@@ -10,8 +10,6 @@ StartLimitBurst=20
 [Service]
 Type=notify
 TimeoutStartSec=90s
-# Abort cleanly without error if connection is offline, captive portal, or metered
-ExecCondition=/usr/libexec/kinoite/network-guard
 Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
