@@ -254,6 +254,17 @@ O acesso a armazenamentos em nuvem (Google Drive, Microsoft OneDrive) é arquite
 - **Blindagem do Indexador Baloo:**
   - Exclusão explícita e imutável de `$HOME/Cloud` em `/etc/xdg/baloofilerc` via marcação `[$ei]`, prevenindo varreduras recursivas que induzam saturação de banda, alta carga de CPU e bloqueio de cotas de API.
 
+### 5.6 Personalizações Declarativas do Desktop KDE Plasma (`/etc/xdg/`)
+
+O repositório provisiona configurações padrão declarativas do sistema para o ambiente de desktop KDE Plasma 6 através da cascata de configuração do XDG (`/etc/xdg/`), garantindo que novas sessões e usuários herdem a identidade visual e as calibrações de hardware sem depender de ajustes manuais pós-instalação:
+
+- **Identidade Visual e Cores (`kdeglobals`, `ksplashrc`):** Tema Breeze Dark com esquema completo de cores, cor de destaque azul (`0,85,255`), animações aceleradas (`AnimationDurationFactor=0.5`), contraste refinado e tema de inicialização Fedora Dark.
+- **Gerenciador de Janelas (`kwinrc`):** Efeito Blur ativado, barreira de bordas calibrada (`EdgeBarrier=10`), política de foco e escala XWayland 1:1.
+- **Calibração de Periféricos (`kcminputrc`):** Perfis Libinput para mouses homologados (VXE Mouse e BY Tech) com perfil de aceleração plano (`PointerAccelerationProfile=1`) e scroll calibrado.
+- **Gerenciamento de Energia (`powerdevilrc`):** Perfil AC para desktop de alto desempenho impedindo suspensão automática indesejada (`AutoSuspendAction=0`) e timeouts de tela calibrados.
+- **Gerenciamento de Arquivos e Mídias (`dolphinrc`, `kded_device_automounterrc`):** Barra de menus oculta, retenção de abas desativada, plugins de miniaturas declarativos e automount de mídias removíveis ativado.
+- **Captura de Tela (`spectaclerc`):** Fechamento automático pós-salvamento (`quitAfterSaveCopyExport=true`) e localização padrão de pastas.
+
 ---
 
 ## 6. Auditoria de Arquitetura & Status das Dívidas Técnicas
