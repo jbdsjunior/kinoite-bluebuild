@@ -128,7 +128,7 @@ systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.co
 
 ```
 
-This sets the BTRFS NoCOW (`+C`) attribute on libvirt/GNOME Boxes images, Podman/Distrobox container layers, rclone cache, and local LLM model caches (`~/.ollama/models`, `~/.cache/huggingface`) before heavy multi-gigabyte files are written, preventing disk fragmentation.
+This sets the BTRFS NoCOW (`+C`) attribute on libvirt/GNOME Boxes images, Podman/Distrobox container layers, and rclone cache before heavy multi-gigabyte files are written, preventing disk fragmentation.
 
 ---
 
