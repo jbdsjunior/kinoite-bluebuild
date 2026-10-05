@@ -548,6 +548,7 @@ Navigate to the **`Tweaker`** tab using the top navigation bar:
 3. **Advanced Voltage Settings (`Tweaker → Advanced Voltage Settings`):**
    - `DRAM Voltage (CH A/B)`: `1.350 V` (verified XMP operating voltage; strict ceiling at `1.350 V` to contain quadratic thermal dissipation $P \propto V^2$; stable undervolt to `1.300 V`–`1.320 V` is permitted if validated).
    - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — strictly prevents motherboard `Auto` from overvolting to 1.20 V–1.25 V, which dumps excessive heat into the AM4 socket copper plane adjacent to memory slots A1/A2).
+   - *Technical Note on Sub-Voltages:* Setting `VSOC` to `1.100 V` mandates calibrating `VDDG IOD` to `1.000 V` (keeping $\ge 40$ mV margin below VSOC to prevent Fabric disconnects), `VDDG CCD` to `0.950 V`, and `cLDO VDDP` to `0.900 V` in Step 2 (`Settings → AMD Overclocking`). Never leave VDDG on `Auto` when reducing VSOC.
    - `CPU/VRM Settings`:
      - `Vcore Loadline Calibration`: `Auto`.
      - `VCORE SOC Loadline Calibration`: `Auto` (or `Medium` to prevent voltage droop under heavy memory load).
@@ -577,7 +578,7 @@ Navigate to the **`Settings`** tab:
 3. **AMD CBS Sub-menu (`Settings → AMD CBS`):**
    - `CPU Common Options`: `Global C-state Control = Enabled`.
    - `NBIO Common Options`: `IOMMU = Enabled` (pairs with host `iommu=pt` karg).
-   - `DRAM Controller Configuration` / `DDR Common Options`:
+   - `UMC Common Options → DDR Common Options → DRAM Controller Configuration` (or directly `DRAM Controller Configuration` depending on AGESA layout):
      - `Auto Self Refresh (ASR)` / `Extended Temperature Range`: `Enabled` (forces 2x refresh cadence when approaching 85 °C to guard against capacitive charge leakage bit flips).
    - `SMU Common Options`:
      - `CPPC`: `Enabled` (mandatory for `amd-pstate-epp` driver).
@@ -675,6 +676,10 @@ CCD1 Secondary Cores (Scores 166–201):
 Execute the following checks in terminal after booting into Fedora Kinoite:
 
 ```bash
+# 0. Verify configured memory frequency (3200 MT/s) and topology across all 4 DIMM slots
+sudo dmidecode -t memory | grep -E "Locator:|Speed:|Configured Memory Speed:|Part Number:|Rank:"
+# Expected: 4 DIMMs active, Speed: 3200 MT/s, Configured Memory Speed: 3200 MT/s
+
 # 1. Verify CPU scaling driver, CPPC active status and boost capability
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver        # Expected: amd-pstate-epp
 cat /sys/devices/system/cpu/amd_pstate/status                  # Expected: active
