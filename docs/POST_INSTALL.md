@@ -476,6 +476,11 @@ gpu-top
 | ECC | **No** — `amd64_edac` does not load; DRAM errors are invisible to `rasdaemon` |
 | Topology | 2 DIMMs/channel, **3 ranks/channel, mixed kits** — hardest load for the Zen 3 IMC |
 
+**Slot Placement Verification (Daisy-Chain Trace Topology):**
+- **Channel A:** Slot A1 = 1R (Generic 16 GB), Slot A2 = 2R (KingSpec KS3200D4R13516G)
+- **Channel B:** Slot B1 = 1R (Generic 16 GB), Slot B2 = 2R (KingSpec KS3200D4R13516G)
+*Signal integrity rationale:* On daisy-chain motherboards (such as the Gigabyte X570 AORUS PRO), slots A2 and B2 are the physical termination ends of the memory traces. Placing the heavier dual-rank (2R) modules in A2 and B2 provides clean impedance termination, minimizing signal reflections back into trace stubs. Inverting placement (2R in A1/B1 and 1R in A2/B2) severely degrades signal eye margins and triggers data bus bit flips.
+
 > [!WARNING]
 > Root-cause note for the 2026-10-05 10:30 freeze: the oops dumps showed corrupted kernel instruction bytes read from **two different cores on both CCDs** (CPU 17 / CCD1 and CPU 4 / CCD0), while the same `.text` read back intact moments later. That pattern is **transient corruption in the memory/fabric path**, not a single bad core nor a permanently bad DRAM cell. Top suspect: mixed 1R+2R 4-DIMM topology with `Auto` VSOC/ProcODT. Secondary: any PBO/Curve Optimizer offset; idle C6 voltage sag.
 
@@ -500,7 +505,7 @@ Menu labels below follow F3x builds; minor wording may differ. Change one block 
 | CPU Vcore Loadline Calibration | `Auto` | Avoid `Extreme/Turbo` overshoot |
 | SMT Mode | `Auto` | 32 threads |
 
-**Memory & Infinity Fabric** (`Tweaker`, `Tweaker → Advanced Memory Settings`, `Settings → AMD CBS → UMC Common Options`)
+**Memory, Voltages & Infinity Fabric** (`Tweaker`, `Tweaker → Advanced Memory Settings`, `Settings → AMD CBS → UMC Common Options`, `Settings → AMD Overclocking`)
 
 | Setting | Value | Why |
 | :--- | :--- | :--- |
@@ -512,25 +517,31 @@ Menu labels below follow F3x builds; minor wording may differ. Change one block 
 | DRAM Voltage (CH A/B) | `1.350 V` | +150 mV margin over 1.2 V JEDEC; standard safe DDR4 value |
 | CPU VCORE SOC | `1.100 V` (hard ceiling `1.150 V`) | Feeds the IMC driving 3 ranks/channel |
 | VCORE SOC Loadline Calibration | `Auto` / `Medium` | Stable SOC under load steps |
-| VDDG CCD / VDDG IOD | `Auto` (≈ 0.90 / 1.00 V at FCLK 1600) | Only touch if errors persist |
-| ProcODT | `40.0 Ω` (fallback `36.9 Ω`) | Typical sweet spot for 4 DIMMs / dual-rank |
-| Gear Down Mode | `Enabled` | Command-bus margin with 4 DIMMs |
-| Cmd2T | `Auto` (1T with GDM) | — |
+| VDDG IOD (`AMD Overclocking → DDR/FCLK`) | `1.000 V` (1000 mV) | Stabilizes memory controller/fabric interconnect (keep $\ge 40$ mV below VSOC) |
+| VDDG CCD (`AMD Overclocking → DDR/FCLK`) | `0.950 V` (950 mV) | Stabilizes core-to-fabric interconnect |
+| cLDO VDDP (`AMD Overclocking → DDR/FCLK`) | `0.900 V` (900 mV) | Standard DRAM PHY signaling voltage |
+| ProcODT | `40.0 Ω` (fallback `43.6 Ω` or `36.9 Ω`) | Typical sweet spot for 4 DIMMs / mixed ranks |
+| RttNom / RttWr / RttPark | `Disabled` / `RZQ/3 (80 Ω)` / `RZQ/5 (48 Ω)` | Optimal bus termination for 4 DIMMs (fallback: RttPark `RZQ/1 (240 Ω)`) |
+| CAD_BUS Clk / AddrCmd / CsOdt / Cke DrvStr | `24 Ω` / `24 Ω` / `24 Ω` / `24 Ω` | Standard drive strength for daisy-chain 4-DIMM traces |
+| Gear Down Mode | `Enabled` | Command-bus margin with 4 DIMMs (mandatory) |
+| Cmd2T | `Auto` (1T with GDM) | Fast command rate under GDM |
 | Power Down Enable | `Disabled` | Removes DRAM power-down transitions as an instability source |
 | Memory Context Restore | `Disabled` | Forces full retraining every boot; no masked marginal training |
 
-**PCIe, GPU & virtualization**
+**PCIe, GPU, Boot & Thermal**
 
-| Setting | Path | Value |
-| :--- | :--- | :--- |
-| CSM Support | `Boot` | `Disabled` (required for Re-Size BAR) |
-| Above 4G Decoding | `Settings → IO Ports` | `Enabled` |
-| Re-Size BAR Support | `Settings → IO Ports` | `Auto` (expect `BAR=8192M` for the RX 6600 XT) |
-| SVM Mode | `Tweaker → Advanced CPU Settings` | `Enabled` |
-| IOMMU | `Settings → Miscellaneous` | `Enabled` (pairs with karg `iommu=pt`) |
-| PCIe slot configuration | `Settings → IO Ports` | `Auto` (Gen4) |
+| Setting | Path | Value | Why |
+| :--- | :--- | :--- | :--- |
+| CSM Support | `Boot` | `Disabled` | Pure UEFI mode required for Re-Size BAR |
+| Fast Boot | `BIOS` | `Disabled` | Guarantees full device and memory enumeration on every boot |
+| Above 4G Decoding | `Settings → IO Ports` | `Enabled` | Enables 64-bit PCIe BAR allocation |
+| Re-Size BAR Support | `Settings → IO Ports` | `Auto` / `Enabled` | Full 8 GB VRAM BAR (`BAR=8192M`) on Radeon RX 6600 XT via SAM |
+| SVM Mode | `Tweaker → Advanced CPU Settings` | `Enabled` | Hardware virtualization for KVM and Podman |
+| IOMMU | `Settings → Miscellaneous` / `AMD CBS` | `Enabled` | Device isolation and passthrough via `iommu=pt` |
+| PCIe Slot Configuration | `Settings → IO Ports` | `Auto` (Gen4) | Gen4 link speed for GPU and NVMe SSD |
+| PCH Fan Profile | `Smart Fan 5` | `Silent` | Keeps X570 chipset cool while eliminating high-pitch fan noise |
 
-**Escalation only if freezes persist with Profile A:** `DF Cstates = Disabled` (`AMD CBS → NBIO Common Options → SMU Common Options`; ≈ +10 W idle), then ProcODT `36.9 Ω`, then VSOC `1.125 V`. As a last resort drop to DDR4-2933 / FCLK 1467 — or remove the 1R pair (A1/B1) and run 32 GB 2R to confirm the topology is the cause.
+**Escalation only if freezes persist with Profile A:** `DF Cstates = Disabled` (`AMD CBS → NBIO Common Options → SMU Common Options`; ≈ +10 W idle), then ProcODT `43.6 Ω`, then VSOC `1.125 V`. As a last resort drop to DDR4-2933 / FCLK 1467 — or remove the 1R pair (A1/B1) and run 32 GB 2R to confirm the topology is the cause.
 
 ### 14.2 Profile B — Performance step (only after Profile A passes §14.3 cleanly)
 
