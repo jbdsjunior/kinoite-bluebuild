@@ -461,3 +461,64 @@ clinfo
 # Interactive GPU engine & VRAM monitor
 gpu-top
 ```
+
+---
+
+## 14) Gigabyte X570 AORUS PRO & AMD Ryzen 9 5950X Hardware & BIOS Calibration
+
+To ensure absolute system stability, eliminate transient DRAM data-line bit flips (DQ bus errors), and prevent idle/C-State freezes on the 16-core / 32-thread AMD Ryzen 9 5950X with 64 GB DDR4:
+
+### 14.1 Motherboard BIOS / UEFI Calibration (BIOS F39+)
+
+Reboot into UEFI setup (press `Del` during POST) and configure the following parameters:
+
+#### 1. Power Supply & C-States (Critical for Zen 3 Idle Stability)
+* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `CPU Common Options` $\rightarrow$ `Power Supply Idle Control`
+  * **Value:** **`Typical Current Idle`** *(Default is "Auto" / "Low Current Idle")*.
+  * **Rationale:** Prevents VRM power rail sags below the minimum threshold during deep C6 idle transitions on dual-CCD Zen 3 CPUs, resolving random desktop idle lockups.
+* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `CPU Common Options` $\rightarrow$ `Global C-state Control`
+  * **Value:** **`Enabled`**.
+* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `NBIO Common Options` $\rightarrow$ `SMU Common Options` $\rightarrow$ `CPPC` / `CPPC Preferred Cores`
+  * **Value:** **`Enabled`** *(Required for autonomous `amd-pstate-epp` frequency scaling)*.
+
+#### 2. Memory & Infinity Fabric (64 GB DDR4 Stability)
+* **Path:** `Tweaker` $\rightarrow$ `Extreme Memory Profile (X.M.P.)`
+  * **Value:** **`Profile 1`**.
+* **Path:** `Tweaker` $\rightarrow$ `Advanced CPU Settings` $\rightarrow$ `Infinity Fabric Frequency and Dividers (FCLK)`
+  * **Value:** **`1600 MHz`** (for DDR4-3200) or **`1800 MHz`** (for DDR4-3600), coupled 1:1 with `UCLK DIV1 MODE = UCLK=MEMCLK`.
+* **Path:** `Tweaker` $\rightarrow$ `CPU VCORE SOC`
+  * **Value:** Set to **`Manual` / `1.050V` - `1.100V`** *(Do not leave below 1.025V for 64 GB dual-rank / 4-DIMM loads)*.
+* **Path:** `Tweaker` $\rightarrow$ `DRAM Voltage`
+  * **Value:** **`1.350V` - `1.360V`** *(A slight +10-20mV bump stabilizes high-density 64GB DDR4 memory buses under thermal fluctuations)*.
+
+#### 3. PCIe, Resizable BAR & Virtualization
+* **Path:** `Settings` $\rightarrow$ `IO Ports` $\rightarrow$ `Above 4G Decoding` $\rightarrow$ **`Enabled`**
+* **Path:** `Settings` $\rightarrow$ `IO Ports` $\rightarrow$ `Re-Size BAR Support` $\rightarrow$ **`Auto` / `Enabled`** *(Unlocks full VRAM access for AMD RX 6600 XT via SAM)*.
+* **Path:** `Tweaker` $\rightarrow$ `Advanced CPU Settings` $\rightarrow$ `SVM Mode` $\rightarrow$ **`Enabled`** *(Hardware virtualization for KVM and Podman)*.
+* **Path:** `Settings` $\rightarrow$ `AMD CBS` $\rightarrow$ `NBIO Common Options` $\rightarrow$ `IOMMU` $\rightarrow$ **`Enabled`** *(Required for `iommu=pt`)*.
+
+---
+
+### 14.2 Host Verification & Diagnostics Commands
+
+Validate the runtime configuration after applying BIOS adjustments:
+
+```bash
+# 1. Verify amd-pstate-epp scaling driver
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+# Expected: amd-pstate-epp
+
+# 2. Verify Kernel Resilience & Panic settings
+sysctl kernel.panic kernel.panic_on_oops kernel.sysrq
+# Expected: kernel.panic = 10, kernel.panic_on_oops = 1, kernel.sysrq = 1
+
+# 3. Verify hardware RAS daemon and query error logs
+sudo systemctl status rasdaemon.service ras-mc-ctl.service
+sudo ras-mc-ctl --errors
+sudo ras-mc-ctl --summary
+
+# 4. Emergency SysRq Sequence (if desktop freezes):
+# Press: Alt + SysRq + R -> E -> I -> S -> U -> B
+# Safely unraws keyboard, terminates processes, syncs disks, remounts read-only, and reboots without Btrfs corruption.
+```
+
