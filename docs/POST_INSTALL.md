@@ -515,16 +515,16 @@ Follow this precise menu navigation in Gigabyte BIOS F39. Save Profile A to an i
 Navigate to the **`Tweaker`** tab using the top navigation bar:
 
 1. **Memory Frequency & Multipliers:**
-   - `Extreme Memory Profile (X.M.P.)`: `Disabled` (do not apply single-kit XMP to mixed modules).
-   - `System Memory Multiplier`: `32.00` (sets DDR4-3200 MT/s).
-   - `FCLK Frequency`: `1600MHz` (synchronous 1:1 with MEMCLK).
+   - `Extreme Memory Profile (X.M.P.)`: `Profile1` (Enabled as standard default; loads factory DDR4-3200 MT/s rated timings and 1.35 V DRAM baseline).
+   - `System Memory Multiplier`: `Auto` (automatically locked to `32.00` by XMP Profile1).
+   - `FCLK Frequency`: `1600MHz` (synchronous 1:1 with MEMCLK 1600 MHz).
    - `UCLK DIV1 MODE`: `UCLK==MEMCLK` (forces memory controller to 1600 MHz, avoiding the ~10 ns 2:1 latency penalty).
 
 2. **Advanced Memory Settings (`Tweaker → Advanced Memory Settings`):**
    - `Memory Boot Mode`: `Normal`.
-   - `Standard Timing Control`: `Auto` (JEDEC baseline ≈ 22-22-22-52 for initial stability).
+   - `Standard Timing Control`: `Auto` (applies calibrated XMP Profile1 primary timings).
    - `Command Rate (Cmd2T)`: `Auto` (operates at 1T under GDM).
-   - `Gear Down Mode`: `Enabled` (mandatory for address/command bus margins on 4 DIMMs).
+   - `Gear Down Mode`: `Enabled` (mandatory for address/command bus margins under XMP timings on 4 DIMMs).
    - `Power Down Enable`: `Disabled` (eliminates CKE power-down transitions and memory wakeup latency).
    - `Memory Context Restore`: `Disabled` (enforces full DRAM training on every cold boot; prevents masked marginal timings).
    - `CAD Bus Timing Configuration`:
@@ -533,14 +533,14 @@ Navigate to the **`Tweaker`** tab using the top navigation bar:
      - `CsOdtDrvStr`: `24 Ω`
      - `CkeDrvStr`: `24 Ω`
    - `Data Bus Timing Configuration`:
-     - `ProcODT`: `40.0 Ω` (sweet spot for 4 DIMMs / 3 ranks; fallback: `43.6 Ω`).
+     - `ProcODT`: `40.0 Ω` (sweet spot for 4 DIMMs / 3 ranks with XMP; fallback: `43.6 Ω`).
      - `RttNom`: `Disabled` (or `RZQ/7 (34 Ω)`).
      - `RttWr`: `RZQ/3 (80 Ω)`.
      - `RttPark`: `RZQ/5 (48 Ω)` (fallback: `RZQ/1 (240 Ω)`).
 
 3. **Advanced Voltage Settings (`Tweaker → Advanced Voltage Settings`):**
-   - `DRAM Voltage (CH A/B)`: `1.350 V` (provides +150 mV electrical headroom over 1.20 V JEDEC to stabilize 4 DIMMs).
-   - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — stabilizes the IMC driving 3 ranks/channel).
+   - `DRAM Voltage (CH A/B)`: `1.350 V` (verified XMP operating voltage; provides required headroom for 4 DIMMs).
+   - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — strictly prevents motherboard `Auto` from overvolting to >1.20 V or dropping below 1.05 V under XMP load).
    - `CPU/VRM Settings`:
      - `Vcore Loadline Calibration`: `Auto`.
      - `VCORE SOC Loadline Calibration`: `Auto` (or `Medium` to prevent voltage droop under heavy memory load).
@@ -605,8 +605,8 @@ Navigate to the **`Settings`** tab:
 Apply Profile B adjustments **only after Profile A completes §14.3 validation with zero errors**.
 Perform one optimization at a time and validate (§14.3) after each step.
 
-#### Phase 1: Primary Memory Timing Optimization (DDR4-3200 @ 1.350 V)
-Do not exceed DDR4-3200 on this mixed 1R+2R topology; instead, reduce memory access latency:
+#### Phase 1: Secondary Timing Tightening (Beyond Default XMP Profile1)
+Profile A already runs factory XMP DDR4-3200 with calibrated voltages. If seeking additional memory latency reduction beyond the SPD profile:
 
 1. In `Tweaker → Advanced Memory Settings → Standard Timing Control`:
    - Set `CAS Latency (tCL)`: `20`
