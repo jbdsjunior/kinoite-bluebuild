@@ -36,7 +36,7 @@ immutability=1
 plugin=org.kde.plasma.kickoff
 
 [Containments][28][Applets][29][Configuration]
-popupHeight=865
+popupHeight=789
 popupWidth=629
 
 [Containments][28][Applets][29][Configuration][General]
@@ -149,8 +149,11 @@ immutability=1
 plugin=org.kde.plasma.digitalclock
 
 [Containments][28][Applets][48][Configuration]
-popupHeight=400
+popupHeight=451
 popupWidth=560
+
+[Containments][28][Applets][48][Configuration][Appearance]
+fontWeight=400
 
 [Containments][28][Applets][56]
 immutability=1
@@ -158,12 +161,12 @@ plugin=org.kde.plasma.taskmanager
 
 [Containments][28][Applets][56][Configuration][General]
 indicateAudioStreams=false
-launchers=
+launchers=preferred://filemanager
 showOnlyCurrentScreen=true
 
 [Containments][28][Applets][57]
 immutability=1
-plugin=org.kde.plasma.minimizeall
+plugin=org.kde.plasma.showdesktop
 
 [Containments][28][General]
 AppletOrder=29;30;56;32;33;48;57
