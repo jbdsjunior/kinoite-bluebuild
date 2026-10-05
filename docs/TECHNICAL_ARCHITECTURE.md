@@ -278,6 +278,9 @@ Para assegurar estabilidade máxima em cargas intensivas no processador AMD Ryze
 - **Monitoramento Confiável de Hardware (`rasdaemon`):**
   - Serviços de sistema `rasdaemon.service` e `ras-mc-ctl.service` ativos por padrão em [`common-systemd.yml`](../recipes/common-systemd.yml).
   - O daemon monitora tracepoints do kernel para MCE (core, cache, Data Fabric), PCIe AER e erros de bloco, persistindo em SQLite (`/var/lib/rasdaemon/ras-mc_event.db`; consulta via `sudo ras-mc-ctl --errors`). Os DIMMs desta estação são **não-ECC**: o `amd64_edac` não carrega e erros de DRAM não são reportados — a validação de memória depende de MemTest86 e `stressapptest` ([`POST_INSTALL.md` §14](POST_INSTALL.md)).
+- **Proteção Térmica e Estabilidade de Memória (Baseline XMP Profile1):**
+  - O perfil padrão oficial (`Profile A`) opera em DDR4-3200 com sincronia estrita 1:1 FCLK:UCLK:MEMCLK em 1600 MHz.
+  - Para a topologia densa de 4 DIMMs contíguos (64 GB mistos 1R+2R), são estabelecidos os seguintes invariantes térmicos e de retenção: teto estrito de DRAM Voltage em 1.350 V (ou undervolt validado de 1.300 V–1.320 V) prevenindo dissipação excessiva ($P \propto V^2$); CPU VCORE SOC limitado estritamente a 1.100 V manual (evitando que tensões automáticas de 1.20 V–1.25 V saturem termicamente o plano de cobre do soquete AM4 vizinho aos slots A1/A2); manutenção mandatória dos tempos de refresh `tRFC` e `tREFI` em `Auto` para prevenir bit-flips por fuga de carga capacitiva em ICs de 8Gb sob aquecimento; habilitação de `Auto Self Refresh (ASR)` no AMD CBS (2x refresh rate próximo a 85 °C); e fluxo de ar ativo contínuo no gabinete sobre os slots de memória (detalhado em [`POST_INSTALL.md` §14](POST_INSTALL.md) e [`AGENTS.md`](../AGENTS.md)).
 
 ---
 
@@ -314,6 +317,8 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-25** | `recipes/common-kargs.yml`            | Timeouts crônicos do watchdog de clocksource (`Watchdog remote CPU read timed out`) e travamento em Ryzen 9 5950X (dual-CCD).     | **Resolvido:** Fixados `tsc=reliable` e `nowatchdog`; expurgados `preempt=full` e `page_alloc.shuffle=1`. |
 | **A-26** | `files/system/etc/xdg/*`              | Personalizações visuais do KDE Plasma e painéis de monitor duplo dispersos no perfil local e ausentes na imagem.                  | **Resolvido:** Configurações declarativas provisionadas em `/etc/xdg/` com espelhamento de painéis multi-monitor. |
 | **A-27** | `sysctl.d`, `common-tools.yml`, `common-systemd.yml` | Congelamentos irreversíveis após kernel Oops sem auto-reboot e ausência de registro estruturado de falhas de hardware/DRAM.      | **Resolvido:** Fixados `kernel.panic=10`, `kernel.panic_on_oops=1` e `kernel.sysrq=1` em `90-kernel-tuning.conf`; daemon `rasdaemon` provisionado e habilitado. |
+| **A-28** | `docs/POST_INSTALL.md` §14 e `AGENTS.md` | Invariantes térmicos e retenção capacitiva sob XMP com 4 DIMMs mistos (teto DRAM 1.350V, teto VSOC 1.100V, tRFC Auto, ASR 2x refresh, fluxo de ar ativo). | **Homologado:** Formalizado no baseline Profile A e documentado em governança. |
+
 
 ---
 
