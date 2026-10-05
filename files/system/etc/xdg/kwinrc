@@ -17,3 +17,6 @@ ElectricBorders=1
 
 [Xwayland]
 Scale=1
+
+[Tiling]
+padding=4
