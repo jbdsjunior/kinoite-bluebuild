@@ -44,7 +44,9 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 - **Periféricos Homologados:**
   - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
-  - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
+- **Diagnóstico e Resiliência de Hardware (Zen 3 / 64GB DDR4):**
+  - **Monitoramento de RAS/EDAC:** Registro contínuo de confiabilidade de hardware via daemon nativo `rasdaemon.service` e `ras-mc-ctl.service` (MCE, EDAC para controlador de memória, PCIe AER e falhas de barramento DRAM) persistido em `/var/lib/rasdaemon/ras-mc_event.db`.
+  - **Calibração de BIOS para C6 / Zen 3:** Para prevenir sags de tensão em idle/transições C6 no Ryzen 9 5950X e erros de linha de dados (DQ) no barramento de 64GB DDR4 (dual-CCD), calibrar `Power Supply Idle Control = Typical Current Idle` na BIOS e assegurar tensões operacionais estáveis em VSOC (1.05V–1.10V) e DRAM.
 - **Anti-Patterns de Hardware Proibidos:**
   - **CPU (Zen 3 5950X):** Proibido `preempt=full` (induz contenção e latência de escalonamento em 32 threads/2 CCDs), omitir `tsc=reliable` / `nowatchdog` (causa falso positivo do watchdog de clocksource `Watchdog remote CPU read timed out` e congelamento total) ou utilizar `amd_iommu=on` (parâmetro inexistente).
   - **GPU (Navi 23 6600 XT):** Proibido ativar flags experimentais de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), causadoras de GPU hangs e deadlocks no driver Mesa/AMDGPU, e proibido instalar stacks pesadas de ROCm no host (usar estritamente CDI containerizado).
@@ -119,6 +121,9 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
   - Timers monotônicos baseados em tempo de boot ou inatividade (`OnBootSec=`, `OnUnitActiveSec=`) não devem declarar `Persistent=true` (diretiva funcional exclusivamente em timers calendáricos com `OnCalendar=`). Timers não devem redeclarar `Unit=` quando acionam o serviço homônimo padrão, nem definir `RandomizedDelaySec=0` quando já for o padrão nativo da distribuição.
 - **Atomicidade e Idempotência em Diretivas Tmpfiles:**
   - Diretivas do tipo `C+` (cópia/substituição atômica no systemd 255+) sobrescrevem o destino de forma segura e atômica; é expressamente proibido adicionar diretivas `r!` precedentes redundantes.
+- **Resiliência a Kernel Oops e Prevenção de Corrupção Btrfs:**
+  - Em estações de trabalho de desenvolvimento, falhas graves no kernel com interrupções desabilitadas induzem congelamento irreversível (*hard lockup*). É obrigatório fixar `kernel.panic = 10` e `kernel.panic_on_oops = 1` em `90-kernel-tuning.conf` para forçar auto-reboot limpo após 10 segundos em vez de deixar a máquina em estado zumbi congelado.
+  - Para permitir recuperação de emergência sem corte abrupto de energia, é obrigatório ativar `kernel.sysrq = 1`, viabilizando o procedimento de emergência REISUB (`Alt+SysRq+R-E-I-S-U-B`) para descarregar buffers em disco e proteger a integridade dos metadados Btrfs no NVMe.
 
 ## 6. Práticas de Segurança e Governança de Instruções (`AGENTS.md`)
 
@@ -177,3 +182,6 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Guarda de Resiliência de Rede | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard) |
 | Menor Privilégio Libvirt Polkit | [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules) |
 | Configurações Plasma KDE | [`files/system/etc/xdg/*`](files/system/etc/xdg/) |
+| Resiliência a Kernel Oops e SysRq | [`files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`](files/system/usr/lib/sysctl.d/90-kernel-tuning.conf) |
+| Diagnóstico de Hardware e RAS | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-systemd.yml`](recipes/common-systemd.yml) |
+
