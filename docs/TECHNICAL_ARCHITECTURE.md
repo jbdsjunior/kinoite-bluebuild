@@ -79,6 +79,8 @@ Para prevenir regressões, falhas de sincronização, degradação de desempenho
 | **Armazenamento (Btrfs)** | Gravação de imagens de VM, contêineres e modelos de IA com CoW ativo | Fragmentação severa de blocos Btrfs, amplificação de escrita e desgaste prematuro do NVMe. | Provisionamento preventivo de atributo `+C` (NoCOW) via tmpfiles em [`60-io-tuning-*.conf`](../files/system/usr/lib/tmpfiles.d/). |
 | **Áudio Bluetooth** | `bluez5.hw-volume = false` em fones TWS | Assimetria no ganho analógico dos canais esquerdo/direito e bombeamento involuntário do limitador (DRC/AGC). | `bluez5.hw-volume = true` obrigatório para periféricos True Wireless Stereo (TWS). |
 | **Rede** | `net.ipv4.ip_forward=1` global no sysctl | Quebra da auto-configuração de endereços IPv6 SLAAC (RFC 4862) e exposição indevida do host como roteador de trânsito. | Encaminhamento ativado exclusivamente sob demanda pelos daemons de rede (Podman/Netavark, Libvirt) nas pontes dedicadas. |
+| **Confiabilidade / Kernel** | `kernel.panic_on_oops=0` / `kernel.panic=0` | Sistema trava indefinidamente em estado zumbi contaminado com interrupções desabilitadas após Oops, forçando corte abrupto de energia e arriscando corrupção do Btrfs. | `kernel.panic_on_oops=1`, `kernel.panic=10` e `kernel.sysrq=1` em [`90-kernel-tuning.conf`](../files/system/usr/lib/sysctl.d/90-kernel-tuning.conf) para auto-reboot limpo e recuperação segura via SysRq REISUB. |
+| **Diagnóstico de Hardware** | Ausência de monitoramento RAS/EDAC | Erros de memória RAM (bit flips no barramento DQ), falhas de barramento PCIe e MCEs são perdidos sem diagnóstico. | Daemon `rasdaemon.service` e `ras-mc-ctl.service` ativos em [`common-systemd.yml`](../recipes/common-systemd.yml) com persistência em SQLite de eventos MCE/EDAC/AER. |
 
 ---
 
@@ -266,6 +268,17 @@ O repositório provisiona configurações padrão declarativas do sistema para o
 - **Gerenciamento de Arquivos e Mídias (`dolphinrc`, `kded_device_automounterrc`):** Barra de menus oculta, retenção de abas desativada, plugins de miniaturas declarativos e automount de mídias removíveis ativado.
 - **Captura de Tela (`spectaclerc`):** Fechamento automático pós-salvamento (`quitAfterSaveCopyExport=true`) e localização padrão de pastas.
 
+### 5.7 Resiliência do Kernel & Diagnóstico Contínuo de Hardware (RAS)
+
+Para assegurar estabilidade máxima em cargas intensivas no processador AMD Ryzen 9 5950X e 64 GB DDR4:
+
+- **Prevenção de Hard Lockups (`90-kernel-tuning.conf`):**
+  - `kernel.panic = 10` e `kernel.panic_on_oops = 1`: Em caso de falha crítica (kernel Oops), previne que o sistema permaneça em estado zumbi com interrupções desabilitadas e interface congelada. Força a sincronização e o reinício automático após 10 segundos, eliminando a necessidade de cortes abruptos de energia que possam corromper os metadados do Btrfs.
+  - `kernel.sysrq = 1`: Habilita a sequência completa de emergência Magic SysRq (`REISUB`), concedendo ao operador a capacidade de descarregar buffers em disco (`Sync`), remontar partições em modo somente leitura (`Unmount`) e reiniciar o host de forma segura.
+- **Monitoramento Confiável de Hardware (`rasdaemon`):**
+  - Serviços de sistema `rasdaemon.service` e `ras-mc-ctl.service` ativos por padrão em [`common-systemd.yml`](../recipes/common-systemd.yml).
+  - O daemon monitora tracepoints do kernel para eventos de EDAC (controlador de memória DRAM e barramento DQ), MCE (Machine Check Exceptions) e PCIe AER, persistindo logs estruturados no banco de dados SQLite local (`/var/lib/rasdaemon/ras-mc_event.db`) para consulta imediata via `ras-mc-ctl --errors` e `ras-mc-ctl --summary`.
+
 ---
 
 ## 6. Auditoria de Arquitetura & Status das Dívidas Técnicas
@@ -299,6 +312,8 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-23** | `.github/` (`cleanup.yml`, `dependabot.yml`, `check-updates.yml`) | Otimização para GitHub Free Tier e máxima higiene: timeouts estritos (5m/10m), retenção de 15 versões OCI no GHCR (preservando 3 imagens completas com assinaturas/atestações), expurgo de caches órfãos, PRs agrupados no Dependabot e eliminação de injeção de shell. | **Resolvido:** Quotas protegidas, imagens e rollbacks íntegros no GHCR, aba Actions e PRs limpos. |
 | **A-24** | `sysctl`, `modprobe`, `tmpfiles`, `polkit`, `resolved`, `systemd` | Expurgo de defaults redundantes (`inotify`, `ip_forward`, Vulkan ICD, paths NoCOW mortos, `r!` tmpfiles), colisão polkit (`51-kinoite-libvirt.rules`), guarda de rede modular (`/usr/libexec/kinoite/network-guard`) e DoT seguro Cloudflare (`cloudflare-dns.com`). | **Resolvido:** Sistema higienizado, paridade estrita com Fedora 44, CIS e menor privilégio. |
 | **A-25** | `recipes/common-kargs.yml`            | Timeouts crônicos do watchdog de clocksource (`Watchdog remote CPU read timed out`) e travamento em Ryzen 9 5950X (dual-CCD).     | **Resolvido:** Fixados `tsc=reliable` e `nowatchdog`; expurgados `preempt=full` e `page_alloc.shuffle=1`. |
+| **A-26** | `files/system/etc/xdg/*`              | Personalizações visuais do KDE Plasma e painéis de monitor duplo dispersos no perfil local e ausentes na imagem.                  | **Resolvido:** Configurações declarativas provisionadas em `/etc/xdg/` com espelhamento de painéis multi-monitor. |
+| **A-27** | `sysctl.d`, `common-tools.yml`, `common-systemd.yml` | Congelamentos irreversíveis após kernel Oops sem auto-reboot e ausência de registro estruturado de falhas de hardware/DRAM.      | **Resolvido:** Fixados `kernel.panic=10`, `kernel.panic_on_oops=1` e `kernel.sysrq=1` em `90-kernel-tuning.conf`; daemon `rasdaemon` provisionado e habilitado. |
 
 ---
 

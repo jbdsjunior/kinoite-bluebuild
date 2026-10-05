@@ -38,6 +38,7 @@ modules:
         # System Information & Hardware Diagnostics
         - fastfetch
         - kernel-tools
+        - rasdaemon
         - mesa-libOpenCL
         - clinfo
         - vulkan-tools
