@@ -46,6 +46,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 - **Periféricos Homologados:**
   - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
   - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
+  - **Caixa de Som Bluetooth:** Tribit XSound Go (SoC Actions Semiconductor `10D6`; quirk cirúrgico de desativação de Absolute Volume em `80-bluetooth-policy.conf` contra atraso e snap-back de volume).
   - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
 - **Diagnóstico e Resiliência de Hardware:**
   - **RAS (`rasdaemon`):** Registra MCE (cache/core/Data Fabric), PCIe AER e erros de bloco em `/var/lib/rasdaemon/ras-mc_event.db` (consulta via `sudo ras-mc-ctl --errors`). Com DIMMs não-ECC o `amd64_edac` não carrega: **erros de DRAM são invisíveis ao kernel** e só podem ser detectados por teste ativo (MemTest86 / `stressapptest`). É proibido afirmar cobertura EDAC de DRAM nesta plataforma.
@@ -96,6 +97,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 - **Calibração e Quirks de Áudio Bluetooth (WirePlumber 0.5):**
   - O subsistema de áudio deve priorizar permanentemente a **máxima fidelidade e estabilidade sonora**, provisionando a hierarquia estrita de codecs (`LDAC > AAC > SBC-XQ > SBC`) com taxa de bits adaptativa (`bluez5.a2dp.ldac.quality = "auto"`) para garantir até 990 kbps (24-bit/96kHz) sem perda de pacotes ou engasgos.
   - Fones de ouvido TWS (True Wireless Stereo) utilizam processadores DSP independentes e controle de ganho por canal. A sincronização de hardware AVRCP (`hw-volume`) é obrigatória para manter a calibração de ganho analógico idêntica em ambos os lados e prevenir o bombeamento assimétrico do limitador dinâmico (DRC/AGC) entre os canais esquerdo e direito. É terminantemente proibido desativar `bluez5.hw-volume` em fones TWS.
+  - Caixas de som Bluetooth portáteis baseadas em SoCs com stack AVRCP de firmware simplificado (como a Tribit XSound Go com SoC Actions Semiconductor `10D6`), onde comandos de Absolute Volume sofrem atraso de handshake e causam reversão assíncrona do controle de volume (*volume slider snap-back / rubber-banding*), devem receber desativação cirúrgica de volume de hardware via regras (`monitor.bluez.rules` com `bluez5.enable-hw-volume = false` e `bluez5.hw-volume = [ ]` em `80-bluetooth-policy.conf`), delegando o controle à atenuação linear por software PCM de 32 bits no PipeWire sem desativar o hardware volume dos fones TWS nem de outros dispositivos.
   - Para evitar degradação involuntária da saída estéreo de alta fidelidade (A2DP LDAC/AAC/SBC-XQ) para perfis mono de chamada (HSP/HFP) por sondagem de microfones em navegadores ou aplicações, a política declarativa do WirePlumber deve fixar `bluetooth.autoswitch-to-headset-profile = false`.
 - **Higiene de Pacotes RPM na Imagem Base:**
   - É proibido instalar pacotes exclusivos de outros SO (ex.: `podman-machine` é macOS/Windows only) ou pacotes debug-only/dev-only sem utilidade funcional em produção.
