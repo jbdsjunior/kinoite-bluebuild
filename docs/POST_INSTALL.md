@@ -157,9 +157,9 @@ sudo ostree admin config-diff
 
 > ⚠️ **Warning:** on immutable systems, prefer declarative changes in `recipes/*.yml` and versioned files instead of repeated manual host adjustments.
 
-**Expected image kargs** (declared in `recipes/common-kargs.yml`, delivered through `/usr/lib/bootc/kargs.d/bluebuild-kargs.toml`):
+**Expected image kargs** (Baseline nativa pura do Fedora Kinoite 44):
 
-`amd_pstate=active` · `tsc=reliable` · `iommu=pt` · `btusb.enable_autosuspend=0` · `slab_nomerge` · `vsyscall=none`
+A imagem opera com os kargs padrão da distribuição (`rhgb quiet root=...`). Todos os recursos do Ryzen Zen 3 (`amd-pstate-epp`), isolamento IOMMU (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`), unmerged slab e invariant TSC são compilados nativamente no kernel do Fedora 44 (`7.2.x`). Nenhum karg customizado é injetado.
 
 Verify the deployed boot configuration:
 
@@ -167,23 +167,23 @@ Verify the deployed boot configuration:
 cat /proc/cmdline
 ```
 
-> ⚠️ **Bootstrap gap (bootc `kargs.d`):** bootc applies image kargs as a *diff* between the running deployment's `kargs.d` and the new image's. Systems whose first custom deployment predates bootc `kargs.d` support never receive them (empty diff). One-time host fix — applies to the running deployment and becomes the baseline for future upgrades:
+Para sanear o host físico e remover quaisquer kargs customizados, obsoletos ou causadores de instabilidade:
 
 ```bash
 sudo rpm-ostree kargs \
-  --append-if-missing=amd_pstate=active \
-  --append-if-missing=tsc=reliable \
-  --append-if-missing=iommu=pt \
-  --append-if-missing=btusb.enable_autosuspend=0 \
-  --append-if-missing=slab_nomerge \
-  --append-if-missing=vsyscall=none \
+  --delete-if-present=amd_pstate=active \
+  --delete-if-present=tsc=reliable \
   --delete-if-present=nowatchdog \
+  --delete-if-present=iommu=pt \
   --delete-if-present=btusb.enable_autosuspend=n \
+  --delete-if-present=btusb.enable_autosuspend=0 \
+  --delete-if-present=slab_nomerge \
+  --delete-if-present=vsyscall=none \
   --delete-if-present=preempt=full \
   --delete-if-present=page_alloc.shuffle=1
 ```
 
-Rollback (per argument, then reboot): `sudo rpm-ostree kargs --delete-if-present=<karg>`
+Rollback / inspeção: `rpm-ostree kargs` (retorna apenas a linha padrão da distribuição após reboot).
 
 ---
 
