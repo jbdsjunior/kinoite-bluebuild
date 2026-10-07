@@ -27,6 +27,7 @@ rclone.conf
 
 # Local development/runtime artifacts
 *.log
+*.logs
 *.tmp
 *.cache
 *.pyc

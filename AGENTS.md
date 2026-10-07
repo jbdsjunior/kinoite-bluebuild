@@ -204,3 +204,4 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Resiliência a Kernel Oops e SysRq | [`files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`](files/system/usr/lib/sysctl.d/90-kernel-tuning.conf) |
 | Diagnóstico de Hardware e RAS | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-systemd.yml`](recipes/common-systemd.yml) |
 | Calibração de BIOS e Estabilidade de Memória | [`docs/POST_INSTALL.md` §14](docs/POST_INSTALL.md), [`docs/TECHNICAL_ARCHITECTURE.md` §2.1, §5.7](docs/TECHNICAL_ARCHITECTURE.md) |
+| Sanitização de Drift do Host | [`scripts/clean-system-drift.sh`](scripts/clean-system-drift.sh), [`docs/POST_INSTALL.md` §10.1](docs/POST_INSTALL.md) |
