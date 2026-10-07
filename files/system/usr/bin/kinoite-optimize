@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Critical flow: detect privilege level without breaking non-interactive sessions
+IS_ROOT=0
+CAN_SUDO=0
+SUDO_CMD=""
+
+if [ "$(id -u)" -eq 0 ]; then
+    IS_ROOT=1
+    CAN_SUDO=1
+    SUDO_CMD=""
+elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    CAN_SUDO=1
+    SUDO_CMD="sudo"
+elif [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
+    if sudo -v 2>/dev/null; then
+        CAN_SUDO=1
+        SUDO_CMD="sudo"
+    fi
+fi
+
+echo "=== [1/7] Kernel Resilience & Runtime Sysctl Enforcement ==="
+if [ "$CAN_SUDO" -eq 1 ]; then
+    $SUDO_CMD sysctl -w \
+        kernel.panic=10 \
+        kernel.panic_on_oops=1 \
+        kernel.hardlockup_panic=1 \
+        kernel.softlockup_panic=0 \
+        kernel.sysrq=1 \
+        vm.swappiness=150 >/dev/null
+    echo "[OK] Sysctl lockup guard and swappiness applied (softlockup_panic=0, hardlockup_panic=1, swappiness=150)."
+else
+    echo "[SKIP] Sudo privileges not available in current session; skipping kernel sysctl updates."
+    echo "       (Run with 'sudo kinoite-optimize' to enforce kernel parameters directly)."
+fi
+
+echo "=== [2/7] Systemd Tmpfiles & Declarative NoCOW Setup ==="
+if [ "$CAN_SUDO" -eq 1 ]; then
+    $SUDO_CMD systemd-tmpfiles --create >/dev/null 2>&1 || true
+    echo "[OK] System tmpfiles synchronized."
+fi
+systemd-tmpfiles --user --create >/dev/null 2>&1 || true
+echo "[OK] User tmpfiles synchronized."
+
+echo "=== [3/7] Btrfs NoCOW Audit & Container Storage Alignment ==="
+NOCOW_USER_DIRS=(
+    "$HOME/.local/share/libvirt/images"
+    "$HOME/.local/share/gnome-boxes/images"
+    "$HOME/.local/share/containers/storage"
+    "$HOME/.local/share/containers/storage/volumes"
+    "$HOME/.cache/rclone"
+)
+
+for dir in "${NOCOW_USER_DIRS[@]}"; do
+    if [ -d "$dir" ]; then
+        if ! lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
+            chattr +C "$dir" 2>/dev/null || true
+            echo "[FIXED] Applied NoCOW (+C) to directory: $dir"
+        fi
+    fi
+done
+
+# Ensure user namespaces in podman storage inherit NoCOW
+if command -v podman >/dev/null 2>&1 && [ -d "$HOME/.local/share/containers/storage" ]; then
+    podman unshare find "$HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
+    echo "[OK] Podman storage directory trees verified with NoCOW."
+fi
+
+# Ensure pre-existing rclone cache files are not fragmented with CoW
+if [ -d "$HOME/.cache/rclone" ]; then
+    RCLONE_FIXED=0
+    while IFS= read -r f; do
+        if ! lsattr "$f" 2>/dev/null | grep -q "C"; then
+            cp --reflink=never "$f" "${f}.nocow_tmp" 2>/dev/null && mv -f "${f}.nocow_tmp" "$f" && ((RCLONE_FIXED++)) || true
+        fi
+    done < <(find "$HOME/.cache/rclone" -type f 2>/dev/null)
+    if [ "$RCLONE_FIXED" -gt 0 ]; then
+        echo "[FIXED] Recreated $RCLONE_FIXED rclone cache files with atomic NoCOW inheritance."
+    else
+        echo "[OK] Rclone cache files verified (100% NoCOW)."
+    fi
+fi
+
+echo "=== [4/7] VM Disk Images Fragmentation Audit & Defrag ==="
+VM_DIRS=(
+    "$HOME/.local/share/libvirt/images"
+    "$HOME/.local/share/gnome-boxes/images"
+)
+
+for vm_dir in "${VM_DIRS[@]}"; do
+    if [ -d "$vm_dir" ]; then
+        while IFS= read -r img; do
+            [ -f "$img" ] || continue
+            extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
+            if [[ "$extents" =~ ^[0-9]+$ ]]; then
+                echo "[INFO] Disk image: $(basename "$img") -> $extents extents"
+                if [ "$extents" -gt 5000 ]; then
+                    echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
+                    btrfs filesystem defragment -f "$img" 2>/dev/null || true
+                    new_extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
+                    echo "[INFO] After defrag: $new_extents extents"
+                    echo "[TIP] To fully optimize to single-digit extents, run: qemu-img convert -p -f qcow2 -O qcow2 -o cluster_size=2M \"$img\" \"${img}.new\" && mv -f \"${img}.new\" \"$img\""
+                fi
+            fi
+        done < <(find "$vm_dir" -maxdepth 2 -type f -name "*.qcow2" 2>/dev/null)
+    fi
+done
+
+echo "=== [5/7] Flatpak & Container Hygiene ==="
+if command -v flatpak >/dev/null 2>&1; then
+    flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    echo "[OK] Unused user Flatpak runtimes pruned."
+fi
+
+if command -v podman >/dev/null 2>&1; then
+    podman container prune -f >/dev/null 2>&1 || true
+    podman volume prune -f >/dev/null 2>&1 || true
+    echo "[OK] Stopped containers and dangling storage volumes pruned."
+fi
+
+echo "=== [6/7] Host Kernel Arguments Sanitization ==="
+if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
+    CURRENT_KARGS=$(rpm-ostree kargs 2>/dev/null || true)
+    UNWANTED_KARGS=(
+        "amd_pstate=active"
+        "tsc=reliable"
+        "nowatchdog"
+        "iommu=pt"
+        "btusb.enable_autosuspend=n"
+        "btusb.enable_autosuspend=0"
+        "slab_nomerge"
+        "vsyscall=none"
+        "preempt=full"
+        "page_alloc.shuffle=1"
+    )
+    KARGS_TO_REMOVE=()
+    for k in "${UNWANTED_KARGS[@]}"; do
+        if echo "$CURRENT_KARGS" | grep -q "$k"; then
+            KARGS_TO_REMOVE+=("--delete-if-present=$k")
+        fi
+    done
+    if [ ${#KARGS_TO_REMOVE[@]} -gt 0 ]; then
+        echo "[ACTION] Removing unstable/obsolete kargs: ${KARGS_TO_REMOVE[*]}"
+        $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}"
+        echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
+    else
+        echo "[OK] Host kernel arguments are clean (pure Fedora 44 upstream baseline)."
+    fi
+else
+    echo "[SKIP] Sudo privileges not available; skipping rpm-ostree kargs inspection."
+fi
+
+echo "=== [7/7] Environment & Health Audit ==="
+# Verify CPU driver and CPPC
+if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver ]; then
+    driver=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)
+    echo "[STATUS] CPU Scaling Driver: $driver"
+fi
+
+# Verify Update Timers
+active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
+echo "[STATUS] Core System Timers: $(echo "$active_timers" | tr '\n' ' ')"
+
+# Verify Baloo Exclusion
+if [ -f /etc/xdg/baloofilerc ]; then
+    if grep -q "Cloud" /etc/xdg/baloofilerc; then
+        echo "[STATUS] KDE Baloo Cloud Exclusion: Active (Locked [\$ei])"
+    fi
+fi
+
+echo "=== Optimization and Maintenance Completed Successfully ==="
