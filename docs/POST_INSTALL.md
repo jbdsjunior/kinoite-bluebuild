@@ -385,8 +385,8 @@ Expected timer policy:
 
 Memory policy note (`vm.swappiness`):
 
-- Expected value is `150` (aggressive ZRAM) unless a performance tuned profile is active.
-- On Fedora 41+ the Plasma power profiles run through `tuned-ppd`: selecting **Performance** activates tuned's `throughput-performance`, which intentionally overrides `vm.swappiness` to `10` and raises `vm.dirty_*` limits at runtime. This is a deliberate KDE power-profile choice, not configuration drift.
+- Expected value is `150` (aggressive ZRAM compaction).
+- On Fedora 41+ the Plasma power profiles run through `tuned-ppd`. Declarative symlinks provisioned in `/etc/sysctl.d/` via tmpfiles (`60-sysctl-protection.conf`) ensure that TuneD's native `reapply_sysctl = 1` mechanism enforces `vm.swappiness = 150` and low-latency NVMe dirty ratios even when switching between **Balanced** and **Performance** profiles.
 
 ---
 
