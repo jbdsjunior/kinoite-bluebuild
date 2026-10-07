@@ -423,7 +423,7 @@ The image includes declarative security drop-ins:
 - **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`sctp`, `tipc`), vulnerable legacy file systems (`jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers via `/bin/false` (CIS Benchmark compliance).
 - **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces key-only authentication (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`), enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
 - **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
-- **Sysctl Hardening & Resilience (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1`, `kernel.hardlockup_panic=1`, `kernel.softlockup_panic=1` and `kernel.sysrq=1` (NMI watchdog and lockup detectors actively enabled to guarantee stack trace dump and clean 10s auto-reboot).
+- **Sysctl Hardening & Resilience (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1`, `kernel.hardlockup_panic=1`, `kernel.softlockup_panic=0` and `kernel.sysrq=1` (NMI watchdog forces clean 10s auto-reboot on true unrecoverable hard lockups, while soft lockups log stack traces without crashing).
 - **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
 - **Libvirt Polkit Rules (`/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`)**: Grants passwordless virtualization management strictly to members of the `wheel` administrative group without colliding with upstream RPM files.
 - **Resilient Encrypted DNS (`/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`)**: Cloudflare primary DoT resolvers (`cloudflare-dns.com`) with automated DNSSEC integrity and opportunistic TLS.
@@ -578,7 +578,7 @@ Navigate to the **`Settings`** tab:
 
 3. **AMD CBS Sub-menu (`Settings → AMD CBS`):**
    - `CPU Common Options`: `Global C-state Control = Enabled`.
-   - `NBIO Common Options`: `IOMMU = Enabled` (pairs with host `iommu=pt` karg).
+   - `NBIO Common Options`: `IOMMU = Enabled` (enables hardware-isolated virtualization and container I/O; kernel runs in default robust Translated/DMA Lazy mode).
    - `UMC Common Options → DDR Common Options → DRAM Controller Configuration` (or directly `DRAM Controller Configuration` depending on AGESA layout):
      - `Auto Self Refresh (ASR)` / `Extended Temperature Range`: `Enabled` (forces 2x refresh cadence when approaching 85 °C to guard against capacitive charge leakage bit flips).
    - `SMU Common Options`:
@@ -691,14 +691,14 @@ cat /sys/devices/system/cpu/cpufreq/boost                      # Expected: 1
 paste <(for i in /sys/devices/system/cpu/cpu*/topology/core_id; do echo "CPU $(basename $(dirname $(dirname $i)) | sed 's/cpu//'): core $(cat $i)"; done) \
       <(for i in /sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf; do echo "highest_perf: $(cat $i)"; done) | sort -k6,6nr | head -n 16
 
-# 3. Confirm Smart Access Memory (Re-Size BAR 8192M) and IOMMU Passthrough
+# 3. Confirm Smart Access Memory (Re-Size BAR 8192M) and IOMMU domain
 journalctl -k -b 0 | grep -E "amdgpu.*BAR=|iommu: Default domain"
 # Expected: amdgpu ... Detected VRAM RAM=8176M, BAR=8192M
-# Expected: iommu: Default domain type: Passthrough
+# Expected: iommu: Default domain type: Translated
 
 # 4. Verify kernel resilience parameters
-sysctl kernel.panic kernel.panic_on_oops kernel.sysrq
-# Expected: kernel.panic = 10, kernel.panic_on_oops = 1, kernel.sysrq = 1
+sysctl kernel.panic kernel.panic_on_oops kernel.hardlockup_panic kernel.softlockup_panic kernel.sysrq
+# Expected: kernel.panic = 10, kernel.panic_on_oops = 1, kernel.hardlockup_panic = 1, kernel.softlockup_panic = 0, kernel.sysrq = 1
 
 # 5. Stress Testing (Run within a dedicated Fedora toolbox container)
 toolbox create -y memtest
