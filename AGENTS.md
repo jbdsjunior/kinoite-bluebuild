@@ -44,7 +44,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 - **Sistema Operacional:** Fedora Kinoite 44 (imutável, Wayland nativo, modelo `bootc`, KDE Plasma 6).
 - **Workloads do Usuário:** DevSecOps, desenvolvimento de software, inferência local de LLMs (ROCm/HIP via CDI em contêineres), navegação intensiva, virtualização KVM.
 - **Periféricos Homologados:**
-  - **Headset USB:** MCHOSE X9 (ALSA quirks em `51-mchose-x9.conf`).
+  - **Headset USB:** MCHOSE X9 (operação sob ALSA/PipeWire nativo upstream).
   - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
   - **Caixa de Som Bluetooth:** Tribit XSound Go (em avaliação A/B com stack nativa de áudio).
   - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
@@ -183,7 +183,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Overrides Flatpak Declarativos | [`files/system/usr/share/flatpak/overrides/*`](files/system/usr/share/flatpak/overrides/), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf) |
 | Cache Permissions 0700 | [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
 | Áudio Bluetooth | Padrão nativo Fedora Kinoite / WirePlumber upstream |
-| Headset MCHOSE X9 | [`files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf`](files/system/usr/share/wireplumber/wireplumber.conf.d/51-mchose-x9.conf) |
+| Headset MCHOSE X9 | Padrão nativo Fedora Kinoite / WirePlumber upstream |
 | Higiene de Pacotes | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-drivers.yml`](recipes/common-drivers.yml), [`recipes/common-fonts.yml`](recipes/common-fonts.yml) |
 | Aceleração de Vídeo Browsers | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf) |
 | Fonte Única Env Vars | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf) |

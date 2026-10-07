@@ -219,9 +219,8 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
 - **Suporte a IA / ROCm:** O hardware host conta com a GPU RX 6600 XT (arquitetura Navi 23 / `gfx1032`). Por padrão, runtimes de IA (ROCm/HIP, PyTorch, llama.cpp) suportam primariamente arquiteturas comerciais da linha CDNA ou Navi 21 (`gfx1030`). A variável:
   $$\text{HSA\_OVERRIDE\_GFX\_VERSION} = 10.3.0$$
   está definida como fonte única de verdade em `/usr/lib/environment.d/60-kinoite-environment.conf` (e injetada em contêineres via especificação CDI `/etc/cdi/amdgpu.yaml`), permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
-- **Calibração de Áudio & Periféricos (WirePlumber 0.5 & Udev):**
-  - **Headset MCHOSE X9:** Bypass de atenuação ALSA via hardware (`api.alsa.soft-mixer = false`, `api.alsa.ignore-dB = true` em `51-mchose-x9.conf`).
-  - **Áudio Bluetooth (Padrão Nativo PipeWire/WirePlumber):** Operação sob os padrões originais upstream do Fedora Kinoite 44 para testes e avaliação comparativa direta (políticas customizadas de Bluetooth desabilitadas da imagem).
+- **Calibração de Áudio & Periféricos (PipeWire / WirePlumber Nativo & Udev):**
+  - **Subsistema de Áudio (Headset MCHOSE X9 & Bluetooth):** Operação sob os padrões originais upstream do ALSA, PipeWire e WirePlumber do Fedora Kinoite 44 para máxima fidelidade e compatibilidade nativa direta sem políticas customizadas na imagem.
   - **Acesso Direto a Periféricos HID (`70-peripherals.rules`):** Regras udev com tag `uaccess` em `/usr/lib/udev/rules.d/70-peripherals.rules` concedem permissões seguras sem necessidade de privilégios de root para controle de dispositivos de entrada de baixa latência (headset MCHOSE X9, mouse gamer VXE, teclado mecânico BY Tech e controladora RGB de placa-mãe ITE).
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
