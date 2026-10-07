@@ -388,6 +388,20 @@ Memory policy note (`vm.swappiness`):
 - Expected value is `150` (aggressive ZRAM compaction).
 - On Fedora 41+ the Plasma power profiles run through `tuned-ppd`. Declarative symlinks provisioned in `/etc/sysctl.d/` via tmpfiles (`60-sysctl-protection.conf`) ensure that TuneD's native `reapply_sysctl = 1` mechanism enforces `vm.swappiness = 150` and low-latency NVMe dirty ratios even when switching between **Balanced** and **Performance** profiles.
 
+### 10.1 Sanitizing Host Configuration Drift (`/etc`)
+
+To audit local modifications in `/etc` relative to the immutable base image:
+
+```bash
+sudo ostree admin config-diff
+```
+
+To purge transient systemd cgroup clamps (`/etc/systemd/system.control/`), insecure udev overrides (`70-vxe.rules`), unmanaged YUM repos, and stale installer markers:
+
+```bash
+sudo ./scripts/clean-system-drift.sh
+```
+
 ---
 
 ## 11) Podman automatic update timer
