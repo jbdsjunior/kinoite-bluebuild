@@ -139,6 +139,9 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
     - Garantia de fluxo de ar ativo no gabinete sobre os quatro módulos DIMM para mitigar o acúmulo térmico entre os slots contíguos.
   - É proibido aplicar offsets de Curve Optimizer negativos nos núcleos com classificação de silício máxima (`highest_perf` do CPPC, como Cores 0 e 3), evitando *light workload kernel oopses*.
   - É obrigatório manter `Power Supply Idle Control = Typical Current Idle` (evita C6 idle voltage sag), `CPPC` + `CPPC Preferred Cores = Enabled` (requisito de publicação ACPI `_CPC` para o driver `amd-pstate-epp`), `CSM = Disabled`, `Above 4G Decoding` e `Re-Size BAR = Enabled` (SAM ativo com BAR de 8192 MB na GPU Navi 23), e `TSME = Disabled` (elimina penalidade de encriptação em DRAM).
+- **Proteção Declarativa de Sysctls contra Sobrescrita do TuneD:**
+  - O daemon TuneD (motor de perfis de energia do KDE Plasma via `tuned-ppd`) opera com `reapply_sysctl = 1`, reaplicando configurações exclusivamente a partir de `/etc/sysctl.d/` e `/run/sysctl.d/`, ignorando o diretório de imagens `/usr/lib/sysctl.d/`.
+  - Para prevenir que perfis de energia em runtime (como `throughput-performance` sob o modo Performance do KDE) desativem a compressão ZRAM (`vm.swappiness = 10`), acumulem escritas excessivas no NVMe (`dirty_bytes = 40%`) ou anulem parâmetros de resiliência e rede, é obrigatório provisionar symlinks atômicos de `/etc/sysctl.d/` apontando para `/usr/lib/sysctl.d/` via tmpfiles (`60-sysctl-protection.conf`).
 
 ## 6. Práticas de Segurança e Governança de Instruções (`AGENTS.md`)
 
@@ -193,6 +196,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Btrfs NoCOW Storage | [`files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`](files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf), [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
 | Hardening SSHD e Blacklist Kernel | [`files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`](files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf), [`files/system/usr/lib/modprobe.d/60-security-blacklist.conf`](files/system/usr/lib/modprobe.d/60-security-blacklist.conf) |
 | ZRAM Swap Policy | [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf) |
+| Proteção Sysctls contra TuneD | [`files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`](files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf) |
 | Compatibilidade CLI Docker | [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
 | Guarda de Resiliência de Rede | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard) |
 | Menor Privilégio Libvirt Polkit | [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules) |
