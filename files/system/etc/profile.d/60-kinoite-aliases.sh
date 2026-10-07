@@ -72,3 +72,7 @@ alias tmpfiles-all='sudo systemd-tmpfiles --create && systemd-tmpfiles --user --
 alias podman-cleanup='podman system prune -af && podman volume prune -f'
 alias distrobox-list='distrobox list'
 alias podman-ps='podman ps -a'
+
+# System optimization and maintenance script
+alias optimize='kinoite-optimize'
+alias sys-optimize='sudo kinoite-optimize'

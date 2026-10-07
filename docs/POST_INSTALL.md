@@ -67,6 +67,8 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `podman-cleanup`        | Clean up unused Podman containers, images, and volumes                            |
 | `podman-ps`             | `podman ps -a`                                                                    |
 | `distrobox-list`        | `distrobox list`                                                                  |
+| `optimize`              | Automated user-space post-install optimization and Btrfs NoCOW maintenance via `kinoite-optimize` |
+| `sys-optimize`          | Full system-wide post-install optimization, sysctl resilience enforcement and kargs sanitization via `sudo kinoite-optimize` |
 
 ---
 
