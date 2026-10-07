@@ -210,6 +210,10 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
   - `/var/lib/libvirt/images` (`+C`)
   - `/var/lib/containers/storage` e volumes (`+C`)
   - Espaços de usuário correspondentes (`~/.local/share/containers/storage`, `~/.local/share/libvirt/images`).
+- **Calibração de Escrita e Cache NVMe (`90-memory-fs-tuning.conf`):**
+  - `vm.dirty_background_ratio = 3` e `vm.dirty_ratio = 10`: Inicialização contínua de escrita em segundo plano a partir de ~1.9 GB e teto em ~6.4 GB (em 64 GB de RAM), eliminando o acúmulo excessivo de páginas sujas (que em defaults normais acumula 12+ GB) e erradicando micro-travamentos (*stuttering*) de interface e mouse durante gravações intensivas no NVMe PCIe Gen4.
+  - `vm.vfs_cache_pressure = 50`: Prioriza a retenção de metadados de arquivos (dentries e inodes) em memória, acelerando operações pesadas de `git status`, indexação de código e navegação no terminal.
+  - `fs.inotify.max_user_instances = 8192`: Expansão mandatória para evitar falhas `ENOSPC` em IDEs de desenvolvimento (VS Code) e contêineres observando grandes árvores de código.
 
 ### 5.3 Subsistema Gráfico, IA Local & Multimídia
 
@@ -281,6 +285,17 @@ Para assegurar estabilidade máxima em cargas intensivas no processador AMD Ryze
   - O perfil padrão oficial (`Profile A`) opera em DDR4-3200 com sincronia estrita 1:1 FCLK:UCLK:MEMCLK em 1600 MHz.
   - Para a topologia densa de 4 DIMMs contíguos (64 GB mistos 1R+2R), são estabelecidos os seguintes invariantes térmicos e de retenção: teto estrito de DRAM Voltage em 1.350 V (ou undervolt validado de 1.300 V–1.320 V) prevenindo dissipação excessiva ($P \propto V^2$); CPU VCORE SOC limitado estritamente a 1.100 V manual (evitando que tensões automáticas de 1.20 V–1.25 V saturem termicamente o plano de cobre do soquete AM4 vizinho aos slots A1/A2); manutenção mandatória dos tempos de refresh `tRFC` e `tREFI` em `Auto` para prevenir bit-flips por fuga de carga capacitiva em ICs de 8Gb sob aquecimento; habilitação de `Auto Self Refresh (ASR)` no AMD CBS (2x refresh rate próximo a 85 °C); e fluxo de ar ativo contínuo no gabinete sobre os slots de memória (detalhado em [`POST_INSTALL.md` §14](POST_INSTALL.md) e [`AGENTS.md`](../AGENTS.md)).
 
+### 5.8 Otimizações de Rede TCP/IP & Hardening CIS (`90-network-tuning.conf`)
+
+Para assegurar desempenho de throughput em gigabit e máxima resiliência sob conexões heterogêneas (Wi-Fi, fibra óptica, túneis VPN Tailscale):
+
+- **Controle de Congestionamento BBR + Fair Queueing (FQ):** `net.core.default_qdisc = fq` e `net.ipv4.tcp_congestion_control = bbr` reduzem o *bufferbloat*, estimam dinamicamente a taxa de entrega e mitigam variações de RTT e latência sob transferências concorrentes.
+- **Escala de Buffers TCP (BDP):** Teto de `rmem_max` e `wmem_max` em 32 MiB (`33554432`) com auto-tuning dinâmico em `tcp_rmem` e `tcp_wmem`, permitindo saturação nominal de largura de banda em conexões de alta velocidade e alta latência (BDP elevado) sem desperdício de memória em conexões pequenas.
+- **Interatividade & Persistência de Janela:** `tcp_slow_start_after_idle = 0` elimina rebaixamentos desnecessários da janela de congestionamento (CWND) após intervalos de inatividade, preservando agilidade em conexões HTTP/2, SSH e chamadas de API.
+- **Reciclagem de Sockets:** `tcp_fin_timeout = 15` acelera a liberação de portas e descritores em estado FIN-WAIT-2 durante testes massivos e rotação de contêineres.
+- **Resiliência a Buracos Negros de MTU:** `tcp_mtu_probing = 1` ativa a sondagem automática de MTU (Path MTU Discovery), contornando falhas quando roteadores intermediários ou firewalls descartam pacotes ICMP "Fragmentation Needed" em conexões VPN/WireGuard/Tailscale.
+- **Segurança de Protocolo & Conformidade CIS:** `tcp_rfc1337 = 1` bloqueia ataques de injeção no estado TIME-WAIT; desativação estrita de ICMP Redirects (`accept_redirects = 0`, `send_redirects = 0`) em todas as interfaces previne manipulações de tabela de rotas locais (MitM).
+
 ---
 
 ## 6. Auditoria de Arquitetura & Status das Dívidas Técnicas
@@ -319,6 +334,7 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-28** | `docs/POST_INSTALL.md` §14 e `AGENTS.md` | Invariantes térmicos e retenção capacitiva sob XMP com 4 DIMMs mistos (teto DRAM 1.350V, teto VSOC 1.100V, tRFC Auto, ASR 2x refresh, fluxo de ar ativo). | **Homologado:** Formalizado no baseline Profile A e documentado em governança. |
 | **A-29** | `.../wireplumber.conf.d/80-bluetooth-policy.conf` | Testes comparativos de comportamento e avaliação da stack Bluetooth nativa do Fedora Kinoite 44. | **Resolvido:** Políticas e quirks customizados de Bluetooth removidos da imagem para operação sob padrões originais upstream. |
 | **A-30** | `recipes/recipe-amd.yml`              | Purga definitiva de kargs customizados da imagem e retorno à baseline oficial Fedora Kinoite 44.   | **Resolvido:** Invariante de zero kargs customizados formalizada; resiliência entregue via sysctl (`90-kernel-tuning.conf`) e defaults otimizados da distribuição. |
+| **A-31** | `files/system/usr/lib/sysctl.d/*`     | Auditoria de estabilidade, vantagens e riscos em parâmetros de kernel, memória, NVMe e rede TCP.  | **Auditado & Validado:** Parâmetros comprovados como seguros e benéficos (anti-stutter de NVMe, inotify 8k, BBR+FQ, panics em lockup); comentários técnicos formalizados e documentada a interação com perfis `tuned-ppd`. |
 
 
 ---
