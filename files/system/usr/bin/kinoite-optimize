@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Critical flow: detect privilege level without breaking non-interactive sessions
+# Critical flow: detect privilege level and calling user environment
 IS_ROOT=0
 CAN_SUDO=0
 SUDO_CMD=""
@@ -18,6 +18,20 @@ elif [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
         CAN_SUDO=1
         SUDO_CMD="sudo"
     fi
+fi
+
+# Detect desktop user when executing through sudo
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    REAL_USER="$SUDO_USER"
+    REAL_HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6 2>/dev/null || echo "$HOME")"
+else
+    REAL_USER="$(id -un)"
+    REAL_HOME="$HOME"
+fi
+
+RUN_USER_CMD=""
+if [ "$IS_ROOT" -eq 1 ] && [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    RUN_USER_CMD="sudo -u $REAL_USER"
 fi
 
 echo "=== [1/8] Kernel Resilience & Runtime Sysctl Enforcement ==="
@@ -40,15 +54,22 @@ if [ "$CAN_SUDO" -eq 1 ]; then
     $SUDO_CMD systemd-tmpfiles --create >/dev/null 2>&1 || true
     echo "[OK] System tmpfiles synchronized."
 fi
-systemd-tmpfiles --user --create >/dev/null 2>&1 || true
-echo "[OK] User tmpfiles synchronized."
+
+if [ -n "$RUN_USER_CMD" ]; then
+    $RUN_USER_CMD systemd-tmpfiles --user --create >/dev/null 2>&1 || true
+else
+    systemd-tmpfiles --user --create >/dev/null 2>&1 || true
+fi
+echo "[OK] User tmpfiles synchronized for $REAL_USER."
 
 NOCOW_USER_DIRS=(
-    "$HOME/.local/share/libvirt/images"
-    "$HOME/.local/share/gnome-boxes/images"
-    "$HOME/.local/share/containers/storage"
-    "$HOME/.local/share/containers/storage/volumes"
-    "$HOME/.cache/rclone"
+    "/var/lib/libvirt/images"
+    "/var/lib/containers/storage"
+    "$REAL_HOME/.local/share/libvirt/images"
+    "$REAL_HOME/.local/share/gnome-boxes/images"
+    "$REAL_HOME/.local/share/containers/storage"
+    "$REAL_HOME/.local/share/containers/storage/volumes"
+    "$REAL_HOME/.cache/rclone"
 )
 
 for dir in "${NOCOW_USER_DIRS[@]}"; do
@@ -61,19 +82,23 @@ for dir in "${NOCOW_USER_DIRS[@]}"; do
 done
 
 # Ensure user namespaces in podman storage inherit NoCOW
-if command -v podman >/dev/null 2>&1 && [ -d "$HOME/.local/share/containers/storage" ]; then
-    podman unshare find "$HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
+if command -v podman >/dev/null 2>&1 && [ -d "$REAL_HOME/.local/share/containers/storage" ]; then
+    if [ -n "$RUN_USER_CMD" ]; then
+        $RUN_USER_CMD podman unshare find "$REAL_HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
+    else
+        podman unshare find "$REAL_HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
+    fi
     echo "[OK] Podman storage directory trees verified with NoCOW."
 fi
 
 # Ensure pre-existing rclone cache files are not fragmented with CoW
-if [ -d "$HOME/.cache/rclone" ]; then
+if [ -d "$REAL_HOME/.cache/rclone" ]; then
     RCLONE_FIXED=0
     while IFS= read -r f; do
         if ! lsattr "$f" 2>/dev/null | grep -q "C"; then
             cp --reflink=never "$f" "${f}.nocow_tmp" 2>/dev/null && mv -f "${f}.nocow_tmp" "$f" && ((RCLONE_FIXED++)) || true
         fi
-    done < <(find "$HOME/.cache/rclone" -type f 2>/dev/null)
+    done < <(find "$REAL_HOME/.cache/rclone" -type f 2>/dev/null)
     if [ "$RCLONE_FIXED" -gt 0 ]; then
         echo "[FIXED] Recreated $RCLONE_FIXED rclone cache files with atomic NoCOW inheritance."
     else
@@ -97,22 +122,21 @@ fi
 
 echo "=== [4/8] VM Disk Images Fragmentation Audit & Defrag ==="
 VM_DIRS=(
-    "$HOME/.local/share/libvirt/images"
-    "$HOME/.local/share/gnome-boxes/images"
+    "/var/lib/libvirt/images"
+    "$REAL_HOME/.local/share/libvirt/images"
+    "$REAL_HOME/.local/share/gnome-boxes/images"
 )
 
-if [ "$CAN_SUDO" -eq 1 ] && [ -d /var/lib/libvirt/images ]; then
-    VM_DIRS+=("/var/lib/libvirt/images")
-fi
-
+VM_FOUND=0
 for vm_dir in "${VM_DIRS[@]}"; do
     if [ -d "$vm_dir" ]; then
         while IFS= read -r img; do
             [ -f "$img" ] || continue
+            VM_FOUND=1
             extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
             size=$(du -h "$img" 2>/dev/null | awk '{print $1}')
             if [[ "$extents" =~ ^[0-9]+$ ]]; then
-                echo "[INFO] Disk image: $(basename "$img") -> $size ($extents extents)"
+                echo "[INFO] Disk image: $(basename "$img") [$vm_dir] -> $size ($extents extents)"
                 if [ "$extents" -gt 5000 ]; then
                     echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
                     btrfs filesystem defragment -f "$img" 2>/dev/null || true
@@ -124,6 +148,10 @@ for vm_dir in "${VM_DIRS[@]}"; do
     fi
 done
 
+if [ "$VM_FOUND" -eq 0 ]; then
+    echo "[OK] No virtual machine disk images found in monitored directories."
+fi
+
 echo "=== [5/8] Journald Log Retention & Cache Pruning ==="
 if command -v journalctl >/dev/null 2>&1; then
     echo "[INFO] Current journal disk usage: $(journalctl --disk-usage 2>/dev/null)"
@@ -131,19 +159,27 @@ if command -v journalctl >/dev/null 2>&1; then
         $SUDO_CMD journalctl --vacuum-time=14d --vacuum-size=200M >/dev/null 2>&1 || true
         echo "[OK] System journal vacuumed (retention: 14 days, max 200M)."
     fi
-    journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
-    echo "[OK] User journal vacuumed (retention: 14 days, max 100M)."
+    if [ -n "$RUN_USER_CMD" ]; then
+        $RUN_USER_CMD journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
+    else
+        journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
+    fi
+    echo "[OK] User journal vacuumed for $REAL_USER (retention: 14 days, max 100M)."
 fi
 
 # Prune old thumbnail caches (>30 days)
-if [ -d "$HOME/.cache/thumbnails" ]; then
-    find "$HOME/.cache/thumbnails" -type f -atime +30 -delete 2>/dev/null || true
-    echo "[OK] Stale thumbnail cache pruned."
+if [ -d "$REAL_HOME/.cache/thumbnails" ]; then
+    find "$REAL_HOME/.cache/thumbnails" -type f -atime +30 -delete 2>/dev/null || true
+    echo "[OK] Stale thumbnail cache pruned in $REAL_HOME."
 fi
 
 echo "=== [6/8] Flatpak & Container Hygiene ==="
 if command -v flatpak >/dev/null 2>&1; then
-    flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    if [ -n "$RUN_USER_CMD" ]; then
+        $RUN_USER_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    else
+        flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    fi
     if [ "$CAN_SUDO" -eq 1 ]; then
         $SUDO_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
     fi
@@ -151,9 +187,15 @@ if command -v flatpak >/dev/null 2>&1; then
 fi
 
 if command -v podman >/dev/null 2>&1; then
-    podman container prune -f >/dev/null 2>&1 || true
-    podman volume prune -f >/dev/null 2>&1 || true
-    podman image prune -f >/dev/null 2>&1 || true
+    if [ -n "$RUN_USER_CMD" ]; then
+        $RUN_USER_CMD podman container prune -f >/dev/null 2>&1 || true
+        $RUN_USER_CMD podman volume prune -f >/dev/null 2>&1 || true
+        $RUN_USER_CMD podman image prune -f >/dev/null 2>&1 || true
+    else
+        podman container prune -f >/dev/null 2>&1 || true
+        podman volume prune -f >/dev/null 2>&1 || true
+        podman image prune -f >/dev/null 2>&1 || true
+    fi
     if [ "$CAN_SUDO" -eq 1 ]; then
         $SUDO_CMD podman container prune -f >/dev/null 2>&1 || true
         $SUDO_CMD podman volume prune -f >/dev/null 2>&1 || true
