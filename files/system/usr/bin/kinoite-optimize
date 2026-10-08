@@ -20,7 +20,7 @@ elif [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
     fi
 fi
 
-echo "=== [1/7] Kernel Resilience & Runtime Sysctl Enforcement ==="
+echo "=== [1/8] Kernel Resilience & Runtime Sysctl Enforcement ==="
 if [ "$CAN_SUDO" -eq 1 ]; then
     $SUDO_CMD sysctl -w \
         kernel.panic=10 \
@@ -31,11 +31,11 @@ if [ "$CAN_SUDO" -eq 1 ]; then
         vm.swappiness=150 >/dev/null
     echo "[OK] Sysctl lockup guard and swappiness applied (softlockup_panic=0, hardlockup_panic=1, swappiness=150)."
 else
-    echo "[SKIP] Sudo privileges not available in current session; skipping kernel sysctl updates."
+    echo "[SKIP] Sudo privileges not available; skipping kernel sysctl updates."
     echo "       (Run with 'sudo kinoite-optimize' to enforce kernel parameters directly)."
 fi
 
-echo "=== [2/7] Systemd Tmpfiles & Declarative NoCOW Setup ==="
+echo "=== [2/8] Systemd Tmpfiles & Declarative NoCOW Alignment ==="
 if [ "$CAN_SUDO" -eq 1 ]; then
     $SUDO_CMD systemd-tmpfiles --create >/dev/null 2>&1 || true
     echo "[OK] System tmpfiles synchronized."
@@ -43,7 +43,6 @@ fi
 systemd-tmpfiles --user --create >/dev/null 2>&1 || true
 echo "[OK] User tmpfiles synchronized."
 
-echo "=== [3/7] Btrfs NoCOW Audit & Container Storage Alignment ==="
 NOCOW_USER_DIRS=(
     "$HOME/.local/share/libvirt/images"
     "$HOME/.local/share/gnome-boxes/images"
@@ -82,45 +81,92 @@ if [ -d "$HOME/.cache/rclone" ]; then
     fi
 fi
 
-echo "=== [4/7] VM Disk Images Fragmentation Audit & Defrag ==="
+echo "=== [3/8] Btrfs Health & Storage Reclaim ==="
+if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
+    echo "[STATUS] Btrfs hardware stats for /var/home:"
+    btrfs device stats /var/home 2>/dev/null || true
+    
+    if [ "$CAN_SUDO" -eq 1 ]; then
+        echo "[ACTION] Running balanced chunk reclamation on /var/home (-dusage=10 -musage=10)..."
+        $SUDO_CMD btrfs balance start -dusage=10 -musage=10 /var/home 2>/dev/null || true
+        echo "[ACTION] Executing fstrim on Btrfs filesystem..."
+        $SUDO_CMD fstrim /var/home 2>/dev/null || true
+        echo "[OK] Btrfs balance and TRIM completed."
+    fi
+fi
+
+echo "=== [4/8] VM Disk Images Fragmentation Audit & Defrag ==="
 VM_DIRS=(
     "$HOME/.local/share/libvirt/images"
     "$HOME/.local/share/gnome-boxes/images"
 )
+
+if [ "$CAN_SUDO" -eq 1 ] && [ -d /var/lib/libvirt/images ]; then
+    VM_DIRS+=("/var/lib/libvirt/images")
+fi
 
 for vm_dir in "${VM_DIRS[@]}"; do
     if [ -d "$vm_dir" ]; then
         while IFS= read -r img; do
             [ -f "$img" ] || continue
             extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
+            size=$(du -h "$img" 2>/dev/null | awk '{print $1}')
             if [[ "$extents" =~ ^[0-9]+$ ]]; then
-                echo "[INFO] Disk image: $(basename "$img") -> $extents extents"
+                echo "[INFO] Disk image: $(basename "$img") -> $size ($extents extents)"
                 if [ "$extents" -gt 5000 ]; then
                     echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
                     btrfs filesystem defragment -f "$img" 2>/dev/null || true
                     new_extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
                     echo "[INFO] After defrag: $new_extents extents"
-                    echo "[TIP] To fully optimize to single-digit extents, run: qemu-img convert -p -f qcow2 -O qcow2 -o cluster_size=2M \"$img\" \"${img}.new\" && mv -f \"${img}.new\" \"$img\""
                 fi
             fi
-        done < <(find "$vm_dir" -maxdepth 2 -type f -name "*.qcow2" 2>/dev/null)
+        done < <(find "$vm_dir" -maxdepth 2 -type f \( -name "*.qcow2" -o -name "*.raw" -o -name "*.img" \) 2>/dev/null)
     fi
 done
 
-echo "=== [5/7] Flatpak & Container Hygiene ==="
+echo "=== [5/8] Journald Log Retention & Cache Pruning ==="
+if command -v journalctl >/dev/null 2>&1; then
+    echo "[INFO] Current journal disk usage: $(journalctl --disk-usage 2>/dev/null)"
+    if [ "$CAN_SUDO" -eq 1 ]; then
+        $SUDO_CMD journalctl --vacuum-time=14d --vacuum-size=200M >/dev/null 2>&1 || true
+        echo "[OK] System journal vacuumed (retention: 14 days, max 200M)."
+    fi
+    journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
+    echo "[OK] User journal vacuumed (retention: 14 days, max 100M)."
+fi
+
+# Prune old thumbnail caches (>30 days)
+if [ -d "$HOME/.cache/thumbnails" ]; then
+    find "$HOME/.cache/thumbnails" -type f -atime +30 -delete 2>/dev/null || true
+    echo "[OK] Stale thumbnail cache pruned."
+fi
+
+echo "=== [6/8] Flatpak & Container Hygiene ==="
 if command -v flatpak >/dev/null 2>&1; then
     flatpak uninstall --unused -y >/dev/null 2>&1 || true
-    echo "[OK] Unused user Flatpak runtimes pruned."
+    if [ "$CAN_SUDO" -eq 1 ]; then
+        $SUDO_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    fi
+    echo "[OK] Unused Flatpak runtimes pruned."
 fi
 
 if command -v podman >/dev/null 2>&1; then
     podman container prune -f >/dev/null 2>&1 || true
     podman volume prune -f >/dev/null 2>&1 || true
-    echo "[OK] Stopped containers and dangling storage volumes pruned."
+    podman image prune -f >/dev/null 2>&1 || true
+    if [ "$CAN_SUDO" -eq 1 ]; then
+        $SUDO_CMD podman container prune -f >/dev/null 2>&1 || true
+        $SUDO_CMD podman volume prune -f >/dev/null 2>&1 || true
+        $SUDO_CMD podman image prune -f >/dev/null 2>&1 || true
+    fi
+    echo "[OK] Stopped containers, dangling volumes, and orphan images pruned."
 fi
 
-echo "=== [6/7] Host Kernel Arguments Sanitization ==="
+echo "=== [7/8] Host Kernel Arguments & Deployment Hygiene ==="
 if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
+    $SUDO_CMD rpm-ostree cleanup -m >/dev/null 2>&1 || true
+    echo "[OK] Deployment metadata and temporary transaction caches cleaned."
+
     CURRENT_KARGS=$(rpm-ostree kargs 2>/dev/null || true)
     UNWANTED_KARGS=(
         "amd_pstate=active"
@@ -148,10 +194,10 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         echo "[OK] Host kernel arguments are clean (pure Fedora 44 upstream baseline)."
     fi
 else
-    echo "[SKIP] Sudo privileges not available; skipping rpm-ostree kargs inspection."
+    echo "[SKIP] Sudo privileges not available; skipping rpm-ostree cleanup and kargs inspection."
 fi
 
-echo "=== [7/7] Environment & Health Audit ==="
+echo "=== [8/8] System Health & Integrity Audit ==="
 # Verify CPU driver and CPPC
 if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver ]; then
     driver=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)
@@ -168,5 +214,8 @@ if [ -f /etc/xdg/baloofilerc ]; then
         echo "[STATUS] KDE Baloo Cloud Exclusion: Active (Locked [\$ei])"
     fi
 fi
+
+# Show available storage
+echo "[STATUS] Storage free space on /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
 
 echo "=== Optimization and Maintenance Completed Successfully ==="
