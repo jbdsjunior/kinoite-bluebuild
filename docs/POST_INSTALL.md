@@ -246,21 +246,23 @@ Before `ExecStart`, the unit loads the authoritative base configuration `Environ
 
 #### Google Drive Configuration (`GoogleDrive.env`)
 
-Optimized for official desktop client feature parity, rapid cloud synchronization, and local disk cleanliness:
+Optimized for official desktop client feature parity, rapid cloud synchronization, parallel chunk streaming, and local disk cleanliness:
 
 ```env
-RCLONE_TPSLIMIT=10
-RCLONE_TPSLIMIT_BURST=10
+RCLONE_TPSLIMIT=12
+RCLONE_TPSLIMIT_BURST=20
 RCLONE_TRANSFERS=4
 RCLONE_CHECKERS=8
-RCLONE_BUFFER_SIZE=16M
-RCLONE_VFS_READ_AHEAD=32M
+RCLONE_BUFFER_SIZE=32M
+RCLONE_VFS_READ_AHEAD=64M
+RCLONE_VFS_READ_CHUNK_STREAMS=4
 RCLONE_VFS_CACHE_MAX_SIZE=15G
 RCLONE_VFS_CACHE_MAX_AGE=24h
 RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
 RCLONE_VFS_CACHE_POLL_INTERVAL=1m
-RCLONE_VFS_WRITE_BACK=5s
+RCLONE_VFS_WRITE_BACK=10s
 RCLONE_DIR_CACHE_TIME=24h
+RCLONE_ATTR_TIMEOUT=1h
 RCLONE_POLL_INTERVAL=15s
 RCLONE_DRIVE_SKIP_GDOCS=true
 RCLONE_DRIVE_USE_TRASH=true
@@ -269,34 +271,40 @@ RCLONE_DRIVE_CHUNK_SIZE=64M
 
 - `RCLONE_DRIVE_USE_TRASH=true`: Files deleted locally are moved to the Google Drive Cloud Trash bin (with 30-day retention), mirroring the official Google Drive desktop client and preventing accidental data loss.
 - `RCLONE_POLL_INTERVAL=15s`: Employs Google Drive Changes API with 15-second polling for near real-time synchronization of remote changes made from mobile or web.
-- `RCLONE_VFS_WRITE_BACK=5s`: Commits locally saved files to cloud storage within 5 seconds of file close.
+- `RCLONE_ATTR_TIMEOUT=1h`: Keeps file and folder metadata in the Linux kernel FUSE cache for instant Dolphin navigation without repeated API latency.
+- `RCLONE_VFS_READ_CHUNK_STREAMS=4`: Multi-stream parallel chunk downloads for high throughput sequential reads.
+- `RCLONE_VFS_WRITE_BACK=10s`: Commits locally saved files to cloud storage within 10 seconds of file close (coalescing atomic writes from desktop apps).
 - `RCLONE_VFS_CACHE_MAX_AGE=24h` & `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Prevents local disk exhaustion by evicting cached files inactive for more than 24 hours, and immediately pruning the cache if host free space falls below 15 GB.
 - `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion. (To expose Docs as clickable web shortcuts like the official client, set `RCLONE_DRIVE_SKIP_GDOCS=false` and `RCLONE_FLAGS="--drive-export-formats link.html"` in `GoogleDrive.local.env`).
 - `RCLONE_DRIVE_CHUNK_SIZE=64M`: High throughput chunk size (power of 2) for large file uploads.
 
 #### Microsoft OneDrive Configuration (`OneDrive.env`)
 
-Optimized to avoid Microsoft Graph API HTTP 429 throttling while maintaining identical disk hygiene:
+Optimized to avoid Microsoft Graph API HTTP 429 throttling while accelerating directory browsing and parallel reads:
 
 ```env
 RCLONE_TPSLIMIT=5
-RCLONE_TPSLIMIT_BURST=6
+RCLONE_TPSLIMIT_BURST=10
 RCLONE_TRANSFERS=2
 RCLONE_CHECKERS=4
-RCLONE_BUFFER_SIZE=16M
-RCLONE_VFS_READ_AHEAD=32M
+RCLONE_BUFFER_SIZE=32M
+RCLONE_VFS_READ_AHEAD=64M
+RCLONE_VFS_READ_CHUNK_STREAMS=4
 RCLONE_VFS_CACHE_MAX_SIZE=15G
 RCLONE_VFS_CACHE_MAX_AGE=24h
 RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
 RCLONE_VFS_CACHE_POLL_INTERVAL=1m
-RCLONE_VFS_WRITE_BACK=5s
+RCLONE_VFS_WRITE_BACK=10s
 RCLONE_DIR_CACHE_TIME=24h
+RCLONE_ATTR_TIMEOUT=1h
 RCLONE_POLL_INTERVAL=1m
 RCLONE_ONEDRIVE_CHUNK_SIZE=50M
 RCLONE_ONEDRIVE_DELTA=true
 ```
 
-- `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=6`: Enforces strict transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties.
+- `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=10`: Enforces transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties, with calibrated burst for fast directory exploration.
+- `RCLONE_ATTR_TIMEOUT=1h`: Caches file attributes in kernel FUSE to avoid constant round-trips to the Microsoft Graph API.
+- `RCLONE_VFS_READ_CHUNK_STREAMS=4`: Parallel chunk download streams.
 - `RCLONE_POLL_INTERVAL=1m`: Safe polling cadence using the OneDrive Delta API for incremental change detection without triggering rate limits.
 - `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (exact multiple of 320 KiB: 160 × 320 KiB = 52.428.800 bytes).
 - `RCLONE_ONEDRIVE_DELTA=true`: Uses the OneDrive delta API for fast incremental change detection.

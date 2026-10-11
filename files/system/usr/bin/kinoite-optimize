@@ -257,6 +257,18 @@ if [ -f /etc/xdg/baloofilerc ]; then
     fi
 fi
 
+# Verify Active Rclone Cloud Mounts
+if command -v systemctl >/dev/null 2>&1; then
+    if [ -n "$RUN_USER_CMD" ]; then
+        rclone_status=$($RUN_USER_CMD systemctl --user is-active rclone@GoogleDrive.service rclone@OneDrive.service 2>/dev/null || true)
+    else
+        rclone_status=$(systemctl --user is-active rclone@GoogleDrive.service rclone@OneDrive.service 2>/dev/null || true)
+    fi
+    if [ -n "$rclone_status" ]; then
+        echo "[STATUS] Rclone Cloud Mounts: $(echo "$rclone_status" | tr '\n' ' ')"
+    fi
+fi
+
 # Show available storage
 echo "[STATUS] Storage free space on /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
 

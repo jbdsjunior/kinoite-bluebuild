@@ -14,20 +14,22 @@ Environment=RCLONE_REMOTE=%i:
 Environment=RCLONE_MOUNT=%h/Cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
 Environment=RCLONE_BWLIMIT=0
-Environment=RCLONE_BUFFER_SIZE=16M
+Environment=RCLONE_BUFFER_SIZE=32M
 Environment=RCLONE_TRANSFERS=4
 Environment=RCLONE_CHECKERS=8
-Environment=RCLONE_TPSLIMIT=10
-Environment=RCLONE_TPSLIMIT_BURST=10
-Environment=RCLONE_VFS_READ_AHEAD=32M
+Environment=RCLONE_TPSLIMIT=12
+Environment=RCLONE_TPSLIMIT_BURST=20
+Environment=RCLONE_VFS_READ_AHEAD=64M
 Environment=RCLONE_VFS_READ_CHUNK_SIZE=8M
 Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
+Environment=RCLONE_VFS_READ_CHUNK_STREAMS=4
 Environment=RCLONE_VFS_CACHE_MAX_SIZE=15G
 Environment=RCLONE_VFS_CACHE_MAX_AGE=24h
 Environment=RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
 Environment=RCLONE_VFS_CACHE_POLL_INTERVAL=1m
-Environment=RCLONE_VFS_WRITE_BACK=5s
+Environment=RCLONE_VFS_WRITE_BACK=10s
 Environment=RCLONE_DIR_CACHE_TIME=24h
+Environment=RCLONE_ATTR_TIMEOUT=1h
 Environment=RCLONE_POLL_INTERVAL=1m
 Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
@@ -46,11 +48,15 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-min-free-space ${RCLONE_VFS_CACHE_MIN_FREE_SPACE} \
   --vfs-cache-poll-interval ${RCLONE_VFS_CACHE_POLL_INTERVAL} \
   --vfs-fast-fingerprint \
+  --vfs-refresh \
   --vfs-read-chunk-size ${RCLONE_VFS_READ_CHUNK_SIZE} \
   --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
+  --vfs-read-chunk-streams ${RCLONE_VFS_READ_CHUNK_STREAMS} \
   --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
   --vfs-write-back ${RCLONE_VFS_WRITE_BACK} \
+  --local-no-check-updated \
   --dir-cache-time ${RCLONE_DIR_CACHE_TIME} \
+  --attr-timeout ${RCLONE_ATTR_TIMEOUT} \
   --poll-interval ${RCLONE_POLL_INTERVAL} \
   --buffer-size ${RCLONE_BUFFER_SIZE} \
   --transfers ${RCLONE_TRANSFERS} \
@@ -62,7 +68,6 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --contimeout 20s \
   --low-level-retries 10 \
   --retries 10 \
-  --attr-timeout 5s \
   --umask 0022 \
   --log-level NOTICE \
   --log-systemd \
@@ -74,6 +79,7 @@ Restart=on-failure
 RestartSec=10s
 KillMode=mixed
 TimeoutStopSec=180s
+SuccessExitStatus=143
 
 
 LimitNOFILE=1048576
