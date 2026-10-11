@@ -54,6 +54,7 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-read-chunk-streams ${RCLONE_VFS_READ_CHUNK_STREAMS} \
   --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
   --vfs-write-back ${RCLONE_VFS_WRITE_BACK} \
+  --vfs-read-wait 5ms \
   --local-no-check-updated \
   --dir-cache-time ${RCLONE_DIR_CACHE_TIME} \
   --attr-timeout ${RCLONE_ATTR_TIMEOUT} \

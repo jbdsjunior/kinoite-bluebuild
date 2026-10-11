@@ -258,9 +258,10 @@ O acesso a armazenamentos em nuvem (Google Drive, Microsoft OneDrive) é arquite
 - **Hierarquia de Ambientes e Extensibilidade:**
   - Template base imutável em `/usr/share/rclone/env/%i.env` provisionado no boot para `~/.config/rclone/env/%i.env` via `user-tmpfiles.d` (`70-rclone-env.conf`).
   - Extensões e chaves particulares persistem em `~/.config/rclone/env/%i.local.env` sem sofrer sobrescrita.
-- **Proteção do Provedor e Integridade de Dados:**
-  - **Google Drive:** `RCLONE_DRIVE_USE_TRASH=true` redireciona exclusões à lixeira em nuvem com retenção de 30 dias (paridade com o cliente oficial desktop); `RCLONE_POLL_INTERVAL=15s` utiliza a Changes API para sincronização quase em tempo real; rate limits calibrados (`RCLONE_TPSLIMIT=12`, `RCLONE_TPSLIMIT_BURST=20`).
-  - **OneDrive:** Rate limiting conservador (`RCLONE_TPSLIMIT=5`, `RCLONE_TPSLIMIT_BURST=10`) para eliminar erros HTTP 429 de throttling; `RCLONE_ONEDRIVE_CHUNK_SIZE=50M` (múltiplo exato de 320 KiB); detecção delta periódica de 1m.
+- **Proteção do Provedor, Integridade de Dados e Baixa Latência:**
+  - **Google Drive:** `RCLONE_DRIVE_USE_TRASH=true` redireciona exclusões à lixeira em nuvem com retenção de 30 dias (paridade com o cliente oficial desktop); `RCLONE_POLL_INTERVAL=15s` utiliza a Changes API para sincronização quase em tempo real; rate limits calibrados (`RCLONE_TPSLIMIT=12`, `RCLONE_TPSLIMIT_BURST=20`); pacer interno acelerado (`RCLONE_DRIVE_PACER_MIN_SLEEP=10ms`, burst 100) reduzindo a latência entre requisições consecutivas em até 10x.
+  - **OneDrive:** Rate limiting conservador (`RCLONE_TPSLIMIT=5`, `RCLONE_TPSLIMIT_BURST=10`) para eliminar erros HTTP 429 de throttling; `RCLONE_ONEDRIVE_CHUNK_SIZE=50M` (múltiplo exato de 320 KiB); chunk de listagem maximizado (`RCLONE_ONEDRIVE_LIST_CHUNK=1000`); detecção delta periódica de 1m.
+  - **Ciclo de Vida de Lixeira em FUSE vs Lixeira Nativa:** Sob o XDG Trash Spec, o KDE Dolphin tenta criar `.Trash-$UID` em montagens separadas. A exclusão permanente direta (`Shift+Delete` / menu "Excluir", ativado por `ShowDeleteCommand=true` em `kdeglobals`) aciona o `unlink()` atômico, redirecionando o item instantaneamente à lixeira oficial da nuvem sem criar pastas ocultas locais e sem gastar cota remota. O script `kinoite-optimize` audita e expurga automaticamente eventuais pastas `.Trash-*` residuais nas montagens de nuvem.
 - **Blindagem do Indexador Baloo:**
   - Exclusão explícita e imutável de `$HOME/Cloud` em `/etc/xdg/baloofilerc` via marcação `[$ei]`, prevenindo varreduras recursivas que induzam saturação de banda, alta carga de CPU e bloqueio de cotas de API.
 

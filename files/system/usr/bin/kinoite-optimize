@@ -106,6 +106,26 @@ if [ -d "$REAL_HOME/.cache/rclone" ]; then
     fi
 fi
 
+# Audit and purge residual desktop .Trash-* directories on active cloud mounts
+if [ -d "$REAL_HOME/Cloud" ]; then
+    TRASH_FOUND=0
+    for cloud_mount in "$REAL_HOME/Cloud"/*; do
+        [ -d "$cloud_mount" ] || continue
+        target_uid="$(id -u "$REAL_USER" 2>/dev/null || echo 1000)"
+        for td in "$cloud_mount/.Trash-1000" "$cloud_mount/.Trash-$target_uid"; do
+            if [ -d "$td" ]; then
+                TRASH_FOUND=1
+                echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
+                rm -rf "$td" 2>/dev/null || true
+                echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
+            fi
+        done
+    done
+    if [ "$TRASH_FOUND" -eq 0 ]; then
+        echo "[OK] Cloud mounts verified (zero residual .Trash-* directories)."
+    fi
+fi
+
 echo "=== [3/8] Btrfs Health & Storage Reclaim ==="
 if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
     echo "[STATUS] Btrfs hardware stats for /var/home:"

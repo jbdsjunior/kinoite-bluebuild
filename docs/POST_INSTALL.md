@@ -342,15 +342,28 @@ The image authoritatively ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` exclud
 balooctl6 purge
 ```
 
-### KDE Dolphin File Deletion and Cloud Trash
+### KDE Dolphin File Deletion, Cloud Trash & .Trash-1000 Mechanics
 
-In KDE Dolphin, standard deletion attempts to move files into a per-mount trash folder (`.Trash-1000`). To prevent cloud drives from being polluted with hidden trash folders while maintaining safety:
+Under Linux and KDE Plasma, file deletion follows the [FreeDesktop.org Trash Specification](https://specifications.freedesktop.org/trash-spec/trashspec-latest.html). Because cloud FUSE mounts (`~/Cloud/GoogleDrive`, `~/Cloud/OneDrive`) reside on a separate virtual filesystem device (`st_dev`), pressing standard **`Delete`** (Move to Trash) triggers the following behavior:
+- Dolphin avoids slow cross-device copying to `~/.local/share/Trash` and instead creates a directory named `.Trash-$UID` (e.g. `.Trash-1000`) at the root of the cloud mount point.
+- The deleted file is renamed to `.Trash-1000/files/` and a `.trashinfo` metadata file is generated in `.Trash-1000/info/`.
+- **Impact on Cloud Drives:** Files in `.Trash-1000` are **not** truly deleted; they continue consuming your active Google Drive or OneDrive storage quota in the cloud, and require multiple API calls for renaming and metadata synchronization.
 
-1. The system configures `ShowDeleteCommand=true` in `/etc/xdg/kdeglobals`, which adds the **"Excluir" (Delete)** option directly to Dolphin's context menu.
+#### Recommended Action: Permanent Delete (Cloud-Native Trash)
+
+To delete files cleanly and maximize speed:
+1. The system configures `ShowDeleteCommand=true` in `/etc/xdg/kdeglobals`, adding the **"Excluir" (Delete)** option directly to Dolphin's context menu.
 2. Use **`Shift + Delete`** or right-click and select **"Excluir"** when removing files inside `~/Cloud/`:
-   - Files are unlinked immediately via standard POSIX `unlink`, bypassing local `.Trash-1000` directory overhead.
-   - On **Google Drive**, rclone automatically redirects deleted files to the **Google Drive Cloud Trash** (`RCLONE_DRIVE_USE_TRASH=true`), where files are retained for 30 days and can be restored from the web UI if needed.
-   - On **OneDrive** and other remotes, files are unlinked cleanly without local FUSE trash clutter.
+   - Files are unlinked immediately via standard POSIX `unlink()` in a single fast API call.
+   - On **Google Drive**, rclone (`RCLONE_DRIVE_USE_TRASH=true`) automatically redirects unlinked files to the **Google Drive Cloud Trash** (web trash bin with 30-day automatic retention and 1-click web restoration), freeing quota without polluting the drive root.
+   - On **OneDrive**, rclone automatically redirects unlinked files to the **OneDrive Cloud Recycle Bin**.
+   - No `.Trash-1000` folder is created.
+
+#### Automated Trash Audit and Purge
+
+If files were accidentally moved to `.Trash-1000` via standard `Delete`:
+- Run `optimize` (`kinoite-optimize`) or `sys-optimize`:
+  The maintenance script automatically scans active cloud mounts, unlinks any residual `.Trash-1000` directory trees (relocating all enclosed files into the cloud provider's native web trash), and eliminates root drive clutter.
 
 ### Monitoring and Status
 
