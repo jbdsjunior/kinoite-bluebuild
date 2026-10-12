@@ -250,7 +250,7 @@ Optimized for official desktop client feature parity, rapid cloud synchronizatio
 
 ```env
 RCLONE_TPSLIMIT=12
-RCLONE_TPSLIMIT_BURST=20
+RCLONE_TPSLIMIT_BURST=100
 RCLONE_TRANSFERS=4
 RCLONE_CHECKERS=8
 RCLONE_BUFFER_SIZE=32M
@@ -358,6 +358,38 @@ To delete files cleanly and maximize speed:
    - On **Google Drive**, rclone (`RCLONE_DRIVE_USE_TRASH=true`) automatically redirects unlinked files to the **Google Drive Cloud Trash** (web trash bin with 30-day automatic retention and 1-click web restoration), freeing quota without polluting the drive root.
    - On **OneDrive**, rclone automatically redirects unlinked files to the **OneDrive Cloud Recycle Bin**.
    - No `.Trash-1000` folder is created.
+
+#### Resolução de 'Dir.Remove not empty' e Arquivos Duplicados
+
+O Google Drive permite múltiplos arquivos com nomes estritamente idênticos dentro da mesma pasta. No Linux/FUSE (POSIX), apenas um deles é exposto. Ao tentar excluir a pasta no Dolphin ou terminal:
+1. O Dolphin envia `unlink` para o arquivo visível.
+2. A cópia duplicada oculta permanece no Google Drive.
+3. O comando subsequente `rmdir` falha com `ENOTEMPTY` e o log registra `ERROR : Dir.Remove not empty`.
+4. **Solução Automática:** O script `optimize` (`kinoite-optimize`) audita e deduplica o Google Drive via `rclone dedupe --dedupe-mode newest "GoogleDrive:"`, restaurando um namespace limpo e permitindo a exclusão imediata de diretórios.
+5. **Exclusão Rápida de Pastas Pesadas (Purge Recursivo Server-Side):**
+   Ao deletar pastas com centenas de arquivos pelo Dolphin ou `rm -rf`, o Linux faz centenas de chamadas individuais de API. Para pastas pesadas, utilize a exclusão recursiva nativa via terminal, executada em uma única chamada de API (< 1s):
+   ```bash
+   rclone purge GoogleDrive:caminho/para/pasta
+   ```
+
+#### Eliminação de Erros 403 Rate Limit (Client ID Dedicado no Google Cloud)
+
+Por padrão, conexões sem `client_id` utilizam o projeto compartilhado global do rclone (`project_number:202264815644`). Milhares de usuários mundiais compartilham a mesma cota, resultando em:
+`HTTP 403: Quota exceeded for quota metric 'Queries' ... Rate limited, increasing sleep to 16.9s`
+Essa penalidade do pacer faz com que simples exclusões ou listagens demorem de 30 a 50 segundos.
+
+**Como obter 20.000 requisições/100s gratuitas e privadas:**
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie um projeto (ex.: `Rclone-Desktop`).
+2. Vá em **APIs e Serviços → Biblioteca** e ative a **Google Drive API**.
+3. Vá em **Tela de Permissão OAuth**, escolha **Externo**, preencha o nome do app e salve. Na aba **Usuários de Teste**, adicione seu endereço de e-mail do Gmail.
+4. Vá em **Credenciais → Criar Credenciais → ID do cliente OAuth**:
+   - Tipo de aplicativo: **App para Computador** (Desktop App).
+   - Copie o **ID do cliente** e a **Chave secreta do cliente**.
+5. No terminal, vincule ao seu rclone:
+   ```bash
+   rclone config reconnect GoogleDrive:
+   ```
+   Cole o seu `client_id` e `client_secret` quando solicitado, autorize no navegador e reinicie o serviço (`systemctl --user restart rclone@GoogleDrive.service`).
 
 #### Automated Trash Audit and Purge
 

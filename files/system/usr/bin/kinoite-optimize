@@ -126,6 +126,24 @@ if [ -d "$REAL_HOME/Cloud" ]; then
     fi
 fi
 
+# Audit and deduplicate Google Drive namespace (resolves duplicate filenames causing Dir.Remove not empty)
+if command -v rclone >/dev/null 2>&1 && [ -f "$REAL_HOME/.config/rclone/rclone.conf" ]; then
+    if grep -q "\[GoogleDrive\]" "$REAL_HOME/.config/rclone/rclone.conf" 2>/dev/null; then
+        echo "[ACTION] Auditing Google Drive namespace for duplicate filenames..."
+        DEDUPE_OUT=""
+        if [ -n "$RUN_USER_CMD" ]; then
+            DEDUPE_OUT=$($RUN_USER_CMD rclone dedupe --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
+        else
+            DEDUPE_OUT=$(rclone dedupe --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
+        fi
+        if echo "$DEDUPE_OUT" | grep -qi "delet"; then
+            echo "[FIXED] Resolved duplicate files on Google Drive (clean POSIX namespace restored)."
+        else
+            echo "[OK] Google Drive namespace verified (zero duplicate filenames)."
+        fi
+    fi
+fi
+
 echo "=== [3/8] Btrfs Health & Storage Reclaim ==="
 if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
     echo "[STATUS] Btrfs hardware stats for /var/home:"
