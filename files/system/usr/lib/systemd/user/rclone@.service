@@ -48,7 +48,6 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-min-free-space ${RCLONE_VFS_CACHE_MIN_FREE_SPACE} \
   --vfs-cache-poll-interval ${RCLONE_VFS_CACHE_POLL_INTERVAL} \
   --vfs-fast-fingerprint \
-  --vfs-refresh \
   --vfs-read-chunk-size ${RCLONE_VFS_READ_CHUNK_SIZE} \
   --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
   --vfs-read-chunk-streams ${RCLONE_VFS_READ_CHUNK_STREAMS} \
