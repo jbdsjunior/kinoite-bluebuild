@@ -379,17 +379,19 @@ Por padrão, conexões sem `client_id` utilizam o projeto compartilhado global d
 Essa penalidade do pacer faz com que simples exclusões ou listagens demorem de 30 a 50 segundos.
 
 **Como obter 20.000 requisições/100s gratuitas e privadas:**
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie um projeto (ex.: `Rclone-Desktop`).
-2. Vá em **APIs e Serviços → Biblioteca** e ative a **Google Drive API**.
-3. Vá em **Tela de Permissão OAuth**, escolha **Externo**, preencha o nome do app e salve. Na aba **Usuários de Teste**, adicione seu endereço de e-mail do Gmail.
-4. Vá em **Credenciais → Criar Credenciais → ID do cliente OAuth**:
-   - Tipo de aplicativo: **App para Computador** (Desktop App).
-   - Copie o **ID do cliente** e a **Chave secreta do cliente**.
-5. No terminal, vincule ao seu rclone:
+Para o procedimento passo a passo completo com telas, configuração do status publicado (para tokens que nunca expiram em 7 dias) e reutilização entre múltiplos remotes, consulte o guia oficial dedicado:
+👉 [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](GOOGLE_DRIVE_OAUTH_SETUP.md)
+
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie um projeto (ex.: `Rclone-Kinoite`).
+2. Ative a **Google Drive API** e configure a tela de consentimento como **Externo**.
+3. Adicione seu e-mail aos **Usuários de teste** e clique em **Publicar aplicativo** (*Publish app*).
+4. Crie uma credencial do tipo **App para Computador** (*Desktop App*) e copie o Client ID e Client Secret.
+5. No terminal, atualize e reconecte seu remote:
    ```bash
+   rclone config update GoogleDrive client_id "SEU_CLIENT_ID" client_secret "SUA_CHAVE_SECRETA"
    rclone config reconnect GoogleDrive:
+   systemctl --user restart rclone@GoogleDrive.service
    ```
-   Cole o seu `client_id` e `client_secret` quando solicitado, autorize no navegador e reinicie o serviço (`systemctl --user restart rclone@GoogleDrive.service`).
 
 #### Automated Trash Audit and Purge
 
