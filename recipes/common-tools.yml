@@ -44,3 +44,5 @@ modules:
         - vulkan-tools
         - nvtop
         - radeontop
+        - fuse
+        - fuse-libs
