@@ -58,7 +58,11 @@ Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest
 | `status-flatpak-system` | `systemctl status flatpak-system-update.timer`                                    |
 | `status-flatpak-user`   | `systemctl --user status flatpak-user-update.timer`                               |
 | `status-bootc-update`   | `systemctl status bootc-fetch-apply-updates.timer`                                |
+| `status-net-guard`      | Test if current network allows updates via `/usr/libexec/kinoite/network-guard`   |
 | `status-soar`           | `systemctl --user status soar-upgrade-packages.timer`                             |
+| `status-rclone`         | `systemctl --user status "rclone@*"`                                              |
+| `logs-rclone`           | `journalctl --user -u "rclone@*" -f`                                              |
+| `restart-rclone`        | `systemctl --user restart "rclone@*"`                                             |
 | `gpu-top`               | Interactive real-time GPU/VRAM engine monitor via `nvtop`                         |
 | `gpu-stat`              | Low-level AMD Radeon hardware activity monitor via `radeontop`                    |
 | `tmpfiles-system`       | `sudo systemd-tmpfiles --create`                                                  |

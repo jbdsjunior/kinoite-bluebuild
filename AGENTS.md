@@ -185,7 +185,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 | Blindagem profile.d | [`files/system/etc/profile.d/50-shell-env-overrides.sh`](files/system/etc/profile.d/50-shell-env-overrides.sh), [`files/system/etc/profile.d/60-kinoite-aliases.sh`](files/system/etc/profile.d/60-kinoite-aliases.sh) |
 | Paridade de Navegadores Flatpak | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf), [`files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`](files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf) |
 | Aceleração IA / ROCm via CDI | [`files/system/etc/cdi/amdgpu.yaml`](files/system/etc/cdi/amdgpu.yaml) |
-| Montagens FUSE Rclone | [`files/system/usr/lib/systemd/user/rclone@.service`](files/system/usr/lib/systemd/user/rclone@.service), [`files/system/usr/share/rclone/env/*.env`](files/system/usr/share/rclone/env/) |
+| Montagens FUSE Rclone | [`files/system/usr/lib/systemd/user/rclone@.service`](files/system/usr/lib/systemd/user/rclone@.service), [`files/system/usr/share/rclone/env/*.env`](files/system/usr/share/rclone/env/), [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](docs/GOOGLE_DRIVE_OAUTH_SETUP.md) |
 | Overrides Flatpak Declarativos | [`files/system/usr/share/flatpak/overrides/*`](files/system/usr/share/flatpak/overrides/), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf) |
 | Cache Permissions 0700 | [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
 | Áudio Bluetooth | Padrão nativo Fedora Kinoite / WirePlumber upstream |
