@@ -62,9 +62,12 @@ else
 fi
 echo "[OK] User tmpfiles synchronized for $REAL_USER."
 
-NOCOW_USER_DIRS=(
+NOCOW_SYSTEM_DIRS=(
     "/var/lib/libvirt/images"
     "/var/lib/containers/storage"
+)
+
+NOCOW_USER_DIRS=(
     "$REAL_HOME/.local/share/libvirt/images"
     "$REAL_HOME/.local/share/gnome-boxes/images"
     "$REAL_HOME/.local/share/containers/storage"
@@ -72,11 +75,32 @@ NOCOW_USER_DIRS=(
     "$REAL_HOME/.cache/rclone"
 )
 
+if [ "$CAN_SUDO" -eq 1 ]; then
+    for dir in "${NOCOW_SYSTEM_DIRS[@]}"; do
+        if [ -d "$dir" ]; then
+            if ! $SUDO_CMD lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
+                if $SUDO_CMD chattr +C "$dir" 2>/dev/null; then
+                    echo "[FIXED] Applied NoCOW (+C) to system directory: $dir"
+                fi
+            fi
+        fi
+    done
+fi
+
 for dir in "${NOCOW_USER_DIRS[@]}"; do
     if [ -d "$dir" ]; then
-        if ! lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
-            chattr +C "$dir" 2>/dev/null || true
-            echo "[FIXED] Applied NoCOW (+C) to directory: $dir"
+        if [ -n "$RUN_USER_CMD" ]; then
+            if ! $RUN_USER_CMD lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
+                if $RUN_USER_CMD chattr +C "$dir" 2>/dev/null; then
+                    echo "[FIXED] Applied NoCOW (+C) to user directory: $dir"
+                fi
+            fi
+        else
+            if ! lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
+                if chattr +C "$dir" 2>/dev/null; then
+                    echo "[FIXED] Applied NoCOW (+C) to user directory: $dir"
+                fi
+            fi
         fi
     fi
 done
@@ -111,14 +135,12 @@ if [ -d "$REAL_HOME/Cloud" ]; then
     TRASH_FOUND=0
     for cloud_mount in "$REAL_HOME/Cloud"/*; do
         [ -d "$cloud_mount" ] || continue
-        target_uid="$(id -u "$REAL_USER" 2>/dev/null || echo 1000)"
-        for td in "$cloud_mount/.Trash-1000" "$cloud_mount/.Trash-$target_uid"; do
-            if [ -d "$td" ]; then
-                TRASH_FOUND=1
-                echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
-                rm -rf "$td" 2>/dev/null || true
-                echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
-            fi
+        for td in "$cloud_mount"/.Trash-*; do
+            [ -d "$td" ] || continue
+            TRASH_FOUND=1
+            echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
+            rm -rf "$td" 2>/dev/null || true
+            echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
         done
     done
     if [ "$TRASH_FOUND" -eq 0 ]; then
@@ -132,9 +154,9 @@ if command -v rclone >/dev/null 2>&1 && [ -f "$REAL_HOME/.config/rclone/rclone.c
         echo "[ACTION] Auditing Google Drive namespace for duplicate filenames..."
         DEDUPE_OUT=""
         if [ -n "$RUN_USER_CMD" ]; then
-            DEDUPE_OUT=$($RUN_USER_CMD rclone dedupe --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
+            DEDUPE_OUT=$($RUN_USER_CMD rclone dedupe --config "$REAL_HOME/.config/rclone/rclone.conf" --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
         else
-            DEDUPE_OUT=$(rclone dedupe --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
+            DEDUPE_OUT=$(rclone dedupe --config "$REAL_HOME/.config/rclone/rclone.conf" --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
         fi
         if echo "$DEDUPE_OUT" | grep -qi "delet"; then
             echo "[FIXED] Resolved duplicate files on Google Drive (clean POSIX namespace restored)."
@@ -177,7 +199,11 @@ for vm_dir in "${VM_DIRS[@]}"; do
                 echo "[INFO] Disk image: $(basename "$img") [$vm_dir] -> $size ($extents extents)"
                 if [ "$extents" -gt 5000 ]; then
                     echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
-                    btrfs filesystem defragment -f "$img" 2>/dev/null || true
+                    if [ -w "$img" ]; then
+                        btrfs filesystem defragment -f "$img" 2>/dev/null || true
+                    elif [ "$CAN_SUDO" -eq 1 ]; then
+                        $SUDO_CMD btrfs filesystem defragment -f "$img" 2>/dev/null || true
+                    fi
                     new_extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
                     echo "[INFO] After defrag: $new_extents extents"
                 fi

@@ -103,12 +103,13 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Documentation
 
-| Document                                                           | Purpose                                                   |
-| ------------------------------------------------------------------ | --------------------------------------------------------- |
-| [`docs/INSTALLATION.md`](docs/INSTALLATION.md)                     | Installation guide, BIOS setup, partitioning, and TPM 2.0 |
-| [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md) | Technical Architecture Document (TAD) and system design   |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                     | Post-install validation, operations, and maintenance      |
-| [`AGENTS.md`](AGENTS.md)                                           | System invariants, engineering rules, and baseline        |
+| Document                                                                 | Purpose                                                    |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| [`docs/INSTALLATION.md`](docs/INSTALLATION.md)                           | Installation guide, BIOS setup, partitioning, and TPM 2.0  |
+| [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md)       | Technical Architecture Document (TAD) and system design    |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                           | Post-install validation, operations, and maintenance       |
+| [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](docs/GOOGLE_DRIVE_OAUTH_SETUP.md)   | Google Drive dedicated OAuth 2.0 setup & published app     |
+| [`AGENTS.md`](AGENTS.md)                                                 | System invariants, engineering rules, and baseline         |
 
 ## License
 
