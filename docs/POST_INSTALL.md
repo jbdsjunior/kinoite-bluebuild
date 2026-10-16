@@ -105,9 +105,28 @@ sudo systemctl status systemd-resolved
 
 If you use virtualization:
 
-```bash
-systemctl status virtqemud.socket virtqemud.service
+```
 
+### 4.1) Audio & Low-Latency PipeWire Calibration
+
+The image includes declarative low-latency buffer tuning (`60-quantum-tuning.conf` and `60-pulse-quantum.conf`) configured for 512 quantum samples (~10.6ms at 48kHz). This cuts default audio latency in half while maintaining stable transmission buffers for Bluetooth codecs (LDAC, aptX, SBC-XQ).
+
+Inspect the active PipeWire audio graph, rate, and quantum settings:
+
+```bash
+pw-metadata -n settings
+```
+
+Expected output:
+- `clock.rate = 48000`
+- `clock.quantum = 512`
+- `clock.min-quantum = 256`
+- `clock.max-quantum = 1024`
+
+Real-time audio buffer and XRUN monitoring:
+
+```bash
+pw-top
 ```
 
 ---
@@ -181,13 +200,14 @@ sudo rpm-ostree kargs \
   --delete-if-present=tsc=reliable \
   --delete-if-present=nowatchdog \
   --delete-if-present=iommu=pt \
-  --delete-if-present=btusb.enable_autosuspend=n \
-  --delete-if-present=btusb.enable_autosuspend=0 \
   --delete-if-present=slab_nomerge \
   --delete-if-present=vsyscall=none \
   --delete-if-present=preempt=full \
   --delete-if-present=page_alloc.shuffle=1
 ```
+
+> [!NOTE]
+> **Exceção Homologada de Bluetooth:** O parâmetro `btusb.enable_autosuspend=0` está configurado declarativamente na imagem via modprobe (`/usr/lib/modprobe.d/60-btusb.conf`) para prevenir dormência do controlador USB Bluetooth e eliminar latência de reativação em periféricos sem fio.
 
 Rollback / inspeção: `rpm-ostree kargs` (retorna apenas a linha padrão da distribuição após reboot).
 

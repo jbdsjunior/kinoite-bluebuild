@@ -222,7 +222,9 @@ Btrfs utiliza CoW (Copy-on-Write), o que gera severa fragmentação e degradaç�
   $$\text{HSA\_OVERRIDE\_GFX\_VERSION} = 10.3.0$$
   está definida como fonte única de verdade em `/usr/lib/environment.d/60-kinoite-environment.conf` (e injetada em contêineres via especificação CDI `/etc/cdi/amdgpu.yaml`), permitindo que contêineres e aplicações executem kernels HIP diretamente na GPU sem falhas de inicialização de hardware.
 - **Calibração de Áudio & Periféricos (PipeWire / WirePlumber Nativo & Udev):**
-  - **Subsistema de Áudio (Headset MCHOSE X9 & Bluetooth):** Operação sob os padrões originais upstream do ALSA, PipeWire e WirePlumber do Fedora Kinoite 44 para máxima fidelidade e compatibilidade nativa direta sem políticas customizadas na imagem.
+  - **Subsistema de Áudio & Calibração de Buffer Quântico (Headset MCHOSE X9 & Bluetooth):** O subsistema opera com a base nativa de drivers do PipeWire e WirePlumber do Fedora Kinoite 44, com calibração declarativa do buffer quântico em `/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf` e `/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf`:
+    $$\text{default.clock.quantum} = 512 \quad (\approx 10.6\text{ ms @ } 48\text{ kHz})$$
+    com piso dinâmico $\text{min-quantum}=256$ (~5.3 ms) e teto $\text{max-quantum}=1024$ (~21.3 ms) cobrindo taxas de amostragem de $44.1\text{ kHz}$ a $96\text{ kHz}$. Essa calibração reduz a latência intrínseca do servidor de áudio pela metade em relação aos padrões upstream conservadores (1024–2048), erradicando atrasos perceptíveis em dispositivos sem fio Bluetooth (codecs LDAC, aptX e SBC-XQ) sem induzir buffer underruns (*xruns*).
   - **Acesso Direto a Periféricos HID (`70-peripherals.rules`):** Regras udev com tag `uaccess` em `/usr/lib/udev/rules.d/70-peripherals.rules` concedem permissões seguras sem necessidade de privilégios de root para controle de dispositivos de entrada de baixa latência (headset MCHOSE X9, mouse gamer VXE, teclado mecânico BY Tech e controladora RGB de placa-mãe ITE).
 
 ### 5.4 Automação de Atualizações com Resiliência de Rede
