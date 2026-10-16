@@ -207,7 +207,7 @@ sudo rpm-ostree kargs \
 ```
 
 > [!NOTE]
-> **Exceção Homologada de Bluetooth:** O parâmetro `btusb.enable_autosuspend=0` está configurado declarativamente na imagem via modprobe (`/usr/lib/modprobe.d/60-btusb.conf`) para prevenir dormência do controlador USB Bluetooth e eliminar latência de reativação em periféricos sem fio.
+> **Exceção Homologada de Bluetooth:** O parâmetro `btusb.enable_autosuspend=0` está configurado declarativamente na imagem tanto na linha de boot (`recipes/common-kargs.yml`) quanto via modprobe (`/usr/lib/modprobe.d/60-btusb.conf`) para prevenir dormência do controlador USB Bluetooth e eliminar latência de reativação em periféricos sem fio.
 
 Rollback / inspeção: `rpm-ostree kargs` (retorna apenas a linha padrão da distribuição após reboot).
 

@@ -186,6 +186,7 @@ A decomposição das receitas em `recipes/` adota alta coesão e baixo acoplamen
 | `common-systemd.yml`  | Orquestração de daemons e sockets           | Mascaramento de serviços desnecessários (`systemd-remount-fs.service`, `mcelog.service`), ativação modular de sockets libvirt (`virtqemud.socket`, etc.) e habilitação de timers de manutenção.                                                         |
 | `common-flatpaks.yml` | Camada de aplicativos de produtividade e UI | Instalação centralizada em escopo de sistema para browsers (`Brave`, `Chrome`), ferramentas de Dev (`VS Code`), monitoramento (`MissionCenter`, `Warehouse`, `Flatseal`) e comunicação.                                                                 |
 | `common-brew.yml`     | Gerenciador de pacotes complementar         | Integração do Homebrew e do gerenciador Soar para binários portáveis sem contaminação do host.                                                                                                                                                          |
+| `common-kargs.yml`    | Exceção declarativa de linha de boot        | Injeção do parâmetro `btusb.enable_autosuspend=0` como exceção homologada contra dormência do controlador USB Bluetooth.                                                                                                                                |
 
 ---
 
