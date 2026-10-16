@@ -109,7 +109,7 @@ If you use virtualization:
 
 ### 4.1) Audio & Low-Latency PipeWire Calibration
 
-The image includes declarative low-latency buffer tuning (`60-quantum-tuning.conf` and `60-pulse-quantum.conf`) configured for 512 quantum samples (~10.6ms at 48kHz). This cuts default audio latency in half while maintaining stable transmission buffers for Bluetooth codecs (LDAC, aptX, SBC-XQ).
+The image includes declarative low-latency buffer tuning (`60-quantum-tuning.conf` and `60-pulse-quantum.conf`) configured for 256 quantum samples (~5.3ms at 48kHz). This cuts default audio latency drastically while maintaining stable transmission buffers for Bluetooth codecs (LDAC, aptX, SBC-XQ).
 
 Inspect the active PipeWire audio graph, rate, and quantum settings:
 
@@ -119,9 +119,9 @@ pw-metadata -n settings
 
 Expected output:
 - `clock.rate = 48000`
-- `clock.quantum = 512`
-- `clock.min-quantum = 256`
-- `clock.max-quantum = 1024`
+- `clock.quantum = 256`
+- `clock.min-quantum = 128`
+- `clock.max-quantum = 512`
 
 Real-time audio buffer and XRUN monitoring:
 
