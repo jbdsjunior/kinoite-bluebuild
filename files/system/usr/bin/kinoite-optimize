@@ -279,8 +279,6 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         "tsc=reliable"
         "nowatchdog"
         "iommu=pt"
-        "btusb.enable_autosuspend=n"
-        "btusb.enable_autosuspend=0"
         "slab_nomerge"
         "vsyscall=none"
         "preempt=full"
