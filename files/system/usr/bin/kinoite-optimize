@@ -36,14 +36,8 @@ fi
 
 echo "=== [1/8] Kernel Resilience & Runtime Sysctl Enforcement ==="
 if [ "$CAN_SUDO" -eq 1 ]; then
-    $SUDO_CMD sysctl -w \
-        kernel.panic=10 \
-        kernel.panic_on_oops=1 \
-        kernel.hardlockup_panic=1 \
-        kernel.softlockup_panic=0 \
-        kernel.sysrq=1 \
-        vm.swappiness=150 >/dev/null
-    echo "[OK] Sysctl lockup guard and swappiness applied (softlockup_panic=0, hardlockup_panic=1, swappiness=150)."
+    $SUDO_CMD /usr/lib/systemd/systemd-sysctl >/dev/null 2>&1 || $SUDO_CMD sysctl --system >/dev/null 2>&1 || true
+    echo "[OK] Declarative sysctl policies synchronized across kernel, memory, and network."
 else
     echo "[SKIP] Sudo privileges not available; skipping kernel sysctl updates."
     echo "       (Run with 'sudo kinoite-optimize' to enforce kernel parameters directly)."

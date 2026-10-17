@@ -334,3 +334,11 @@ As otimizações abaixo foram auditadas frente ao modelo de integração vertica
    - **Contexto Arquitetural:** O Ryzen 9 5950X possui dois chiplets (**CCD0** e **CCD1**, cada um com 32 MB de L3 cache próprio). Quando um modelo GGUF grande divide camadas entre GPU e CPU (`-ngl` parcial), espalhar threads pelos dois CCDs cruza o Infinity Fabric e aumenta a latência de sincronização de barreiras.
    - **Recomendação de Execução:** Em inferência híbrida GGUF, limitar a `-t 8` preso ao CCD0 (`taskset -c 0-7 ./modelo.llamafile -t 8 -ngl ...`) maximiza a taxa de acerto no cache L3 de 32 MB sem tráfego inter-CCD.
 
+5. **Cadência de Exibição e Eficiência Energética dos Monitores (120 Hz vs. 165 Hz):**
+   - **Contexto & Trade-off:** Os dois monitores 1440p conectados via DisplayPort suportam 165 Hz, mas operam por padrão a **120 Hz**. No modo 120 Hz, a taxa de atualização é um múltiplo inteiro exato de 24 fps (cinema/streaming), 30 fps e 60 fps (YouTube/web), eliminando qualquer *judder* de conversão 3:2 pulldown (espelhando a cadência ProMotion da Apple). Além disso, em configurações dual-monitor na RX 6600 XT, taxas de 165 Hz mantêm o clock da memória GDDR6 permanentemente elevado em idle, aumentando o consumo em repouso de ~6W para ~18W.
+   - **Como alternar:** Para sessões de jogos competitivos de alta taxa de quadros, a taxa de 165 Hz pode ser selecionada dinamicamente pelo usuário em *Configurações do Sistema → Tela e Monitor*.
+
+6. **Compressão Transparente Btrfs (`compress=zstd:1`):**
+   - **Contexto:** Análogo à compressão transparente nativa do Apple APFS. No NVMe Gen4 (Asgard AN4), ler blocos comprimidos e descomprimi-los no cache L3 do Ryzen 9 5950X através do acelerador `zstd` do kernel é mais veloz do que transferir dados brutos não-comprimidos, além de poupar ~30% a 40% dos ciclos de escrita na memória flash NAND.
+   - **Como verificar:** Verificar em `/etc/fstab` se as montagens de subvolumes Btrfs contêm `compress=zstd:1`. Em caso afirmativo, todos os novos arquivos gravados são comprimidos inline pelo kernel de forma transparente para as aplicações.
+
