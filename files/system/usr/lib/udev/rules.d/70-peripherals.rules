@@ -9,3 +9,8 @@ KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", MODE="0660", TA
 
 # Peripheral access: ITE RGB motherboard and LED controller
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", MODE="0660", TAG+="uaccess"
+
+# AMD Radeon RX 6600 XT compute & render nodes: dynamic seat ACLs for local AI (ROCm/Vulkan/llamafile)
+SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"
+SUBSYSTEM=="drm", KERNEL=="renderD*", TAG+="uaccess"
+

@@ -98,19 +98,30 @@ lsattr -d /var/lib/libvirt/images ~/.local/share/containers/storage ~/.cache/rcl
 
 Para máquinas virtuais de alto desempenho no QEMU/Libvirt, utilize imagens RAW sparse com `cache='none'`, `io='native'` e `discard='unmap'`.
 
-### 4.2 GPU AMD RX 6600 XT e Inferência Local via CDI (`/etc/cdi/amdgpu.yaml`)
+### 4.2 GPU AMD RX 6600 XT e Inferência Local (`llamafile`, GGUF, Vulkan RADV & ROCm CDI)
 
-Sem inflar a imagem base com pacotes ROCm no host, o arquivo `/etc/cdi/amdgpu.yaml` mapeia `/dev/kfd` e `/dev/dri/*` e injeta `HSA_OVERRIDE_GFX_VERSION=10.3.0` (`gfx1032` -> `gfx1030`):
+A imagem integra aceleração em duas camadas complementares sem inflar o sistema base com `+2.8 GB` de bibliotecas `rocblas`/`hipblas`:
+1. **Execução Direta no Host (`llamafile`, `llama.cpp`, GGUF) via Vulkan 1.4 (`radv` Mesa 26.2):**
+   - O helper `/usr/share/cosmo/dlopen-helper` (`~/.cosmo/dlopen-helper` + `/var/tmp/cosmo-ld-linux.bin`) resolve a restrição SELinux `execmod` da Cosmopolitan Libc, permitindo que qualquer `.llamafile` carregue `ggml-vulkan.so` automaticamente na **Radeon RX 6600 XT (8176 MiB VRAM + até 32 GB GTT nos 64 GB RAM)**.
+   - O limite `DefaultLimitMEMLOCK=infinity` (`60-kinoite-limits.conf`) permite fixar modelos GGUF inteiros na RAM (`--mlock`) sem erro `ENOMEM`, e `70-peripherals.rules` aplica ACLs `uaccess` em `/dev/kfd` e `/dev/dri/renderD128`.
+2. **Containers Pesados ROCm/HIP (`Ollama`, `PyTorch`, `vLLM`) via CDI (`/etc/cdi/amdgpu.yaml`):**
+   - Mapeia `/dev/kfd` e `/dev/dri/*` e injeta `HSA_OVERRIDE_GFX_VERSION=10.3.0` (`gfx1032` -> `gfx1030`).
 
 ```bash
-# Validar GPU e VA-API no host
+# 1. Validar GPU, Vulkan RADV, memlock ilimitado e dispositivos detectados pelo llamafile
 echo $HSA_OVERRIDE_GFX_VERSION   # 10.3.0
-vulkaninfo --summary | grep driverName
-vainfo
-clinfo
+ulimit -l                        # unlimited
+vulkaninfo --summary | grep -E "deviceName|driverName"
+~/Projetos/llamafile/Qwen3.5-0.8B-Q8_0.llamafile --list-devices
+# Esperado: Vulkan0: AMD Radeon RX 6600 XT (RADV NAVI23) (8176 MiB, ...)
 
-# Executar Ollama ou PyTorch com aceleração GPU via CDI
-podman run -d --device amd.com/gpu=all -v ollama:/root/.ollama -p 11434:11434 --name ollama docker.io/ollama/ollama:rocm
+# 2. Executar llamafile ou GGUF externo com offload total na GPU (Vulkan RADV)
+~/Projetos/llamafile/Qwen3.5-4B-Q5_K_S.llamafile --gpu vulkan -ngl 99 --mlock
+# Para carregar um arquivo .gguf externo usando um binário llamafile existente:
+~/Projetos/llamafile/Qwen3.5-0.8B-Q8_0.llamafile -m /caminho/do/modelo.gguf --gpu vulkan -ngl 99 --mlock
+
+# 3. Executar Ollama ou PyTorch com aceleração ROCm/HIP containerizada via CDI
+podman run -d --device amd.com/gpu=all --ipc=host -v ollama:/root/.ollama:Z -p 11434:11434 --name ollama docker.io/ollama/ollama:rocm
 ```
 
 ---
@@ -294,3 +305,32 @@ sudo ras-mc-ctl --errors
 ```
 
 - **Validação Offline de DRAM (Não-ECC):** Executar ≥ 4 passes completos no **PassMark MemTest86** via USB UEFI (critério: 0 erros; se houver erro, ajustar `ProcODT` para `43.6 Ω` ou `VSOC` para `1.125 V`).
+
+---
+
+## 9. Recomendações Secundárias para Avaliação Opcional (Não Aplicadas por Padrão)
+
+As otimizações abaixo foram auditadas frente ao modelo de integração vertical (estilo macOS / Apple Silicon) e **não foram aplicadas na imagem base** para preservar eficiência energética, segurança SELinux ou enxugamento da imagem OCI (`< 4 GB`), ficando disponíveis para avaliação conforme seu fluxo de uso:
+
+1. **Instalação Nativa de `llama-cpp` + `rocblas` + `hipblas` no Host (`+2.8 GB` na imagem):**
+   - **Por que não foi aplicado por padrão:** No Fedora 44, `llama-cpp` vincula-se estritamente ao stack ROCm/HIP (`rocblas` = `1.02 GB` + `llama-cpp` = `1.39 GB` + `hipblaslt` = `400 MB`), inflando a imagem `bootc` em `~2.8 GB`. Como o backend **Vulkan 1.4 (`radv` Mesa 26.2)** já está instalado na imagem e entrega aceleração nativa para `llamafile` e GGUF na **RX 6600 XT** (com suporte a *cooperative matrix* / `VK_KHR_shader_float16_int8`), o ROCm no host é desnecessário para `llamafile`.
+   - **Como avaliar sem sujar o host:** Usar um Distrobox dedicado (`distrobox create -n ai-rocm -i registry.fedoraproject.org/fedora-toolbox:44` e instalar `llama-cpp rocm-hip hipblas rocblas` dentro dele) ou adicionar `llama-cpp` em [`recipes/common-drivers.yml`](recipes/common-drivers.yml) caso deseje os binários `llama-server` / `llama-cli` ROCm diretamente na imagem base.
+
+2. **Alocação de Memória Unificada GTT/VRAM (`amdgpu.gttsize` / `ttm.pages_limit`) para Modelos GGUF > 8 GB:**
+   - **Como funciona hoje:** A RX 6600 XT possui **8 GB GDDR6** dedicados (com Resizable BAR / SAM de 8192 MB ativo) e o kernel 7.2 exporta automaticamente **32 GB de GTT** (memória RAM DDR4-3200 acessível diretamente pela GPU via DMA PCIe 4.0 x8).
+   - **Opção para modelos de 30B–70B (40 GB+):** Se desejar que a GPU enderece até **48 GB ou 56 GB** dos seus 64 GB de RAM via GTT (similar à Memória Unificada do Mac Studio) para rodar modelos GGUF gigantes via Vulkan/ROCm sem *split* de CPU, pode-se avaliar o karg `ttm.pages_limit=12582912` (~48 GB em páginas de 4K). Não aplicado por padrão pois reserva potencialmente 75% da RAM fora do controle do OOM killer do kernel.
+
+3. **Perfil de Energia `COMPUTE` (`pp_power_profile_mode = 5`) na GPU AMD RX 6600 XT:**
+   - **Por que não foi aplicado permanentemente via udev:** Forçar `echo 5 > /sys/class/drm/card1/device/pp_power_profile_mode` crava o `MinActiveFreq` do `GFXCLK` em `1000 MHz` e `MEMCLK` em `850 MHz`, aumentando o consumo em idle/vídeo de ~6W para ~28W. O driver `amdgpu` em modo `auto` já eleva os clocks em microssegundos durante inferência Vulkan/ROCm.
+   - **Como usar sob demanda em benchmarks longos de LLM:**
+     ```bash
+     # Ativar perfil COMPUTE temporariamente antes de sessões intensivas de inferência
+     echo 5 | sudo tee /sys/class/drm/card*/device/pp_power_profile_mode
+     # Restaurar padrão BOOTUP_DEFAULT (0) após o uso
+     echo 0 | sudo tee /sys/class/drm/card*/device/pp_power_profile_mode
+     ```
+
+4. **Fixação de Afinidade no CCD0 (`taskset -c 0-7,16-23`) para Inferência Híbrida (CPU + GPU):**
+   - **Contexto Arquitetural:** O Ryzen 9 5950X possui dois chiplets (**CCD0** e **CCD1**, cada um com 32 MB de L3 cache próprio). Quando um modelo GGUF grande divide camadas entre GPU e CPU (`-ngl` parcial), espalhar threads pelos dois CCDs cruza o Infinity Fabric e aumenta a latência de sincronização de barreiras.
+   - **Recomendação de Execução:** Em inferência híbrida GGUF, limitar a `-t 8` preso ao CCD0 (`taskset -c 0-7 ./modelo.llamafile -t 8 -ngl ...`) maximiza a taxa de acerto no cache L3 de 32 MB sem tráfego inter-CCD.
+
