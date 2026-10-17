@@ -1,211 +1,90 @@
-# Diretrizes do Sistema Multiagente (`AGENTS.md`)
+# Diretrizes e Invariantes do Sistema (`AGENTS.md`)
 
-Este arquivo define as regras permanentes de arquitetura, princípios de execução, baseline de hardware e invariantes de engenharia para todos os agentes que operam no repositório `kinoite-bluebuild`.
+Fonte canônica única (*Single Source of Truth*) de regras de engenharia, baseline de hardware e governança para agentes que operam no repositório `kinoite-bluebuild`.
 
-## 1. Diretriz Obrigatória de Versionamento Git
+## 1. Versionamento Git (Obrigatório)
 
-Este repositório consolida autoritativamente todas as convenções e disciplinas de Git neste arquivo, eliminando arquivos e diretórios redundantes de skills.
+- **Commit Obrigatório:** Toda tarefa que adicione, altere ou remova arquivos DEVE ser encerrada com commit Git estruturado e árvore limpa (`working tree clean`).
+- **Conventional Commits:** `<type>(<scope>): <descrição sucinta no presente>` (`feat`, `fix`, `docs`, `refactor`, `chore`) seguido de corpo em *bullet points* detalhando decisões, parâmetros, impacto e arquivos.
+- **Disciplina de Staging:** Adicionar arquivos explicitamente (`git add <arq1> <arq2>`); proibido `git add .` cego. Auditar `git status` e `git diff --cached` antes do commit, e confirmar `git status` limpo após o commit informando o hash e `git push origin <branch>`.
 
-- **Commit Obrigatório em Modificações:** Toda e qualquer tarefa que altere, adicione ou remova arquivos no repositório DEVE ser finalizada com a execução de commit Git estruturado antes de considerar a tarefa concluída. Nunca encerre uma interação deixando alterações pendentes ou `working tree dirty`.
-- **Padrão de Mensagem (Conventional Commits):**
-  - Formato estrito: `<type>(<scope>): <descrição sucinta no presente>`
-  - Tipos válidos:
-    - `feat`: Nova funcionalidade, recurso ou capacidade.
-    - `fix`: Correção de bug, vulnerabilidade de segurança ou ajuste de estabilidade.
-    - `docs`: Modificações exclusivamente em arquivos de documentação e governança.
-    - `refactor`: Alteração estrutural em código/configurações sem alteração de comportamento funcional.
-    - `chore`: Ajustes de ferramentas, workflows de CI, dependências ou governança.
-  - Corpo obrigatório: Lista em tópicos (*bullet points*) detalhando as decisões técnicas, parâmetros alterados, impacto operacional e arquivos afetados.
-- **Disciplina de Staging e Higiene de Arquivos:**
-  - Adicionar arquivos explicitamente (`git add <arquivo1> <arquivo2>`). É proibido adicionar arquivos em lote cegamente (`git add .`) quando houver arquivos de rascunho, chaves privadas ou credenciais.
-  - Validar previamente o estado com `git status` e inspecionar o diff preparado com `git diff --cached` antes de consolidar o commit.
-- **Validação de Integridade da Árvore de Trabalho:**
-  - Executar `git status` pós-commit para certificar que a working tree está rigorosamente limpa (`working tree clean`).
-  - Reportar ao usuário o hash gerado e o comando exato de sincronização remota (`git push origin <branch>`).
+## 2. Princípios de Execução (Executor & Revisor)
 
-## 2. Papel dos Agentes e Princípios de Execução
+- **Ciclo Multiagente:** O **Executor** implementa; o **Revisor** audita, pesquisa e valida até atingir conformidade total sem ressalvas.
+- **Prioridade:** Segurança > Performance > Conveniência.
+- **Design (KISS & DRY):** Zero redundância com defaults nativos do Fedora Kinoite 44, systemd ou kernel. Proibido downgrade de pacotes, daemons legados ou configurações mortas.
+- **Resiliência & Formato:** Emitir alerta e comando de rollback para alterações críticas. Respostas diretas sem preâmbulos. Scripts shell estritamente lineares (sem funções desnecessárias) e comentários técnicos concisos em inglês.
 
-- **Estrutura Multiagente:** Atue como um sistema multiagente (Executor e Revisor) orientado para evolução, auditoria e otimização contínua deste repositório.
-  - O **Executor** implementa as mudanças técnicas.
-  - O **Revisor** analisa, pesquisa na web quando necessário, critica e exige refinamentos. O processo deve iterar em loop até que o Revisor esteja plenamente satisfeito, sem ressalvas.
-- **Prioridade Absoluta:** Segurança > Performance > Conveniência. Elimine vulnerabilidades, permissões excessivas e dívida técnica de forma proativa.
-- **Design (KISS):** Evite over-engineering. Utilize ferramentas nativas e modernas, eliminando redundâncias. É proibido realizar downgrade de pacotes ou utilizar daemons legados quando houver alternativas modulares.
-- **Resiliência:** Para qualquer alteração crítica, emitir alerta explícito e fornecer comando exato de rollback.
-- **Formato (Zero Overhead):** Sem saudações, preâmbulos, encerramentos ou justificativas não solicitadas. Scripts shell devem ser estritamente lineares, sem funções desnecessárias. Comentários apenas para alertas críticos de segurança ou fluxo essencial, em inglês técnico.
-- **Solução Comprovada:** Entregar apenas o caminho mais seguro e comprovado, com justificativa concisa.
-- **Bloqueio e Pesquisa:** Interromper e solicitar informações adicionais se faltar contexto ou realizar pesquisa na web quando necessário. Faça ajustes apenas quando for preciso e necessário.
+## 3. Hardware Baseline e Calibração de BIOS (`Profile A`)
 
-## 3. Ambiente e Hardware Baseline
+- **Host:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI (BIOS F39, AGESA ComboV2 1.2.0.x, microcode `0xa201213`), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite 44 (`bootc`, Wayland, KDE Plasma 6, Kernel `7.2.x`).
+- **Memória (64 GB DDR4 não-ECC, 4×16 GB mistos, 2 DPC / 3 ranks por canal):**
+  - `A1/B1` (stubs): 16 GB 1R 3200 genérico.
+  - `A2/B2` (terminações físicas daisy-chain): KingSpec `KS3200D4R13516G` 16 GB 2R 3200 (1.2V JEDEC).
+  - **Invariante Daisy-Chain:** Módulos 2R devem residir obrigatoriamente nas pontas `A2/B2` e 1R em `A1/B1` (inverter causa reflexão de sinal e corrupção no barramento DQ).
+  - **Diagnóstico RAS:** `rasdaemon` monitora MCE (core/cache/Data Fabric) e PCIe AER (`sudo ras-mc-ctl --errors`). Sem ECC, o `amd64_edac` não carrega: **erros de DRAM são invisíveis ao kernel** e exigem teste ativo (MemTest86 ≥ 4 passes e `stressapptest` ≥ 1 h).
+- **Periféricos Homologados:** Headset USB MCHOSE X9 (ALSA/PipeWire nativo upstream), TWS Baseus Bass EP10 Pro (LDAC/AAC/SBC, BT 5.4), Caixa BT Tribit XSound Go, HID VXE Mouse e BY Tech (`TAG+="uaccess"` em `70-peripherals.rules`).
+- **Invariantes de BIOS (Procedimento completo em [`docs/POST_INSTALL.md` §8](docs/POST_INSTALL.md)):**
+  - **Clocks 1:1:** `X.M.P. = Profile1` (DDR4-3200), `FCLK = 1600MHz`, `UCLK DIV1 MODE = UCLK==MEMCLK`.
+  - **Tensões Manuais (Proibido `Auto` sob XMP com 4 DIMMs):** `DRAM Voltage = 1.350 V` (teto estrito 1.350V ou undervolt validado 1.300V–1.320V contendo dissipação $P \propto V^2$), `CPU VCORE SOC = 1.100 V` (teto 1.150V; impede 1.20V–1.25V do modo Auto que aquece o plano de cobre AM4 junto aos slots A1/A2), `VDDG IOD = 1.000 V`, `VDDG CCD = 0.950 V`, `cLDO VDDP = 0.900 V`.
+  - **Retenção Térmica & Impedâncias:** `tRFC` e `tREFI` estritamente em `Auto` (proibido apertar manualmente em 4 DIMMs mistos para evitar bit-flips por fuga capacitiva em ICs de 8Gb), `Auto Self Refresh (ASR)` / `Extended Temperature Range = Enabled` no AMD CBS (2x refresh próximo a 85 °C), fluxo de ar ativo sobre os 4 slots, `ProcODT = 40.0 Ω`, `RttNom = Disabled`, `RttWr = RZQ/3 (80 Ω)`, `RttPark = RZQ/5 (48 Ω)`, `CAD_BUS DrvStr = 24-24-24-24 Ω`, `Gear Down Mode = Enabled`, `Power Down Enable = Disabled`, `Memory Context Restore = Disabled`, `TSME = Disabled`.
+  - **CPU & Barramento:** `Power Supply Idle Control = Typical Current Idle` (previne C6 idle lockups), `CPPC` + `CPPC Preferred Cores = Enabled` (obrigatório para `amd-pstate-epp`), `Global C-state = Enabled`, `SVM = Enabled`, `IOMMU = Enabled`, `CSM = Disabled`, `Fast Boot = Disabled`, `Above 4G Decoding` + `Re-Size BAR = Enabled` (SAM 8192 MB). PBO stock (PPT 142W, TDC 95A, EDC 140A; proibido `Motherboard` limits ou Scalar > 1X) e Curve Optimizer `Disabled` no baseline (proibido CO negativo em núcleos preferenciais CCD0, especialmente Cores 0 e 3).
 
-- **Processador & Gráficos:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2).
-- **Placa-mãe:** Gigabyte X570 AORUS PRO WIFI, BIOS F39 (AGESA ComboV2 1.2.0.x), microcode `0xa201213`.
-- **Memória:** 64 GB DDR4 **não-ECC, kits mistos** (4×16 GB, 2 DIMMs/canal): `DIMM 0` (A1/B1) = genérico 16 GB 1R 3200; `DIMM 1` (A2/B2) = KingSpec `KS3200D4R13516G` 16 GB 2R 3200 (1.2V JEDEC). Topologia 3 ranks/canal — a mais sensível do IMC Zen 3 (Infinity Fabric/ProcODT/VSOC).
-- **Armazenamento:** 1 TB NVMe PCIe Gen4 (Btrfs).
-- **Sistema Operacional:** Fedora Kinoite 44 (imutável, Wayland nativo, modelo `bootc`, KDE Plasma 6).
-- **Workloads do Usuário:** DevSecOps, desenvolvimento de software, inferência local de LLMs (ROCm/HIP via CDI em contêineres), navegação intensiva, virtualização KVM.
-- **Periféricos Homologados:**
-  - **Headset USB:** MCHOSE X9 (operação sob ALSA/PipeWire nativo upstream).
-  - **Fones Bluetooth TWS:** Baseus Bass EP10 Pro (LDAC/AAC/SBC, Bluetooth 5.4, Hi-Res Audio Wireless).
-  - **Caixa de Som Bluetooth:** Tribit XSound Go (em avaliação A/B com stack nativa de áudio).
-  - **Periféricos HID:** VXE Mouse, BY Tech (udev uaccess em `70-peripherals.rules`).
-- **Diagnóstico e Resiliência de Hardware:**
-  - **RAS (`rasdaemon`):** Registra MCE (cache/core/Data Fabric), PCIe AER e erros de bloco em `/var/lib/rasdaemon/ras-mc_event.db` (consulta via `sudo ras-mc-ctl --errors`). Com DIMMs não-ECC o `amd64_edac` não carrega: **erros de DRAM são invisíveis ao kernel** e só podem ser detectados por teste ativo (MemTest86 / `stressapptest`). É proibido afirmar cobertura EDAC de DRAM nesta plataforma.
-  - **Calibração de BIOS e Proteção Térmica de DRAM:** Fonte única e detalhada em [`docs/POST_INSTALL.md` §14](docs/POST_INSTALL.md). Invariantes mínimas: `Extreme Memory Profile (X.M.P.) = Profile1` homologado oficialmente como perfil padrão baseline (`Profile A`) para DDR4-3200; `Power Supply Idle Control = Typical Current Idle`; `CPPC` + `CPPC Preferred Cores` = `Enabled` (sem eles o `amd-pstate-epp` não carrega — `_CPC object is not present in SBIOS`); FCLK:UCLK:MEMCLK 1:1 síncrono em 1600 MHz (`UCLK DIV1 MODE = UCLK==MEMCLK`); PBO stock (PPT 142W, TDC 95A, EDC 140A) e Curve Optimizer desativado até validação de estabilidade (nunca aplicar CO negativo nos núcleos preferenciais como Cores 0 e 3); sub-tensões fixadas contra flutuações e overshoot térmico do modo Auto sob XMP (teto de DRAM Voltage em 1.350V ou undervolt estável em 1.300V–1.320V limitando dissipação jouleiana $P \propto V^2$, VSOC estritamente manual em 1.100V com teto de 1.150V para suprimir os 1.20V–1.25V do modo Auto que superaquecem o plano de cobre do soquete AM4 adjacente aos slots A1/A2, VDDG IOD 1.000V, VDDG CCD 0.950V, cLDO VDDP 0.900V); preservação estrita de timings de recarga capacitiva `tRFC` / `tREFI` em `Auto` para evitar bit-flips por fuga térmica em ICs de 8Gb; ativação de `Auto Self Refresh (ASR)` / `Extended Temperature Range` no AMD CBS (força taxa de refresh dobrada 2x próximo a 85 °C); fluxo de ar ativo obrigatório no gabinete sobre os 4 slots DIMM contíguos; impedâncias terminadas para 3 ranks/canal (ProcODT 40.0 Ω, RttWr RZQ/3 80 Ω, RttPark RZQ/5 48 Ω, CAD_BUS DrvStr 24-24-24-24 Ω); barramento com `Gear Down Mode = Enabled`, `Power Down Enable = Disabled` e `Memory Context Restore = Disabled`; `TSME = Disabled` (elimina latência de encriptação em DRAM); `CSM = Disabled`, `Above 4G Decoding` + `Re-Size BAR` + `SVM` + `IOMMU` = `Enabled`.
-- **Anti-Patterns de Hardware Proibidos:**
-  - **CPU (Zen 3 5950X) & Linha de Boot:** Proibido introduzir kargs customizados na linha de boot (`recipes/recipe-amd.yml`), com exceção estrita e única de `btusb.enable_autosuspend=0` declarada em `recipes/common-kargs.yml`. A linha de boot opera na baseline pura e limpa do Fedora Kinoite 44. É expressamente proibido: `preempt=full` (contenção de escalonamento em 32 threads/2 CCDs), `nowatchdog` (desativa o NMI watchdog, mascarando deadlocks e impedindo auto-reboot), `tsc=reliable` (mascara descompasso de tempo entre CCDs em transições de C-states e gera deadlocks no agendador), `amd_iommu=on` (parâmetro inexistente), `iommu=pt` (contorna o DMA lazy e causa instabilidade em USB no chipset X570) ou kargs redundantes (`amd_pstate=active`, `slab_nomerge`). O parâmetro `btusb.enable_autosuspend=0` é homologado como exceção estrita para mitigar latência de handshake Bluetooth, gerenciado declarativamente via kargs (`recipes/common-kargs.yml`) e modprobe (`60-btusb.conf`).
-  - **BIOS / Memória:** Proibido inverter a terminação de slots daisy-chain (módulos dual-rank 2R devem residir obrigatoriamente nas pontas A2/B2 e 1R em A1/B1; inverter causa reflexão de sinal nos stubs e corrupção no barramento DQ). Proibido ativar TSME (penalidade de 2-4 ns e ~3% em throughput). Proibido deixar VSOC/VDDG/ProcODT ou DRAM Voltage em `Auto` sob perfil XMP com 4 DIMMs mistos (gera picos de tensão, desestabiliza o IMC Zen 3 e induz sobreaquecimento no plano de cobre AM4). Proibido apertar manualmente `tRFC` ou `tREFI` em topologia de 4 DIMMs mistos (induz fuga de carga capacitiva e corrupção térmica silenciosa de dados). Proibido operar os 4 DIMMs contíguos sob cargas contínuas sem fluxo de ar ativo direcionado aos slots. Proibido Curve Optimizer negativo nos núcleos preferenciais de silício (Cores 0 e 3), PBO com limites "Motherboard"/scalar elevado (> 1X) ou frequências acima de DDR4-3200 nesta topologia de kits mistos 1R+2R sem validação prévia (MemTest86 ≥ 4 passes + `stressapptest` ≥ 1 h). Proibido `Memory Context Restore = Enabled` com 4 DIMMs mistos (pula retreinamento e mascara margens marginais).
-  - **GPU (Navi 23 6600 XT):** Proibido ativar flags experimentais de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), causadoras de GPU hangs e deadlocks no driver Mesa/AMDGPU, e proibido instalar stacks pesadas de ROCm no host (usar estritamente CDI containerizado).
-  - **Memória & Armazenamento:** Proibido `page_alloc.shuffle=1` (fragmentação do alocador de páginas), limites manuais restritivos em parâmetros auto-escaláveis (`inotify`) e gravação com CoW ativo em VMs, contêineres e modelos de IA (obrigatório NoCOW `+C`).
-  - **Áudio & Conectividade:** Proibido desativar `bluez5.hw-volume` em fones TWS (induz assimetria de ganho analógico) e proibido ativar encaminhamento IP global (`net.ipv4.ip_forward`) no sysctl.
+## 4. Invariantes de Engenharia do Sistema
 
-## 4. Restrições do Projeto
+- **Linha de Boot (Zero Custom Kargs + Exceção `btusb`):**
+  - Opera na baseline nativa do Fedora 44 (`rhgb quiet root=...`), onde `amd-pstate-epp` (`CONFIG_X86_AMD_PSTATE_DEFAULT_MODE=3`), SLAB unmerged, DMA lazy (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`) e TSC invariant já são nativos.
+  - **Única exceção homologada:** `btusb.enable_autosuspend=0` em [`recipes/common-kargs.yml`](recipes/common-kargs.yml) e [`60-btusb.conf`](files/system/usr/lib/modprobe.d/60-btusb.conf) para eliminar latência de handshake Bluetooth.
+  - **Proibido:** `preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`, `slab_nomerge`, `page_alloc.shuffle=1`.
+- **Sysctl, Resiliência de Kernel & Proteção TuneD:**
+  - Proibido redeclarar defaults do Fedora 44 (`dmesg_restrict`, `unprivileged_bpf_disabled`, `vm.max_map_count`, `fs.inotify.max_user_watches`).
+  - Resiliência (`90-kernel-tuning.conf`): `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1`, `kernel.hardlockup_panic=1`, `kernel.softlockup_panic=0` (evita reboot prematuro em esperas de I/O de VM/Btrfs) e `kernel.sysrq=1` (REISUB ativo).
+  - Memória/ZRAM (`90-memory-fs-tuning.conf` + `60-zram-policy.conf`): ZRAM zstd até 32 GB (`min(ram / 2, 32768)`), `vm.swappiness=150`, `vm.page-cluster=0`, `vm.watermark_scale_factor=125`, `vm.dirty_background_ratio=3`, `vm.dirty_ratio=10`, `vm.vfs_cache_pressure=50`, `fs.inotify.max_user_instances=8192`.
+  - Rede (`90-network-tuning.conf` + `60-bbr.conf`): TCP BBR + `fq`, buffers de 32 MB, `tcp_slow_start_after_idle=0`, `tcp_fin_timeout=15`, `tcp_mtu_probing=1`, `tcp_rfc1337=1` e bloqueio de ICMP redirects. Proibido habilitar `net.ipv4.ip_forward` ou forwarding IPv6 globalmente.
+  - Proteção TuneD (`60-sysctl-protection.conf`): Symlinks em `/etc/sysctl.d/` apontando para `/usr/lib/sysctl.d/` garantem que o `tuned-ppd` (`reapply_sysctl=1`) preserve os sysctls da imagem ao alternar perfis de energia do KDE.
+- **Arquitetura `bootc` & Timers de Atualização:**
+  - Timers (`bootc-fetch-apply-updates`, `flatpak-system-update`, `flatpak-user-update`, `podman-auto-update` system/user, `soar-upgrade-packages`) operam com `OnBootSec=5m`, `OnUnitActiveSec=45m` e guarda `/usr/libexec/kinoite/network-guard` (`ExecCondition` via D-Bus NetworkManager contra redes medidas/offline).
+  - Timers monotônicos não usam `Persistent=true`. Proibido recriar `/etc/rpm-ostreed.conf`.
+- **Armazenamento Btrfs NoCOW & `tmpfiles.d`:**
+  - Aplicar atributo `+C` (NoCOW) exclusivamente via diretiva não-recursiva `h` em `60-io-tuning-system.conf` (`/var/lib/libvirt/images`, `/var/lib/containers/storage{,/volumes}`) e `60-io-tuning-user.conf` (`%h/.local/share/{libvirt/images,gnome-boxes/images,containers/storage{,/volumes}}`, `%h/.cache/rclone` com modo estrito `0700`).
+  - Proibido usar diretiva recursiva `H` (falha em arquivos não-vazios) ou caminhos inexistentes (`/var/lib/docker`, `/var/lib/distrobox`). Diretivas `C+` são atômicas (proibido `r!` prévio).
+- **Montagens FUSE Rclone (`rclone@.service`, `GoogleDrive.env`, `OneDrive.env`):**
+  - Template `rclone@.service` com `TimeoutStartSec=90s`, `SuccessExitStatus=143`, `--vfs-read-wait 5ms`, `--local-no-check-updated`, sem `network-guard` e proibido `--vfs-refresh`.
+  - Cache VFS padrão: `max-size=15G`, `max-age=24h`, `min-free-space=15G`, `write-back=10s`, `dir-cache-time=24h`, `attr-timeout=1h`, `buffer-size=32M`, `read-ahead=64M`, `read-chunk-streams=4`.
+  - **Google Drive:** `tpslimit=12`, `burst=100`, `pacer_min_sleep=10ms`, `list_chunk=1000`, `chunk_size=64M`, `use_trash=true`, `skip_gdocs=true` e uso recomendado de Client ID OAuth 2.0 próprio publicado (20.000 req/100s).
+  - **OneDrive:** `tpslimit=5`, `burst=10`, `chunk_size=50M` (múltiplo exato de 320 KiB), `delta=true`, `list_chunk=1000`, `poll_interval=1m`.
+  - **Higiene de Exclusão & Baloo:** `ShowDeleteCommand=true` em `/etc/xdg/kdeglobals` habilita exclusão direta (`Shift+Delete` -> lixeira nativa da nuvem sem criar `.Trash-$UID`). `kinoite-optimize` purga `.Trash-*` residuais e roda `rclone dedupe --dedupe-mode newest`. Exclusão imutável de `$HOME/Cloud` em `/etc/xdg/baloofilerc` (`[$ei]`).
+- **Áudio PipeWire & Bluetooth:**
+  - Buffer quântico calibrado em `60-quantum-tuning.conf` e `60-pulse-quantum.conf`: quantum `256` @ `48kHz` (~5.3ms, min `128`, max `512`, taxas `44.1k/48k/88.2k/96k`). Proibido desativar `bluez5.hw-volume` globalmente em fones TWS.
+- **GPU IA (CDI), Browsers & Flatpak Overrides:**
+  - Aceleração ROCm/HIP containerizada via CDI em `/etc/cdi/amdgpu.yaml` (`--device amd.com/gpu=all`, `HSA_OVERRIDE_GFX_VERSION=10.3.0`; proibido instalar ROCm pesado no host).
+  - Browsers Flatpak (`Brave`, `Chrome` em `common-flatpaks.yml`) provisionados via `70-browser-flags.conf` e `chromium-flags.conf` com Wayland (`--ozone-platform-hint=auto`) e PipeWire; proibido `AcceleratedVideoDecodeLinuxZeroCopyGL` / `AcceleratedVideoDecodeLinuxGL`.
+  - Overrides Flatpak em `/usr/share/flatpak/overrides/` sincronizados para `/var/lib/flatpak/overrides/` via `60-flatpak-overrides.conf` (proibido `/etc/flatpak/overrides/`).
+- **Sessão, Segurança, Virtualização & Higiene de Pacotes:**
+  - Variáveis de sessão exclusivamente em `60-kinoite-environment.conf`; scripts `profile.d` usam apenas lógica interativa com `return 0 2>/dev/null` (proibido `exit 0`).
+  - DNS DoT Cloudflare (`1.1.1.1`/`1.0.0.1#cloudflare-dns.com`, `DNSOverTLS=opportunistic`, `DNSSEC=allow-downgrade`) em `60-dns-overrides.conf`.
+  - SSHD key-only (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`) em `50-kinoite-hardening.conf`.
+  - Blacklist CIS (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core` via `install <mod> /bin/false`) em `60-security-blacklist.conf` (proibido listar módulos inexistentes no kernel 7.2 como `dccp`/`cramfs`/`freevxfs` ou já cobertos como `rds`).
+  - Polkit libvirt em `51-kinoite-libvirt.rules` (sem colidir com `50-libvirt.rules` upstream) e IPC elevado para 20 clientes em `/etc/libvirt/virtqemud.conf`.
+  - Higiene RPM: proibido pacotes legados/órfãos (`fuse` 2, `podman-machine`, encoders redundantes).
 
-- **Sem Redundâncias de SO:** Não incluir ajustes ou configurações redundantes já presentes por padrão no Linux/Fedora Kinoite 44.
-- **Automação de Atualizações:** Timers de atualização (`bootc`, Flatpak do sistema e usuário, Podman, soar) iniciam exatamente 5 minutos após o boot (`OnBootSec=5m`) e repetem a cada 45 minutos (`OnUnitActiveSec=45m`). Devem possuir guarda de resiliência de rede obrigatória via script executável centralizado `/usr/libexec/kinoite/network-guard` (`ExecCondition`), inspecionando o `NetworkManager` via D-Bus para abortar sem erro em conexões limitadas/offline.
-- **Checagem de Atualização Upstream:** Executada via GitHub Actions (`check-updates.yml`) a cada 2 horas (`0 */2 * * *`) de forma otimizada para cotas de CI.
-- **Qualidade Visual:** Garantir qualidade mínima equivalente ou superior a sistemas modernos (estilo macOS), com foco em terminal, Konsole e tipografia.
-- **Referência Técnica:** Soluções e melhorias podem utilizar como base referências comprovadas do projeto Bazzite Linux.
-- **Eliminação de Instabilidade:** Configurações incorretas, instáveis ou irrelevantes devem ser removidas proativamente. Manter opções secundárias comentadas apenas quando pertinente.
+## 5. CI/CD, Supply Chain e Segurança de Governança
 
-## 5. Invariantes e Regras de Engenharia do Sistema
+- **Workflows:** `check-updates.yml` (`0 */2 * * *`, timeout `5m`) apenas restaura o cache de digest e verifica runs ativas antes de acionar `build-amd.yml` (timeout `45m`), que grava o cache unicamente após sucesso. `cleanup.yml` (diário, timeout `10m`) retém 15 versões no GHCR (~3 imagens completas com assinaturas Cosign), 3 dias de runs (mín. 3) e limpa caches órfãos.
+- **Hardening CI:** Actions pinadas por SHA completo, `concurrency` com `cancel-in-progress: true`, `permissions` mínimas, expressões `${{ ... }}` isoladas em variáveis `env:` (anti-injection), inputs `required: true` preservados (`pr_event_number`), Dependabot semanal agrupado (`chore(deps)`, máx. 3 PRs).
+- **Governança:** Nunca versionar segredos/tokens no Git (`.gitignore` protege `rclone.conf`, `*.token`, `*.secret`, `*.local.env`, `*.local.md`).
 
-- **Adesão Estrita à Baseline Nativa de Kernel Arguments (Zero Custom Kargs):**
-  - O projeto opera estritamente com a baseline nativa de kargs do Fedora Kinoite 44 (`rhgb quiet root=...`). O kernel Fedora 44 (`7.2.x`) já é compilado e calibrado com `amd-pstate-epp` ativo por padrão (`CONFIG_X86_AMD_PSTATE_DEFAULT_MODE=3`), SLAB unmerged por padrão (`# CONFIG_SLAB_MERGE_DEFAULT is not set`), DMA lazy (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`) e detecção dinâmica de TSC invariant.
-  - É expressamente proibido injetar kargs customizados, redundantes ou experimentais (`tsc=reliable`, `nowatchdog`, `iommu=pt`, `preempt=full`), que geram instabilidade de barramento e desativação prejudicial de salvaguardas de integridade do kernel. O parâmetro `btusb.enable_autosuspend=0` em `recipes/common-kargs.yml` constitui a única exceção estrita homologada pelo usuário para eliminar latência de reativação em periféricos sem fio Bluetooth.
-- **Arquitetura Transacional OCI / bootc:**
-  - O sistema opera sob o modelo `bootc`. Atualizações automáticas de sistema são orquestradas unicamente via `bootc-fetch-apply-updates.timer` com guarda de resiliência de rede D-Bus.
-  - É proibido manter ou recriar configurações legadas de staging no `/etc/rpm-ostreed.conf`.
-- **Blindagem de Scripts em `/etc/profile.d/`:**
-  - Scripts de perfil devem utilizar estritamente `return 0 2>/dev/null` no bypass não-interativo. É expressamente proibido usar `|| exit 0`, pois isso mata shells de login não interativos (SSH em lote, cron, automações).
-- **Paridade de Navegadores Flatpak:**
-  - Todo navegador Chromium-based incluído em `recipes/common-flatpaks.yml` (Brave, Google Chrome) deve ter provisionamento ativo em `70-browser-flags.conf` com flags Wayland (`--ozone-platform-hint=auto`) e aceleração GPU por hardware.
-- **Aceleração de IA / ROCm via CDI:**
-  - Manter a imagem base enxuta (< 4 GB). A aceleração da GPU AMD RX 6600 XT para cargas de IA locais (Ollama, PyTorch, llama.cpp) deve utilizar CDI (`--device amd.com/gpu=all` via `/etc/cdi/amdgpu.yaml`), com injeção automática de `HSA_OVERRIDE_GFX_VERSION=10.3.0`.
-- **Montagens FUSE de Nuvem e Higiene de Cache (Rclone):**
-  - Todo parâmetro operacional e de cache VFS (`max-size`, `max-age`, `min-free-space`, `write-back`, `dir-cache-time`, `attr-timeout`, `poll-interval`, `buffer-size`, `read-ahead`, `read-chunk-streams`) deve ser estritamente parametrizado via variáveis de ambiente no template `rclone@.service` com defaults seguros e extensível via arquivos `.env` e `.local.env`.
-  - O template de serviço `rclone@.service` deve conter `TimeoutStartSec=90s` para acomodar renovação de tokens OAuth2 e handshake TLS, e `SuccessExitStatus=143` para evitar falsos positivos de falha sob encerramento rotineiro por SIGTERM. É proibido aplicar `network-guard` em montagens FUSE interativas de nuvem, pois o bloqueio em conexões medidas (*metered*) impede o acesso legítimo a arquivos do usuário sob tethering ou redes móveis (reservando o guard estritamente para timers de atualização em lote).
-  - Maximizar velocidade de navegacao interativa e abertura de arquivos atraves de retencao de metadados no kernel FUSE (`attr-timeout 1h`), leitura concorrente multithread (`--vfs-read-chunk-streams 4`), read-ahead de alta taxa (`64M`), buffers generosos em RAM (`32M`), minimizacao de latencia de busca aleatoria (`--vfs-read-wait 5ms`), reducao de 10x na latencia do pacer do Google Drive (`RCLONE_DRIVE_PACER_MIN_SLEEP=10ms`) e burst elevado (`RCLONE_TPSLIMIT_BURST=100`). E proibido utilizar `--vfs-refresh` no mount de sistema, pois a varredura recursiva completa satura a cota de transacoes de API no boot e induz congelamento de operacoes concorrentes de exclusao e leitura.
-  - Assegurar estabilidade e integridade de salvamento local atraves de `vfs-write-back 10s` e `--local-no-check-updated`, impedindo loops de erro causados por descompasso de resolucao de nanosegundos do Linux frente aos carimbos de milissegundos das APIs de nuvem.
-  - Ciclo de vida de exclusao, prevencao de 'Dir.Remove not empty' e higiene de lixeira em montagens FUSE: O padrao XDG Trash Spec induz criacao de `.Trash-$UID` em sistemas de arquivos montados separadamente. A exclusao definitiva (`unlink` / `Shift+Delete` no Dolphin habilitado via `ShowDeleteCommand=true` em `kdeglobals`) e o padrao homologado para acionar diretamente a lixeira nativa do provedor em nuvem (`RCLONE_DRIVE_USE_TRASH=true` no Google Drive e Recycle Bin no OneDrive) sem gerar metadados locais ou consumir cota no drive remoto. Pastas residuais `.Trash-*` e nomes de arquivos duplicados no Google Drive (que impedem remocao de pastas no POSIX com `Dir.Remove not empty`) sao automaticamente auditados e purgados por `kinoite-optimize` via `rclone dedupe --dedupe-mode newest`.
-  - Cota e Desempenho no Google Drive (Client ID Dedicado): Para eliminar limitacao de taxa e erros `403 RATE_LIMIT_EXCEEDED` (que elevam a espera do pacer para 16-32s), e fortemente recomendado provisionar credenciais dedicadas OAuth 2.0 (`client_id` e `client_secret`) no Google Cloud Console, garantindo cota privada de 20.000 requisicoes/100s.
-  - Garantir protecao ativa do armazenamento local atraves de `--vfs-cache-min-free-space` (minimo de 15G livres resguardados) e `--vfs-cache-max-age 24h` para evitar retencao indefinida de arquivos obsoletos no SSD.
-  - Proteger contra perda acidental de dados no Google Drive mantendo `RCLONE_DRIVE_USE_TRASH=true` por padrao (paridade com o cliente oficial na lixeira em nuvem).
-  - Proteger contra throttling HTTP 429 no Microsoft OneDrive limitando transacoes (`tpslimit=5`, burst moderado `10`, `chunk-size=50M` multiplo de 320 KiB) e utilizando a Delta API com polling controlado (1m) e chunk de listagem de 1000 itens.
-  - E estritamente proibido remover a exclusao imutavel do indexador Baloo para `$HOME/Cloud` em `/etc/xdg/baloofilerc` (`[$ei]`).
-- **Provisionamento Declarativo de Overrides Flatpak:**
-  - O Flatpak monitora overrides de sistema exclusivamente em `/var/lib/flatpak/overrides/`. É expressamente proibido provisioná-los em `/etc/flatpak/overrides/` (caminho ignorado pelo Flatpak).
-  - Em sistemas imutáveis/bootc, templates de override devem residir em `/usr/share/flatpak/overrides/` e ser sincronizados autoritativamente para `/var/lib/flatpak/overrides/` no boot via tmpfiles (`60-flatpak-overrides.conf`).
-- **Segurança de Permissões em Caches de Usuário:**
-  - Diretórios de cache de dados e sincronização em nuvem (`%h/.cache/rclone`) devem possuir estritamente permissões `0700` em todas as diretivas de tmpfiles, eliminando permissões mundiais `0755`.
-- **Áudio Bluetooth & Calibração de Buffer Quântico (PipeWire):**
-  - O subsistema de áudio opera com o PipeWire e WirePlumber nativos, reforçado por calibração declarativa de quantum em `/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf` e `/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf` (quantum `256` @ `48kHz` com faixa `128`–`512` e taxas `44.1k`/`48k`/`88.2k`/`96k`), reduzindo o delay intrínseco de ~21.3ms–42.6ms dos padrões upstream para ~5.3ms sem induzir xruns em dispositivos sem fio Bluetooth (LDAC, aptX, SBC-XQ).
-  - Fones de ouvido TWS (True Wireless Stereo) utilizam processadores DSP independentes e controle de ganho por canal. A sincronização de hardware AVRCP (`hw-volume`) permanece nos padrões upstream. É terminantemente proibido desativar `bluez5.hw-volume` globalmente em fones TWS.
-- **Higiene de Pacotes RPM na Imagem Base:**
-  - É proibido instalar pacotes exclusivos de outros SO (ex.: `podman-machine` é macOS/Windows only) ou pacotes debug-only/dev-only sem utilidade funcional em produção.
-  - Todo pacote incluído em `recipes/common-*.yml` deve ter justificativa funcional documentável para o perfil operacional Linux nativo.
-- **Estabilidade Gráfica em Navegadores Chromium:**
-  - Todo navegador Chromium-based provisionado em `70-browser-flags.conf` deve utilizar Wayland nativo (`--ozone-platform-hint=auto`), GPU rasterization e aceleração de captura via PipeWire. É terminantemente proibido introduzir flags experimentais instáveis de decodificação de vídeo (`AcceleratedVideoDecodeLinuxZeroCopyGL`, `AcceleratedVideoDecodeLinuxGL`), que causam falhas de alocação de superfície, travamentos de GPU (GPU hang) e congelamento do sistema no driver AMDGPU/Mesa.
-- **Fonte Única de Verdade para Variáveis de Ambiente:**
-  - Variáveis de ambiente de sessão (GPU, editor, tipografia, Wayland) devem ser definidas exclusivamente em `environment.d` (`60-kinoite-environment.conf`). É proibido redeclarar essas variáveis em scripts `profile.d`.
-  - Scripts `profile.d` devem conter apenas lógica interativa condicional (inicialização de shells, detecção de binários, FZF/starship/zoxide) impossível de replicar em `environment.d`.
-- **Proibição de Redeclaração de Defaults do Sistema:**
-  - É proibido incluir em `sysctl.d`, `kargs`, ou qualquer arquivo de configuração parâmetros que já sejam defaults do Fedora 44, systemd, ou NetworkManager. Sempre verificar o valor efetivo via `sysctl`, `cat /proc/cmdline` ou documentação upstream antes de propor qualquer adição.
-- **Segurança de Resolução de Nomes (DoT & Resiliência DNS):**
-  - O resolvedor local (`systemd-resolved`) deve priorizar conexões DNS-over-TLS criptografadas (`DNSOverTLS=opportunistic`) com validação `DNSSEC=allow-downgrade` ancoradas nos servidores primários de alto desempenho da Cloudflare (`1.1.1.1` e `1.0.0.1` com SNI `cloudflare-dns.com`).
-- **Prevenção de Colisão com Pacotes RPM Upstream:**
-  - Configurações e regras do sistema (como regras de Polkit em `/usr/share/polkit-1/rules.d/`) devem utilizar prefixos e nomes exclusivos (ex.: `51-kinoite-libvirt.rules`). É terminantemente proibido sobrescrever arquivos pertencentes a pacotes RPM upstream (ex.: `50-libvirt.rules` de `libvirt-daemon-common`), preservando a integridade das assinaturas e validação de pacotes (`rpm -V`).
-- **Isolamento de Dispositivos e Menor Privilégio em Periféricos HID:**
-  - Acesso a dispositivos HID brutos (`/dev/hidraw*`) de periféricos de alta performance (headsets USB, mouses gamers, teclados mecânicos e controladoras RGB) deve ser concedido unicamente via `TAG+="uaccess"` em `70-peripherals.rules`. É estritamente proibido conceder permissões mundiais `0666` ou exigir execução com privilégios de root para controle de hardware de usuário.
-- **Prevenção de Fragmentação em Armazenamento CoW (Btrfs NoCOW):**
-  - Imagens de máquinas virtuais, camadas e volumes de contêineres e cache VFS de nuvem devem ter o atributo `+C` (NoCOW) provisionado preventivamente nos diretórios base antes da gravação de dados via `tmpfiles.d` de sistema e usuário (`60-io-tuning-*.conf`) utilizando a diretiva não-recursiva `h`. No Btrfs, novos arquivos e subdiretórios herdam `+C` atomicamente na criação ($O(1)$), enquanto a diretiva recursiva `H` é terminantemente proibida em árvores de armazenamento dinâmico (contêineres/caches) por induzir falhas `ioctl(FS_IOC_SETFLAGS)` em arquivos pré-existentes não-vazios e degradação severa do tempo de boot. É proibido declarar caminhos NoCOW (`+C`) para diretórios não utilizados ou runtimes não homologados/inexistentes (`/var/lib/docker`, `/var/lib/distrobox`).
-- **Auto-scaling de Recursos do Kernel vs Limites Manuais:**
-  - Proibido introduzir limites manuais restritivos em parâmetros do kernel que realizam dimensionamento dinâmico proporcional à memória física (ex.: `fs.inotify.max_user_watches` auto-escala acima de 650.000 instâncias no kernel Linux 5.11+ com 64 GB de RAM; fixar 524.288 artificialmente limita e degrada o sistema).
-- **Encaminhamento de Rede e Isolamento de Nós Clientes:**
-  - Em estações de trabalho e clientes Tailscale, é expressamente proibido habilitar `net.ipv4.ip_forward` ou `net.ipv6.conf.all.forwarding` globalmente via `sysctl.d`. O encaminhamento IP deve ser ativado exclusivamente sob demanda pelos daemons de contêineres e virtualização (Netavark/Podman, Libvirt) nas pontes virtuais designadas, prevenindo a quebra de SLAAC (RFC 4862) e a exposição indevida do host como gateway de trânsito.
-- **Blacklist CIS e Higiene de Módulos do Kernel:**
-  - A desativação de protocolos de rede e sistemas de arquivos vulneráveis ou legados (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`) deve utilizar estritamente a diretiva `install <modulo> /bin/false` (CIS Benchmark) para retornar erro explícito caso invocada. É expressamente proibido incluir módulos já expurgados ou inexistentes no kernel ativo (ex.: `dccp`, `cramfs`, `freevxfs` no Linux 7.2) ou que já possuam regras nativas upstream (ex.: `rds`).
-- **Semântica e Higiene de Timers do Systemd:**
-  - Timers monotônicos baseados em tempo de boot ou inatividade (`OnBootSec=`, `OnUnitActiveSec=`) não devem declarar `Persistent=true` (diretiva funcional exclusivamente em timers calendáricos com `OnCalendar=`). Timers não devem redeclarar `Unit=` quando acionam o serviço homônimo padrão, nem definir `RandomizedDelaySec=0` quando já for o padrão nativo da distribuição.
-- **Atomicidade e Idempotência em Diretivas Tmpfiles:**
-  - Diretivas do tipo `C+` (cópia/substituição atômica no systemd 255+) sobrescrevem o destino de forma segura e atômica; é expressamente proibido adicionar diretivas `r!` precedentes redundantes.
-- **Resiliência a Kernel Oops e Prevenção de Corrupção Btrfs:**
-  - Em estações de trabalho de desenvolvimento, falhas graves no kernel com interrupções desabilitadas induzem congelamento irreversível (*hard lockup*). É obrigatório fixar `kernel.panic = 10`, `kernel.panic_on_oops = 1`, `kernel.hardlockup_panic = 1` e `kernel.softlockup_panic = 0` em `90-kernel-tuning.conf`. O NMI watchdog intercepta deadlocks de hardware/driver com interrupções desabilitadas e força auto-reboot limpo após 10 segundos com registro de backtrace, enquanto soft lockups (esperas prolongadas de I/O em commits Btrfs ou sincronização RCU) emitem advertência diagnóstica sem forçar reinicializações abruptas e prematuras.
-  - Para permitir recuperação de emergência sem corte abrupto de energia, é obrigatório ativar `kernel.sysrq = 1`, viabilizando o procedimento de emergência REISUB (`Alt+SysRq+R-E-I-S-U-B`) para descarregar buffers em disco e proteger a integridade dos metadados Btrfs no NVMe.
-- **Calibração de BIOS e Estabilidade de Plataforma AMD Zen 3 (5950X / X570 / 4-DIMM):**
-  - O perfil padrão homologado opera com `Extreme Memory Profile (X.M.P.) = Profile1` (DDR4-3200) sob estrita sincronia FCLK:UCLK:MEMCLK 1:1 (`1600 MHz`), suprimindo quebras para 2:1 que degradam a latência em ~10 ns.
-  - A topologia daisy-chain exige módulos dual-rank nas terminações físicas (slots A2/B2) e single-rank nos stubs (A1/B1); qualquer alteração de hardware deve respeitar essa terminação.
-  - O perfil estável com XMP exige sub-tensões manuais fixadas (DRAM 1.350V, VSOC 1.100V com teto de 1.150V, VDDG IOD 1.000V, VDDG CCD 0.950V, cLDO VDDP 0.900V) para prevenir sobretensões do modo Auto, além de impedâncias terminadas para 3 ranks/canal (ProcODT 40.0 Ω, RttWr 80 Ω, RttPark 48 Ω, CAD_BUS 24 Ω).
-  - Invariantes de proteção térmica e retenção capacitiva sob XMP com 4 DIMMs contíguos:
-    - DRAM Voltage fixado com teto estrito de `1.350 V` (admitindo undervolt validado em `1.300 V`–`1.320 V`) para conter a dissipação jouleiana ($P \propto V^2$).
-    - CPU VCORE SOC limitado estritamente a `1.100 V` manual (jamais `Auto`), impedindo que a placa-mãe injete 1.20V–1.25V no I/O Die (SoC), o que transfere carga térmica severa diretamente ao plano de cobre do soquete AM4 adjacente aos slots A1 e A2.
-    - Manutenção estrita de `tRFC` e `tREFI` em `Auto`: preservar os ciclos de recarga capacitiva é mandatório para evitar bit-flips silenciosos induzidos por elevação de temperatura nos chips DRAM de 8 Gb.
-    - Habilitação obrigatória de `Auto Self Refresh (ASR)` / `Extended Temperature Range` nas opções de CBS do IMC para dobrar dinamicamente a cadência de refresh quando a temperatura operacional se aproximar do limiar crítico de 85 °C.
-    - Garantia de fluxo de ar ativo no gabinete sobre os quatro módulos DIMM para mitigar o acúmulo térmico entre os slots contíguos.
-  - É proibido aplicar offsets de Curve Optimizer negativos nos núcleos com classificação de silício máxima (`highest_perf` do CPPC, como Cores 0 e 3), evitando *light workload kernel oopses*.
-  - É obrigatório manter `Power Supply Idle Control = Typical Current Idle` (evita C6 idle voltage sag), `CPPC` + `CPPC Preferred Cores = Enabled` (requisito de publicação ACPI `_CPC` para o driver `amd-pstate-epp`), `CSM = Disabled`, `Above 4G Decoding` e `Re-Size BAR = Enabled` (SAM ativo com BAR de 8192 MB na GPU Navi 23), e `TSME = Disabled` (elimina penalidade de encriptação em DRAM).
-- **Proteção Declarativa de Sysctls contra Sobrescrita do TuneD:**
-  - O daemon TuneD (motor de perfis de energia do KDE Plasma via `tuned-ppd`) opera com `reapply_sysctl = 1`, reaplicando configurações exclusivamente a partir de `/etc/sysctl.d/` e `/run/sysctl.d/`, ignorando o diretório de imagens `/usr/lib/sysctl.d/`.
-  - Para prevenir que perfis de energia em runtime (como `throughput-performance` sob o modo Performance do KDE) desativem a compressão ZRAM (`vm.swappiness = 10`), acumulem escritas excessivas no NVMe (`dirty_bytes = 40%`) ou anulem parâmetros de resiliência e rede, é obrigatório provisionar symlinks atômicos de `/etc/sysctl.d/` apontando para `/usr/lib/sysctl.d/` via tmpfiles (`60-sysctl-protection.conf`).
+## 6. Rastreabilidade de Arquivos
 
-## 6. Práticas de Segurança e Governança de Instruções (`AGENTS.md`)
-
-- **Fonte Canônica Única (Single Source of Truth):**
-  - A fonte canônica, exclusiva e auto-suficiente de regras do projeto reside em `AGENTS.md`. Diretórios redundantes de skills (como `.agents/`) e links simbólicos (como `agent.md`) são eliminados para manter o repositório 100% DRY, enxuto e livre de duplicatas.
-- **Segregação de Segredos:**
-  - Arquivos de regras (`AGENTS.md`) são versionados no Git e NUNCA devem conter chaves privadas, senhas, tokens de API ou credenciais pessoais.
-  - Configurações locais privadas de agentes devem residir em arquivos ignorados pelo Git (ex.: `*.local.md`).
-- **Defesa contra Prompt Injection:**
-  - Arquivos de instrução de agentes têm efeito direto na geração de código e execução de comandos. Qualquer alteração em `AGENTS.md` deve ser tratada e revisada com o mesmo rigor de segurança de código de infraestrutura.
-
-## 7. CI/CD, GitHub Actions e Proteção de Supply Chain
-
-- **Gatilho de Build por Digest:**
-  - O workflow `check-updates.yml` executa a cada 2 horas (`0 */2 * * *`) e dispara o build apenas quando o digest upstream muda, usando cache de Actions para evitar rebuilds redundantes. É proibido alterar esta cadência sem justificativa de cota.
-  - O cache de digest upstream opera de forma desacoplada: `check-updates.yml` atua estritamente em modo de leitura (`actions/cache/restore`) e verifica se já existem execuções ativas (`in_progress` ou `queued`) antes de disparar; a gravação do cache (`actions/cache/save`) ocorre exclusivamente após a conclusão com sucesso do build em `build-amd.yml`, garantindo que falhas de compilação ou rede sejam retentadas automaticamente na checagem seguinte.
-- **Concorrência, Timeouts e Proteção de Quota Free:**
-  - Todo workflow deve declarar `concurrency` com `cancel-in-progress: true` para evitar execuções paralelas que desperdicem minutos de CI.
-  - É obrigatório declarar `timeout-minutes` restritivo em 100% dos jobs (máximo de 5m para checagens de atualização, 10m para rotinas de limpeza e 45m para build de imagem OCI), eliminando o risco de jobs zumbis consumirem cotas da conta gratuita do GitHub.
-- **Pinagem de Actions e Higiene do Dependabot:**
-  - Todas as GitHub Actions de terceiros devem ser pinadas por hash SHA completo (não por tag mutável) para proteção contra supply chain attacks.
-  - O Dependabot deve operar em cadência semanal (`weekly`, segundas-feiras) com agrupamento unificado (`groups: github-actions`) e prefixo Conventional Commits (`chore(deps)`), limitando-se a no máximo 3 PRs abertos simultaneamente para manter a aba de Pull Requests limpa e evitar dispersão de testes de CI.
-- **Retenção, Limpeza e Caches Órfãos:**
-  - O workflow `cleanup.yml` executa diariamente, retendo 15 versões de pacote no GHCR (calibrado para preservar 3 imagens completas de contêiner: a imagem ativa e 2 versões de rollback, considerando ~4 artefatos OCI por build entre índices, manifestos de arquitetura, atestações e assinaturas Cosign), 3 dias de execuções de workflows (mínimo de 3 runs preservadas) e realizando expurgo proativo de caches de Actions obsoletos (`gh cache delete`). É proibido desativar a limpeza automática ou manter retenção excessiva.
-- **Segurança de Shell e Menor Privilégio:**
-  - Cada workflow deve declarar explicitamente o conjunto mínimo de `permissions` necessário (ex.: `contents: read`, `packages: write`, `actions: write`). É terminantemente proibido utilizar `permissions: write-all`.
-  - Parâmetros e contextos dinâmicos do GitHub Actions (`${{ ... }}`) nunca devem ser concatenados diretamente no corpo de scripts shell executáveis (`run: |`); devem ser sanitizados e injetados estritamente via variáveis de ambiente no bloco `env:` para prevenção contra command injection.
-- **Contrato de Schemas e Preservação de Inputs Obrigatórios:**
-  - Parâmetros declarados como obrigatórios (`required: true`) nos manifestos `action.yml` de GitHub Actions (ex.: `pr_event_number` em `blue-build/github-action`) devem ser mantidos explicitamente declarados no bloco `with:` mesmo em disparos manuais (`workflow_dispatch`) onde seu valor avalia como nulo, garantindo conformidade com o validador de schema.
-
-## 8. Rastreabilidade: Invariantes → Implementação
-
-| Invariante | Arquivo(s) de Implementação |
-| :--------- | :-------------------------- |
-| Baseline Nativa de Kernel Arguments (Zero Custom Kargs) | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/common-kargs.yml`](recipes/common-kargs.yml) e [`files/system/usr/lib/modprobe.d/60-btusb.conf`](files/system/usr/lib/modprobe.d/60-btusb.conf) (exceção `btusb`) |
-| Arquitetura Transacional bootc | [`files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`](files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf) |
-| Blindagem profile.d | [`files/system/etc/profile.d/50-shell-env-overrides.sh`](files/system/etc/profile.d/50-shell-env-overrides.sh), [`files/system/etc/profile.d/60-kinoite-aliases.sh`](files/system/etc/profile.d/60-kinoite-aliases.sh) |
-| Paridade de Navegadores Flatpak | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf), [`files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`](files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf) |
-| Aceleração IA / ROCm via CDI | [`files/system/etc/cdi/amdgpu.yaml`](files/system/etc/cdi/amdgpu.yaml) |
-| Montagens FUSE Rclone | [`files/system/usr/lib/systemd/user/rclone@.service`](files/system/usr/lib/systemd/user/rclone@.service), [`files/system/usr/share/rclone/env/*.env`](files/system/usr/share/rclone/env/), [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](docs/GOOGLE_DRIVE_OAUTH_SETUP.md) |
-| Overrides Flatpak Declarativos | [`files/system/usr/share/flatpak/overrides/*`](files/system/usr/share/flatpak/overrides/), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf) |
-| Cache Permissions 0700 | [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
-| Áudio Bluetooth & Buffer Quântico | [`files/system/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf`](files/system/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf), [`files/system/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf`](files/system/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf) |
-| Headset MCHOSE X9 | Padrão nativo Fedora Kinoite / WirePlumber upstream |
-| Higiene de Pacotes | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-drivers.yml`](recipes/common-drivers.yml), [`recipes/common-fonts.yml`](recipes/common-fonts.yml) |
-| Aceleração de Vídeo Browsers | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf) |
-| Fonte Única Env Vars | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf) |
-| Proibição Redeclaração Defaults | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/) |
-| CI/CD Proteção | [`.github/workflows/*.yml`](.github/workflows/), [`.github/dependabot.yml`](.github/dependabot.yml) |
-| Resiliência DNS e DoT | [`files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`](files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf) |
-| Menor Privilégio Periféricos HID | [`files/system/usr/lib/udev/rules.d/70-peripherals.rules`](files/system/usr/lib/udev/rules.d/70-peripherals.rules) |
-| Btrfs NoCOW Storage | [`files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`](files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf), [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf) |
-| Hardening SSHD e Blacklist Kernel | [`files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`](files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf), [`files/system/usr/lib/modprobe.d/60-security-blacklist.conf`](files/system/usr/lib/modprobe.d/60-security-blacklist.conf) |
-| ZRAM Swap Policy | [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf) |
-| Proteção Sysctls contra TuneD | [`files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`](files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf) |
-| Compatibilidade CLI Docker | [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
-| Guarda de Resiliência de Rede | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard) |
-| Menor Privilégio Libvirt Polkit | [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules) |
-| Configurações Plasma KDE | [`files/system/etc/xdg/*`](files/system/etc/xdg/) |
-| Resiliência a Kernel Oops e SysRq | [`files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`](files/system/usr/lib/sysctl.d/90-kernel-tuning.conf) |
-| Diagnóstico de Hardware e RAS | [`recipes/common-tools.yml`](recipes/common-tools.yml), [`recipes/common-systemd.yml`](recipes/common-systemd.yml) |
-| Calibração de BIOS e Estabilidade de Memória | [`docs/POST_INSTALL.md` §14](docs/POST_INSTALL.md), [`docs/TECHNICAL_ARCHITECTURE.md` §2.1, §5.7](docs/TECHNICAL_ARCHITECTURE.md) |
-| Libvirt Daemon Tuning | [`files/system/etc/libvirt/virtqemud.conf`](files/system/etc/libvirt/virtqemud.conf) |
+| Subsistema | Arquivos de Implementação |
+| :--- | :--- |
+| **Receitas & Kargs** | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/common-*.yml`](recipes/), [`files/system/usr/lib/modprobe.d/60-btusb.conf`](files/system/usr/lib/modprobe.d/60-btusb.conf) |
+| **Sysctl, ZRAM & TuneD** | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/), [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf), [`files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`](files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf), [`files/system/usr/lib/modules-load.d/60-bbr.conf`](files/system/usr/lib/modules-load.d/60-bbr.conf) |
+| **Timers & Rede Guard** | [`files/system/usr/libexec/kinoite/network-guard`](files/system/usr/libexec/kinoite/network-guard), [`files/system/usr/lib/systemd/system/`](files/system/usr/lib/systemd/system/), [`files/system/usr/lib/systemd/user/`](files/system/usr/lib/systemd/user/) |
+| **Btrfs NoCOW & Flatpak** | [`files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`](files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf), [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf), [`files/system/usr/share/flatpak/overrides/`](files/system/usr/share/flatpak/overrides/) |
+| **Rclone FUSE & KDE** | [`files/system/usr/lib/systemd/user/rclone@.service`](files/system/usr/lib/systemd/user/rclone@.service), [`files/system/usr/share/rclone/env/*.env`](files/system/usr/share/rclone/env/), [`files/system/usr/share/user-tmpfiles.d/70-rclone-env.conf`](files/system/usr/share/user-tmpfiles.d/70-rclone-env.conf), [`files/system/etc/xdg/`](files/system/etc/xdg/) |
+| **Áudio PipeWire** | [`files/system/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf`](files/system/usr/share/pipewire/pipewire.conf.d/60-quantum-tuning.conf), [`files/system/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf`](files/system/usr/share/pipewire/pipewire-pulse.conf.d/60-pulse-quantum.conf) |
+| **GPU CDI & Browsers** | [`files/system/etc/cdi/amdgpu.yaml`](files/system/etc/cdi/amdgpu.yaml), [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf), [`files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`](files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf) |
+| **Sessão, CLI & Manutenção** | [`files/system/usr/lib/environment.d/60-kinoite-environment.conf`](files/system/usr/lib/environment.d/60-kinoite-environment.conf), [`files/system/etc/profile.d/`](files/system/etc/profile.d/), [`files/system/usr/bin/kinoite-optimize`](files/system/usr/bin/kinoite-optimize), [`files/system/etc/containers/nodocker`](files/system/etc/containers/nodocker) |
+| **Segurança, Polkit & Udev** | [`files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`](files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf), [`files/system/usr/lib/modprobe.d/60-security-blacklist.conf`](files/system/usr/lib/modprobe.d/60-security-blacklist.conf), [`files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`](files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf), [`files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`](files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules), [`files/system/etc/libvirt/virtqemud.conf`](files/system/etc/libvirt/virtqemud.conf), [`files/system/usr/lib/udev/rules.d/70-peripherals.rules`](files/system/usr/lib/udev/rules.d/70-peripherals.rules), [`files/system/usr/lib/firewalld/zones/tailscale.xml`](files/system/usr/lib/firewalld/zones/tailscale.xml) |
+| **Documentação & CI/CD** | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md), [`README.md`](README.md), [`SECURITY.md`](SECURITY.md), [`.github/workflows/`](.github/workflows/), [`.github/dependabot.yml`](.github/dependabot.yml) |

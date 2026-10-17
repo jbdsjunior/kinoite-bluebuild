@@ -1,201 +1,131 @@
-# Post-Installation Guide (Kinoite BlueBuild)
+# Guia Unificado de Instalação, Operação, Nuvem e Calibração de BIOS (`kinoite-amd`)
 
-This guide describes post-rebase validation and adjustments for safe operation on an immutable OCI-native system.
+Referência operacional consolidada para instalação, desbloqueio automático via TPM 2.0, validação pós-instalação, contêineres ROCm/CDI, montagens FUSE (Rclone + OAuth 2.0) e calibração de BIOS na estação **AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 + Gigabyte X570 AORUS PRO WIFI (BIOS F39)**.
 
 ---
 
-### (Optional) Verify Cosign signature (recommended)
+## 1. Instalação, Particionamento Btrfs e TPM 2.0 (PCR 7)
 
-Project public key: [`cosign.pub`](../cosign.pub).
+### 1.1 Esquema de Partições Recomendado (1 TB NVMe PCIe Gen4 — `nvme0n1`)
 
-**Example (AMD)**
+No instalador Fedora Anaconda (**Custom Partitioning**), utilize LUKS2 + Btrfs sem partição de swap física (o sistema provisiona **32 GB ZRAM `zstd`** em RAM via `60-zram-policy.conf` com `vm.swappiness=150`):
 
-```bash
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
-
+```text
+/dev/nvme0n1p1 : 1024 MiB | /boot/efi | EFI System Partition (vfat)
+/dev/nvme0n1p2 : 2048 MiB | /boot     | ext4 (assinaturas de kernel e GRUB)
+/dev/nvme0n1p3 : ~950 GiB | LUKS2 (aes-xts-plain64) -> Pool Btrfs:
+  ├── Subvolume: root  -> /                       [compress=zstd:1]
+  ├── Subvolume: home  -> /var/home               [compress=zstd:1]
+  └── Subvolume: vms   -> /var/lib/libvirt/images [nodatacow]
 ```
 
-## 1) Initial Validation (after reboot)
+### 1.2 Desbloqueio Automático LUKS2 via AMD fTPM 2.0 (PCR 7)
 
-### System state
+Vincular exclusivamente ao **PCR 7** (estado do Secure Boot e chaves UEFI) garante desbloqueio automático em < 50ms sem quebrar após atualizações de kernel ou imagens `bootc`:
 
 ```bash
+# 1. Gerar chave de recuperação offline (guardar fora do computador)
+sudo systemd-cryptenroll --recovery-key /dev/nvme0n1p3
+
+# 2. Vincular fTPM 2.0 ao PCR 7
+sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/nvme0n1p3
+sudo cryptsetup luksDump /dev/nvme0n1p3
+
+# 3. Garantir opção tpm2-device=auto em /etc/crypttab:
+# luks-<UUID> UUID=<UUID> none discard,tpm2-device=auto
+
+# 4. Regerar initramfs
+sudo dracut -f --regenerate-all
+```
+
+> [!NOTE]
+> **Pós-Atualização de BIOS:** Se atualizar a BIOS da placa-mãe no futuro, digite a senha manual no primeiro boot e re-registre o TPM:
+> `sudo systemd-cryptenroll --wipe-slot=tpm2 /dev/nvme0n1p3 && sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/nvme0n1p3 && sudo dracut -f --regenerate-all`
+
+### 1.3 Transição Atômica para a Imagem Customizada (`bootc`)
+
+```bash
+# Mudar para a imagem assinada e reiniciar
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+systemctl reboot
+```
+
+---
+
+## 2. Verificação Pós-Instalação e Manutenção (`kinoite-optimize`)
+
+```bash
+# Status da imagem OCI, assinatura e kernel
 bootc status
+uname -r
 
+# Executar utilitário unificado de manutenção (8 fases: sysctl, tmpfiles, NoCOW, defrag VM, flatpak/podman prune, kargs e saúde)
+sys-optimize
 ```
 
-Expected: the booted deployment points to `ghcr.io/jbdsjunior/kinoite-amd:latest`, and `bootc status` reports the same image reference.
+Atalhos declarados em `/etc/profile.d/60-kinoite-aliases.sh`:
+- `optimize` / `sys-optimize`: executa `/usr/bin/kinoite-optimize`.
+- `update-system`: `sudo bootc upgrade`.
+- `cleanup`: limpa metadados `rpm-ostree`, Flatpaks não utilizados e contêineres parados.
+- `tmpfiles-user`: `systemd-tmpfiles --user --create`.
 
 ---
 
-## 2) Available Global Aliases
+## 3. Áudio PipeWire (Baixa Latência) e Bluetooth
 
-| Alias                   | Command/Action                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| `update`                | Run `topgrade -cy --no-ask-retry --auto-retry 2 --only system flatpak`            |
-| `update-all`            | Run `topgrade -cy --no-ask-retry --auto-retry 2`                                  |
-| `sysup`                 | `sudo bootc update`                                                               |
-| `rollback`              | `sudo bootc rollback`                                                             |
-| `status-bootc`          | `sudo bootc status`                                                               |
-| `reload-profile`        | `exec $SHELL`                                                                     |
-| `ls`, `ll`, `la`        | Enhanced file listings with git status and icons via `eza`                        |
-| `lt`, `tree`            | Hierarchical directory trees via `eza --tree`                                     |
-| `cat`                   | Syntax-highlighted pagerless and borderless file viewing via `bat -p`             |
-| `top`, `htop`           | Modern interactive GPU & 32-thread CPU monitor via `btop`                         |
-| `grep`                  | `grep --color=auto`                                                               |
-| `cp`, `mv`, `rm`        | Safe interactive file operations with confirmation (`-i`)                         |
-| `fzf`                   | Fuzzy interactive search (integrated with Ctrl+R history, Ctrl+T files, Alt+C cd) |
-| `kargs`                 | `rpm-ostree kargs`                                                                |
-| `kargs-edit`            | `sudo rpm-ostree kargs --editor`                                                  |
-| `config-diff`           | `sudo ostree admin config-diff`                                                   |
-| `status-ostree`         | `rpm-ostree status`                                                               |
-| `status-fw`             | `systemctl status firewalld`                                                      |
-| `status-dns`            | `systemctl status systemd-resolved`                                               |
-| `status-kvm`            | `systemctl status virtqemud.socket virtqemud.service`                             |
-| `status-tailscale`      | `tailscale status`                                                                |
-| `status-podman`         | `systemctl status podman-auto-update.timer`                                       |
-| `status-podman-user`    | `systemctl --user status podman-auto-update.timer`                                |
-| `status-flatpak-system` | `systemctl status flatpak-system-update.timer`                                    |
-| `status-flatpak-user`   | `systemctl --user status flatpak-user-update.timer`                               |
-| `status-bootc-update`   | `systemctl status bootc-fetch-apply-updates.timer`                                |
-| `status-net-guard`      | Test if current network allows updates via `/usr/libexec/kinoite/network-guard`   |
-| `status-soar`           | `systemctl --user status soar-upgrade-packages.timer`                             |
-| `status-rclone`         | `systemctl --user status "rclone@*"`                                              |
-| `logs-rclone`           | `journalctl --user -u "rclone@*" -f`                                              |
-| `restart-rclone`        | `systemctl --user restart "rclone@*"`                                             |
-| `gpu-top`               | Interactive real-time GPU/VRAM engine monitor via `nvtop`                         |
-| `gpu-stat`              | Low-level AMD Radeon hardware activity monitor via `radeontop`                    |
-| `tmpfiles-system`       | `sudo systemd-tmpfiles --create`                                                  |
-| `tmpfiles-user`         | `systemd-tmpfiles --user --create`                                                |
-| `tmpfiles-all`          | `sudo systemd-tmpfiles --create && systemd-tmpfiles --user --create`              |
-| `podman-cleanup`        | Clean up unused Podman containers, images, and volumes                            |
-| `podman-ps`             | `podman ps -a`                                                                    |
-| `distrobox-list`        | `distrobox list`                                                                  |
-| `optimize`              | Automated user-space post-install optimization and Btrfs NoCOW maintenance via `kinoite-optimize` |
-| `sys-optimize`          | Full system-wide post-install optimization, sysctl resilience enforcement and kargs sanitization via `sudo kinoite-optimize` |
-
----
-
-## 3) Starship, terminal UX, and font rendering
-
-The image installs `jetbrainsmono-nerd-fonts` and `firacode-nerd-fonts` with system-wide subpixel LCD antialiasing (`hintslight`, `rgba=rgb`, `lcddefault`, `embeddedbitmap=false`, `autohint=false`), FreeType stem darkening (`FREETYPE_PROPERTIES`), and fontconfig aliases mapping macOS and web system fonts (`system-ui`, `-apple-system`, `BlinkMacSystemFont`, `ui-sans-serif`, `SF Pro Text`, `SF Pro Display`, `SF Pro`, `Segoe UI`) to `Inter Variable`, and code fonts (`monospace`, `ui-monospace`, `Menlo`, `Monaco`, `SF Mono`, `SFMono`, `SFMono-Regular`, `Cascadia Code`, `Cascadia Mono`) to `JetBrainsMono Nerd Font` and `FiraCode Nerd Font`. Electron applications run natively under Wayland (`ELECTRON_OZONE_PLATFORM_HINT=auto`) to eliminate fractional scaling blur. Konsole is configured by default with the `Kinoite` profile (`TerminalMargin=4`, `LineSpacing=1`, smooth blinking cursor, link underlines, full URL/path word selection), `Kinoite Tokyo Night` color scheme, and background blur.
-
-Test font resolution:
-
-```bash
-fc-match sans-serif
-fc-match system-ui
-fc-match -- "-apple-system"
-fc-match "SF Pro Text"
-fc-match monospace
-fc-match ":family=ui-monospace"
-```
-
-Expected: `fc-match sans-serif`, `fc-match system-ui`, `fc-match -- "-apple-system"`, and `fc-match "SF Pro Text"` resolve to `Inter Variable`, and `fc-match monospace` and `fc-match ":family=ui-monospace"` resolve to `JetBrainsMono Nerd Font`, rendering all Starship and modern CLI glyphs crisply.
-
----
-
-## 4) Essential Services
-
-```bash
-sudo systemctl status firewalld
-sudo systemctl status systemd-resolved
-```
-
-If you use virtualization:
-
-```bash
-systemctl status virtqemud.socket virtqemud.service
-```
-
-### 4.1) Audio & Low-Latency PipeWire Calibration
-
-The image includes declarative low-latency buffer tuning (`60-quantum-tuning.conf` and `60-pulse-quantum.conf`) configured for 256 quantum samples (~5.3ms at 48kHz). This cuts default audio latency drastically while maintaining stable transmission buffers for Bluetooth codecs (LDAC, aptX, SBC-XQ).
-
-Inspect the active PipeWire audio graph, rate, and quantum settings:
+A imagem calibra o PipeWire (`60-quantum-tuning.conf` e `60-pulse-quantum.conf`) em **quantum `256` @ `48kHz` (~5.3ms, faixa `128`–`512`)** e desativa o autosuspend USB Bluetooth (`btusb.enable_autosuspend=0`):
 
 ```bash
 pw-metadata -n settings
-```
+# Esperado: clock.rate = 48000 | clock.quantum = 256 | clock.min-quantum = 128 | clock.max-quantum = 512
 
-Expected output:
-- `clock.rate = 48000`
-- `clock.quantum = 256`
-- `clock.min-quantum = 128`
-- `clock.max-quantum = 512`
-
-Real-time audio buffer and XRUN monitoring:
-
-```bash
-pw-top
+cat /sys/module/btusb/parameters/enable_autosuspend
+# Esperado: N
 ```
 
 ---
 
-## 5) Virtualization (KVM/libvirt)
+## 4. Virtualização KVM, Btrfs NoCOW e Aceleração de IA (ROCm CDI)
 
-Permissions are managed declaratively via Polkit rules included in the image. Only users in the `wheel` group can manage libvirt without additional authentication. Add non-administrator users deliberately instead of granting access to every active local session.
+### 4.1 KVM / Libvirt e NoCOW (`+C`)
+
+Os diretórios `/var/lib/libvirt/images`, `/var/lib/containers/storage{,/volumes}`, `~/.local/share/{libvirt/images,gnome-boxes/images,containers/storage{,/volumes}}` e `~/.cache/rclone` (`0700`) recebem `+C` (NoCOW) via `tmpfiles.d` (`h`):
+
+```bash
+systemctl status virtqemud.socket virtqemud.service
+lsattr -d /var/lib/libvirt/images ~/.local/share/containers/storage ~/.cache/rclone
+```
+
+Para máquinas virtuais de alto desempenho no QEMU/Libvirt, utilize imagens RAW sparse com `cache='none'`, `io='native'` e `discard='unmap'`.
+
+### 4.2 GPU AMD RX 6600 XT e Inferência Local via CDI (`/etc/cdi/amdgpu.yaml`)
+
+Sem inflar a imagem base com pacotes ROCm no host, o arquivo `/etc/cdi/amdgpu.yaml` mapeia `/dev/kfd` e `/dev/dri/*` e injeta `HSA_OVERRIDE_GFX_VERSION=10.3.0` (`gfx1032` -> `gfx1030`):
+
+```bash
+# Validar GPU e VA-API no host
+echo $HSA_OVERRIDE_GFX_VERSION   # 10.3.0
+vulkaninfo --summary | grep driverName
+vainfo
+clinfo
+
+# Executar Ollama ou PyTorch com aceleração GPU via CDI
+podman run -d --device amd.com/gpu=all -v ollama:/root/.ollama -p 11434:11434 --name ollama docker.io/ollama/ollama:rocm
+```
 
 ---
 
-## 6) BTRFS NoCOW for I/O-heavy workloads
+## 5. Linha de Boot (Kargs) e Recuperação de Desastres (Rollback)
 
-Apply system tmpfiles:
+### 5.1 Auditoria e Saneamento de Kargs
 
-```bash
-sudo systemd-tmpfiles --create
-
-```
-
-Apply user tmpfiles:
-
-```bash
-systemd-tmpfiles --user --create /usr/share/user-tmpfiles.d/60-io-tuning-user.conf
-
-```
-
-This sets the BTRFS NoCOW (`+C`) attribute on libvirt/GNOME Boxes images, Podman/Distrobox container layers, and rclone cache before heavy multi-gigabyte files are written, preventing disk fragmentation.
-
----
-
-## 7) OCI-native operation and kernel argument changes
-
-List current kernel arguments:
-
-```bash
-rpm-ostree kargs
-
-```
-
-Edit kernel arguments:
-
-```bash
-sudo rpm-ostree kargs --editor
-
-```
-
-Inspect drift/configuration:
-
-```bash
-sudo ostree admin config-diff
-
-```
-
-> ⚠️ **Warning:** on immutable systems, prefer declarative changes in `recipes/*.yml` and versioned files instead of repeated manual host adjustments.
-
-**Expected image kargs** (Baseline nativa do Fedora Kinoite 44 com exceção homologada):
-
-A imagem opera com os kargs padrão da distribuição (`rhgb quiet root=...`) acrescida da única exceção homologada de `btusb.enable_autosuspend=0`. Todos os recursos do Ryzen Zen 3 (`amd-pstate-epp`), isolamento IOMMU (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`), unmerged slab e invariant TSC são compilados nativamente no kernel do Fedora 44 (`7.2.x`).
-
-Verify the deployed boot configuration:
+A imagem opera na baseline nativa do Fedora Kinoite 44 acrescida unicamente da exceção homologada `btusb.enable_autosuspend=0` (`recipes/common-kargs.yml` e `60-btusb.conf`):
 
 ```bash
 cat /proc/cmdline
-```
+rpm-ostree kargs
 
-Para sanear o host físico e remover quaisquer kargs customizados, obsoletos ou causadores de instabilidade:
-
-```bash
+# Remover kargs obsoletos/instáveis caso herdados de instalações antigas:
 sudo rpm-ostree kargs \
   --delete-if-present=amd_pstate=active \
   --delete-if-present=tsc=reliable \
@@ -207,610 +137,160 @@ sudo rpm-ostree kargs \
   --delete-if-present=page_alloc.shuffle=1
 ```
 
-> [!NOTE]
-> **Exceção Homologada de Bluetooth:** O parâmetro `btusb.enable_autosuspend=0` está configurado declarativamente na imagem tanto na linha de boot (`recipes/common-kargs.yml`) quanto via modprobe (`/usr/lib/modprobe.d/60-btusb.conf`) para prevenir dormência do controlador USB Bluetooth e eliminar latência de reativação em periféricos sem fio.
-
-Rollback / inspeção: `rpm-ostree kargs` (retorna a linha padrão da distribuição + `btusb.enable_autosuspend=0` após reboot).
-
----
-
-## 8) Disaster Recovery / Rollback
-
-### When to use
-
-- Boot failure after update
-- Kernel panic
-- Broken graphical session
-- Critical driver regression
-
-### Procedure
-
-1. Boot into the previous deployment (boot menu), if needed.
-2. Run rollback:
+### 5.2 Rollback Transacional e SysRq REISUB
 
 ```bash
+# Reverter para o deployment anterior
 sudo bootc rollback
+systemctl reboot
 
-```
-
-3. Reboot.
-4. Validate update timer and core services:
-
-```bash
-sudo systemctl status firewalld
-systemctl status bootc-fetch-apply-updates.timer
-
-```
-
-### Return to stock Fedora Kinoite
-
-```bash
+# Reverter para a imagem oficial upstream do Fedora Kinoite
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
-
 ```
+
+- **Recuperação de Emergência do Teclado (`kernel.sysrq = 1`):** Em caso de travamento gráfico, pressione `Alt + SysRq` seguido sequencialmente de `R` → `E` → `I` → `S` → `U` → `B` para sincronizar caches Btrfs e reiniciar com segurança.
 
 ---
 
-## 9) Rclone cloud mounts for KDE Plasma (optional)
+## 6. Montagens FUSE de Nuvem (Rclone) e OAuth 2.0 Dedicado
 
-The image ships a modernized, dynamic systemd user template (`rclone@<remote>.service`) for rclone FUSE mounts. Each instance starts with the KDE Plasma graphical session, uses `Type=notify` for accurate mount readiness, and logs directly to the systemd user journal.
+### 6.1 Arquitetura e Inicialização (`rclone@.service`)
 
-### Unit Parameterization and Runtime Overrides
-
-Operational parameters (`--vfs-cache-max-size`, `--vfs-cache-max-age`, `--buffer-size`, `--poll-interval`, `--tpslimit`) are declared as environment defaults in `/usr/lib/systemd/user/rclone@.service` and tuned per provider. For in-depth architectural justification and cache policy mechanics, see [`docs/TECHNICAL_ARCHITECTURE.md`](TECHNICAL_ARCHITECTURE.md#55-subsistema-de-montagens-de-nuvem-fuse-rclone).
-
-### Remote Mappings and Per-Remote Environment Files
-
-Before `ExecStart`, the unit loads the authoritative base configuration `EnvironmentFile=-%h/.config/rclone/env/%i.env` followed by an optional local override file `EnvironmentFile=-%h/.config/rclone/env/%i.local.env`. Default templates from `/usr/share/rclone/env/` are authoritatively synchronized to `~/.config/rclone/env/%i.env` on boot via systemd user tmpfiles (`/usr/share/user-tmpfiles.d/70-rclone-env.conf`), while persistent custom flags, credentials, or overrides can be placed in `~/.config/rclone/env/%i.local.env` without being overwritten on boot.
-
-| Service instance             | Expected rclone remote | Mount point           | Environment configuration file         | System starter template                 |
-| ---------------------------- | ---------------------- | --------------------- | -------------------------------------- | --------------------------------------- |
-| `rclone@GoogleDrive.service` | `GoogleDrive:`         | `~/Cloud/GoogleDrive` | `~/.config/rclone/env/GoogleDrive.env` | `/usr/share/rclone/env/GoogleDrive.env` |
-| `rclone@OneDrive.service`    | `OneDrive:`            | `~/Cloud/OneDrive`    | `~/.config/rclone/env/OneDrive.env`    | `/usr/share/rclone/env/OneDrive.env`    |
-| `rclone@<remote>.service`    | `<remote>:`            | `~/Cloud/<remote>`    | `~/.config/rclone/env/<remote>.env`    | Custom user-defined                     |
-
-#### Google Drive Configuration (`GoogleDrive.env`)
-
-Optimized for official desktop client feature parity, rapid cloud synchronization, parallel chunk streaming, and local disk cleanliness:
-
-```env
-RCLONE_TPSLIMIT=12
-RCLONE_TPSLIMIT_BURST=100
-RCLONE_TRANSFERS=4
-RCLONE_CHECKERS=8
-RCLONE_BUFFER_SIZE=32M
-RCLONE_VFS_READ_AHEAD=64M
-RCLONE_VFS_READ_CHUNK_STREAMS=4
-RCLONE_VFS_CACHE_MAX_SIZE=15G
-RCLONE_VFS_CACHE_MAX_AGE=24h
-RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
-RCLONE_VFS_CACHE_POLL_INTERVAL=1m
-RCLONE_VFS_WRITE_BACK=10s
-RCLONE_DIR_CACHE_TIME=24h
-RCLONE_ATTR_TIMEOUT=1h
-RCLONE_POLL_INTERVAL=15s
-RCLONE_DRIVE_SKIP_GDOCS=true
-RCLONE_DRIVE_USE_TRASH=true
-RCLONE_DRIVE_CHUNK_SIZE=64M
-RCLONE_DRIVE_PACER_MIN_SLEEP=10ms
-RCLONE_DRIVE_PACER_BURST=100
-RCLONE_DRIVE_LIST_CHUNK=1000
-```
-
-- `RCLONE_DRIVE_USE_TRASH=true`: Files deleted locally are moved to the Google Drive Cloud Trash bin (with 30-day retention), mirroring the official Google Drive desktop client and preventing accidental data loss.
-- `RCLONE_POLL_INTERVAL=15s`: Employs Google Drive Changes API with 15-second polling for near real-time synchronization of remote changes made from mobile or web.
-- `RCLONE_ATTR_TIMEOUT=1h`: Keeps file and folder metadata in the Linux kernel FUSE cache for instant Dolphin navigation without repeated API latency.
-- `RCLONE_VFS_READ_CHUNK_STREAMS=4`: Multi-stream parallel chunk downloads for high throughput sequential reads.
-- `RCLONE_VFS_WRITE_BACK=10s`: Commits locally saved files to cloud storage within 10 seconds of file close (coalescing atomic writes from desktop apps).
-- `RCLONE_VFS_CACHE_MAX_AGE=24h` & `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Prevents local disk exhaustion by evicting cached files inactive for more than 24 hours, and immediately pruning the cache if host free space falls below 15 GB.
-- `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion. (To expose Docs as clickable web shortcuts like the official client, set `RCLONE_DRIVE_SKIP_GDOCS=false` and `RCLONE_FLAGS="--drive-export-formats link.html"` in `GoogleDrive.local.env`).
-- `RCLONE_DRIVE_CHUNK_SIZE=64M`: High throughput chunk size (power of 2) for large file uploads.
-- `RCLONE_DRIVE_PACER_MIN_SLEEP=10ms` & `RCLONE_DRIVE_PACER_BURST=100`: Reduces Google Drive pacer backoff delay by 10x for sub-second file deletion and instant single-file API responses.
-- `RCLONE_DRIVE_LIST_CHUNK=1000`: Fetches directory listings in large chunks of 1000 items, slashing API transaction round-trips.
-
-#### Microsoft OneDrive Configuration (`OneDrive.env`)
-
-Optimized to avoid Microsoft Graph API HTTP 429 throttling while accelerating directory browsing and parallel reads:
-
-```env
-RCLONE_TPSLIMIT=5
-RCLONE_TPSLIMIT_BURST=10
-RCLONE_TRANSFERS=2
-RCLONE_CHECKERS=4
-RCLONE_BUFFER_SIZE=32M
-RCLONE_VFS_READ_AHEAD=64M
-RCLONE_VFS_READ_CHUNK_STREAMS=4
-RCLONE_VFS_CACHE_MAX_SIZE=15G
-RCLONE_VFS_CACHE_MAX_AGE=24h
-RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
-RCLONE_VFS_CACHE_POLL_INTERVAL=1m
-RCLONE_VFS_WRITE_BACK=10s
-RCLONE_DIR_CACHE_TIME=24h
-RCLONE_ATTR_TIMEOUT=1h
-RCLONE_POLL_INTERVAL=1m
-RCLONE_ONEDRIVE_CHUNK_SIZE=50M
-RCLONE_ONEDRIVE_DELTA=true
-RCLONE_ONEDRIVE_LIST_CHUNK=1000
-```
-
-- `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=10`: Enforces transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties, with calibrated burst for fast directory exploration.
-- `RCLONE_ATTR_TIMEOUT=1h`: Caches file attributes in kernel FUSE to avoid constant round-trips to the Microsoft Graph API.
-- `RCLONE_ONEDRIVE_LIST_CHUNK=1000`: Maximizes item retrieval per page via Microsoft Graph Delta API, minimizing pagination delay.
-- `RCLONE_VFS_READ_CHUNK_STREAMS=4`: Parallel chunk download streams.
-- `RCLONE_POLL_INTERVAL=1m`: Safe polling cadence using the OneDrive Delta API for incremental change detection without triggering rate limits.
-- `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (exact multiple of 320 KiB: 160 × 320 KiB = 52.428.800 bytes).
-- `RCLONE_ONEDRIVE_DELTA=true`: Uses the OneDrive delta API for fast incremental change detection.
-
-### Quick Setup
-
-1. Configure your remote in rclone (name must match the service instance name, e.g. `GoogleDrive` or `OneDrive`):
+- **Template:** `/usr/lib/systemd/user/rclone@.service` monta `~/Cloud/<Remote>` com cache VFS (`~/.cache/rclone`, `0700`, NoCOW `+C`, `max-size=15G`, `max-age=24h`, `min-free-space=15G`, `write-back=10s`, `attr-timeout=1h`, `buffer-size=32M`, `read-ahead=64M`, `read-chunk-streams=4`).
+- **Configuração por Provedor:** `/usr/share/rclone/env/{GoogleDrive,OneDrive}.env` são sincronizados para `~/.config/rclone/env/*.env` no login via `70-rclone-env.conf`. Overrides persistentes do usuário devem ser salvos em `~/.config/rclone/env/<Remote>.local.env`.
+- **Google Drive (`GoogleDrive.env`):** `TPSLIMIT=12`, `TPSLIMIT_BURST=100`, `DRIVE_CHUNK_SIZE=64M`, `DRIVE_PACER_MIN_SLEEP=10ms`, `DRIVE_PACER_BURST=100`, `DRIVE_LIST_CHUNK=1000`, `DRIVE_USE_TRASH=true`, `DRIVE_SKIP_GDOCS=true`, `POLL_INTERVAL=15s`.
+- **OneDrive (`OneDrive.env`):** `TPSLIMIT=5`, `TPSLIMIT_BURST=10`, `ONEDRIVE_CHUNK_SIZE=50M` (múltiplo de 320 KiB), `ONEDRIVE_DELTA=true`, `ONEDRIVE_LIST_CHUNK=1000`, `POLL_INTERVAL=1m`.
 
 ```bash
+# Configurar remote (GoogleDrive ou OneDrive) e ativar serviço
 rclone config
-```
-
-2. Ensure environment templates are provisioned in user home:
-
-```bash
 tmpfiles-user
-```
-
-3. Enable and start the user mount service:
-
-```bash
 systemctl --user daemon-reload
 systemctl --user enable --now rclone@GoogleDrive.service
-# or for OneDrive:
 systemctl --user enable --now rclone@OneDrive.service
+
+# Atalhos de monitoramento
+status-rclone
+logs-rclone
+restart-rclone
 ```
 
-### Baloo File Indexer Exclusion (Crucial)
+### 6.2 Higiene de Exclusão no Dolphin, Duplicados e Indexador Baloo
 
-KDE Baloo file indexer must **never** index cloud FUSE mountpoints (`$HOME/Cloud`). If Baloo scans cloud mounts, it attempts to read and index all remote files, triggering massive network bandwidth usage, local CPU spikes, and rapid API quota exhaustion / temporary account bans from Google and Microsoft.
+- **Baloo (`baloofilerc`):** `$HOME/Cloud` possui exclusão imutável (`[$ei]`). Caso indexado anteriormente, limpe com `balooctl6 purge`.
+- **Exclusão Direta (`Shift + Delete`):** `ShowDeleteCommand=true` em `/etc/xdg/kdeglobals` exibe **"Excluir"** no menu de contexto do Dolphin. Em `~/Cloud/`, use sempre `Shift + Delete` (ou "Excluir") para acionar `unlink()` direto — o Rclone move o arquivo para a lixeira na nuvem do Google Drive/OneDrive sem criar pastas locais `.Trash-1000`.
+- **Remoção de Pastas Pesadas e Deduplicação:** Para pastas com centenas de arquivos, use `rclone purge GoogleDrive:caminho/da/pasta` (server-side em < 1s). O utilitário `sys-optimize` remove `.Trash-*` residuais e resolve erros `Dir.Remove not empty` via `rclone dedupe --dedupe-mode newest`.
 
-The image authoritatively ships `/etc/xdg/baloofilerc` with `$HOME/Cloud` excluded and locked via KConfig immutability (`[$ei]`). This prevents Baloo from scanning cloud mountpoints even if a local user configuration exists. If cloud files were previously indexed before applying this configuration, purge the metadata:
+### 6.3 Configuração de Client ID OAuth 2.0 Próprio no Google Cloud (Sem Expiração de 7 Dias)
 
-```bash
-balooctl6 purge
-```
+O `client_id` público do Rclone sofre rate-limit global (`403 RATE_LIMIT_EXCEEDED`, pacer de 16–32s). Criar um aplicativo próprio publicado garante **20.000 requisições/100s exclusivas** e tokens permanentes:
 
-### KDE Dolphin File Deletion, Cloud Trash & .Trash-1000 Mechanics
-
-Under Linux and KDE Plasma, file deletion follows the [FreeDesktop.org Trash Specification](https://specifications.freedesktop.org/trash-spec/trashspec-latest.html). Because cloud FUSE mounts (`~/Cloud/GoogleDrive`, `~/Cloud/OneDrive`) reside on a separate virtual filesystem device (`st_dev`), pressing standard **`Delete`** (Move to Trash) triggers the following behavior:
-- Dolphin avoids slow cross-device copying to `~/.local/share/Trash` and instead creates a directory named `.Trash-$UID` (e.g. `.Trash-1000`) at the root of the cloud mount point.
-- The deleted file is renamed to `.Trash-1000/files/` and a `.trashinfo` metadata file is generated in `.Trash-1000/info/`.
-- **Impact on Cloud Drives:** Files in `.Trash-1000` are **not** truly deleted; they continue consuming your active Google Drive or OneDrive storage quota in the cloud, and require multiple API calls for renaming and metadata synchronization.
-
-#### Recommended Action: Permanent Delete (Cloud-Native Trash)
-
-To delete files cleanly and maximize speed:
-1. The system configures `ShowDeleteCommand=true` in `/etc/xdg/kdeglobals`, adding the **"Excluir" (Delete)** option directly to Dolphin's context menu.
-2. Use **`Shift + Delete`** or right-click and select **"Excluir"** when removing files inside `~/Cloud/`:
-   - Files are unlinked immediately via standard POSIX `unlink()` in a single fast API call.
-   - On **Google Drive**, rclone (`RCLONE_DRIVE_USE_TRASH=true`) automatically redirects unlinked files to the **Google Drive Cloud Trash** (web trash bin with 30-day automatic retention and 1-click web restoration), freeing quota without polluting the drive root.
-   - On **OneDrive**, rclone automatically redirects unlinked files to the **OneDrive Cloud Recycle Bin**.
-   - No `.Trash-1000` folder is created.
-
-#### Resolução de 'Dir.Remove not empty' e Arquivos Duplicados
-
-O Google Drive permite múltiplos arquivos com nomes estritamente idênticos dentro da mesma pasta. No Linux/FUSE (POSIX), apenas um deles é exposto. Ao tentar excluir a pasta no Dolphin ou terminal:
-1. O Dolphin envia `unlink` para o arquivo visível.
-2. A cópia duplicada oculta permanece no Google Drive.
-3. O comando subsequente `rmdir` falha com `ENOTEMPTY` e o log registra `ERROR : Dir.Remove not empty`.
-4. **Solução Automática:** O script `optimize` (`kinoite-optimize`) audita e deduplica o Google Drive via `rclone dedupe --dedupe-mode newest "GoogleDrive:"`, restaurando um namespace limpo e permitindo a exclusão imediata de diretórios.
-5. **Exclusão Rápida de Pastas Pesadas (Purge Recursivo Server-Side):**
-   Ao deletar pastas com centenas de arquivos pelo Dolphin ou `rm -rf`, o Linux faz centenas de chamadas individuais de API. Para pastas pesadas, utilize a exclusão recursiva nativa via terminal, executada em uma única chamada de API (< 1s):
-   ```bash
-   rclone purge GoogleDrive:caminho/para/pasta
-   ```
-
-#### Eliminação de Erros 403 Rate Limit (Client ID Dedicado no Google Cloud)
-
-Por padrão, conexões sem `client_id` utilizam o projeto compartilhado global do rclone (`project_number:202264815644`). Milhares de usuários mundiais compartilham a mesma cota, resultando em:
-`HTTP 403: Quota exceeded for quota metric 'Queries' ... Rate limited, increasing sleep to 16.9s`
-Essa penalidade do pacer faz com que simples exclusões ou listagens demorem de 30 a 50 segundos.
-
-**Como obter 20.000 requisições/100s gratuitas e privadas:**
-Para o procedimento passo a passo completo com telas, configuração do status publicado (para tokens que nunca expiram em 7 dias) e reutilização entre múltiplos remotes, consulte o guia oficial dedicado:
-👉 [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](GOOGLE_DRIVE_OAUTH_SETUP.md)
-
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie um projeto (ex.: `Rclone-Kinoite`).
-2. Ative a **Google Drive API** e configure a tela de consentimento como **Externo**.
-3. Adicione seu e-mail aos **Usuários de teste** e clique em **Publicar aplicativo** (*Publish app*).
-4. Crie uma credencial do tipo **App para Computador** (*Desktop App*) e copie o Client ID e Client Secret.
-5. No terminal, atualize e reconecte seu remote:
+1. **Projeto e API:** No [Google Cloud Console](https://console.cloud.google.com/), crie um projeto (`Rclone-Kinoite`) e ative a **Google Drive API** em *APIs e Serviços → Biblioteca*.
+2. **Branding (Sem Logotipo):** Em *Google Auth Platform / Tela de permissão OAuth*, defina o nome `Rclone Kinoite`, selecione seu e-mail e **deixe o logotipo em branco** (enviar logotipo exige verificação documental; sem logotipo a publicação pessoal é imediata).
+3. **Escopos:** Em *Acesso a dados*, adicione o escopo `.../auth/drive` (*Ver, editar, criar e excluir todos os seus arquivos do Google Drive*).
+4. **Publicação Definitiva:** Em *Público-alvo (Audience)*, mantenha como **Externo**, adicione seu e-mail em *Usuários de teste* e clique em **Publicar aplicativo (Publish app)** para mudar o status para **Em produção** (impede que o *refresh token* expire a cada 7 dias).
+5. **Credenciais Desktop:** Em *Clientes (Credentials)* → **+ Criar cliente** → selecione **App para Computador (Desktop App)** e copie o `client_id` e `client_secret`.
+6. **Vincular no Rclone (pode ser reutilizado em múltiplos remotes do Google Drive):**
    ```bash
    rclone config update GoogleDrive client_id "SEU_CLIENT_ID" client_secret "SUA_CHAVE_SECRETA"
    rclone config reconnect GoogleDrive:
    systemctl --user restart rclone@GoogleDrive.service
    ```
-
-#### Automated Trash Audit and Purge
-
-If files were accidentally moved to `.Trash-1000` via standard `Delete`:
-- Run `optimize` (`kinoite-optimize`) or `sys-optimize`:
-  The maintenance script automatically scans active cloud mounts, unlinks any residual `.Trash-1000` directory trees (relocating all enclosed files into the cloud provider's native web trash), and eliminates root drive clutter.
-
-### Monitoring and Status
-
-Quick operational aliases (defined in `60-kinoite-aliases.sh`):
-
-```bash
-status-rclone   # systemctl --user status "rclone@*"
-logs-rclone     # journalctl --user -u "rclone@*" -f
-restart-rclone  # systemctl --user restart "rclone@*"
-```
-
-Or target specific remotes:
-
-```bash
-systemctl --user status rclone@GoogleDrive.service
-journalctl --user -u rclone@GoogleDrive.service -f
-```
-
-> [!TIP]
-> **Dolphin Thumbnails / Previews**: Because `~/Cloud/` is a FUSE mount, generating thumbnails for folders with heavy videos or RAW images can consume bandwidth and cache space. In Dolphin, configure **Settings → Configure Dolphin → General → Previews** to limit preview file sizes or disable video previews for remote mounts.
+   *(No navegador, clique em **Avançado → Acessar Rclone Kinoite (não seguro) → Continuar**).*
 
 ---
 
-## 10) Post-install health check
-
-This validates staged `bootc` policy, maintenance timers, and rootless Podman readiness after the first reboot.
+## 7. Timers de Atualização, Proteção TuneD e Hardening de Segurança
 
 ```bash
+# Validar timers automáticos (OnBootSec=5m, OnUnitActiveSec=45m + /usr/libexec/kinoite/network-guard)
 systemctl status bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer
-systemctl --user status flatpak-user-update.timer podman-auto-update.timer
-podman info --format '{{.Host.Security.Rootless}}'
+systemctl --user status flatpak-user-update.timer podman-auto-update.timer soar-upgrade-packages.timer
 
-```
+# Validar sysctls protegidos contra sobrescrita do TuneD (60-sysctl-protection.conf)
+sysctl vm.swappiness vm.dirty_ratio vm.dirty_background_ratio net.ipv4.tcp_congestion_control
 
-Expected timer policy:
-
-- `bootc-fetch-apply-updates.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
-- `flatpak-system-update.timer` and `flatpak-user-update.timer`: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
-- `podman-auto-update.timer` (system and user session): active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
-- `soar` auto-upgrade timer: active with `OnBootSec=5m`, `OnUnitActiveSec=45m` (starting 5m post-boot, cycling every 45m, 0 delay jitter).
-- `podman info` returns `true` when run as the desktop user.
-
-Memory policy note (`vm.swappiness`):
-
-- Expected value is `150` (aggressive ZRAM compaction).
-- On Fedora 41+ the Plasma power profiles run through `tuned-ppd`. Declarative symlinks provisioned in `/etc/sysctl.d/` via tmpfiles (`60-sysctl-protection.conf`) ensure that TuneD's native `reapply_sysctl = 1` mechanism enforces `vm.swappiness = 150` and low-latency NVMe dirty ratios even when switching between **Balanced** and **Performance** profiles.
-
----
-
-## 11) Podman automatic update timer
-
-Validate system and user timers:
-
-```bash
-systemctl status podman-auto-update.timer
-systemctl --user status podman-auto-update.timer
-
-```
-
-Run a one-shot container auto-update manually when needed:
-
-```bash
-sudo systemctl start podman-auto-update.service
-systemctl --user start podman-auto-update.service
-
-```
-
-Expected policy:
-
-- Update and prune services run with low scheduling pressure (`Nice=19`, `IOSchedulingClass=idle`).
-- Scheduled update timers (`bootc`, Flatpak system/user, Podman auto-update system/user, `soar`) wait for `network-online.target`, evaluate `ConditionACPower`, and enforce network resilience via `/usr/libexec/kinoite/network-guard` against metered connections and captive portals.
-- Podman auto-update uses packaged system and user systemd services and requires containers to opt in with the appropriate auto-update labels (`io.containers.autoupdate=image` or `registry`).
-
----
-
-## 12) Security Hardening and Kernel Module Verification
-
-The image includes declarative security drop-ins:
-
-- **Modprobe Blacklist (`/usr/lib/modprobe.d/60-security-blacklist.conf`)**: Disables obsolete/vulnerable network protocols (`sctp`, `tipc`), vulnerable legacy file systems (`jffs2`, `hfs`, `hfsplus`), and obsolete firewire drivers via `/bin/false` (CIS Benchmark compliance).
-- **SSHD Hardening (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`)**: Disables root login, enforces key-only authentication (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`), enforces `MaxAuthTries 3`, disables X11 forwarding, and sets 5-minute client alive timeouts.
-- **Firewall (`/usr/lib/firewalld/zones/tailscale.xml`)**: Tailscale mesh interface (`tailscale0`) is assigned to its own dedicated firewall zone.
-- **Sysctl Hardening & Resilience (`/usr/lib/sysctl.d/90-kernel-tuning.conf`)**: Enforces `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1`, `kernel.hardlockup_panic=1`, `kernel.softlockup_panic=0` and `kernel.sysrq=1` (NMI watchdog forces clean 10s auto-reboot on true unrecoverable hard lockups, while soft lockups log stack traces without crashing).
-- **Peripheral Udev Access (`/usr/lib/udev/rules.d/70-peripherals.rules`)**: Grants unprivileged `uaccess` to USB/HID devices (MCHOSE X9 headset, VXE mouse, BY Tech keyboard, ITE RGB controller).
-- **Libvirt Polkit Rules (`/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`)**: Grants passwordless virtualization management strictly to members of the `wheel` administrative group without colliding with upstream RPM files.
-- **Resilient Encrypted DNS (`/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`)**: Cloudflare primary DoT resolvers (`cloudflare-dns.com`) with automated DNSSEC integrity and opportunistic TLS.
-- **Docker CLI Compatibility (`/etc/containers/nodocker`)**: Suppresses Podman emulation warning for seamless Docker CLI workflows.
-
-Verify kernel module blacklist:
-
-```bash
+# Validar blacklist CIS de módulos e DNS-over-TLS Cloudflare
 modprobe -n -v sctp
-# Output: install /bin/false
+resolvectl status
 ```
 
 ---
 
-## 13) AMD GPU and ROCm Runtime Verification
+## 8. Calibração de BIOS — Gigabyte X570 AORUS PRO WIFI (BIOS F39) + 5950X + 64 GB DDR4
 
-Systemd user sessions automatically load `/usr/lib/environment.d/60-kinoite-environment.conf`:
+### 8.1 Topologia Daisy-Chain e Invariantes Térmicas de DRAM (4 DIMMs Mistos)
+
+```text
+[ Soquete AM4 ] ---> [ A1 / B1 (Stubs): 16 GB 1R Genérico ] ---> [ A2 / B2 (Terminação Física): 16 GB 2R KingSpec KS3200D4R13516G ]
+```
+
+- **Terminação Física Obrigatória:** Os módulos dual-rank (2R) devem residir estritamente nos slots **A2 e B2**, e os single-rank (1R) em **A1 e B1**.
+- **Acoplamento Térmico SoC → Slots A1/A2:** O modo `Auto` da placa-mãe sob XMP aplica `1.20V–1.25V` no `CPU VCORE SOC`, aquecendo o plano de cobre do soquete AM4 adjacente aos slots A1/A2. Fixar `VSOC = 1.100 V` e `DRAM Voltage = 1.350 V` contém a dissipação térmica ($P \propto V^2$).
+- **Recarga Capacitiva (`tRFC` / `tREFI`):** Manter estritamente em `Auto` com `Auto Self Refresh (ASR) = Enabled` (2x refresh próximo a 85 °C) e fluxo de ar ativo no gabinete sobre os 4 módulos.
+
+### 8.2 Profile A — Baseline Estável Homologado (Passo a Passo na BIOS F39)
+
+Pressione `<Delete>` no boot e `<F2>` para **Advanced Mode**:
+
+1. **Aba `Tweaker`:**
+   - `Extreme Memory Profile (X.M.P.)`: `Profile1` (DDR4-3200 MT/s).
+   - `FCLK Frequency`: `1600MHz` | `UCLK DIV1 MODE`: `UCLK==MEMCLK` (sincronia 1:1).
+   - `Advanced Memory Settings`:
+     - `Memory Boot Mode`: `Normal` | `Standard Timing Control`: `Auto` (`tRFC` e `tREFI` em `Auto`).
+     - `Gear Down Mode`: `Enabled` | `Power Down Enable`: `Disabled` | `Memory Context Restore`: `Disabled`.
+     - `CAD Bus Timing`: `ClkDrvStr`, `AddrCmdDrvStr`, `CsOdtDrvStr`, `CkeDrvStr` = `24 Ω`.
+     - `Data Bus Timing`: `ProcODT = 40.0 Ω` (fallback `43.6 Ω`), `RttNom = Disabled`, `RttWr = RZQ/3 (80 Ω)`, `RttPark = RZQ/5 (48 Ω)`.
+   - `Advanced Voltage Settings`:
+     - `DRAM Voltage (CH A/B)`: `1.350 V` (teto estrito `1.350 V`; undervolt validado `1.300 V`–`1.320 V` permitido).
+     - `CPU VCORE SOC`: `1.100 V` (teto `1.150 V`).
+   - `Advanced CPU Settings`:
+     - `Core Performance Boost`: `Auto` | `SVM Mode`: `Enabled` | `AMD Cool&Quiet`: `Enabled` | `Global C-state Control`: `Enabled`.
+     - `Power Supply Idle Control`: `Typical Current Idle` (obrigatório para evitar travamentos em C6 idle).
+2. **Aba `Settings`:**
+   - `IO Ports`: `Above 4G Decoding = Enabled` | `Re-Size BAR Support = Enabled` (SAM 8192M) | `PCIe Slot Configuration = Auto`.
+   - `Miscellaneous`: `AMD CPU fTPM = Enabled` | `TSME = Disabled` (remove latência de encriptação DRAM).
+   - `AMD CBS`:
+     - `NBIO Common Options → IOMMU`: `Enabled`.
+     - `UMC Common Options → DDR Common Options → DRAM Controller Configuration`: `Auto Self Refresh (ASR)` / `Extended Temperature Range = Enabled`.
+     - `SMU Common Options`: `CPPC = Enabled` | `CPPC Preferred Cores = Enabled` | `DF Cstates = Auto`.
+   - `AMD Overclocking`:
+     - `DDR and Infinity Fabric`: `1600 MHz` | `UCLK==MEMCLK` | `VDDG IOD = 1000 mV` (`1.000 V`) | `VDDG CCD = 950 mV` (`0.950 V`) | `cLDO VDDP = 900 mV` (`0.900 V`).
+     - `Precision Boost Overdrive`: `Auto` (stock: PPT 142W, TDC 95A, EDC 140A) | `Curve Optimizer = Disabled`.
+3. **Aba `Boot` & `Save & Exit`:**
+   - `CSM Support = Disabled` | `Fast Boot = Disabled`.
+   - Salvar em `Save Profiles → Slot 1` (`Profile 1 - Stable Baseline 64GB`) e pressionar `<F10>`.
+
+### 8.3 Profile B — Tuning Opcional Pós-Validação
+
+Aplicar **somente após o Profile A passar na validação (§8.4) com zero erros**:
+- **Fase 1 (Timings Primários):** Testar `20-20-20-20-40` (ou `18-22-22-42`) mantendo `tRC`, `tRFC` e `tREFI` em `Auto` e `Gear Down Mode = Enabled`.
+- **Fase 2 (PBO):** Limites stock (`PPT 142W / TDC 95A / EDC 140A`) ou High-Throughput (`PPT 175W / TDC 120A / EDC 150A` apenas com watercooler 280/360mm $< 75^\circ\text{C}$). Proibido `Motherboard` limits ou `PBO Scalar > 1X`.
+- **Fase 3 (Curve Optimizer Per-Core):**
+  - Hierarquia CPPC do host: **CCD0** contém os núcleos preferenciais (`Core 0` e `Core 3` score `236`, `Core 6` `231`, `Core 5` `226`). **Proibido aplicar CO negativo no CCD0 (Cores 0 a 7 = `0`)**, pois induz kernel oops em cargas leves.
+  - **CCD1 (Cores 8 a 15, scores 166–201):** Permitido testar offset negativo conservador de `-5` (opcionalmente `-10` após validação).
+
+### 8.4 Auditoria de Hardware e Testes de Estresse (Obrigatório)
 
 ```bash
-echo $HSA_OVERRIDE_GFX_VERSION
-# Expected: 10.3.0
-
-vulkaninfo --summary | grep driverName
-# Expected: radv
-```
-
-Verify GPU acceleration and monitoring:
-
-```bash
-# Verify VA-API hardware video decode on RX 6600 XT
-vainfo
-
-# Verify OpenCL platforms
-clinfo
-
-# Interactive GPU engine & VRAM monitor
-gpu-top
-```
-
----
-
-## 14) BIOS Calibration — Gigabyte X570 AORUS PRO WIFI + Ryzen 9 5950X + 64 GB DDR4
-
-### 14.0 Hardware Context & Signal Integrity Analysis
-
-| Component / Interface | Hardware Metric (from DMI / SMBIOS / kernel log) | Operational Impact |
-| :--- | :--- | :--- |
-| **Motherboard & BIOS** | Gigabyte X570 AORUS PRO WIFI, **BIOS F39** (10/28/2025), AGESA ComboV2 1.2.0.x, microcode `0xa201213` | 12+2 VRM phases with Direct Touch heatpipe; pure UEFI support |
-| **CPU Architecture** | AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD Vermeer B0/B2) | 105 W TDP / 142 W stock PPT; dual-CCD data fabric crossbar |
-| **DRAM Slots A1 / B1 (`DIMM 0`)** | Generic `DDR4 16GB 3200MHz`, **single-rank (1R)** | Secondary trace taps (stubs) in daisy-chain topology |
-| **DRAM Slots A2 / B2 (`DIMM 1`)** | KingSpec `KS3200D4R13516G`, 16 GB, **dual-rank (2R)**, DDR4-3200 1.2V JEDEC | Primary physical trace terminations in daisy-chain topology |
-| **ECC Support** | **No** — `amd64_edac` driver does not load; DRAM bit-flips are invisible to `rasdaemon` | Integrity verification requires active testing (MemTest86 / `stressapptest`) |
-| **Bus Topology** | 2 DIMMs/channel, **3 ranks/channel, mixed kits** (64 GB total) | Heavy electrical load on Zen 3 IMC; requires fixed termination & voltages |
-
-```
-Physical Daisy-Chain Memory Trace Architecture:
-[ CPU Socket ] ---> [ Slot A1 / DIMM 0: 1R Generic 16GB ] ----> [ Slot A2 / DIMM 1: 2R KingSpec 16GB (PHYSICAL TERMINATION) ]
-               ---> [ Slot B1 / DIMM 0: 1R Generic 16GB ] ----> [ Slot B2 / DIMM 1: 2R KingSpec 16GB (PHYSICAL TERMINATION) ]
-```
-
-**Daisy-Chain Signal Integrity Rules:**
-- On daisy-chain motherboards (like the Gigabyte X570 AORUS PRO), traces travel from the CPU past slot 1 (A1/B1) and terminate physically at slot 2 (A2/B2).
-- The heavier dual-rank (2R) modules **must strictly reside in A2 and B2** to absorb signal reflections at the termination boundary.
-- Placing 2R modules in A1/B1 and 1R modules in A2/B2 is strictly forbidden: the mismatched capacitive load causes impedance discontinuities, reflection into trace stubs, eye margin collapse, and DQ bus data corruption.
-
-> [!WARNING]
-> **Root-Cause Analysis of the 2026-10-05 10:30 Freeze:**
-> Kernel oops logs showed corrupted instruction bytes simultaneously fetched from **two distinct cores across separate CCDs** (CPU 17 on CCD1 and CPU 4 on CCD0), with identical memory addresses reading back intact moments later.
-> This signature confirms **transient signal corruption along the memory bus or Infinity Fabric crossbar**, caused by leaving IMC voltages (`VSOC`, `VDDG`) and bus terminations (`ProcODT`, `RTT`) on `Auto` with a mixed 4-DIMM 3-rank/channel topology.
-
-> [!TIP]
-> **Hardware Upgrade Recommendation (Maximum Headroom):**
-> Replacing the 4 mixed DIMMs with a **matched 2×32 GB dual-rank DDR4-3600 CL16/CL18 kit** in slots A2/B2 provides 64 GB with 1 DIMM/channel and rank interleaving, unlocking synchronous FCLK 1800 MHz 1:1 with vastly superior electrical margins and lower latency than any 4-DIMM mixed configuration can achieve.
-
-**Thermal Dynamics & Capacitive Refresh Invariants (4-DIMM High Density):**
-- **Joule Dissipation & Voltage Sensitivity ($P \propto V^2$):** With 4 DIMMs packed tightly into adjacent slots, radiant dissipation between sticks is severely restricted. Overvolting DRAM beyond 1.350 V increases thermal output quadratically ($P \propto V^2$).
-- **Socket AM4 Copper Plane Coupling (cIOD to Slots A1/A2):** The I/O Die (SoC) on the Ryzen 9 5950X dissipates significant heat into the AM4 socket. Motherboard `Auto` settings typically overvolt `CPU VCORE SOC` to 1.20 V – 1.25 V under XMP loads. This thermal load conducts directly into the internal copper power planes of the motherboard immediately adjacent to memory slots A1 and A2, baking the inner DIMMs from below. Setting a strict manual cap of `1.100 V` on `VSOC` isolates and suppresses this thermal transfer.
-- **Capacitive Charge Retention & Refresh Timings (`tRFC` / `tREFI`):** DRAM cells store bits as charge in microscopic trench capacitors. High operating temperatures accelerate charge leakage exponentially. Refresh timings (`tRFC` and `tREFI`) must remain on `Auto` to ensure sufficient recharge cycles and prevent temperature-induced bit flips.
-- **Auto Self Refresh (ASR) / Extended Temperature Range:** Enabling ASR in AMD CBS allows the IMC to enforce a 2x refresh cadence when DIMM temperatures approach 85 °C, preserving data integrity under prolonged load.
-- **Active Chassis Airflow:** Dedicated chassis airflow over the 4 memory modules is strictly required to prevent heat pockets from forming between the tightly packed modules.
-
----
-
-### 14.1 Profile A — Stable Baseline Calibration (Step-by-Step)
-
-Follow this precise menu navigation in Gigabyte BIOS F39. Save Profile A to an internal profile slot before adjusting further.
-
-#### Step 0: BIOS Access & Mode Switch
-1. Power on or restart the workstation.
-2. Tap `<Delete>` repeatedly during the AORUS splash screen to enter BIOS setup.
-3. If the interface starts in **Easy Mode**, press `<F2>` to switch to **Advanced Mode**.
-
----
-
-#### Step 1: `Tweaker` Tab (Clocks, Timings, Bus Terminations & Voltages)
-
-Navigate to the **`Tweaker`** tab using the top navigation bar:
-
-1. **Memory Frequency & Multipliers:**
-   - `Extreme Memory Profile (X.M.P.)`: `Profile1` (Enabled as standard default; loads factory DDR4-3200 MT/s rated timings and 1.35 V DRAM baseline).
-   - `System Memory Multiplier`: `Auto` (automatically locked to `32.00` by XMP Profile1).
-   - `FCLK Frequency`: `1600MHz` (synchronous 1:1 with MEMCLK 1600 MHz).
-   - `UCLK DIV1 MODE`: `UCLK==MEMCLK` (forces memory controller to 1600 MHz, avoiding the ~10 ns 2:1 latency penalty).
-
-2. **Advanced Memory Settings (`Tweaker → Advanced Memory Settings`):**
-   - `Memory Boot Mode`: `Normal`.
-   - `Standard Timing Control`: `Auto` (applies calibrated XMP Profile1 primary timings; refresh parameters `tRFC` and `tREFI` must remain strictly on `Auto` to ensure capacitor recharge cycles).
-   - `Command Rate (Cmd2T)`: `Auto` (operates at 1T under GDM).
-   - `Gear Down Mode`: `Enabled` (mandatory for address/command bus margins under XMP timings on 4 DIMMs).
-   - `Power Down Enable`: `Disabled` (eliminates CKE power-down transitions and memory wakeup latency).
-   - `Memory Context Restore`: `Disabled` (enforces full DRAM training on every cold boot; prevents masked marginal timings).
-   - `CAD Bus Timing Configuration`:
-     - `ClkDrvStr`: `24 Ω`
-     - `AddrCmdDrvStr`: `24 Ω`
-     - `CsOdtDrvStr`: `24 Ω`
-     - `CkeDrvStr`: `24 Ω`
-   - `Data Bus Timing Configuration`:
-     - `ProcODT`: `40.0 Ω` (sweet spot for 4 DIMMs / 3 ranks with XMP; fallback: `43.6 Ω`).
-     - `RttNom`: `Disabled` (or `RZQ/7 (34 Ω)`).
-     - `RttWr`: `RZQ/3 (80 Ω)`.
-     - `RttPark`: `RZQ/5 (48 Ω)` (fallback: `RZQ/1 (240 Ω)`).
-
-3. **Advanced Voltage Settings (`Tweaker → Advanced Voltage Settings`):**
-   - `DRAM Voltage (CH A/B)`: `1.350 V` (verified XMP operating voltage; strict ceiling at `1.350 V` to contain quadratic thermal dissipation $P \propto V^2$; stable undervolt to `1.300 V`–`1.320 V` is permitted if validated).
-   - `CPU VCORE SOC`: `1.100 V` (Manual mode; hard ceiling `1.150 V` — strictly prevents motherboard `Auto` from overvolting to 1.20 V–1.25 V, which dumps excessive heat into the AM4 socket copper plane adjacent to memory slots A1/A2).
-   - *Technical Note on Sub-Voltages:* Setting `VSOC` to `1.100 V` mandates calibrating `VDDG IOD` to `1.000 V` (keeping $\ge 40$ mV margin below VSOC to prevent Fabric disconnects), `VDDG CCD` to `0.950 V`, and `cLDO VDDP` to `0.900 V` in Step 2 (`Settings → AMD Overclocking`). Never leave VDDG on `Auto` when reducing VSOC.
-   - `CPU/VRM Settings`:
-     - `Vcore Loadline Calibration`: `Auto`.
-     - `VCORE SOC Loadline Calibration`: `Auto` (or `Medium` to prevent voltage droop under heavy memory load).
-
-4. **Advanced CPU Settings (`Tweaker → Advanced CPU Settings`):**
-   - `Core Performance Boost`: `Auto` (enables core boost and triggers ACPI `_CPC` table publication).
-   - `SVM Mode`: `Enabled` (hardware virtualization for KVM and Podman).
-   - `AMD Cool&Quiet function` / `PSS Support`: `Enabled` (required for dynamic frequency states).
-   - `Global C-state Control`: `Enabled` (allows deep package sleep and maximum single-thread boost headroom).
-   - `Power Supply Idle Control`: `Typical Current Idle` (strictly required on Zen 3 to prevent C6 idle voltage sag and sudden freezes).
-
----
-
-#### Step 2: `Settings` Tab (I/O, Platform Security, AMD CBS & Overclocking)
-
-Navigate to the **`Settings`** tab:
-
-1. **PCIe & BAR Allocation (`Settings → IO Ports`):**
-   - `Above 4G Decoding`: `Enabled` (enables 64-bit PCIe memory address space).
-   - `Re-Size BAR Support`: `Auto` or `Enabled` (allocates full 8192 MB contiguous BAR on Radeon RX 6600 XT via SAM).
-   - `PCIe Slot Configuration`: `Auto` (runs PCIe Gen4 link speed for GPU and NVMe).
-
-2. **Platform Security & Latency (`Settings → Miscellaneous`):**
-   - `AMD CPU fTPM`: `Enabled`.
-   - `TSME (Transparent SME)`: `Disabled` (disables real-time hardware DRAM encryption, eliminating a 2–4 ns latency penalty and regaining ~3% memory bandwidth).
-
-3. **AMD CBS Sub-menu (`Settings → AMD CBS`):**
-   - `CPU Common Options`: `Global C-state Control = Enabled`.
-   - `NBIO Common Options`: `IOMMU = Enabled` (enables hardware-isolated virtualization and container I/O; kernel runs in default robust Translated/DMA Lazy mode).
-   - `UMC Common Options → DDR Common Options → DRAM Controller Configuration` (or directly `DRAM Controller Configuration` depending on AGESA layout):
-     - `Auto Self Refresh (ASR)` / `Extended Temperature Range`: `Enabled` (forces 2x refresh cadence when approaching 85 °C to guard against capacitive charge leakage bit flips).
-   - `SMU Common Options`:
-     - `CPPC`: `Enabled` (mandatory for `amd-pstate-epp` driver).
-     - `CPPC Preferred Cores`: `Enabled` (exposes silicon binning to Linux scheduler).
-     - `DF Cstates`: `Auto` (if idle freezes persist after Profile A, change to `Disabled`).
-
-4. **AMD Overclocking Sub-menu (`Settings → AMD Overclocking` — Accept the AMD disclaimer):**
-   - `DDR and Infinity Fabric Frequency/Timings`:
-     - `Infinity Fabric Frequency and Dividers`: `1600 MHz`.
-     - `UCLK DIV1 MODE`: `UCLK==MEMCLK`.
-     - `VDDG IOD Voltage Control`: `1000 mV` (`1.000 V` — keeps $\ge 40$ mV below VSOC to stabilize the IMC-to-Fabric bridge).
-     - `VDDG CCD Voltage Control`: `950 mV` (`0.950 V` — core-to-fabric interconnect voltage).
-     - `cLDO VDDP Voltage Control`: `900 mV` (`0.900 V` — standard DDR PHY signaling voltage).
-   - `Precision Boost Overdrive`:
-     - `Precision Boost Overdrive`: `Auto` (stock 142 W PPT limits for baseline).
-     - `Curve Optimizer`: `Disabled` (all offsets set to 0).
-
----
-
-#### Step 3: `Boot` & `Save & Exit` Tabs
-
-1. **Boot Options (`Boot`):**
-   - `CSM Support`: `Disabled` (pure UEFI mode mandatory for Re-Size BAR).
-   - `Fast Boot`: `Disabled` (guarantees thorough device and memory bus retraining on every boot).
-
-2. **Save Baseline Profile (`Save & Exit`):**
-   - Navigate to `Save Profiles` → Select Slot 1 → Name it: `Profile 1 - Stable Baseline 64GB`.
-   - Press `<F10>` (`Save and Exit Setup`) → Confirm `Yes` to reboot.
-
----
-
-### 14.2 Profile B — Maximum Performance Step (Validated Tuning)
-
-Apply Profile B adjustments **only after Profile A completes §14.3 validation with zero errors**.
-Perform one optimization at a time and validate (§14.3) after each step.
-
-#### Phase 1: Secondary Timing Tightening (Beyond Default XMP Profile1)
-Profile A already runs factory XMP DDR4-3200 with calibrated voltages. If seeking additional memory latency reduction beyond the SPD profile:
-
-1. In `Tweaker → Advanced Memory Settings → Standard Timing Control`:
-   - Set `CAS Latency (tCL)`: `20`
-   - Set `tRCDRD`: `20`
-   - Set `tRCDWR`: `20`
-   - Set `tRP`: `20`
-   - Set `tRAS`: `40`
-   - Keep `tRC`, `tRFC`, and `tREFI` strictly on `Auto` (manual tightening of refresh parameters in a 4-DIMM mixed topology is strictly prohibited; prevents temperature-induced capacitive refresh retention bit flips on 8Gb ICs).
-   - Keep `Gear Down Mode = Enabled`.
-2. Save (`F10`) and execute §14.3 validation.
-3. *Optional secondary tightening (only if Phase 1 passes 1 h stress testing):*
-   - Test `CL18-22-22-42` at `1.350 V`. If training fails or errors appear, immediately revert to `CL20-20-20-40`.
-
-#### Phase 2: Precision Boost Overdrive (PBO) Advanced Calibration
-1. Navigate to `Settings → AMD Overclocking → Precision Boost Overdrive`:
-   - `Precision Boost Overdrive`: `Advanced`.
-   - `PBO Limits`: `Manual`.
-   - **Recommended Balanced Limits (Thermal & Sustained Clock Efficiency):**
-     - `PPT`: `142 W` (AMD stock envelope; keeps VRM and CPU temperatures $< 70^\circ\text{C}$ while sustaining up to 4.95 GHz single-thread boost).
-     - `TDC`: `95 A`
-     - `EDC`: `140 A`
-   - *High-Throughput Profile (only with premium 280/360mm AIO cooling and load temperatures $< 75^\circ\text{C}$):*
-     - `PPT`: `175 W`, `TDC`: `120 A`, `EDC`: `150 A`.
-   - **Prohibited:** Never select `Motherboard` limits (395 W) or increase `PBO Scalar` above `1X / Auto`.
-   - `Max CPU Boost Clock Override`: `0 MHz` (leave stock; avoid pushing clock offsets that destabilize the curve).
-
-#### Phase 3: Curve Optimizer Per-Core Allocation (CPPC Silicon Hierarchy)
-The Ryzen 9 5950X silicon binning on this host demonstrates distinct CCD capabilities via ACPI CPPC:
-
-```
-CPPC Silicon Hierarchy (Detected on Host):
-CCD0 Preferred Golden/Silver Cores (Scores 211–236):
-  Core 0 (CPU 0/16): 236  |  Core 3 (CPU 3/19): 236  |  Core 6 (CPU 6/22): 231  |  Core 5 (CPU 5/21): 226
-  Core 4 (CPU 4/20): 221  |  Core 2 (CPU 2/18): 216  |  Core 1 (CPU 1/17): 211  |  Core 7 (CPU 7/23): 206
-
-CCD1 Secondary Cores (Scores 166–201):
-  Core 10 (CPU 10/26): 201 | Core 8 (CPU 8/24): 196  | Core 11 (CPU 11/27): 191 | Core 9 (CPU 9/25): 186
-  Core 15 (CPU 15/31): 181 | Core 14 (CPU 14/30): 176 | Core 13 (CPU 13/29): 171 | Core 12 (CPU 12/28): 166
-```
-
-> [!CAUTION]
-> **Inviolable Curve Optimizer Invariant:**
-> The top-ranked cores (Core 0, Core 3, Core 6, Core 5) already operate near the minimum voltage threshold required to sustain boost frequencies up to 5.0 GHz.
-> Applying negative Curve Optimizer offsets to these cores causes **immediate light-workload kernel oopses** during low-power C-state transitions.
-
-**Per-Core Calibration Procedure:**
-- In `Settings → AMD Overclocking → Precision Boost Overdrive → Curve Optimizer`:
-  - `Curve Optimizer`: `Per Core`.
-  - **CCD0 (Cores 0 to 7):** Set strictly to `0` (neutral, no negative offset).
-  - **CCD1 (Cores 8 to 15):** Set to `Negative` with a value of `5` (`-5`).
-  - Validate with §14.3. If 100% stable through all stress and idle cycles, CCD1 cores may optionally be tested at `-10`.
-
----
-
-### 14.3 Validation & Hardware Audit (Mandatory)
-
-Execute the following checks in terminal after booting into Fedora Kinoite:
-
-```bash
-# 0. Verify configured memory frequency (3200 MT/s) and topology across all 4 DIMM slots
+# 1. Confirmar frequência DDR4-3200 nos 4 slots, driver amd-pstate-epp e Re-Size BAR (8192M)
 sudo dmidecode -t memory | grep -E "Locator:|Speed:|Configured Memory Speed:|Part Number:|Rank:"
-# Expected: 4 DIMMs active, Speed: 3200 MT/s, Configured Memory Speed: 3200 MT/s
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver /sys/devices/system/cpu/amd_pstate/status
+journalctl -k -b 0 | grep -E "amdgpu.*BAR=|iommu: Default domain"
 
-# 1. Verify CPU scaling driver, CPPC active status and boost capability
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver        # Expected: amd-pstate-epp
-cat /sys/devices/system/cpu/amd_pstate/status                  # Expected: active
-cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference # Expected: performance
-cat /sys/devices/system/cpu/cpufreq/boost                      # Expected: 1
-
-# 2. Inspect CPPC highest_perf ranking across all 32 hardware threads
+# 2. Listar hierarquia CPPC highest_perf dos 32 threads
 paste <(for i in /sys/devices/system/cpu/cpu*/topology/core_id; do echo "CPU $(basename $(dirname $(dirname $i)) | sed 's/cpu//'): core $(cat $i)"; done) \
       <(for i in /sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf; do echo "highest_perf: $(cat $i)"; done) | sort -k6,6nr | head -n 16
 
-# 3. Confirm Smart Access Memory (Re-Size BAR 8192M) and IOMMU domain
-journalctl -k -b 0 | grep -E "amdgpu.*BAR=|iommu: Default domain"
-# Expected: amdgpu ... Detected VRAM RAM=8176M, BAR=8192M
-# Expected: iommu: Default domain type: Translated
-
-# 4. Verify kernel resilience parameters
-sysctl kernel.panic kernel.panic_on_oops kernel.hardlockup_panic kernel.softlockup_panic kernel.sysrq
-# Expected: kernel.panic = 10, kernel.panic_on_oops = 1, kernel.hardlockup_panic = 1, kernel.softlockup_panic = 0, kernel.sysrq = 1
-
-# 5. Stress Testing (Run within a dedicated Fedora toolbox container)
+# 3. Teste ativo de estresse DRAM + Infinity Fabric (1h alocando ~52 GB) e CPU (30m)
 toolbox create -y memtest
 toolbox run -c memtest sudo dnf install -y stressapptest stress-ng
-
-# Execute 1-hour active DRAM + Infinity Fabric stress test (allocates ~52 GB RAM)
 toolbox run -c memtest stressapptest -s 3600 -M 52000 -W
-# Mandatory requirement: Process must conclude with "Status: PASS"
-
-# Execute 30-minute 32-thread CPU verification stress test
 toolbox run -c memtest stress-ng --cpu 32 --cpu-method all --verify --timeout 30m --metrics-brief
 
-# 6. Post-Stress Hardware Diagnostic Verification
-journalctl -k -b 0 -p 3 --no-pager                             # Must show 0 MCE or oops records
-sudo ras-mc-ctl --errors                                       # Confirms rasdaemon log is clean
+# 4. Verificar ausência de erros MCE / PCIe AER no kernel e rasdaemon
+journalctl -k -b 0 -p 3 --no-pager
+sudo ras-mc-ctl --errors
 ```
 
-**Offline DRAM Verification (Non-ECC Requirement):**
-- Prepare a bootable USB with **PassMark MemTest86** (UEFI signed).
-- Execute a minimum of **4 complete passes** across all 64 GB.
-- Acceptance criteria: **0 errors**. Any error mandates adjusting `ProcODT` to `43.6 Ω`, increasing `VSOC` to `1.125 V`, or inspecting module seating.
-
-**Emergency Desktop Recovery:**
-If a desktop freeze occurs while the kernel is responsive, invoke the Linux SysRq REISUB sequence:
-`Alt + SysRq` followed by sequentially pressing: `R` → `E` → `I` → `S` → `U` → `B` (unraw keyboard, terminate, kill, sync filesystem caches to NVMe, remount read-only, clean reboot).
-
+- **Validação Offline de DRAM (Não-ECC):** Executar ≥ 4 passes completos no **PassMark MemTest86** via USB UEFI (critério: 0 erros; se houver erro, ajustar `ProcODT` para `43.6 Ω` ou `VSOC` para `1.125 V`).
