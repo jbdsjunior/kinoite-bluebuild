@@ -65,6 +65,7 @@ echo "[OK] User tmpfiles synchronized for $REAL_USER."
 NOCOW_SYSTEM_DIRS=(
     "/var/lib/libvirt/images"
     "/var/lib/containers/storage"
+    "/var/lib/containers/storage/volumes"
 )
 
 NOCOW_USER_DIRS=(
@@ -295,7 +296,11 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}"
         echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
     else
-        echo "[OK] Host kernel arguments are clean (pure Fedora 44 upstream baseline)."
+        if echo "$CURRENT_KARGS" | grep -q "btusb.enable_autosuspend=0"; then
+            echo "[OK] Host kernel arguments verified: Fedora 44 baseline with homologated exception (btusb.enable_autosuspend=0)."
+        else
+            echo "[OK] Host kernel arguments are clean (pure Fedora 44 upstream baseline)."
+        fi
     fi
 else
     echo "[SKIP] Sudo privileges not available; skipping rpm-ostree cleanup and kargs inspection."

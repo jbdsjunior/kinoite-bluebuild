@@ -180,7 +180,7 @@ Este repositório consolida autoritativamente todas as convenções e disciplina
 
 | Invariante | Arquivo(s) de Implementação |
 | :--------- | :-------------------------- |
-| Baseline Nativa de Kernel Arguments (Zero Custom Kargs) | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/common-kargs.yml`](recipes/common-kargs.yml) (exceção `btusb`) |
+| Baseline Nativa de Kernel Arguments (Zero Custom Kargs) | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/common-kargs.yml`](recipes/common-kargs.yml) e [`files/system/usr/lib/modprobe.d/60-btusb.conf`](files/system/usr/lib/modprobe.d/60-btusb.conf) (exceção `btusb`) |
 | Arquitetura Transacional bootc | [`files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`](files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf) |
 | Blindagem profile.d | [`files/system/etc/profile.d/50-shell-env-overrides.sh`](files/system/etc/profile.d/50-shell-env-overrides.sh), [`files/system/etc/profile.d/60-kinoite-aliases.sh`](files/system/etc/profile.d/60-kinoite-aliases.sh) |
 | Paridade de Navegadores Flatpak | [`files/system/usr/share/browser-configs/chromium-flags.conf`](files/system/usr/share/browser-configs/chromium-flags.conf), [`files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`](files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf) |
