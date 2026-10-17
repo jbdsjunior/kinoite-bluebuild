@@ -7,110 +7,66 @@
 
 </div>
 
-Immutable OCI images based on Fedora Kinoite (KDE Plasma), built with BlueBuild for desktop, virtualization, and local development workloads with a strong focus on reproducibility, security, and fast rollback.
+Immutable OCI image based on **Fedora Kinoite 44 (KDE Plasma 6 / Wayland)**, built with BlueBuild for AMD Zen 3 + RDNA2 workstations, virtualization (KVM), containerized ROCm/HIP AI inference, and DevSecOps workloads.
 
 ---
 
 ## Overview
 
-This repository publishes **one variant**:
+| Variant       | Base Image                      | Target                                  | Hardware Baseline                                    |
+| :------------ | :------------------------------ | :-------------------------------------- | :--------------------------------------------------- |
+| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 |
 
-| Variant       | Base Image                      | Target                                  | Use Case                      |
-| :------------ | :------------------------------ | :-------------------------------------- | :---------------------------- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD systems (single variant). |
-
-### Project Principles
-
-- **Immutable-first:** apply customizations through `recipes/*.yml` + `files/system/`, not direct `dnf install` on the host.
-- **OCI-native:** switch/update images with `bootc switch` and rollback with `bootc rollback`.
-- **Integrity & Trust:** sign images with Cosign in build pipelines and enforce container signature policy on deployment.
-- **Fail fast, recover faster:** use atomic rollback to the previous deployment when regressions occur.
-
-> ⚠️ **Warning:** this profile is optimized for workstations with **64 GB RAM**. See [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md#2-hardware-baseline--perfil-operacional).
-
----
-
-## CI/CD
-
-Automation workflows (`.github/workflows/`):
-
-- `build-amd.yml`: manual image build via `workflow_dispatch`;
-- `check-updates.yml`: scheduled check that triggers builds when a new upstream digest is detected;
-- `cleanup.yml`: continuous operational hygiene.
+> [!WARNING]
+> This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
 ## Quick Start
 
-### 1) Switch to the custom image
-
-AMD
-
-```bash
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
-
-```
-
-Reboot after completion.
-
-### 2) Enforce signature policy during image switch
-
-AMD
+### 1) Switch to the signed custom image
 
 ```bash
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
-
+systemctl reboot
 ```
 
-### 3) Post-installation
+### 2) Post-installation & Maintenance
 
-Follow: [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+Run the unified maintenance utility after booting:
+
+```bash
+sys-optimize
+```
+
+Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE + Google Drive OAuth 2.0, ROCm CDI, and Gigabyte X570 BIOS F39 calibration): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
-## Rollback and Disaster Recovery
-
-1. Reboot and select the previous deployment from the GRUB menu (if needed).
-2. Run atomic rollback:
+## Rollback and Recovery
 
 ```bash
+# Atomic rollback to previous deployment
 sudo bootc rollback
 
-```
-
-### Revert to stock Fedora Kinoite
-
-```bash
+# Revert to upstream stock Fedora Kinoite
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
-
 ```
 
 ---
 
 ## Repository Structure
 
-| Path                          | Purpose                                                                |
-| ----------------------------- | ---------------------------------------------------------------------- |
-| `recipes/recipe-amd.yml`      | Main AMD recipe variant                                                |
-| `recipes/common-*.yml`        | Shared modules (packages, drivers, services, and more)                 |
-| `files/system/`               | Immutable host overlays (policies, units, defaults)                    |
-| `files/system/usr/libexec/`   | Centralized resilience scripts (network-guard)                         |
-| `files/system/usr/share/`     | Polkit authorization rules, Flatpak overrides, and desktop configs    |
-| `.github/workflows/`          | CI/CD pipelines and automation                                         |
-| `cosign.pub`                  | Public key for signature verification                                  |
-
----
-
-## Documentation
-
-| Document                                                                 | Purpose                                                    |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| [`docs/INSTALLATION.md`](docs/INSTALLATION.md)                           | Installation guide, BIOS setup, partitioning, and TPM 2.0  |
-| [`docs/TECHNICAL_ARCHITECTURE.md`](docs/TECHNICAL_ARCHITECTURE.md)       | Technical Architecture Document (TAD) and system design    |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)                           | Post-install validation, operations, and maintenance       |
-| [`docs/GOOGLE_DRIVE_OAUTH_SETUP.md`](docs/GOOGLE_DRIVE_OAUTH_SETUP.md)   | Google Drive dedicated OAuth 2.0 setup & published app     |
-| [`AGENTS.md`](AGENTS.md)                                                 | System invariants, engineering rules, and baseline         |
+| Path                                             | Purpose                                                                 |
+| :----------------------------------------------- | :---------------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                         | Authoritative system invariants, hardware baseline, and engineering rules |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)   | Unified installation, TPM 2.0, cloud FUSE, and BIOS calibration guide   |
+| [`SECURITY.md`](SECURITY.md)                     | Cosign image verification and vulnerability reporting policy            |
+| [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml) | Main AMD BlueBuild recipe orchestrator                                |
+| [`recipes/common-*.yml`](recipes/)               | Modular recipes (drivers, tools, KVM, flatpaks, fonts, systemd, kargs)  |
+| [`files/system/`](files/system/)                 | Declarative host overlays (`sysctl.d`, `tmpfiles.d`, `pipewire`, `cdi`) |
+| [`.github/workflows/`](.github/workflows/)       | CI/CD pipelines (`build-amd.yml`, `check-updates.yml`, `cleanup.yml`)   |
 
 ## License
 
-This project is licensed under [Apache License 2.0](LICENSE).
+Licensed under [Apache License 2.0](LICENSE).
