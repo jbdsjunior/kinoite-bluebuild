@@ -73,11 +73,11 @@ Atalhos declarados em `/etc/profile.d/60-kinoite-aliases.sh`:
 
 ## 3. Áudio PipeWire (Baixa Latência) e Bluetooth
 
-A imagem calibra o PipeWire (`60-quantum-tuning.conf` e `60-pulse-quantum.conf`) em **quantum `256` @ `48kHz` (~5.3ms, faixa `128`–`512`)** e desativa o autosuspend USB Bluetooth (`btusb.enable_autosuspend=0`):
+A imagem calibra o PipeWire (`60-quantum-tuning.conf` e `60-pulse-quantum.conf`) em **quantum `256` @ `48kHz` (~5.3ms, faixa `256`–`1024`)**, aplica quirk cirúrgico de volume AVRCP apenas na caixa `Tribit XSound Go` (`60-tribit-volume-quirk.conf`) e desativa o autosuspend USB Bluetooth (`btusb.enable_autosuspend=0`):
 
 ```bash
 pw-metadata -n settings
-# Esperado: clock.rate = 48000 | clock.quantum = 256 | clock.min-quantum = 128 | clock.max-quantum = 512
+# Esperado: clock.rate = 48000 | clock.quantum = 256 | clock.min-quantum = 256 | clock.max-quantum = 1024
 
 cat /sys/module/btusb/parameters/enable_autosuspend
 # Esperado: N
