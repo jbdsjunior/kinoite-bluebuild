@@ -69,7 +69,7 @@ Para prevenir regressões, falhas de sincronização, degradação de desempenho
 
 | Componente | Configuração Proibida (Anti-Pattern) | Causa / Impacto da Falha | Configuração Homologada (Estável) |
 | :--- | :--- | :--- | :--- |
-| **Linha de Boot / Kargs** | Kargs customizados (`tsc=reliable`, `nowatchdog`, `iommu=pt`, `btusb.enable_autosuspend`, `preempt=full`) | Mascara desvios de tempo entre CCDs, desativa o NMI watchdog, gera instabilidade de DMA em USB no X570 e atrasos de áudio Bluetooth. | Baseline nativa pura do Fedora Kinoite 44 (zero kargs customizados em [`recipes/recipe-amd.yml`](../recipes/recipe-amd.yml)); detecção de lockups ativa em [`90-kernel-tuning.conf`](../files/system/usr/lib/sysctl.d/90-kernel-tuning.conf). |
+| **Linha de Boot / Kargs** | Kargs customizados instáveis (`tsc=reliable`, `nowatchdog`, `iommu=pt`, `preempt=full`, `amd_pstate=active`) | Mascara desvios de tempo entre CCDs, desativa o NMI watchdog e gera instabilidade de DMA em USB no X570. | Baseline nativa do Fedora Kinoite 44 com única exceção homologada de `btusb.enable_autosuspend=0` ([`recipes/common-kargs.yml`](../recipes/common-kargs.yml)); detecção de lockups ativa em [`90-kernel-tuning.conf`](../files/system/usr/lib/sysctl.d/90-kernel-tuning.conf). |
 | **CPU / IOMMU** | `amd_iommu=on` | Parâmetro inexistente na árvore do kernel Linux. | IOMMU nativo com DMA lazy padrão do Fedora 44 (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`). |
 | **GPU (RX 6600 XT)** | `AcceleratedVideoDecodeLinuxZeroCopyGL` / `AcceleratedVideoDecodeLinuxGL` | Falhas de alocação de superfície GL, timeouts do driver e *GPU deadlocks* sob o driver Mesa/Wayland. | Decodificação nativa estável via Wayland/PipeWire sem overrides experimentais em [`chromium-flags.conf`](../files/system/usr/share/browser-configs/chromium-flags.conf). |
 | **GPU / IA** | Instalação de pacotes ROCm monóliticos no host | Inchaço excessivo da imagem base (> 15 GB) e conflitos de empacotamento. | Aceleração containerizada via CDI (`/etc/cdi/amdgpu.yaml`) com injeção de `HSA_OVERRIDE_GFX_VERSION=10.3.0`. |
@@ -110,7 +110,7 @@ flowchart TD
 
     subgraph WorkstationHost["Estação de Trabalho Local (AMD Zen3 + RDNA2)"]
         BOOTC["bootc daemon / rpm-ostree\n(Staged Updates / Atomic Rollback)"]
-        KERNEL["Kernel Linux 6.x\n(Tuned kargs, sysctl, zram, Btrfs NoCOW)"]
+        KERNEL["Kernel Linux 7.2.x\n(Fedora 44 baseline, sysctl, zram, Btrfs NoCOW)"]
         DESKTOP["KDE Plasma 6 (Wayland)\n(Fontes Inter/JetBrains, Konsole Tokyo Night, Starship)"]
         WORKLOADS["Isolamento de Cargas de Trabalho\n- Podman Rootless / Distrobox\n- Flatpak Applications\n- KVM / Libvirt Modular\n- ROCm / HIP AI Acceleration"]
     end
@@ -158,8 +158,8 @@ graph TD
     end
 
     subgraph L1["Camada 1: Kernel, Memória & Subsistema de I/O"]
-        K_ARGS["Linha de Boot: Baseline Nativa Fedora Kinoite 44 (zero custom kargs)"]
-        SYSCTL_TUNE["Sysctl: TCP BBR+FQ, VFS cache 50, dirty ratios NVMe, inotify 512k"]
+        K_ARGS["Linha de Boot: Baseline Fedora 44 + Exceção btusb.enable_autosuspend=0"]
+        SYSCTL_TUNE["Sysctl: TCP BBR+FQ, VFS cache 50, dirty ratios NVMe, inotify 8k"]
         ZRAM_GEN["ZRAM zstd: 32 GB Swap / swappiness=150 / page-cluster=0"]
     end
 
@@ -183,8 +183,8 @@ A decomposição das receitas em `recipes/` adota alta coesão e baixo acoplamen
 | `common-kvm.yml`      | Pilha de virtualização bare-metal           | Pacotes `@virtualization`, `gnome-boxes`, suporte TPM emulado (`swtpm`) para execução segura de VMs Windows 11 / Linux.                                                                                                                                 |
 | `common-tools.yml`    | Ferramental moderno CLI & DevSecOps         | Repositórios Subatomic Terra e Tailscale; utilitários modernos de substituição (`eza`, `bat`, `btop`, `ripgrep`, `fd-find`, `fzf`, `zoxide`), contêineres (`distrobox`, `docker-compose`, `podman-docker`) e diagnóstico de GPU (`nvtop`, `radeontop`). |
 | `common-fonts.yml`    | Tipografia de alta precisão                 | Fontes `Inter Variable`, `Liberation`, `MS Core Fonts` e Nerd Fonts (`JetBrainsMono`, `FiraCode`, `SymbolsOnly`).                                                                                                                                       |
-| `common-systemd.yml`  | Orquestração de daemons e sockets           | Mascaramento de serviços desnecessários (`systemd-remount-fs.service`, `mcelog.service`), ativação modular de sockets libvirt (`virtqemud.socket`, etc.) e habilitação de timers de manutenção.                                                         |
-| `common-flatpaks.yml` | Camada de aplicativos de produtividade e UI | Instalação centralizada em escopo de sistema para browsers (`Brave`, `Chrome`), ferramentas de Dev (`VS Code`), monitoramento (`MissionCenter`, `Warehouse`, `Flatseal`) e comunicação.                                                                 |
+| `common-systemd.yml`  | Orquestração de daemons e sockets           | Mascaramento de serviços desnecessários (`systemd-remount-fs.service`), ativação modular de sockets libvirt (`virtqemud.socket`, etc.) e habilitação de timers de manutenção.                                                         |
+| `common-flatpaks.yml` | Camada de aplicativos de produtividade e UI | Instalação centralizada em escopo de sistema para browsers (`Brave`, `Chrome`), ferramentas de Dev (`VS Code`), monitoramento (`MissionCenter`, `Flatseal`) e comunicação.                                                                 |
 | `common-brew.yml`     | Gerenciador de pacotes complementar         | Integração do Homebrew e do gerenciador Soar para binários portáveis sem contaminação do host.                                                                                                                                                          |
 | `common-kargs.yml`    | Exceção declarativa de linha de boot        | Injeção do parâmetro `btusb.enable_autosuspend=0` como exceção homologada contra dormência do controlador USB Bluetooth.                                                                                                                                |
 
@@ -347,7 +347,10 @@ Durante a auditoria contínua do repositório pela perspectiva do Arquiteto Revi
 | **A-30** | `recipes/recipe-amd.yml`              | Purga definitiva de kargs customizados da imagem e retorno à baseline oficial Fedora Kinoite 44.   | **Resolvido:** Invariante de zero kargs customizados formalizada; resiliência entregue via sysctl (`90-kernel-tuning.conf`) e defaults otimizados da distribuição. |
 | **A-31** | `files/system/usr/lib/sysctl.d/*`     | Auditoria de estabilidade, vantagens e riscos em parâmetros de kernel, memória, NVMe e rede TCP.  | **Auditado & Validado:** Parâmetros comprovados como seguros e benéficos (anti-stutter de NVMe, inotify 8k, BBR+FQ, panics em lockup); comentários técnicos formalizados e documentada a interação com perfis `tuned-ppd`. |
 | **A-32** | `sysctl.d`, `tmpfiles.d`, `virtqemud.conf` | Travamento do host durante desligamento de VM (GNOME Boxes/QEMU) devido a saturação de IPC (`max_client_requests=5`), fragmentação Btrfs extrema por CoW e reboot prematuro por `kernel.softlockup_panic=1`. | **Resolvido:** Desativado pânico em soft lockups (`softlockup_panic=0`), provisionado NoCOW nos diretórios base de VM e contêineres via diretiva `h` em tmpfiles (assegurando herança atômica nativa sem tentar ioctl em arquivos pré-existentes), e provisionado `files/system/etc/libvirt/virtqemud.conf` elevando limites de clientes/requisições concorrentes para 20. |
-| **A-33** | `files/system/usr/bin/kinoite-optimize` | Ausência de automação centralizada para manutenção periódica, desfragmentação e saneamento pós-instalação no host. | **Resolvido:** Provisionado script executável `kinoite-optimize` e aliases `optimize` / `sys-optimize` cobrindo 7 fases: reforço de sysctl resiliente, tmpfiles, auditoria/herança NoCOW, defrag Btrfs de imagens de VM, poda de Flatpak/Podman, sanitização de kargs e auditoria de saúde. |
+| **A-33** | `files/system/usr/bin/kinoite-optimize` | Ausência de automação centralizada para manutenção periódica, desfragmentação e saneamento pós-instalação no host. | **Resolvido:** Provisionado script executável `kinoite-optimize` e aliases `optimize` / `sys-optimize` cobrindo 8 fases: reforço de sysctl resiliente, tmpfiles, auditoria/herança NoCOW, defrag Btrfs de imagens de VM, poda de Flatpak/Podman, sanitização de kargs e auditoria de saúde. |
+| **A-34** | `rclone@.service`, `GoogleDrive.env`, `OneDrive.env`, `kdeglobals`, `baloofilerc` | Otimização de nuvem FUSE (Rclone), latência de pacer, prevenção de taxa 403/429 e higiene de lixeira em nuvem. | **Resolvido:** Parametrizados pacer sleep 10ms, burst 100, list-chunk 1000, OAuth 2.0 dedicado documentado, exclusão definitiva direta no Dolphin (`ShowDeleteCommand=true`) e exclusão Baloo NoIndex. |
+| **A-35** | `60-quantum-tuning.conf`, `60-pulse-quantum.conf`, `recipes/common-kargs.yml`, `60-btusb.conf` | Latência perceptível em periféricos Bluetooth e atraso intrínseco de buffer quântico upstream do PipeWire (~21.3ms–42.6ms). | **Resolvido:** Buffer quântico calibrado declarativamente para 256 samples @ 48kHz (~5.3ms) com faixa 128–512; provisionada exceção homologada `btusb.enable_autosuspend=0` na linha de boot e modprobe. |
+| **A-36** | `recipes/common-tools.yml`, `sysctl.d`, `kinoite-optimize` | Presença de pacotes legados FUSE 2 (`fuse`, `fuse-libs`), omissão de volume NoCOW no script e alinhamento de governança. | **Resolvido:** Expurgo de pacotes FUSE 2 órfãos, adição de `/var/lib/containers/storage/volumes` a `NOCOW_SYSTEM_DIRS`, correção de bloco Markdown em `POST_INSTALL.md` e sincronização documental total. |
 
 
 ---

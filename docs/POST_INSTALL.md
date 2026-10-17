@@ -100,11 +100,12 @@ Expected: `fc-match sans-serif`, `fc-match system-ui`, `fc-match -- "-apple-syst
 ```bash
 sudo systemctl status firewalld
 sudo systemctl status systemd-resolved
-
 ```
 
 If you use virtualization:
 
+```bash
+systemctl status virtqemud.socket virtqemud.service
 ```
 
 ### 4.1) Audio & Low-Latency PipeWire Calibration
@@ -182,9 +183,9 @@ sudo ostree admin config-diff
 
 > ⚠️ **Warning:** on immutable systems, prefer declarative changes in `recipes/*.yml` and versioned files instead of repeated manual host adjustments.
 
-**Expected image kargs** (Baseline nativa pura do Fedora Kinoite 44):
+**Expected image kargs** (Baseline nativa do Fedora Kinoite 44 com exceção homologada):
 
-A imagem opera com os kargs padrão da distribuição (`rhgb quiet root=...`). Todos os recursos do Ryzen Zen 3 (`amd-pstate-epp`), isolamento IOMMU (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`), unmerged slab e invariant TSC são compilados nativamente no kernel do Fedora 44 (`7.2.x`). Nenhum karg customizado é injetado.
+A imagem opera com os kargs padrão da distribuição (`rhgb quiet root=...`) acrescida da única exceção homologada de `btusb.enable_autosuspend=0`. Todos os recursos do Ryzen Zen 3 (`amd-pstate-epp`), isolamento IOMMU (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`), unmerged slab e invariant TSC são compilados nativamente no kernel do Fedora 44 (`7.2.x`).
 
 Verify the deployed boot configuration:
 
@@ -209,7 +210,7 @@ sudo rpm-ostree kargs \
 > [!NOTE]
 > **Exceção Homologada de Bluetooth:** O parâmetro `btusb.enable_autosuspend=0` está configurado declarativamente na imagem tanto na linha de boot (`recipes/common-kargs.yml`) quanto via modprobe (`/usr/lib/modprobe.d/60-btusb.conf`) para prevenir dormência do controlador USB Bluetooth e eliminar latência de reativação em periféricos sem fio.
 
-Rollback / inspeção: `rpm-ostree kargs` (retorna apenas a linha padrão da distribuição após reboot).
+Rollback / inspeção: `rpm-ostree kargs` (retorna a linha padrão da distribuição + `btusb.enable_autosuspend=0` após reboot).
 
 ---
 
@@ -291,6 +292,9 @@ RCLONE_POLL_INTERVAL=15s
 RCLONE_DRIVE_SKIP_GDOCS=true
 RCLONE_DRIVE_USE_TRASH=true
 RCLONE_DRIVE_CHUNK_SIZE=64M
+RCLONE_DRIVE_PACER_MIN_SLEEP=10ms
+RCLONE_DRIVE_PACER_BURST=100
+RCLONE_DRIVE_LIST_CHUNK=1000
 ```
 
 - `RCLONE_DRIVE_USE_TRASH=true`: Files deleted locally are moved to the Google Drive Cloud Trash bin (with 30-day retention), mirroring the official Google Drive desktop client and preventing accidental data loss.
@@ -301,6 +305,8 @@ RCLONE_DRIVE_CHUNK_SIZE=64M
 - `RCLONE_VFS_CACHE_MAX_AGE=24h` & `RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G`: Prevents local disk exhaustion by evicting cached files inactive for more than 24 hours, and immediately pruning the cache if host free space falls below 15 GB.
 - `RCLONE_DRIVE_SKIP_GDOCS=true`: Prevents I/O read errors on native Google Docs/Sheets files that cannot be downloaded without an export conversion. (To expose Docs as clickable web shortcuts like the official client, set `RCLONE_DRIVE_SKIP_GDOCS=false` and `RCLONE_FLAGS="--drive-export-formats link.html"` in `GoogleDrive.local.env`).
 - `RCLONE_DRIVE_CHUNK_SIZE=64M`: High throughput chunk size (power of 2) for large file uploads.
+- `RCLONE_DRIVE_PACER_MIN_SLEEP=10ms` & `RCLONE_DRIVE_PACER_BURST=100`: Reduces Google Drive pacer backoff delay by 10x for sub-second file deletion and instant single-file API responses.
+- `RCLONE_DRIVE_LIST_CHUNK=1000`: Fetches directory listings in large chunks of 1000 items, slashing API transaction round-trips.
 
 #### Microsoft OneDrive Configuration (`OneDrive.env`)
 
@@ -324,10 +330,12 @@ RCLONE_ATTR_TIMEOUT=1h
 RCLONE_POLL_INTERVAL=1m
 RCLONE_ONEDRIVE_CHUNK_SIZE=50M
 RCLONE_ONEDRIVE_DELTA=true
+RCLONE_ONEDRIVE_LIST_CHUNK=1000
 ```
 
 - `RCLONE_TPSLIMIT=5` / `RCLONE_TPSLIMIT_BURST=10`: Enforces transaction rate limits to eliminate API 429 "Too Many Requests" throttling penalties, with calibrated burst for fast directory exploration.
 - `RCLONE_ATTR_TIMEOUT=1h`: Caches file attributes in kernel FUSE to avoid constant round-trips to the Microsoft Graph API.
+- `RCLONE_ONEDRIVE_LIST_CHUNK=1000`: Maximizes item retrieval per page via Microsoft Graph Delta API, minimizing pagination delay.
 - `RCLONE_VFS_READ_CHUNK_STREAMS=4`: Parallel chunk download streams.
 - `RCLONE_POLL_INTERVAL=1m`: Safe polling cadence using the OneDrive Delta API for incremental change detection without triggering rate limits.
 - `RCLONE_ONEDRIVE_CHUNK_SIZE=50M`: Optimized upload chunk size (exact multiple of 320 KiB: 160 × 320 KiB = 52.428.800 bytes).
