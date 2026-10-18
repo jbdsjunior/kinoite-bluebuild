@@ -221,7 +221,7 @@ systemctl --user status flatpak-user-update.timer podman-auto-update.timer soar-
 # Validar sysctls protegidos contra sobrescrita do TuneD (60-sysctl-protection.conf)
 sysctl vm.swappiness vm.dirty_ratio vm.dirty_background_ratio net.ipv4.tcp_congestion_control
 
-# Validar blacklist CIS de módulos e DNS-over-TLS Cloudflare
+# Validar blacklist CIS de módulos e DNS-over-TLS (Control D p2 + Cloudflare fallback)
 modprobe -n -v sctp
 resolvectl status
 ```

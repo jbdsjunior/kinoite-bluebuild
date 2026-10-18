@@ -66,7 +66,7 @@ Fonte canônica única (*Single Source of Truth*) de regras de engenharia, basel
   - Overrides Flatpak em `/usr/share/flatpak/overrides/` sincronizados para `/var/lib/flatpak/overrides/` via `60-flatpak-overrides.conf` (proibido `/etc/flatpak/overrides/`).
 - **Sessão, Segurança, Virtualização & Higiene de Pacotes:**
   - Variáveis de sessão exclusivamente em `60-kinoite-environment.conf`; scripts `profile.d` usam apenas lógica interativa com `return 0 2>/dev/null` (proibido `exit 0`).
-  - DNS DoT Cloudflare (`1.1.1.1`/`1.0.0.1#cloudflare-dns.com`, `DNSOverTLS=opportunistic`, `DNSSEC=allow-downgrade`) em `60-dns-overrides.conf`.
+  - DNS DoT Control D p2 primário + Cloudflare fallback (`76.76.2.2#p2.freedns.controld.com` / `1.1.1.1#cloudflare-dns.com`, `DNSOverTLS=opportunistic`, `DNSSEC=allow-downgrade`) em `60-dns-overrides.conf`.
   - SSHD key-only (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`) em `50-kinoite-hardening.conf`.
   - Blacklist CIS (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core` via `install <mod> /bin/false`) em `60-security-blacklist.conf` (proibido listar módulos inexistentes no kernel 7.2 como `dccp`/`cramfs`/`freevxfs` ou já cobertos como `rds`).
   - Polkit libvirt em `51-kinoite-libvirt.rules` (sem colidir com `50-libvirt.rules` upstream) e IPC elevado para 20 clientes em `/etc/libvirt/virtqemud.conf`.
