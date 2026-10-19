@@ -17,6 +17,13 @@ You can verify the image authenticity before rebasing or switching:
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
+## Supply Chain and Secret Governance
+
+To protect both user workstation privacy and project infrastructure integrity:
+- **Zero Credentials in Code:** Secrets, OAuth tokens, SSH keys, and WireGuard/OpenVPN profiles are strictly excluded via `.gitignore` and enforced before commits.
+- **Minimal Workflow Permissions:** All GitHub Actions run with strictly scoped least-privilege tokens (`contents: read`, pinned action commit SHAs).
+- **Public Key Only:** Only the public verification key (`cosign.pub`) is tracked in the repository. Signing keys remain secured within GitHub Actions Secrets (`SIGNING_SECRET`).
+
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability or misconfiguration within this repository:

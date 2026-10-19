@@ -7,6 +7,9 @@ cosign.key
 *.priv
 *.gpg
 !cosign.pub
+*.crt
+*.cer
+*.p7b
 id_rsa*
 id_ed25519*
 id_ecdsa*
@@ -14,6 +17,10 @@ id_dsa*
 rclone.conf
 *.token
 *.secret
+*.kdbx
+*.ovpn
+credentials*
+auth.json
 
 # Local environment and override files
 .env
