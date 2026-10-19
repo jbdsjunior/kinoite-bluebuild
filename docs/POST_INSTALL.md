@@ -34,20 +34,31 @@ sudo cryptsetup luksDump /dev/nvme0n1p3
 # 3. Garantir opção tpm2-device=auto em /etc/crypttab:
 # luks-<UUID> UUID=<UUID> none discard,tpm2-device=auto
 
-# 4. Regerar initramfs
-sudo dracut -f --regenerate-all
+# 4. Regerar initramfs (no Fedora Silverblue/Kinoite tradicional utilize rpm-ostree initramfs; se estiver usando dracut direto, aponte o diretório temporário para /var/tmp)
+sudo TMPDIR=/var/tmp dracut --kver $(uname -r) --force --reproducible /boot/initramfs-$(uname -r).img
+# Ou se operando sob camadas rpm-ostree nativas:
+# sudo rpm-ostree initramfs --enable
 ```
 
 > [!NOTE]
 > **Pós-Atualização de BIOS:** Se atualizar a BIOS da placa-mãe no futuro, digite a senha manual no primeiro boot e re-registre o TPM:
-> `sudo systemd-cryptenroll --wipe-slot=tpm2 /dev/nvme0n1p3 && sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/nvme0n1p3 && sudo dracut -f --regenerate-all`
+> `sudo systemd-cryptenroll --wipe-slot=tpm2 /dev/nvme0n1p3 && sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/nvme0n1p3 && sudo TMPDIR=/var/tmp dracut --kver $(uname -r) --force --reproducible /boot/initramfs-$(uname -r).img`
 
 ### 1.3 Transição Atômica para a Imagem Customizada (`bootc`)
 
+Na primeira migração a partir de uma instalação limpa do Fedora Kinoite upstream (onde a chave Cosign do repositório ainda não reside no host):
+
 ```bash
-# Mudar para a imagem assinada e reiniciar
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+# 1. Migração inicial para a imagem OCI customizada
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 systemctl reboot
+```
+
+Após o primeiro boot na imagem customizada, as chaves e políticas de assinatura Cosign estarão ativas e embutidas na raiz do sistema (`/etc/pki/containers/` e `/etc/containers/registries.d/`), permitindo aplicar a verificação criptográfica estrita nas atualizações subsequentes:
+
+```bash
+# 2. Ativar a aplicação estrita de política de assinatura para upgrades futuros
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 ```
 
 ---

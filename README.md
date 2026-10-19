@@ -27,7 +27,7 @@ Immutable OCI image based on **Fedora Kinoite 44 (KDE Plasma 6 / Wayland)**, bui
 ### 1) Switch to the signed custom image
 
 ```bash
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 systemctl reboot
 ```
 
