@@ -126,16 +126,21 @@ if [ -d "$REAL_HOME/.cache/rclone" ]; then
 fi
 
 # Audit and purge residual desktop .Trash-* directories on active cloud mounts
-if [ -d "$REAL_HOME/Cloud" ]; then
+USER_UID="$(id -u "$REAL_USER" 2>/dev/null || echo "1000")"
+CLOUD_BASE_DIR="/run/user/${USER_UID}/cloud"
+if [ -d "$CLOUD_BASE_DIR" ] || [ -d "$REAL_HOME/Cloud" ]; then
     TRASH_FOUND=0
-    for cloud_mount in "$REAL_HOME/Cloud"/*; do
-        [ -d "$cloud_mount" ] || continue
-        for td in "$cloud_mount"/.Trash-*; do
-            [ -d "$td" ] || continue
-            TRASH_FOUND=1
-            echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
-            rm -rf "$td" 2>/dev/null || true
-            echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
+    for base in "$CLOUD_BASE_DIR" "$REAL_HOME/Cloud"; do
+        [ -d "$base" ] || continue
+        for cloud_mount in "$base"/*; do
+            [ -d "$cloud_mount" ] || continue
+            for td in "$cloud_mount"/.Trash-*; do
+                [ -d "$td" ] || continue
+                TRASH_FOUND=1
+                echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
+                rm -rf "$td" 2>/dev/null || true
+                echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
+            done
         done
     done
     if [ "$TRASH_FOUND" -eq 0 ]; then

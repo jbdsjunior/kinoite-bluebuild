@@ -11,7 +11,7 @@ StartLimitBurst=20
 Type=notify
 TimeoutStartSec=90s
 Environment=RCLONE_REMOTE=%i:
-Environment=RCLONE_MOUNT=%h/Cloud/%i
+Environment=RCLONE_MOUNT=/run/user/%U/cloud/%i
 Environment=RCLONE_CACHE=%h/.cache/rclone/%i
 Environment=RCLONE_BWLIMIT=0
 Environment=RCLONE_BUFFER_SIZE=32M

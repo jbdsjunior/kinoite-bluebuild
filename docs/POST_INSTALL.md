@@ -167,7 +167,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ### 6.1 Arquitetura e Inicialização (`rclone@.service`)
 
-- **Template:** `/usr/lib/systemd/user/rclone@.service` monta `~/Cloud/<Remote>` com cache VFS (`~/.cache/rclone`, `0700`, NoCOW `+C`, `max-size=15G`, `max-age=24h`, `min-free-space=15G`, `write-back=10s`, `attr-timeout=1h`, `buffer-size=32M`, `read-ahead=64M`, `read-chunk-streams=4`).
+- **Template:** `/usr/lib/systemd/user/rclone@.service` monta `/run/user/%U/cloud/%i` (fora da home, isolado no tmpfs da sessão do usuário semelhante a dispositivos em `/run/media/`) com cache VFS (`~/.cache/rclone`, `0700`, NoCOW `+C`, `max-size=15G`, `max-age=24h`, `min-free-space=15G`, `write-back=10s`, `attr-timeout=1h`, `buffer-size=32M`, `read-ahead=64M`, `read-chunk-streams=4`).
 - **Configuração por Provedor:** `/usr/share/rclone/env/{GoogleDrive,OneDrive}.env` são sincronizados para `~/.config/rclone/env/*.env` no login via `70-rclone-env.conf`. Overrides persistentes do usuário devem ser salvos em `~/.config/rclone/env/<Remote>.local.env`.
 - **Google Drive (`GoogleDrive.env`):** `TPSLIMIT=12`, `TPSLIMIT_BURST=100`, `DRIVE_CHUNK_SIZE=64M`, `DRIVE_PACER_MIN_SLEEP=10ms`, `DRIVE_PACER_BURST=100`, `DRIVE_LIST_CHUNK=1000`, `DRIVE_USE_TRASH=true`, `DRIVE_SKIP_GDOCS=true`, `POLL_INTERVAL=15s`.
 - **OneDrive (`OneDrive.env`):** `TPSLIMIT=5`, `TPSLIMIT_BURST=10`, `ONEDRIVE_CHUNK_SIZE=50M` (múltiplo de 320 KiB), `ONEDRIVE_DELTA=true`, `ONEDRIVE_LIST_CHUNK=1000`, `POLL_INTERVAL=1m`.
@@ -188,8 +188,8 @@ restart-rclone
 
 ### 6.2 Higiene de Exclusão no Dolphin, Duplicados e Indexador Baloo
 
-- **Baloo (`baloofilerc`):** `$HOME/Cloud` possui exclusão imutável (`[$ei]`). Caso indexado anteriormente, limpe com `balooctl6 purge`.
-- **Exclusão Direta (`Shift + Delete`):** `ShowDeleteCommand=true` em `/etc/xdg/kdeglobals` exibe **"Excluir"** no menu de contexto do Dolphin. Em `~/Cloud/`, use sempre `Shift + Delete` (ou "Excluir") para acionar `unlink()` direto — o Rclone move o arquivo para a lixeira na nuvem do Google Drive/OneDrive sem criar pastas locais `.Trash-1000`.
+- **Baloo (`baloofilerc`):** `$HOME/Cloud` e `/run/user` possuem exclusão imutável (`[$ei]`). Caso indexado anteriormente, limpe com `balooctl6 purge`.
+- **Exclusão Direta (`Shift + Delete`):** `ShowDeleteCommand=true` em `/etc/xdg/kdeglobals` exibe **"Excluir"** no menu de contexto do Dolphin. Em pontos de montagem remotos (`/run/user/$UID/cloud/`), use sempre `Shift + Delete` (ou "Excluir") para acionar `unlink()` direto — o Rclone move o arquivo para a lixeira na nuvem do Google Drive/OneDrive sem criar pastas locais `.Trash-1000`.
 - **Remoção de Pastas Pesadas e Deduplicação:** Para pastas com centenas de arquivos, use `rclone purge GoogleDrive:caminho/da/pasta` (server-side em < 1s). O utilitário `sys-optimize` remove `.Trash-*` residuais e resolve erros `Dir.Remove not empty` via `rclone dedupe --dedupe-mode newest`.
 
 ### 6.3 Configuração de Client ID OAuth 2.0 Próprio no Google Cloud (Sem Expiração de 7 Dias)
