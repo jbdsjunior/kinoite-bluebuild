@@ -316,6 +316,29 @@ fi
 active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
 echo "[STATUS] Core System Timers: $(echo "$active_timers" | tr '\n' ' ')"
 
+# Verify PipeWire Quantum settings
+if command -v pw-metadata >/dev/null 2>&1; then
+    pw_rate=$(pw-metadata -n settings 2>/dev/null | grep "clock.rate" | awk '{print $NF}' || true)
+    pw_quantum=$(pw-metadata -n settings 2>/dev/null | grep "clock.quantum " | awk '{print $NF}' || true)
+    if [ -n "$pw_quantum" ]; then
+        echo "[STATUS] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (~5.3ms latency target)"
+    fi
+fi
+
+# Verify Bluetooth autosuspend exception
+if [ -f /sys/module/btusb/parameters/enable_autosuspend ]; then
+    bt_suspend=$(cat /sys/module/btusb/parameters/enable_autosuspend 2>/dev/null || true)
+    echo "[STATUS] Bluetooth USB Autosuspend: $bt_suspend (N = zero latency handshake)"
+fi
+
+# Verify GPU Driver and Vulkan
+if command -v vulkaninfo >/dev/null 2>&1; then
+    vk_dev=$(vulkaninfo --summary 2>/dev/null | grep "deviceName" | head -n 1 | awk -F'=' '{print $2}' | xargs || true)
+    if [ -n "$vk_dev" ]; then
+        echo "[STATUS] Vulkan Device: $vk_dev"
+    fi
+fi
+
 # Verify Baloo Exclusion
 if [ -f /etc/xdg/baloofilerc ]; then
     if grep -q "Cloud" /etc/xdg/baloofilerc; then

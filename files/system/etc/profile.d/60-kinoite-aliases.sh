@@ -76,3 +76,4 @@ alias podman-ps='podman ps -a'
 # System optimization and maintenance script
 alias optimize='kinoite-optimize'
 alias sys-optimize='sudo kinoite-optimize'
+alias setup-tpm='sudo kinoite-setup-tpm'

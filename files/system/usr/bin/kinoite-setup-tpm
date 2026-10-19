@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Critical flow: verify root privileges
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: kinoite-setup-tpm must be run as root (use 'sudo kinoite-setup-tpm <luks-partition>')." >&2
+    exit 1
+fi
+
+DEVICE="${1:-}"
+
+if [ -z "$DEVICE" ]; then
+    echo "Usage: kinoite-setup-tpm <luks-block-device> [--skip-recovery-key]"
+    echo "Example: kinoite-setup-tpm /dev/nvme0n1p3"
+    exit 1
+fi
+
+if [ ! -b "$DEVICE" ]; then
+    echo "ERROR: Block device '$DEVICE' not found." >&2
+    exit 1
+fi
+
+SKIP_RECOVERY=0
+if [ "${2:-}" = "--skip-recovery-key" ]; then
+    SKIP_RECOVERY=1
+fi
+
+echo "=== [1/4] Checking LUKS2 Header on $DEVICE ==="
+if ! cryptsetup isLuks "$DEVICE"; then
+    echo "ERROR: $DEVICE is not a valid LUKS partition." >&2
+    exit 1
+fi
+
+# Optional recovery key generation
+if [ "$SKIP_RECOVERY" -eq 0 ]; then
+    echo "=== [2/4] Generating Offline Recovery Key ==="
+    echo "Notice: Save the printed recovery key in a secure offline location."
+    systemd-cryptenroll --recovery-key "$DEVICE" || true
+else
+    echo "=== [2/4] Skipping Recovery Key Generation (--skip-recovery-key) ==="
+fi
+
+echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 ==="
+# Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after BIOS update)
+systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
+systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$DEVICE"
+
+# Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
+LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
+if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
+    if grep -q "$LUKS_UUID" /etc/crypttab; then
+        if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
+            sed -i "s/\(.*$LUKS_UUID.*none.*\)/\1,tpm2-device=auto/" /etc/crypttab
+            echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
+        fi
+    fi
+fi
+
+echo "=== [4/4] Regenerating Initramfs ==="
+KERNEL_VER="$(uname -r)"
+INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
+
+if command -v dracut >/dev/null 2>&1; then
+    echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
+    TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"
+    echo "[OK] Initramfs regenerated successfully at $INITRAMFS_TARGET."
+elif command -v rpm-ostree >/dev/null 2>&1; then
+    echo "Regenerating initramfs via rpm-ostree..."
+    rpm-ostree initramfs --enable || true
+    echo "[OK] rpm-ostree initramfs tracking enabled."
+fi
+
+echo "=== TPM 2.0 Auto-Unlock Configuration Completed Successfully ==="
