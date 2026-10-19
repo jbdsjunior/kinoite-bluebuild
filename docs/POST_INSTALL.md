@@ -99,7 +99,7 @@ systemctl --user enable --now rclone@OneDrive.service
 rclone config reconnect GoogleDrive:
 ```
 
-- **Higiene:** No Dolphin, use `Shift + Delete` para enviar itens para a lixeira remota da nuvem sem criar pastas `.Trash-1000`. Pastas em `/run/user` e `~/Cloud` já estão excluídas do indexador Baloo.
+- **Higiene:** O Dolphin está pré-configurado com `ConfirmDelete=true`, `ConfirmTrash=false` e `ShowDeleteCommand=true`, permitindo excluir diretamente para a lixeira remota da nuvem sem criar pastas `.Trash-1000`. Além disso, o Rclone bloqueia a sincronização de `.Trash-*` via `--exclude`. Pastas em `/run/user` já estão excluídas do indexador Baloo.
 - **Client ID Dedicado:** Para conexões corporativas/intensivas no Google Drive sem limite semanal, defina seu Client ID próprio no Google Cloud Console e publique-o em modo de produção (sem logotipo para liberação imediata).
 
 ---

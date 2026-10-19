@@ -55,6 +55,8 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-write-back ${RCLONE_VFS_WRITE_BACK} \
   --vfs-read-wait 5ms \
   --local-no-check-updated \
+  --exclude ".Trash-**" \
+  --exclude ".Trash/**" \
   --dir-cache-time ${RCLONE_DIR_CACHE_TIME} \
   --attr-timeout ${RCLONE_ATTR_TIMEOUT} \
   --poll-interval ${RCLONE_POLL_INTERVAL} \
