@@ -8,15 +8,19 @@ esac
 
 # FZF configuration (requires conditional binary detection, cannot use environment.d)
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:---height 40% --layout=reverse --border --inline-info}"
+_fd_bin=""
 if command -v fd >/dev/null 2>&1; then
-    export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-fd --type f --strip-cwd-prefix --hidden --follow --exclude .git}"
-    export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
-    export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fd --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
+    _fd_bin="fd"
 elif command -v fdfind >/dev/null 2>&1; then
-    export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-fdfind --type f --strip-cwd-prefix --hidden --follow --exclude .git}"
-    export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
-    export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fdfind --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
+    _fd_bin="fdfind"
 fi
+
+if [ -n "$_fd_bin" ]; then
+    export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-$_fd_bin --type f --strip-cwd-prefix --hidden --follow --exclude .git}"
+    export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
+    export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-$_fd_bin --type d --strip-cwd-prefix --hidden --follow --exclude .git}"
+fi
+unset _fd_bin
 
 if command -v starship >/dev/null 2>&1; then
     if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/starship.toml" ] && [ -f "/usr/share/starship/starship.toml" ]; then

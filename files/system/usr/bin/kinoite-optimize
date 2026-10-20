@@ -70,34 +70,28 @@ NOCOW_USER_DIRS=(
     "$REAL_HOME/.cache/rclone"
 )
 
-if [ "$CAN_SUDO" -eq 1 ]; then
-    for dir in "${NOCOW_SYSTEM_DIRS[@]}"; do
-        if [ -d "$dir" ]; then
-            if ! $SUDO_CMD lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
-                if $SUDO_CMD chattr +C "$dir" 2>/dev/null; then
-                    echo "[FIXED] Applied NoCOW (+C) to system directory: $dir"
-                fi
+# Helper function to check and apply NoCOW to a directory
+apply_nocow_dir() {
+    local dir="$1"
+    local run_cmd="$2"
+
+    if [ -d "$dir" ]; then
+        if ! $run_cmd lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
+            if $run_cmd chattr +C "$dir" 2>/dev/null; then
+                echo "[FIXED] Applied NoCOW (+C) to directory: $dir"
             fi
         fi
+    fi
+}
+
+if [ "$CAN_SUDO" -eq 1 ]; then
+    for dir in "${NOCOW_SYSTEM_DIRS[@]}"; do
+        apply_nocow_dir "$dir" "$SUDO_CMD"
     done
 fi
 
 for dir in "${NOCOW_USER_DIRS[@]}"; do
-    if [ -d "$dir" ]; then
-        if [ -n "$RUN_USER_CMD" ]; then
-            if ! $RUN_USER_CMD lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
-                if $RUN_USER_CMD chattr +C "$dir" 2>/dev/null; then
-                    echo "[FIXED] Applied NoCOW (+C) to user directory: $dir"
-                fi
-            fi
-        else
-            if ! lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
-                if chattr +C "$dir" 2>/dev/null; then
-                    echo "[FIXED] Applied NoCOW (+C) to user directory: $dir"
-                fi
-            fi
-        fi
-    fi
+    apply_nocow_dir "$dir" "${RUN_USER_CMD:-}"
 done
 
 # Ensure user namespaces in podman storage inherit NoCOW
@@ -113,11 +107,11 @@ fi
 # Ensure pre-existing rclone cache files are not fragmented with CoW
 if [ -d "$REAL_HOME/.cache/rclone" ]; then
     RCLONE_FIXED=0
-    while IFS= read -r f; do
+    while IFS= read -r -d '' f; do
         if ! lsattr "$f" 2>/dev/null | grep -q "C"; then
             cp --reflink=never "$f" "${f}.nocow_tmp" 2>/dev/null && mv -f "${f}.nocow_tmp" "$f" && ((RCLONE_FIXED++)) || true
         fi
-    done < <(find "$REAL_HOME/.cache/rclone" -type f 2>/dev/null)
+    done < <(find "$REAL_HOME/.cache/rclone" -type f -print0 2>/dev/null)
     if [ "$RCLONE_FIXED" -gt 0 ]; then
         echo "[FIXED] Recreated $RCLONE_FIXED rclone cache files with atomic NoCOW inheritance."
     else
@@ -132,19 +126,16 @@ if [ -d "$CLOUD_BASE_DIR" ] || [ -d "$REAL_HOME/Cloud" ]; then
     TRASH_FOUND=0
     for base in "$CLOUD_BASE_DIR" "$REAL_HOME/Cloud"; do
         [ -d "$base" ] || continue
-        for cloud_mount in "$base"/*; do
-            [ -d "$cloud_mount" ] || continue
-            for td in "$cloud_mount"/.Trash-*; do
-                [ -d "$td" ] || continue
-                TRASH_FOUND=1
-                echo "[ACTION] Purging residual $(basename "$td") on $(basename "$cloud_mount") (relocating items to native cloud trash)..."
-                rm -rf "$td" 2>/dev/null || true
-                echo "[OK] Cloud mount $(basename "$cloud_mount") residual trash purged."
-            done
-        done
+        while IFS= read -r -d '' td; do
+            TRASH_FOUND=1
+            echo "[ACTION] Purging residual $(basename "$td") in $(dirname "$td")..."
+            rm -rf "$td" 2>/dev/null || true
+        done < <(find "$base" -mindepth 2 -maxdepth 2 -type d -name ".Trash-*" -print0 2>/dev/null)
     done
     if [ "$TRASH_FOUND" -eq 0 ]; then
         echo "[OK] Cloud mounts verified (zero residual .Trash-* directories)."
+    else
+        echo "[OK] Cloud mounts residual trash purged."
     fi
 fi
 
@@ -190,13 +181,14 @@ VM_DIRS=(
 VM_FOUND=0
 for vm_dir in "${VM_DIRS[@]}"; do
     if [ -d "$vm_dir" ]; then
-        while IFS= read -r img; do
+        while IFS= read -r -d '' img; do
             [ -f "$img" ] || continue
             VM_FOUND=1
             extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
-            size=$(du -h "$img" 2>/dev/null | awk '{print $1}')
+            size=$(stat -c %s "$img" 2>/dev/null || echo "0")
+            size_mb=$((size / 1024 / 1024))
             if [[ "$extents" =~ ^[0-9]+$ ]]; then
-                echo "[INFO] Disk image: $(basename "$img") [$vm_dir] -> $size ($extents extents)"
+                echo "[INFO] Disk image: $(basename "$img") [$vm_dir] -> ${size_mb}MB ($extents extents)"
                 if [ "$extents" -gt 5000 ]; then
                     echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
                     if [ -w "$img" ]; then
@@ -208,7 +200,7 @@ for vm_dir in "${VM_DIRS[@]}"; do
                     echo "[INFO] After defrag: $new_extents extents"
                 fi
             fi
-        done < <(find "$vm_dir" -maxdepth 2 -type f \( -name "*.qcow2" -o -name "*.raw" -o -name "*.img" \) 2>/dev/null)
+        done < <(find "$vm_dir" -maxdepth 2 -type f \( -name "*.qcow2" -o -name "*.raw" -o -name "*.img" \) -print0 2>/dev/null)
     fi
 done
 
@@ -239,32 +231,40 @@ fi
 
 echo "=== [6/8] Flatpak & Container Hygiene ==="
 if command -v flatpak >/dev/null 2>&1; then
-    if [ -n "$RUN_USER_CMD" ]; then
-        $RUN_USER_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
-    else
-        flatpak uninstall --unused -y >/dev/null 2>&1 || true
+    FLATPAK_SCOPES=()
+    if [ -n "$RUN_USER_CMD" ] || [ "$CAN_SUDO" -eq 0 ]; then
+        FLATPAK_SCOPES+=("user")
     fi
     if [ "$CAN_SUDO" -eq 1 ]; then
-        $SUDO_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
+        FLATPAK_SCOPES+=("system")
     fi
+
+    for scope in "${FLATPAK_SCOPES[@]}"; do
+        if [ "$scope" = "user" ]; then
+            if [ -n "$RUN_USER_CMD" ]; then
+                $RUN_USER_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
+            else
+                flatpak uninstall --unused -y >/dev/null 2>&1 || true
+            fi
+        elif [ "$scope" = "system" ]; then
+            $SUDO_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
+        fi
+    done
     echo "[OK] Unused Flatpak runtimes pruned."
 fi
 
 if command -v podman >/dev/null 2>&1; then
-    if [ -n "$RUN_USER_CMD" ]; then
-        $RUN_USER_CMD podman container prune -f >/dev/null 2>&1 || true
-        $RUN_USER_CMD podman volume prune -f >/dev/null 2>&1 || true
-        $RUN_USER_CMD podman image prune -f >/dev/null 2>&1 || true
-    else
-        podman container prune -f >/dev/null 2>&1 || true
-        podman volume prune -f >/dev/null 2>&1 || true
-        podman image prune -f >/dev/null 2>&1 || true
-    fi
-    if [ "$CAN_SUDO" -eq 1 ]; then
-        $SUDO_CMD podman container prune -f >/dev/null 2>&1 || true
-        $SUDO_CMD podman volume prune -f >/dev/null 2>&1 || true
-        $SUDO_CMD podman image prune -f >/dev/null 2>&1 || true
-    fi
+    prune_targets=("container" "volume" "image")
+    for target in "${prune_targets[@]}"; do
+        if [ -n "$RUN_USER_CMD" ]; then
+            $RUN_USER_CMD podman "$target" prune -f >/dev/null 2>&1 || true
+        else
+            podman "$target" prune -f >/dev/null 2>&1 || true
+        fi
+        if [ "$CAN_SUDO" -eq 1 ]; then
+            $SUDO_CMD podman "$target" prune -f >/dev/null 2>&1 || true
+        fi
+    done
     echo "[OK] Stopped containers, dangling volumes, and orphan images pruned."
 fi
 

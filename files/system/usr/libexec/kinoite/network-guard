@@ -1,5 +1,21 @@
 #!/usr/bin/bash
 set -euo pipefail
-m=$(/usr/bin/busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true)
-c=$(/usr/bin/busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Connectivity 2>/dev/null || true)
-[[ -n "$m" && -n "$c" && "$m" != *" 1" && "$m" != *" 3" && "$c" != *" 1" && "$c" != *" 2" && "$c" != *" 3" ]]
+
+# Query NetworkManager properties via system bus
+m=$(busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null || true)
+c=$(busctl --system get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Connectivity 2>/dev/null || true)
+
+# Extract integer value (last token)
+m_val="${m##* }"
+c_val="${c##* }"
+
+# Metered: 1 (yes), 3 (guess yes), 2 (no), 4 (guess no), 0 (unknown)
+# Connectivity: 4 (full), 3 (limited), 2 (portal), 1 (none), 0 (unknown)
+# Guard succeeds (exit 0) strictly when network is unmetered (not 1 or 3) and connectivity is full (4)
+if [[ "$m_val" =~ ^[0-9]+$ && "$c_val" =~ ^[0-9]+$ ]]; then
+    if [ "$m_val" -ne 1 ] && [ "$m_val" -ne 3 ] && [ "$c_val" -eq 4 ]; then
+        exit 0
+    fi
+fi
+
+exit 1
