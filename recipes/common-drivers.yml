@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
- - type: script
+  - type: script
     snippets:
       - echo "fastestmirror=True" >> /etc/dnf/dnf.conf
       - echo "retries=10" >> /etc/dnf/dnf.conf
