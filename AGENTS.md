@@ -12,12 +12,12 @@ Fonte canônica única (*Single Source of Truth*) de regras de engenharia, basel
 
 - **Ciclo Multiagente:** O **Executor** implementa; o **Revisor** audita, pesquisa e valida até atingir conformidade total sem ressalvas.
 - **Prioridade:** Segurança > Performance > Conveniência.
-- **Design (KISS & DRY):** Zero redundância com defaults nativos do Fedora Kinoite 44, systemd ou kernel. Proibido downgrade de pacotes, daemons legados ou configurações mortas.
+- **Design (KISS & DRY):** Zero redundância com defaults nativos do Fedora Kinoite (latest upstream), systemd ou kernel. Proibido downgrade de pacotes, daemons legados ou configurações mortas.
 - **Resiliência & Formato:** Emitir alerta e comando de rollback para alterações críticas. Respostas diretas sem preâmbulos. Scripts shell estritamente lineares (sem funções desnecessárias) e comentários técnicos concisos em inglês.
 
 ## 3. Hardware Baseline e Calibração de BIOS (`Profile A`)
 
-- **Host:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI (BIOS F39, AGESA ComboV2 1.2.0.x, microcode `0xa201213`), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite 44 (`bootc`, Wayland, KDE Plasma 6, Kernel `7.2.x`).
+- **Host:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI (BIOS F39, AGESA ComboV2 1.2.0.x, microcode `0xa201213`), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite (`bootc:latest`, Wayland, KDE Plasma 6, Kernel `7.2+`).
 - **Memória (64 GB DDR4 não-ECC, 4×16 GB mistos, 2 DPC / 3 ranks por canal):**
   - `A1/B1` (stubs): 16 GB 1R 3200 genérico.
   - `A2/B2` (terminações físicas daisy-chain): KingSpec `KS3200D4R13516G` 16 GB 2R 3200 (1.2V JEDEC).
@@ -33,11 +33,11 @@ Fonte canônica única (*Single Source of Truth*) de regras de engenharia, basel
 ## 4. Invariantes de Engenharia do Sistema
 
 - **Linha de Boot (Zero Custom Kargs + Exceção `btusb`):**
-  - Opera na baseline nativa do Fedora 44 (`rhgb quiet root=...`), onde `amd-pstate-epp` (`CONFIG_X86_AMD_PSTATE_DEFAULT_MODE=3`), SLAB unmerged, DMA lazy (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`) e TSC invariant já são nativos.
+  - Opera na baseline nativa do Fedora upstream (`rhgb quiet root=...`), onde `amd-pstate-epp` (`CONFIG_X86_AMD_PSTATE_DEFAULT_MODE=3`), SLAB unmerged, DMA lazy (`CONFIG_IOMMU_DEFAULT_DMA_LAZY=y`) e TSC invariant já são nativos.
   - **Única exceção homologada:** `btusb.enable_autosuspend=0` em [`recipes/common-kargs.yml`](recipes/common-kargs.yml) e [`60-btusb.conf`](files/system/usr/lib/modprobe.d/60-btusb.conf) para eliminar latência de handshake Bluetooth.
   - **Proibido:** `preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`, `slab_nomerge`, `page_alloc.shuffle=1`.
 - **Sysctl, Resiliência de Kernel & Proteção TuneD:**
-  - Proibido redeclarar defaults do Fedora 44 (`dmesg_restrict`, `unprivileged_bpf_disabled`, `vm.max_map_count`, `fs.inotify.max_user_watches`).
+  - Proibido redeclarar defaults nativos do Fedora/kernel (`dmesg_restrict`, `unprivileged_bpf_disabled`, `vm.max_map_count`, `fs.inotify.max_user_watches`).
   - Resiliência (`90-kernel-tuning.conf`): `kernel.kptr_restrict=1`, `kernel.panic=10`, `kernel.panic_on_oops=1`, `kernel.hardlockup_panic=1`, `kernel.softlockup_panic=0` (evita reboot prematuro em esperas de I/O de VM/Btrfs) e `kernel.sysrq=1` (REISUB ativo).
   - Memória/ZRAM (`90-memory-fs-tuning.conf` + `60-zram-policy.conf`): ZRAM zstd até 32 GB (`min(ram / 2, 32768)`), `vm.swappiness=150`, `vm.page-cluster=0`, `vm.watermark_scale_factor=125`, `vm.dirty_background_ratio=3`, `vm.dirty_ratio=10`, `vm.vfs_cache_pressure=50`, `fs.inotify.max_user_instances=8192`.
   - Rede (`90-network-tuning.conf` + `60-bbr.conf`): TCP BBR + `fq`, buffers de 32 MB, `tcp_slow_start_after_idle=0`, `tcp_fastopen=3` (cliente + servidor TFO), `netdev_max_backlog=16384`, `tcp_fin_timeout=15`, `tcp_mtu_probing=1`, `tcp_rfc1337=1` e bloqueio de ICMP redirects. Proibido habilitar `net.ipv4.ip_forward` ou forwarding IPv6 globalmente.
