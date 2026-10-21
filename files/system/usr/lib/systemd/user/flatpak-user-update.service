@@ -7,8 +7,6 @@ ConditionACPower=true
 
 [Service]
 Type=oneshot
-# Skip automatic update if NetworkManager reports connection is metered, offline, captive portal, or limited
-ExecCondition=/usr/libexec/kinoite/network-guard
 
 ExecStart=/usr/bin/flatpak --user update -y --noninteractive
 ExecStart=/usr/bin/flatpak --user uninstall --unused -y --noninteractive
