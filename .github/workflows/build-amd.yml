@@ -53,6 +53,15 @@ jobs:
           mkdir -p ~/.cache-amd
           echo "${DIGEST}" > ~/.cache-amd/upstream-digest.txt
 
+      - name: Check if upstream cache entry exists
+        id: cache-check
+        if: steps.digest.outputs.digest != ''
+        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
+        with:
+          path: ~/.cache-amd
+          key: upstream-amd-${{ steps.digest.outputs.digest }}
+          lookup-only: true
+
       - name: Build Custom AMD Image
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1
         with:
@@ -70,7 +79,7 @@ jobs:
           max_layers: 512
 
       - name: Save upstream cache on build success
-        if: steps.digest.outputs.digest != ''
+        if: steps.digest.outputs.digest != '' && steps.cache-check.outputs.cache-hit != 'true'
         continue-on-error: true
         uses: actions/cache/save@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
