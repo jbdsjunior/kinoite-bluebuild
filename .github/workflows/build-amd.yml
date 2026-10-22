@@ -76,7 +76,6 @@ jobs:
           verify_install: true
           use_unstable_cli: false
           skip_checkout: true
-          max_layers: 512
 
       - name: Save upstream cache on build success
         if: steps.digest.outputs.digest != '' && steps.cache-check.outputs.cache-hit != 'true'
