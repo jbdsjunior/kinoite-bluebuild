@@ -229,6 +229,13 @@ if [ -d "$REAL_HOME/.cache/thumbnails" ]; then
     echo "[OK] Stale thumbnail cache pruned in $REAL_HOME."
 fi
 
+# Prune stale Hugging Face incomplete downloads or old lock files (>30 days)
+if [ -d "$REAL_HOME/.cache/huggingface/hub" ]; then
+    find "$REAL_HOME/.cache/huggingface/hub" -name "*.incomplete" -delete 2>/dev/null || true
+    find "$REAL_HOME/.cache/huggingface/hub" -name "*.lock" -atime +30 -delete 2>/dev/null || true
+    echo "[OK] Hugging Face incomplete downloads and stale lockfiles verified."
+fi
+
 echo "=== [6/8] Flatpak & Container Hygiene ==="
 if command -v flatpak >/dev/null 2>&1; then
     FLATPAK_SCOPES=()
