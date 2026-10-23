@@ -1,0 +1,32 @@
+name: Sugestão ou Solicitação de Recurso
+description: Sugerir uma nova ideia, pacote, melhoria de hardware ou otimização
+title: "feat(<escopo>): <descrição da sugestão>"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado pela sua contribuição e sugestão para o `kinoite-bluebuild`!
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Proposta de Melhoria
+      description: Descreva a funcionalidade ou melhoria sugerida.
+      placeholder: Seria interessante adicionar suporte a... ou otimizar...
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivação e Benefício
+      description: Qual problema isso resolve ou que ganho de performance/segurança traz?
+      placeholder: Isso melhora o desempenho em... ou resolve a compatibilidade com...
+    validations:
+      required: false
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternativas Consideradas
+      description: Há outras formas de alcançar o mesmo resultado?
+    validations:
+      required: false
