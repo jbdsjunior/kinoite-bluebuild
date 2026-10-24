@@ -51,8 +51,12 @@ fi
 
 # Ensure elegant and safe silent boot via GRUB Menu Auto-Hide
 if [ "$CAN_SUDO" -eq 1 ] && command -v grub2-editenv >/dev/null 2>&1; then
-    $SUDO_CMD grub2-editenv - set menu_auto_hide=1 >/dev/null 2>&1 || true
+    $SUDO_CMD grub2-editenv - set menu_auto_hide=2 >/dev/null 2>&1 || true
     $SUDO_CMD grub2-editenv - set boot_success=1 >/dev/null 2>&1 || true
+    $SUDO_CMD grub2-editenv - set boot_indeterminate=0 >/dev/null 2>&1 || true
+    if [ -d /boot/grub2 ]; then
+        printf "set timeout=0\nset timeout_style=hidden\n" | $SUDO_CMD tee /boot/grub2/user.cfg >/dev/null 2>&1 || true
+    fi
 fi
 
 if [ -n "$RUN_USER_CMD" ]; then

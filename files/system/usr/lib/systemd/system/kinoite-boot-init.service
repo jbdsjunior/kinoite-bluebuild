@@ -2,14 +2,16 @@
 Description=Kinoite Native First-Boot Initialization (GRUB Auto-Hide)
 Documentation=man:grub2-editenv(1)
 After=local-fs.target
-ConditionPathExists=!/var/lib/kinoite-boot-init-done
+ConditionPathExists=!/var/lib/kinoite-boot-init-v2-done
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=-/usr/bin/grub2-editenv - set menu_auto_hide=1
+ExecStart=-/usr/bin/grub2-editenv - set menu_auto_hide=2
 ExecStart=-/usr/bin/grub2-editenv - set boot_success=1
-ExecStartPost=/usr/bin/touch /var/lib/kinoite-boot-init-done
+ExecStart=-/usr/bin/grub2-editenv - set boot_indeterminate=0
+ExecStart=-/bin/sh -c 'printf "set timeout=0\nset timeout_style=hidden\n" > /boot/grub2/user.cfg 2>/dev/null || true'
+ExecStartPost=/usr/bin/touch /var/lib/kinoite-boot-init-v2-done
 
 [Install]
 WantedBy=multi-user.target

@@ -158,11 +158,15 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## 8. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
 
-O Fedora Kinoite utiliza o mecanismo nativo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
+O Fedora Kinoite utiliza o mecanismo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
 
 ### 8.1 Provisionamento 100% Nativo na Imagem
 
-O boot silencioso é **ativado automaticamente no primeiro boot** através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service), sem requerer nenhuma intervenção manual ou execução de comandos por parte do usuário.
+Como o Fedora Kinoite (`bootc`/`rpm-ostree`) mantém permanentemente múltiplos deployments (sistema ativo + rollback), o GRUB é configurado em modo forçado (`menu_auto_hide=2` + `user.cfg`) através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service):
+
+- Grava `menu_auto_hide=2`, `boot_success=1` e `boot_indeterminate=0`.
+- Grava `set timeout=0` e `set timeout_style=hidden` em `/boot/grub2/user.cfg`.
+- Opera de forma zero-touch no primeiro boot.
 
 Caso deseje verificar o status do ambiente GRUB no host:
 
@@ -170,11 +174,21 @@ Caso deseje verificar o status do ambiente GRUB no host:
 sudo grub2-editenv - list | grep menu_auto_hide
 ```
 
+Para aplicar manualmente no host a qualquer momento:
+
+```bash
+sudo grub2-editenv - set menu_auto_hide=2
+sudo grub2-editenv - set boot_success=1
+sudo grub2-editenv - set boot_indeterminate=0
+printf "set timeout=0\nset timeout_style=hidden\n" | sudo tee /boot/grub2/user.cfg
+```
+
 ### 8.2 Salvaguardas de Segurança e Rollback Automático
 
-- **Fallback Automático (`grub-boot-success.timer`):** O timer de sessão do usuário aguarda 2 minutos de desktop estável para confirmar o boot. Se o sistema falhar ao inicializar, travar ou desligar abruptamente, o GRUB **automaticamente reexibe o menu com as opções de rollback no próximo boot**.
-- **Acesso Manual ao Menu:** Para forçar a exibição do menu de seleção do GRUB a qualquer momento, ligue o computador mantendo pressionada a tecla **`Shift`** ou tocando repetidamente em **`Esc`** ou **`F8`**.
-- **Reverter para Menu Sempre Visível:** Caso deseje que o menu do GRUB volte a aparecer em todas as inicializações:
+- **Fallback Automático (`grub-boot-success.timer`):** O timer de sessão do usuário aguarda 2 minutos de desktop estável para confirmar o boot. Se o sistema falhar ao inicializar ou desligar abruptamente, o GRUB **automaticamente reexibe o menu com as opções de rollback no próximo boot**.
+- **Acesso Manual ao Menu:** Para forçar a exibição do menu do GRUB a qualquer momento, ligue o computador mantendo pressionada a tecla **`Shift`** ou tocando repetidamente em **`Esc`** ou **`F8`**.
+- **Reverter para Menu Sempre Visível:** Caso deseje que o menu volte a aparecer sempre:
   ```bash
   sudo grub2-editenv - unset menu_auto_hide
+  sudo rm -f /boot/grub2/user.cfg
   ```
