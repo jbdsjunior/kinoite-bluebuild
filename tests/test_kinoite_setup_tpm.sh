@@ -85,6 +85,9 @@ if [ "\$1" = "isLuks" ]; then
 elif [ "\$1" = "luksUUID" ]; then
     echo "12345678-1234-1234-1234-123456789abc"
     exit 0
+elif [ "\$1" = "status" ]; then
+    echo "  device:  $DUMMY_DEV"
+    exit 0
 fi
 exit 0
 EOF
@@ -123,6 +126,19 @@ else
     echo "  [FAIL] /etc/crypttab entry missing tpm2-device=auto"
     FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
+
+# Test 6: Auto-detection of LUKS device when no device argument is passed
+cat <<EOF > "$MOCK_BIN/findmnt"
+#!/bin/bash
+echo "/dev/mapper/luks-test"
+exit 0
+EOF
+chmod +x "$MOCK_BIN/findmnt"
+
+echo "luks-12345678-1234-1234-1234-123456789abc UUID=12345678-1234-1234-1234-123456789abc none discard" > "$MOCK_CRYPTTAB"
+assert_exit_code "Auto-detection of root LUKS block device succeeds" 0 bash -c '
+    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") --skip-recovery-key
+'
 
 echo "kinoite-setup-tpm: $PASS_COUNT passed, $FAIL_COUNT failed."
 [ "$FAIL_COUNT" -eq 0 ]

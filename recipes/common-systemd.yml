@@ -6,6 +6,9 @@ modules:
       masked:
         - systemd-remount-fs.service
       enabled:
+        # Native first-boot initialization (GRUB auto-hide)
+        - kinoite-boot-init.service
+
         # Base update automation & timers (no upstream preset)
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer

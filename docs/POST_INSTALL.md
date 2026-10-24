@@ -22,14 +22,16 @@ No Fedora Anaconda (**Custom Partitioning**), configure LUKS2 + Btrfs sem swap e
 
 ### 1.2 Configurar Desbloqueio Automático TPM 2.0
 
-Execute o script de provisionamento integrado na partição LUKS:
+Execute o utilitário integrado de provisionamento (a partição LUKS raiz é detectada automaticamente):
 
 ```bash
-sudo kinoite-setup-tpm /dev/nvme0n1p3
+sudo kinoite-setup-tpm
 ```
 
+*(Opcional: caso queira especificar explicitamente um dispositivo, utilize `sudo kinoite-setup-tpm /dev/nvme0n1p3`)*.
+
 > [!NOTE]
-> **Pós-Atualização de BIOS:** Se atualizar a BIOS no futuro, digite a senha manual no primeiro boot e re-execute o mesmo comando (`sudo kinoite-setup-tpm /dev/nvme0n1p3`), que recria o slot TPM de forma idempotente.
+> **Pós-Atualização de BIOS:** Se atualizar a BIOS no futuro, digite a senha manual no primeiro boot e re-execute o mesmo comando (`sudo kinoite-setup-tpm`), que recria o slot TPM de forma idempotente.
 
 ---
 
@@ -154,17 +156,18 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 8. Inicialização Silenciosa e Elegante (GRUB Auto-Hide Seguro)
+## 8. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
 
 O Fedora Kinoite utiliza o mecanismo nativo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
 
-### 8.1 Ativar Boot Silencioso no Host
+### 8.1 Provisionamento 100% Nativo na Imagem
 
-Execute diretamente no terminal do host:
+O boot silencioso é **ativado automaticamente no primeiro boot** através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service), sem requerer nenhuma intervenção manual ou execução de comandos por parte do usuário.
+
+Caso deseje verificar o status do ambiente GRUB no host:
 
 ```bash
-sudo grub2-editenv - set menu_auto_hide=1
-sudo grub2-editenv - set boot_success=1
+sudo grub2-editenv - list | grep menu_auto_hide
 ```
 
 ### 8.2 Salvaguardas de Segurança e Rollback Automático

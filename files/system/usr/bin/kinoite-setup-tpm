@@ -8,9 +8,48 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 DEVICE="${1:-}"
+SKIP_RECOVERY=0
+
+if [ "$DEVICE" = "--skip-recovery-key" ]; then
+    SKIP_RECOVERY=1
+    DEVICE=""
+elif [ "${2:-}" = "--skip-recovery-key" ]; then
+    SKIP_RECOVERY=1
+fi
 
 if [ -z "$DEVICE" ]; then
-    echo "Usage: kinoite-setup-tpm <luks-block-device> [--skip-recovery-key]"
+    echo "Scanning active system mounts to detect root LUKS partition..."
+    # Probe root filesystem mount source
+    ROOT_SRC="$(findmnt -n -o SOURCE / 2>/dev/null || true)"
+    if [[ "$ROOT_SRC" =~ ^/dev/mapper/ ]]; then
+        DM_NAME="$(basename "$ROOT_SRC")"
+        if command -v cryptsetup >/dev/null 2>&1; then
+            C_DEV="$(cryptsetup status "$DM_NAME" 2>/dev/null | grep -E "^\s*device:" | awk '{print $2}' || true)"
+            if [ -n "$C_DEV" ] && [ -e "$C_DEV" ]; then
+                DEVICE="$C_DEV"
+                echo "[INFO] Auto-detected root LUKS partition: $DEVICE"
+            fi
+        fi
+    fi
+
+    # Fallback probe /var/home if root is not on mapper
+    if [ -z "$DEVICE" ]; then
+        VAR_SRC="$(findmnt -n -o SOURCE /var/home 2>/dev/null || true)"
+        if [[ "$VAR_SRC" =~ ^/dev/mapper/ ]]; then
+            DM_NAME="$(basename "$VAR_SRC")"
+            if command -v cryptsetup >/dev/null 2>&1; then
+                C_DEV="$(cryptsetup status "$DM_NAME" 2>/dev/null | grep -E "^\s*device:" | awk '{print $2}' || true)"
+                if [ -n "$C_DEV" ] && [ -e "$C_DEV" ]; then
+                    DEVICE="$C_DEV"
+                    echo "[INFO] Auto-detected LUKS partition from /var/home: $DEVICE"
+                fi
+            fi
+        fi
+    fi
+fi
+
+if [ -z "$DEVICE" ]; then
+    echo "Usage: kinoite-setup-tpm [luks-block-device] [--skip-recovery-key]"
     echo "Example: kinoite-setup-tpm /dev/nvme0n1p3"
     exit 1
 fi
@@ -18,11 +57,6 @@ fi
 if [ ! -b "$DEVICE" ]; then
     echo "ERROR: Block device '$DEVICE' not found." >&2
     exit 1
-fi
-
-SKIP_RECOVERY=0
-if [ "${2:-}" = "--skip-recovery-key" ]; then
-    SKIP_RECOVERY=1
 fi
 
 echo "=== [1/4] Checking LUKS2 Header on $DEVICE ==="
