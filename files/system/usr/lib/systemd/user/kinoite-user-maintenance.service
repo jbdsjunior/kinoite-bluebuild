@@ -15,3 +15,4 @@ ExecStart=-/usr/bin/find %h/.cache/thumbnails -type f -atime +30 -delete
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
+

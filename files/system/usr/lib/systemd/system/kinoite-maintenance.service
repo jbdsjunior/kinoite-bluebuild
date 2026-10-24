@@ -14,3 +14,4 @@ ExecStart=-/usr/bin/journalctl --vacuum-time=14d --vacuum-size=200M
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
+
