@@ -49,6 +49,12 @@ if [ "$CAN_SUDO" -eq 1 ]; then
     echo "[OK] System tmpfiles synchronized."
 fi
 
+# Ensure elegant and safe silent boot via GRUB Menu Auto-Hide
+if [ "$CAN_SUDO" -eq 1 ] && command -v grub2-editenv >/dev/null 2>&1; then
+    $SUDO_CMD grub2-editenv - set menu_auto_hide=1 >/dev/null 2>&1 || true
+    $SUDO_CMD grub2-editenv - set boot_success=1 >/dev/null 2>&1 || true
+fi
+
 if [ -n "$RUN_USER_CMD" ]; then
     $RUN_USER_CMD systemd-tmpfiles --user --create >/dev/null 2>&1 || true
 else
@@ -350,6 +356,14 @@ fi
 if [ -f /etc/xdg/baloofilerc ]; then
     if grep -q "Cloud" /etc/xdg/baloofilerc; then
         echo "[STATUS] KDE Baloo Cloud Exclusion: Active (Locked [\$ei])"
+    fi
+fi
+
+# Verify GRUB Menu Auto-Hide Status
+if command -v grub2-editenv >/dev/null 2>&1; then
+    grub_autohide=$(grub2-editenv - list 2>/dev/null | grep "^menu_auto_hide=" | cut -d'=' -f2 || true)
+    if [ "$grub_autohide" = "1" ] || [ "$grub_autohide" = "2" ]; then
+        echo "[STATUS] GRUB Menu Auto-Hide: Active (Silent & Flicker-Free Boot)"
     fi
 fi
 
