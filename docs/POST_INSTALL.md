@@ -151,3 +151,27 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 ```
 
 - **SysRq REISUB (`kernel.sysrq = 1`):** Em caso de congelamento gráfico, segure `Alt + SysRq` e digite pausadamente `R` → `E` → `I` → `S` → `U` → `B` para descarregar caches Btrfs e reiniciar com segurança.
+
+---
+
+## 8. Inicialização Silenciosa e Elegante (GRUB Auto-Hide Seguro)
+
+O Fedora Kinoite utiliza o mecanismo nativo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
+
+### 8.1 Ativar Boot Silencioso no Host
+
+Execute diretamente no terminal do host:
+
+```bash
+sudo grub2-editenv - set menu_auto_hide=1
+sudo grub2-editenv - set boot_success=1
+```
+
+### 8.2 Salvaguardas de Segurança e Rollback Automático
+
+- **Fallback Automático (`grub-boot-success.timer`):** O timer de sessão do usuário aguarda 2 minutos de desktop estável para confirmar o boot. Se o sistema falhar ao inicializar, travar ou desligar abruptamente, o GRUB **automaticamente reexibe o menu com as opções de rollback no próximo boot**.
+- **Acesso Manual ao Menu:** Para forçar a exibição do menu de seleção do GRUB a qualquer momento, ligue o computador mantendo pressionada a tecla **`Shift`** ou tocando repetidamente em **`Esc`** ou **`F8`**.
+- **Reverter para Menu Sempre Visível:** Caso deseje que o menu do GRUB volte a aparecer em todas as inicializações:
+  ```bash
+  sudo grub2-editenv - unset menu_auto_hide
+  ```
