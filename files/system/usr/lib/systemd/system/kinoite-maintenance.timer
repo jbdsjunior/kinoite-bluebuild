@@ -1,0 +1,12 @@
+[Unit]
+Description=Weekly System Maintenance and Hygiene Timer
+Documentation=man:systemd.timer(5)
+
+[Timer]
+OnCalendar=weekly
+AccuracySec=1h
+Persistent=true
+RandomizedDelaySec=60min
+
+[Install]
+WantedBy=timers.target

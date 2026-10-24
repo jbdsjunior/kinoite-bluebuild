@@ -1,0 +1,16 @@
+[Unit]
+Description=Weekly System Maintenance and Hygiene
+Documentation=man:journalctl(1) man:podman(1)
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+
+ExecStart=-/usr/bin/podman container prune -f
+ExecStart=-/usr/bin/podman volume prune -f
+ExecStart=-/usr/bin/podman image prune -f
+ExecStart=-/usr/bin/journalctl --vacuum-time=14d --vacuum-size=200M
+
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle

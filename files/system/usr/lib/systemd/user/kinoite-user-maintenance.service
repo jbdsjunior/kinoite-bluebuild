@@ -1,0 +1,17 @@
+[Unit]
+Description=Weekly User Maintenance and Cache Hygiene
+Documentation=man:journalctl(1) man:podman(1)
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+
+ExecStart=-/usr/bin/podman container prune -f
+ExecStart=-/usr/bin/podman volume prune -f
+ExecStart=-/usr/bin/podman image prune -f
+ExecStart=-/usr/bin/journalctl --user --vacuum-time=14d --vacuum-size=100M
+ExecStart=-/usr/bin/find %h/.cache/thumbnails -type f -atime +30 -delete
+
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle

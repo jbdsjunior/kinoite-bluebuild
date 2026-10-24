@@ -12,6 +12,7 @@ modules:
         # Base update automation & timers (no upstream preset)
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
+        - kinoite-maintenance.timer
 
         # Hardware diagnostics & reliability (EDAC / MCE / RAS logging)
         - ras-mc-ctl.service
@@ -33,6 +34,7 @@ modules:
     user:
       enabled:
         - flatpak-user-update.timer
+        - kinoite-user-maintenance.timer
         - podman-auto-update.timer
         - podman-restart.service
         - soar-upgrade-packages.timer
