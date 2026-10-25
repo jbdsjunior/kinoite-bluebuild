@@ -8,12 +8,20 @@ Fonte canônica única (*Single Source of Truth*) de regras de engenharia, basel
 - **Conventional Commits:** `<type>(<scope>): <descrição sucinta no presente>` (`feat`, `fix`, `docs`, `refactor`, `chore`) seguido de corpo em *bullet points* detalhando decisões, parâmetros, impacto e arquivos.
 - **Disciplina de Staging:** Adicionar arquivos explicitamente (`git add <arq1> <arq2>`); proibido `git add .` cego. Auditar `git status` e `git diff --cached` antes do commit, e confirmar `git status` limpo após o commit informando o hash e `git push origin <branch>`.
 
-## 2. Princípios de Execução (Executor & Revisor)
+## 2. Princípios de Execução e Ciclo de Engenharia
 
-- **Ciclo Multiagente:** O **Executor** implementa; o **Revisor** audita, pesquisa e valida até atingir conformidade total sem ressalvas.
-- **Prioridade:** Segurança > Performance > Conveniência.
-- **Design (KISS & DRY):** Zero redundância com defaults nativos do Fedora Kinoite (latest upstream), systemd ou kernel. Proibido downgrade de pacotes, daemons legados ou configurações mortas.
-- **Resiliência & Formato:** Emitir alerta e comando de rollback para alterações críticas. Respostas diretas sem preâmbulos. Scripts shell estritamente lineares (sem funções desnecessárias) e comentários técnicos concisos em inglês.
+- **Prioridade Absoluta:** Segurança > Performance > Conveniência.
+- **Decomposição Granular de Demandas:** Nenhuma tarefa complexa deve ser executada como um bloco monolítico. Toda demanda DEVE ser dividida no maior número de tarefas pequenas, atômicas e executáveis possível. Quanto mais tarefas relevantes e bem delimitadas, menor o risco de regressão e mais simples a validação.
+- **Ciclo Obrigatório de Execução (7 Fases):** Toda atividade, independentemente de ser conduzida por um ou mais agentes (sem necessidade de forçar cerimônias multiagente desnecessárias), deve seguir estritamente o fluxo contínuo:
+  1. **Plan (Planejar):** Definir o objetivo técnico, pesquisar o estado da arte (upstream/web), delimitar arquivos e submeter plano estruturado ao usuário antes de editar código.
+  2. **Test (Diagnosticar):** Reproduzir o estado atual, inspecionar logs ou validar hipóteses com dados reais antes de qualquer alteração.
+  3. **Implement (Implementar):** Aplicar a mudança mínima necessária (KISS & DRY), sem redundâncias com defaults nativos do Fedora Kinoite (latest upstream), systemd ou kernel.
+  4. **Review (Revisar):** Auditar linha a linha o diff gerado (`git diff`), garantindo conformidade estilística, higiene de formatação e zero efeitos colaterais.
+  5. **Verify (Validar):** Executar testes automatizados de sintaxe e runtime (`systemd-analyze`, `udevadm test`, `sysctl`, etc.) comprovando a eficácia técnica.
+  6. **Remember (Registrar):** Atualizar a memória permanente do repositório (`AGENTS.md`, `README.md`, `docs/POST_INSTALL.md` ou walkthroughs) para que o contexto nunca seja perdido em sessões futuras.
+  7. **Improve (Aprimorar):** Finalizar com commit estruturado (`Conventional Commits`), árvore limpa (`working tree clean`) e propor melhorias contínuas incrementais.
+- **Design e Resiliência (KISS & DRY):** Zero redundância com defaults nativos do Fedora Kinoite, systemd ou kernel. Proibido downgrade de pacotes, daemons legados ou configurações mortas. Emitir alerta e comando de rollback para alterações críticas. Respostas diretas sem preâmbulos prolixos. Scripts shell estritamente lineares e comentários técnicos concisos em inglês.
+- **Protocolo de Evolução de Invariantes:** Os invariantes definidos nas seções seguintes são guardrails protetivos essenciais, não dogmas estáticos. Se uma demanda técnica justificar o refinamento ou a evolução de um invariante, o agente deve apresentar justificativa técnica fundamentada no plano (`/plan`), obter validação do usuário e atualizar o `AGENTS.md` na mesma transação atômica.
 
 ## 3. Hardware Baseline e Calibração de BIOS (`Profile A`)
 
