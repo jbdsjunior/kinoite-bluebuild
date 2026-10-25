@@ -171,7 +171,7 @@ echo "=== [3/8] Btrfs Health & Storage Reclaim ==="
 if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
     echo "[STATUS] Btrfs hardware stats for /var/home:"
     btrfs device stats /var/home 2>/dev/null || true
-    
+
     if [ "$CAN_SUDO" -eq 1 ]; then
         echo "[ACTION] Running balanced chunk reclamation on /var/home (-dusage=10 -musage=10)..."
         $SUDO_CMD btrfs balance start -dusage=10 -musage=10 /var/home 2>/dev/null || true
