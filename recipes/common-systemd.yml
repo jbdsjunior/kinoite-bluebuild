@@ -27,7 +27,7 @@ modules:
 
         # NOTE: systemd-resolved, firewalld and the modular libvirt sockets
         # (virtqemud/virtnetworkd/virtstoraged/virtnodedevd/virtproxyd/
-        # virtsecretd/virtnwfilterd) are preset-enabled by Fedora 44
+        # virtsecretd/virtnwfilterd) are preset-enabled by Fedora upstream
         # (90-default.preset) and applied at build time; re-declaring them
         # is forbidden (AGENTS.md §4).
 

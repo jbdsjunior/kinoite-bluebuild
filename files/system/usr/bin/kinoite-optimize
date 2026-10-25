@@ -312,10 +312,11 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}"
         echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
     else
+        FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
         if echo "$CURRENT_KARGS" | grep -q "btusb.enable_autosuspend=0"; then
-            echo "[OK] Host kernel arguments verified: Fedora 44 baseline with homologated exception (btusb.enable_autosuspend=0)."
+            echo "[OK] Host kernel arguments verified: Fedora ${FEDORA_VER} baseline with homologated exception (btusb.enable_autosuspend=0)."
         else
-            echo "[OK] Host kernel arguments are clean (pure Fedora 44 upstream baseline)."
+            echo "[OK] Host kernel arguments are clean (pure Fedora ${FEDORA_VER} upstream baseline)."
         fi
     fi
 else
