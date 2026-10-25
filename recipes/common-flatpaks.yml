@@ -13,14 +13,30 @@ modules:
           # Browsers & Web
           - com.brave.Browser
           - com.google.Chrome
+          - org.mozilla.firefox
 
-          # Development & IDE
+          # Security & Password Management
+          - com.bitwarden.desktop
+
+          # Development & Containers
           - com.visualstudio.code
+          - io.github.DenysMb.Kontainer
+          - com.ranfdev.DistroShelf
+          - io.github.mfat.sshpilot
 
-          # Productivity & Office
+          # Artificial Intelligence & Local LLMs
+          - ai.jan.Jan
+
+          # Productivity, Knowledge & Office
           - md.obsidian.Obsidian
+          - io.anytype.anytype
+          - io.github.alainm23.planify
           - org.onlyoffice.desktopeditors
           - org.gnome.Calculator
+
+          # Backup & Resilience
+          - org.gnome.World.PikaBackup
+          - org.gnome.DejaDup
 
           # System Monitoring
           - io.missioncenter.MissionCenter
