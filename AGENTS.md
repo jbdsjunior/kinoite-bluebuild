@@ -35,24 +35,21 @@ Os invariantes deste repositório representam o baseline protetivo testado e com
 
 | Tier de Risco | Abrangência | Exigência para Evolução |
 | :--- | :--- | :--- |
-| **Tier 1 (Crítico / Hardware)** | BIOS, tensões elétricas, topologia de memória daisy-chain, C-states | Rigor máximo: embasamento em especificações elétricas/JEDEC e validação ativa de estabilidade (`rasdaemon`, `stressapptest`). |
+| **Tier 1 (Crítico / Hardware & Boot)** | Kernel bootargs, initramfs, partição /boot, LUKS/TPM, firmware e limites de hardware | Rigor máximo: embasamento em documentação do kernel/upstream e validação ativa de estabilidade (`rasdaemon`, `stressapptest`, `POST_INSTALL.md §6`). |
 | **Tier 2 (Médio / SO & Kernel)** | Linha de boot (kargs), sysctl, ZRAM, Btrfs NoCOW, PipeWire buffers | Rigor técnico: validação automatizada de sintaxe e runtime (`sysctl -p`, `systemd-analyze`, logs de sistema limpos). |
 | **Tier 3 (Ágil / Apps & UX)** | Flags de browser, Rclone, fontes, aliases, timers de manutenção | Rigor ágil: evolução contínua alinhada às versões upstream, priorizando DRY/KISS e zero legado. |
 
-## 3. Hardware Baseline e Calibração de BIOS (`Profile A`)
+## 3. Hardware Baseline e Requisitos da Estação
 
-- **Host:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI (BIOS F39, AGESA ComboV2 1.2.0.x, microcode `0xa201213`), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite (`bootc:latest`, Wayland, KDE Plasma 6, Kernel `7.2+`).
-- **Memória (64 GB DDR4 não-ECC, 4×16 GB mistos, 2 DPC / 3 ranks por canal):**
-  - `A1/B1` (stubs): 16 GB 1R 3200 genérico.
-  - `A2/B2` (terminações físicas daisy-chain): KingSpec `KS3200D4R13516G` 16 GB 2R 3200 (1.2V JEDEC).
-  - **Invariante Daisy-Chain:** Módulos 2R devem residir obrigatoriamente nas pontas `A2/B2` e 1R em `A1/B1` (inverter causa reflexão de sinal e corrupção no barramento DQ).
-  - **Diagnóstico RAS:** `rasdaemon` monitora MCE (core/cache/Data Fabric) e PCIe AER (`sudo ras-mc-ctl --errors`). Sem ECC, o `amd64_edac` não carrega: **erros de DRAM são invisíveis ao kernel** e exigem teste ativo (MemTest86 ≥ 4 passes e `stressapptest` ≥ 1 h).
-- **Periféricos Homologados:** Headset USB MCHOSE X9 (ALSA/PipeWire nativo upstream), TWS Baseus Bass EP10 Pro (LDAC/AAC/SBC, BT 5.4), Caixa BT Tribit XSound Go, HID VXE Mouse e BY Tech (`TAG+="uaccess"` em `70-peripherals.rules`).
-- **Invariantes de BIOS (Procedimento completo em [`docs/POST_INSTALL.md` §8](docs/POST_INSTALL.md)):**
-  - **Clocks 1:1:** `X.M.P. = Profile1` (DDR4-3200), `FCLK = 1600MHz`, `UCLK DIV1 MODE = UCLK==MEMCLK`.
-  - **Tensões Manuais (Anti-padrão: modo `Auto` sob XMP com 4 DIMMs):** `DRAM Voltage = 1.350 V` (teto estrito 1.350V ou undervolt validado 1.300V–1.320V contendo dissipação $P \propto V^2$), `CPU VCORE SOC = 1.100 V` (teto 1.150V; impede 1.20V–1.25V do modo Auto que aquece o plano de cobre AM4 junto aos slots A1/A2), `VDDG IOD = 1.000 V`, `VDDG CCD = 0.950 V`, `cLDO VDDP = 0.900 V`.
-  - **Retenção Térmica & Impedâncias:** `tRFC` e `tREFI` em `Auto` (anti-padrão no baseline: apertar manualmente em 4 DIMMs mistos para evitar bit-flips por fuga capacitiva em ICs de 8Gb), `Auto Self Refresh (ASR)` / `Extended Temperature Range = Enabled` no AMD CBS (2x refresh próximo a 85 °C), fluxo de ar ativo sobre os 4 slots, `ProcODT = 40.0 Ω`, `RttNom = Disabled`, `RttWr = RZQ/3 (80 Ω)`, `RttPark = RZQ/5 (48 Ω)`, `CAD_BUS DrvStr = 24-24-24-24 Ω`, `Gear Down Mode = Enabled`, `Power Down Enable = Disabled`, `Memory Context Restore = Disabled`, `TSME = Disabled`.
-  - **CPU & Barramento:** `Power Supply Idle Control = Typical Current Idle` (previne C6 idle lockups), `CPPC` + `CPPC Preferred Cores = Enabled` (obrigatório para `amd-pstate-epp`), `Global C-state = Enabled`, `SVM = Enabled`, `IOMMU = Enabled`, `CSM = Disabled`, `Fast Boot = Disabled`, `Above 4G Decoding` + `Re-Size BAR = Enabled` (SAM 8192 MB). PBO stock (PPT 142W, TDC 95A, EDC 140A; anti-padrão: limites `Motherboard` ou Scalar > 1X) e Curve Optimizer `Disabled` no baseline (anti-padrão no baseline: CO negativo em núcleos preferenciais CCD0, especialmente Cores 0 e 3).
+- **Perfil Homologado:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI, 64 GB DDR4 (4×16 GB), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite (`bootc:latest`, Wayland, KDE Plasma 6, Kernel `7.2+`).
+- **Mapeamento de Hardware para Configurações do Repositório:**
+  - **CPU (Zen 3):** Linha de boot nativa com escalonador `amd-pstate-epp` e C-states upstream do Fedora.
+  - **GPU (Navi 23 / RDNA2):** Mesa `radv` (Vulkan 1.4), aceleração VA-API no KWin/Wayland e contêineres ROCm/HIP via CDI (`/etc/cdi/amdgpu.yaml` com `HSA_OVERRIDE_GFX_VERSION=10.3.0`).
+  - **Memória (64 GB):** ZRAM `zstd` provisionado em 32 GB (`60-zram-policy.conf`) e `DefaultLimitMEMLOCK=infinity` (`60-kinoite-limits.conf`) para alocação direta de modelos GGUF (`--mlock`).
+  - **Armazenamento (Btrfs):** Atributo NoCOW `+C` estrito via tmpfiles `h` em diretórios de VMs e contêineres (`60-io-tuning-system.conf` e `60-io-tuning-user.conf`).
+  - **Periféricos:** Headset USB MCHOSE X9, fones BT Baseus Bass EP10 Pro, caixa Tribit XSound Go (quirk cirúrgico em `60-tribit-volume-quirk.conf`), mouses HID VXE e BY Tech (`TAG+="uaccess"` em `70-peripherals.rules`).
+- **Firmware & Calibração de BIOS (Responsabilidade Operacional do Host):**
+  - A calibração física de BIOS (tensões elétricas, XMP, temporizações JEDEC, CPPC, IOMMU e Re-Size BAR/SAM) é realizada manualmente pelo operador do host no UEFI Setup e está documentada no runbook [`docs/POST_INSTALL.md` §6](docs/POST_INSTALL.md#6-calibração-de-bios--gigabyte-x570-aorus-pro-wifi-f39--5950x--64-gb).
 
 ## 4. Invariantes de Engenharia do Sistema
 
