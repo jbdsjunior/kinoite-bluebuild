@@ -2,6 +2,12 @@
 
 modules:
   - type: dnf
+    repos:
+      cleanup: true
+      keys:
+        - https://repos.fyralabs.com/terra%OS_VERSION%/key.asc
+      files:
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
     install:
       skip-unavailable: true
       allow-erasing: true
