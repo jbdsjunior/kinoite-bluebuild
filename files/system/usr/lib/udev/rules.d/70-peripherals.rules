@@ -15,5 +15,5 @@ SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"
 SUBSYSTEM=="drm", KERNEL=="renderD*", TAG+="uaccess"
 
 # NVMe Gen4 I/O scheduler: force none (multi-queue hardware controller bypasses kernel I/O CPU scheduler overhead)
-ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/scheduler}="none"
+ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="none"
 
