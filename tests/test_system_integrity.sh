@@ -24,7 +24,7 @@ assert_true() {
 echo "Running system integrity and syntax tests..."
 
 # 1. Shell script syntax validation (bash -n)
-for sh_file in "$PROJECT_ROOT"/files/system/usr/bin/* "$PROJECT_ROOT"/files/system/etc/profile.d/*.sh "$PROJECT_ROOT"/tests/*.sh; do
+for sh_file in "$PROJECT_ROOT"/files/system/usr/bin/* "$PROJECT_ROOT"/files/system/etc/profile.d/*.sh "$PROJECT_ROOT"/files/system/usr/lib/systemd/system-generators/* "$PROJECT_ROOT"/tests/*.sh; do
     if [ -f "$sh_file" ]; then
         rel_path="${sh_file#$PROJECT_ROOT/}"
         assert_true "Shell syntax: $rel_path" "bash -n '$sh_file'"

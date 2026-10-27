@@ -10,6 +10,14 @@ modules:
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
         - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 
+    replace:
+      # Mitigate upstream OpenCL packaging conflict (RHBZ #2332429)
+      - from-repo: fedora
+        install-weak-deps: false
+        packages:
+          - new: ocl-icd
+            old: OpenCL-ICD-Loader
+
     install:
       skip-unavailable: true
       allow-erasing: true

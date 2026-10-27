@@ -11,8 +11,13 @@ modules:
 
         - lm_sensors
         - plasma-firewall
+        - smartmontools
 
         - icoutils
+        - kio-admin
+        - ksshaskpass
+        - kf6-kimageformats
+        - qt6-qtimageformats
 
         - kate
         - okular
