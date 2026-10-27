@@ -20,18 +20,28 @@ No Fedora Anaconda (**Custom Partitioning**), configure LUKS2 + Btrfs sem swap e
   └── Subvolume: vms   -> /var/lib/libvirt/images [nodatacow]
 ```
 
-### 1.2 Configurar Desbloqueio Automático TPM 2.0
+### 1.2 Configurar Desbloqueio Seguro TPM 2.0 (Padrão Apple Secure Enclave / FileVault)
 
 Execute o utilitário integrado de provisionamento (a partição LUKS raiz é detectada automaticamente):
 
 ```bash
+# Provisionamento interativo (pergunta se deseja cadastrar PIN de segurança):
 sudo kinoite-setup-tpm
+
+# Ou defina explicitamente com PIN (Recomendado - 2 Fatores: Hardware fTPM + PIN):
+sudo kinoite-setup-tpm --pin
+
+# Modo desatendido sem PIN (apenas chave de hardware TPM):
+sudo kinoite-setup-tpm --no-pin
 ```
 
-*(Opcional: caso queira especificar explicitamente um dispositivo, utilize `sudo kinoite-setup-tpm /dev/nvme0n1p3`)*.
+*(Opcional: caso queira especificar explicitamente um dispositivo, utilize `sudo kinoite-setup-tpm /dev/nvme0n1p3 --pin`)*.
+
+> [!TIP]
+> **Modelo Apple de Proteção Física (PIN + PCR 7/14):** Com a opção `--pin`, o disco só é descriptografado pelo TPM se o usuário digitar o PIN no teclado durante a inicialização. Isso impede que qualquer pessoa com acesso físico ao computador ligue a máquina e acesse os dados. O fTPM possui proteção de hardware contra ataques de força bruta (*anti-hammering lockout*).
 
 > [!NOTE]
-> **Pós-Atualização de BIOS:** Se atualizar a BIOS no futuro, digite a senha manual no primeiro boot e re-execute o mesmo comando (`sudo kinoite-setup-tpm`), que recria o slot TPM de forma idempotente.
+> **Pós-Atualização de BIOS:** Se atualizar a BIOS no futuro, digite a senha manual no primeiro boot e re-execute o mesmo comando (`sudo kinoite-setup-tpm --pin`), que recria o slot TPM de forma idempotente.
 
 ---
 
@@ -192,3 +202,19 @@ printf "set timeout=0\nset timeout_style=hidden\n" | sudo tee /boot/grub2/user.c
   sudo grub2-editenv - unset menu_auto_hide
   sudo rm -f /boot/grub2/user.cfg
   ```
+
+### 8.3 Bloqueio de Bootloader e Console (Padrão Apple Firmware Password)
+
+Para garantir que terceiros com acesso físico não possam editar a linha do kernel (`init=/bin/bash` ou parâmetros não autorizados):
+
+1. **Configurar Senha de Proteção no GRUB:**
+   ```bash
+   sudo grub2-setpassword
+   ```
+   *Efeito:* O GRUB continuará inicializando o sistema normalmente, mas exigirá o usuário `root` e a senha definida caso alguém pressione a tecla `e` para editar os parâmetros de boot.
+
+2. **Garantir Credencial de Emergência (`sulogin`):**
+   ```bash
+   sudo passwd root
+   ```
+   *Efeito:* Garante que, se o sistema entrar em modo `emergency` ou `rescue` (por exemplo, após falha crítica de disco), o shell de manutenção só possa ser acessado mediante digitação de senha, alinhado ao padrão de segurança física *Zero Unauthenticated Recovery*.

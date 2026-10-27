@@ -3,19 +3,41 @@ set -euo pipefail
 
 # Critical flow: verify root privileges
 if [ "$(id -u)" -ne 0 ]; then
-    echo "ERROR: kinoite-setup-tpm must be run as root (use 'sudo kinoite-setup-tpm <luks-partition>')." >&2
+    echo "ERROR: kinoite-setup-tpm must be run as root (use 'sudo kinoite-setup-tpm [device] [--pin | --no-pin] [--skip-recovery-key]')." >&2
     exit 1
 fi
 
-DEVICE="${1:-}"
+DEVICE=""
 SKIP_RECOVERY=0
+PIN_MODE="auto"
 
-if [ "$DEVICE" = "--skip-recovery-key" ]; then
-    SKIP_RECOVERY=1
-    DEVICE=""
-elif [ "${2:-}" = "--skip-recovery-key" ]; then
-    SKIP_RECOVERY=1
-fi
+# Parse arguments flexibly
+for arg in "$@"; do
+    case "$arg" in
+        --skip-recovery-key)
+            SKIP_RECOVERY=1
+            ;;
+        --pin)
+            PIN_MODE="yes"
+            ;;
+        --no-pin)
+            PIN_MODE="no"
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$arg'" >&2
+            echo "Usage: kinoite-setup-tpm [luks-block-device] [--pin | --no-pin] [--skip-recovery-key]" >&2
+            exit 1
+            ;;
+        *)
+            if [ -z "$DEVICE" ]; then
+                DEVICE="$arg"
+            else
+                echo "ERROR: Unexpected extra argument '$arg'" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
 
 if [ -z "$DEVICE" ]; then
     echo "Scanning active system mounts to detect root LUKS partition..."
@@ -49,8 +71,8 @@ if [ -z "$DEVICE" ]; then
 fi
 
 if [ -z "$DEVICE" ]; then
-    echo "Usage: kinoite-setup-tpm [luks-block-device] [--skip-recovery-key]"
-    echo "Example: kinoite-setup-tpm /dev/nvme0n1p3"
+    echo "Usage: kinoite-setup-tpm [luks-block-device] [--pin | --no-pin] [--skip-recovery-key]"
+    echo "Example: kinoite-setup-tpm /dev/nvme0n1p3 --pin"
     exit 1
 fi
 
@@ -74,10 +96,40 @@ else
     echo "=== [2/4] Skipping Recovery Key Generation (--skip-recovery-key) ==="
 fi
 
-echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 ==="
+# Determine PIN policy (Apple Secure Enclave / FileVault model)
+if [ "$PIN_MODE" = "auto" ]; then
+    if [ -t 0 ] && [ -t 1 ]; then
+        echo ""
+        echo "=== Configuração de PIN de Segurança (Padrão Apple Secure Enclave / FileVault) ==="
+        echo "Com um PIN, o TPM só descriptografa o disco se o usuário digitar o PIN no boot,"
+        echo "impedindo que o sistema seja desbloqueado por terceiros com acesso físico."
+        if read -r -t 30 -p "Deseja proteger o desbloqueio TPM 2.0 com um PIN de segurança? [S/n]: " REPLY; then
+            if [[ ! "$REPLY" =~ ^[Nn]$ ]]; then
+                PIN_MODE="yes"
+            else
+                PIN_MODE="no"
+            fi
+        else
+            echo ""
+            echo "[INFO] Timeout ou terminal não-interativo; prosseguindo sem PIN..."
+            PIN_MODE="no"
+        fi
+    else
+        PIN_MODE="no"
+    fi
+fi
+
+PIN_ARG=""
+if [ "$PIN_MODE" = "yes" ]; then
+    PIN_ARG="--tpm2-with-pin=yes"
+    echo "[INFO] Ativando autenticação de dois fatores: TPM 2.0 + PIN (--tpm2-with-pin=yes)..."
+fi
+
+echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 + 14 ==="
 # Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after BIOS update)
 systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
-systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$DEVICE"
+# shellcheck disable=SC2086
+systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7+14 $PIN_ARG "$DEVICE"
 
 # Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
 LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"

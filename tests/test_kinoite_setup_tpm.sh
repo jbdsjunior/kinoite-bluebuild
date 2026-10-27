@@ -95,6 +95,7 @@ chmod +x "$MOCK_BIN/cryptsetup"
 
 cat <<EOF > "$MOCK_BIN/systemd-cryptenroll"
 #!/bin/bash
+echo "\$@" >> "$TEST_TMP/cryptenroll_args.log"
 exit 0
 EOF
 chmod +x "$MOCK_BIN/systemd-cryptenroll"
@@ -116,7 +117,7 @@ MOCK_CRYPTTAB="$TEST_TMP/crypttab"
 echo "luks-12345678-1234-1234-1234-123456789abc UUID=12345678-1234-1234-1234-123456789abc none discard" > "$MOCK_CRYPTTAB"
 
 assert_exit_code "Valid LUKS enrollment flow with crypttab update" 0 bash -c '
-    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") '"$DUMMY_DEV"' --skip-recovery-key
+    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") '"$DUMMY_DEV"' --no-pin --skip-recovery-key
 '
 
 if grep -q "tpm2-device=auto" "$MOCK_CRYPTTAB"; then
@@ -137,8 +138,34 @@ chmod +x "$MOCK_BIN/findmnt"
 
 echo "luks-12345678-1234-1234-1234-123456789abc UUID=12345678-1234-1234-1234-123456789abc none discard" > "$MOCK_CRYPTTAB"
 assert_exit_code "Auto-detection of root LUKS block device succeeds" 0 bash -c '
-    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") --skip-recovery-key
+    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") --no-pin --skip-recovery-key
 '
+
+# Test 7: Verify --pin flag passes --tpm2-with-pin=yes and --tpm2-pcrs=7+14
+rm -f "$TEST_TMP/cryptenroll_args.log"
+assert_exit_code "Enrollment with --pin flag succeeds" 0 bash -c '
+    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") '"$DUMMY_DEV"' --pin --skip-recovery-key
+'
+if grep -q -- "--tpm2-with-pin=yes" "$TEST_TMP/cryptenroll_args.log" && grep -q -- "--tpm2-pcrs=7+14" "$TEST_TMP/cryptenroll_args.log"; then
+    echo "  [PASS] systemd-cryptenroll called with --tpm2-with-pin=yes and PCRs 7+14"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    echo "  [FAIL] systemd-cryptenroll missing --tpm2-with-pin=yes or PCRs 7+14"
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Test 8: Verify --no-pin flag omits --tpm2-with-pin=yes
+rm -f "$TEST_TMP/cryptenroll_args.log"
+assert_exit_code "Enrollment with --no-pin flag succeeds" 0 bash -c '
+    source <(sed -e "s/\[ ! -b \"\$DEVICE\" \]/false/" -e "s|/etc/crypttab|'"$MOCK_CRYPTTAB"'|g" "'"$TARGET_SCRIPT"'") '"$DUMMY_DEV"' --no-pin --skip-recovery-key
+'
+if grep -q -- "--tpm2-pcrs=7+14" "$TEST_TMP/cryptenroll_args.log" && ! grep -q -- "--tpm2-with-pin=yes" "$TEST_TMP/cryptenroll_args.log"; then
+    echo "  [PASS] systemd-cryptenroll called with PCRs 7+14 without PIN"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    echo "  [FAIL] systemd-cryptenroll unexpectedly included PIN or omitted PCRs 7+14"
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
 
 echo "kinoite-setup-tpm: $PASS_COUNT passed, $FAIL_COUNT failed."
 [ "$FAIL_COUNT" -eq 0 ]
