@@ -20,7 +20,7 @@ modules:
         - qt6-qtimageformats
 
         - kate
-        - okular
+        # - okular
 
         - elisa-player
         - gwenview
