@@ -149,6 +149,23 @@ Pressione `<Delete>` no boot e `<F2>` para **Advanced Mode**:
 
 Salvar em **Save Profiles → Slot 1** (`Profile 1 - Stable Baseline 64GB`) e pressionar `<F10>`.
 
+### 6.1 Diagnóstico & Prevenção de Quedas em Idle (Zen 3 C6 Lockup)
+
+Processadores AMD Zen 3 com dual-CCD (como o Ryzen 9 5950X de 16 núcleos) podem sofrer *voltage droop* transiente ao alternar rapidamente de alta carga (ex.: encerramento de navegadores ou renderização pesada) para repouso profundo (*C6 Deep Sleep*). Caso ocorra um reset abrupto sem mensagens de erro no disco:
+
+1. **Ajuste Obrigatório no Setup UEFI:**
+   - Entre na BIOS (`<Delete>` no boot) e confirme que `Settings` -> `AMD CBS` -> `CPU Common Options` -> **`Power Supply Idle Control`** está fixado em **`Typical Current Idle`** (e não `Auto` ou `Low Current Idle`).
+   - Garanta que `Curve Optimizer` esteja **`Disabled`** (evitando subtensões no CCD0).
+2. **Inspeção de Quedas no Sistema:**
+   ```bash
+   # Verifica se o último encerramento foi classificado como crash
+   last -x -n 10
+   # Inspeciona mensagens de recuperação de journald
+   journalctl -b 0 | grep -i "uncleanly"
+   ```
+3. **QR Code em Kernel Panic (`drm_panic`):**
+   - O kernel mantém uma janela de **20 segundos** (`kernel.panic = 20`) exibindo um QR Code ou texto de pânico no monitor antes de reiniciar. Aponte a câmera do celular para o QR Code para obter o rastreamento da pilha de chamadas (*backtrace*).
+
 ---
 
 ## 7. Rollback e Recuperação de Emergência
