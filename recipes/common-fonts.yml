@@ -2,20 +2,11 @@
 
 modules:
   - type: dnf
-    repos:
-      cleanup: true
-      keys:
-        - https://repos.fyralabs.com/terra%OS_VERSION%/key.asc
-      files:
-        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
         - liberation-fonts-all
-        - fira-code-fonts
-        - rsms-inter-vf-fonts
-        - ms-core-fonts
         - google-noto-sans-cjk-fonts # Noto CJK fallback para Flatpaks e WebKitGTK (estático)
 
   - type: fonts

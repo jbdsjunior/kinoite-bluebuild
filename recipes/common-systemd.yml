@@ -37,4 +37,3 @@ modules:
         - kinoite-user-maintenance.timer
         - podman-auto-update.timer
         - podman-restart.service
-        - soar-upgrade-packages.timer

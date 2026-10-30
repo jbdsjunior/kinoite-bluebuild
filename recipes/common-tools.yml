@@ -26,6 +26,8 @@ modules:
         - topgrade
         - starship
         - tailscale
+        - rsms-inter-vf-fonts
+        - ms-core-fonts
 
         # Version Control & Cloud Sync
         - git
@@ -53,4 +55,3 @@ modules:
         - clinfo
         - vulkan-tools
         - nvtop
-        - radeontop

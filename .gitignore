@@ -33,6 +33,7 @@ auth.json
 /Containerfile
 
 # Local development/runtime artifacts
+tests/
 *.log
 *.logs
 *.tmp

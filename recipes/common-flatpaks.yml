@@ -21,7 +21,6 @@ modules:
           # Development & Containers
           - com.visualstudio.code
           - io.github.DenysMb.Kontainer
-          - com.ranfdev.DistroShelf
           - io.github.mfat.sshpilot
 
           # Artificial Intelligence & Local LLMs
@@ -32,11 +31,9 @@ modules:
           - io.anytype.anytype
           - io.github.alainm23.planify
           - org.onlyoffice.desktopeditors
-          - org.gnome.Calculator
 
           # Backup & Resilience
           - org.gnome.World.PikaBackup
-          - org.gnome.DejaDup
 
           # System Monitoring
           - io.missioncenter.MissionCenter

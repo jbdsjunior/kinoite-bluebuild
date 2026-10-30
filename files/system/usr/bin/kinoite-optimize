@@ -74,7 +74,6 @@ NOCOW_SYSTEM_DIRS=(
 
 NOCOW_USER_DIRS=(
     "$REAL_HOME/.local/share/libvirt/images"
-    "$REAL_HOME/.local/share/gnome-boxes/images"
     "$REAL_HOME/.local/share/containers/storage"
     "$REAL_HOME/.local/share/containers/storage/volumes"
     "$REAL_HOME/.cache/rclone"
@@ -185,7 +184,6 @@ echo "=== [4/8] VM Disk Images Fragmentation Audit & Defrag ==="
 VM_DIRS=(
     "/var/lib/libvirt/images"
     "$REAL_HOME/.local/share/libvirt/images"
-    "$REAL_HOME/.local/share/gnome-boxes/images"
 )
 
 VM_FOUND=0

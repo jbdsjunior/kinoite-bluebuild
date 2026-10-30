@@ -7,7 +7,6 @@ modules:
       allow-erasing: true
       packages:
         - "@virtualization"
-        - gnome-boxes
         - swtpm
         - swtpm-tools
       exclude:

@@ -1,8 +1,4 @@
-MenuBar=Disabled
-
 [General]
-ConfirmDelete=true
-ConfirmTrash=false
 RememberOpenedTabs=false
 Version=202
 
