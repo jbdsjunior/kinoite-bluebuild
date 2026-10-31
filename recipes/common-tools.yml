@@ -7,7 +7,7 @@ modules:
       keys:
         - https://repos.fyralabs.com/terra%OS_VERSION%/key.asc
       files:
-        - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+        - tailscale.repo
         - terra.repo
 
     replace:

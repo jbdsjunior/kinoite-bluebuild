@@ -1,0 +1,11 @@
+[tailscale-stable]
+name=Tailscale stable
+baseurl=https://pkgs.tailscale.com/stable/fedora/$basearch
+type=rpm
+skip_if_unavailable=True
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://pkgs.tailscale.com/stable/fedora/repo.gpg
+enabled=1
+enabled_metadata=1
+metadata_expire=6h
