@@ -111,7 +111,11 @@ if [ -f "$REAL_HOME/.config/user-dirs.dirs" ]; then
         -e 's|XDG_PUBLICSHARE_DIR=.*|XDG_PUBLICSHARE_DIR="$HOME/Public"|g' \
         -e 's|XDG_TEMPLATES_DIR=.*|XDG_TEMPLATES_DIR="$HOME/Templates"|g' \
         -e 's|XDG_VIDEOS_DIR=.*|XDG_VIDEOS_DIR="$HOME/Videos"|g' \
+        -e 's|XDG_PROJECTS_DIR=.*|XDG_PROJECTS_DIR="$HOME/Projects"|g' \
         "$REAL_HOME/.config/user-dirs.dirs" 2>/dev/null || true
+    if ! grep -q "XDG_PROJECTS_DIR" "$REAL_HOME/.config/user-dirs.dirs" 2>/dev/null; then
+        echo 'XDG_PROJECTS_DIR="$HOME/Projects"' >> "$REAL_HOME/.config/user-dirs.dirs" 2>/dev/null || true
+    fi
 fi
 
 # Ensure user-dirs.conf locks directories to avoid unwanted re-localization
@@ -127,6 +131,7 @@ if [ -f "$REAL_HOME/.local/share/user-places.xbel" ]; then
         -e 's|file://.*/M%C3%BAsicas|file://'"$REAL_HOME"'/Music|g' \
         -e 's|file://.*/Imagens|file://'"$REAL_HOME"'/Pictures|g' \
         -e 's|file://.*/V%C3%ADdeos|file://'"$REAL_HOME"'/Videos|g' \
+        -e 's|file://.*/Projetos|file://'"$REAL_HOME"'/Projects|g' \
         "$REAL_HOME/.local/share/user-places.xbel" 2>/dev/null || true
 fi
 

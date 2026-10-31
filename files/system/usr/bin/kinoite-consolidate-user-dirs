@@ -18,6 +18,7 @@ declare -A DIR_MAP=(
     ["Músicas"]="Music"
     ["Público"]="Public"
     ["Vídeos"]="Videos"
+    ["Projetos"]="Projects"
 )
 
 # 1. Migrate contents from legacy directories to target ASCII directories
@@ -54,7 +55,32 @@ for old_name in "${!DIR_MAP[@]}"; do
     fi
 done
 
-# 2. Synchronize ~/.config/user-dirs.dirs to canonical ASCII paths
+# 2. Normalize AI models directory (TitleCase) with backward-compatible symlink
+if [ -d "$TARGET_HOME/models" ] && [ ! -L "$TARGET_HOME/models" ]; then
+    echo "[MERGE] Normalizing ~/models to ~/Models..."
+    if [ ! -d "$TARGET_HOME/Models" ]; then
+        mv "$TARGET_HOME/models" "$TARGET_HOME/Models"
+    else
+        cp -a --update=none "$TARGET_HOME/models/." "$TARGET_HOME/Models/" 2>/dev/null || cp -a "$TARGET_HOME/models/." "$TARGET_HOME/Models/" 2>/dev/null || true
+        rm -rf "$TARGET_HOME/models"
+    fi
+    ln -sfn "Models" "$TARGET_HOME/models"
+    echo "[OK] Normalized ~/models -> ~/Models (symlink preserved)"
+elif [ ! -d "$TARGET_HOME/Models" ] && [ ! -L "$TARGET_HOME/models" ]; then
+    mkdir -p "$TARGET_HOME/Models"
+fi
+
+# Ensure XDG Base Directories and workstation directories exist
+mkdir -p "$TARGET_HOME/.local/bin" "$TARGET_HOME/.local/state" "$TARGET_HOME/AppImages"
+chmod 0700 "$TARGET_HOME/.local/state" 2>/dev/null || true
+
+# Remove transient empty directories with spaces (e.g. 'Nova pasta')
+if [ -d "$TARGET_HOME/Nova pasta" ] && [ -z "$(ls -A "$TARGET_HOME/Nova pasta" 2>/dev/null)" ]; then
+    rmdir "$TARGET_HOME/Nova pasta" 2>/dev/null || true
+    echo "[CLEANED] Removed empty 'Nova pasta'"
+fi
+
+# 3. Synchronize ~/.config/user-dirs.dirs to canonical ASCII paths
 USER_DIRS_CONF="$TARGET_HOME/.config/user-dirs.dirs"
 if [ -f "$USER_DIRS_CONF" ]; then
     sed -i \
@@ -66,14 +92,18 @@ if [ -f "$USER_DIRS_CONF" ]; then
         -e 's|XDG_PUBLICSHARE_DIR=.*|XDG_PUBLICSHARE_DIR="$HOME/Public"|g' \
         -e 's|XDG_TEMPLATES_DIR=.*|XDG_TEMPLATES_DIR="$HOME/Templates"|g' \
         -e 's|XDG_VIDEOS_DIR=.*|XDG_VIDEOS_DIR="$HOME/Videos"|g' \
+        -e 's|XDG_PROJECTS_DIR=.*|XDG_PROJECTS_DIR="$HOME/Projects"|g' \
         "$USER_DIRS_CONF"
+    if ! grep -q "XDG_PROJECTS_DIR" "$USER_DIRS_CONF"; then
+        echo 'XDG_PROJECTS_DIR="$HOME/Projects"' >> "$USER_DIRS_CONF"
+    fi
     echo "[OK] Updated $USER_DIRS_CONF"
 fi
 
-# 3. Enforce user-dirs.conf to disable automatic re-localization
+# 4. Enforce user-dirs.conf to disable automatic re-localization
 printf "enabled=False\nfilename_encoding=UTF-8\n" > "$TARGET_HOME/.config/user-dirs.conf"
 
-# 4. Synchronize Dolphin user-places.xbel bookmarks
+# 5. Synchronize Dolphin user-places.xbel bookmarks
 XBEL_FILE="$TARGET_HOME/.local/share/user-places.xbel"
 if [ -f "$XBEL_FILE" ]; then
     sed -i \
@@ -82,6 +112,7 @@ if [ -f "$XBEL_FILE" ]; then
         -e 's|file://.*/M%C3%BAsicas|file://'"$TARGET_HOME"'/Music|g' \
         -e 's|file://.*/Imagens|file://'"$TARGET_HOME"'/Pictures|g' \
         -e 's|file://.*/V%C3%ADdeos|file://'"$TARGET_HOME"'/Videos|g' \
+        -e 's|file://.*/Projetos|file://'"$TARGET_HOME"'/Projects|g' \
         "$XBEL_FILE"
     echo "[OK] Updated Dolphin bookmarks in $XBEL_FILE"
 fi
