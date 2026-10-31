@@ -8,6 +8,7 @@ modules:
         - https://repos.fyralabs.com/terra%OS_VERSION%/key.asc
       files:
         - https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+        - terra.repo
 
     replace:
       # Mitigate upstream OpenCL packaging conflict (RHBZ #2332429)
