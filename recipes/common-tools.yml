@@ -4,8 +4,6 @@ modules:
   - type: dnf
     repos:
       cleanup: true
-      keys:
-        - https://repos.fyralabs.com/terra%OS_VERSION%/key.asc
       files:
         - tailscale.repo
         - terra.repo
