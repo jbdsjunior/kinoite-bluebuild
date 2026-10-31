@@ -1,0 +1,12 @@
+[terra]
+name=Terra $releasever
+metalink=https://tetsudou.fyralabs.com/metalink?repo=terra$releasever&arch=$basearch
+type=rpm
+skip_if_unavailable=True
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
+enabled=1
+enabled_metadata=1
+metadata_expire=6h
+countme=1
