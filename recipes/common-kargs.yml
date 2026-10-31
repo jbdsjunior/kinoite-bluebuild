@@ -1,8 +1,0 @@
-# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-
-modules:
-  - type: kargs
-    kargs:
-      # Exceção homologada pelo usuário para mitigar latência de handshake,
-      # cortes de reconexão e atrasos de entrada/áudio em periféricos Bluetooth.
-      - btusb.enable_autosuspend=0

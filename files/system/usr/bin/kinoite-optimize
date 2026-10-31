@@ -300,6 +300,7 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         "vsyscall=none"
         "preempt=full"
         "page_alloc.shuffle=1"
+        "btusb.enable_autosuspend=0"
     )
     KARGS_TO_REMOVE=()
     for k in "${UNWANTED_KARGS[@]}"; do
@@ -313,11 +314,7 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
     else
         FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
-        if echo "$CURRENT_KARGS" | grep -q "btusb.enable_autosuspend=0"; then
-            echo "[OK] Host kernel arguments verified: Fedora ${FEDORA_VER} baseline with homologated exception (btusb.enable_autosuspend=0)."
-        else
-            echo "[OK] Host kernel arguments are clean (pure Fedora ${FEDORA_VER} upstream baseline)."
-        fi
+        echo "[OK] Host kernel arguments are clean (pure Fedora ${FEDORA_VER} upstream baseline)."
     fi
 else
     echo "[SKIP] Sudo privileges not available; skipping rpm-ostree cleanup and kargs inspection."
@@ -339,14 +336,8 @@ if command -v pw-metadata >/dev/null 2>&1; then
     pw_rate=$(pw-metadata -n settings 2>/dev/null | grep "clock.rate" | awk '{print $NF}' || true)
     pw_quantum=$(pw-metadata -n settings 2>/dev/null | grep "clock.quantum " | awk '{print $NF}' || true)
     if [ -n "$pw_quantum" ]; then
-        echo "[STATUS] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (~5.3ms latency target)"
+        echo "[STATUS] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (dynamic native graph)"
     fi
-fi
-
-# Verify Bluetooth autosuspend exception
-if [ -f /sys/module/btusb/parameters/enable_autosuspend ]; then
-    bt_suspend=$(cat /sys/module/btusb/parameters/enable_autosuspend 2>/dev/null || true)
-    echo "[STATUS] Bluetooth USB Autosuspend: $bt_suspend (N = zero latency handshake)"
 fi
 
 # Verify GPU Driver and Vulkan
