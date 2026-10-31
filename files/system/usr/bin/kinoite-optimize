@@ -92,15 +92,11 @@ for old_name in "${!USER_DIR_MAP[@]}"; do
         if [ ! -d "$new_path" ] || [ -z "$(ls -A "$new_path" 2>/dev/null)" ]; then
             rmdir "$new_path" 2>/dev/null || true
             mv "$old_path" "$new_path" 2>/dev/null || true
-            ln -s "$new_name" "$old_path" 2>/dev/null || true
         else
-            cp -a "$old_path/." "$new_path/" 2>/dev/null || true
+            cp -a --update=none "$old_path/." "$new_path/" 2>/dev/null || cp -a "$old_path/." "$new_path/" 2>/dev/null || true
             rm -rf "$old_path" 2>/dev/null || true
-            ln -s "$new_name" "$old_path" 2>/dev/null || true
         fi
-        echo "[MIGRATED] Migrated $old_name -> $new_name (with compatibility symlink)"
-    elif [ ! -e "$old_path" ]; then
-        ln -s "$new_name" "$old_path" 2>/dev/null || true
+        echo "[MIGRATED] Migrated $old_name -> $new_name"
     fi
 done
 
