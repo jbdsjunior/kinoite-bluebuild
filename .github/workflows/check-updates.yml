@@ -55,15 +55,22 @@ jobs:
           DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check cache
-        id: cache
+      - name: Check AMD cache
+        id: cache-amd
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
           path: ~/.cache-amd
           key: upstream-amd-${{ steps.check.outputs.digest }}
 
-      - name: Trigger build
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Check Dual cache
+        id: cache-dual
+        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
+        with:
+          path: ~/.cache-dual
+          key: upstream-dual-${{ steps.check.outputs.digest }}
+
+      - name: Trigger AMD build
+        if: steps.cache-amd.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
@@ -76,11 +83,32 @@ jobs:
           RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
           if [[ -n "${RUNNING}" ]]; then
             echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
-            exit 0
+          else
+            echo "Cache miss for AMD digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
+            gh workflow run "$WORKFLOW_FILE" \
+              --ref main \
+              --repo "$REPO" \
+              -f upstream_digest="${UPSTREAM_DIGEST}"
           fi
 
-          echo "Cache miss for digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
-          gh workflow run "$WORKFLOW_FILE" \
-            --ref main \
-            --repo "$REPO" \
-            -f upstream_digest="${UPSTREAM_DIGEST}"
+      - name: Trigger Dual build
+        if: steps.cache-dual.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_FILE: build-dual.yml
+        run: |
+          set -euo pipefail
+
+          # Avoid duplicate execution if build is already queued or running
+          RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
+          if [[ -n "${RUNNING}" ]]; then
+            echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
+          else
+            echo "Cache miss for Dual digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
+            gh workflow run "$WORKFLOW_FILE" \
+              --ref main \
+              --repo "$REPO" \
+              -f upstream_digest="${UPSTREAM_DIGEST}"
+          fi

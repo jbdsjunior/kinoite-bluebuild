@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      nonfree: rpmfusion
+      cleanup: true
+    install:
+      allow-erasing: true
+      skip-unavailable: true
+      packages:
+        - akmod-nvidia
+        - xorg-x11-drv-nvidia-cuda
+        - xorg-x11-drv-nvidia-cuda-libs
+        - nvidia-container-toolkit
+
+  - type: script
+    snippets:
+      - |
+        set -euo pipefail
+        KVER=$(cd /usr/lib/modules && echo *)
+        echo "Building NVIDIA kernel module for kernel ${KVER}..."
+        
+        # Opcional: ativa os módulos de kernel abertos (nvidia-open) para Ampere GA102
+        echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod
+        
+        # Garante que o kernel-devel esteja instalado para a compilação
+        dnf install -y kernel-devel-"${KVER}"
+        
+        # Força a compilação durante o build da imagem
+        akmods --force --kernels "${KVER}"
+        
+        # Limpa dependências pesadas de compilação
+        dnf remove -y kernel-devel gcc cpp
+        dnf clean all
