@@ -1,35 +1,59 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  - type: dnf
-    repos:
-      nonfree: rpmfusion
-      cleanup: true
-    install:
-      allow-erasing: true
-      skip-unavailable: true
-      packages:
-        - akmod-nvidia
-        - xorg-x11-drv-nvidia-cuda
-        - xorg-x11-drv-nvidia-cuda-libs
-        - nvidia-container-toolkit
-
   - type: script
     snippets:
       - |
         set -euo pipefail
-        KVER=$(cd /usr/lib/modules && echo *)
-        echo "Building NVIDIA kernel module for kernel ${KVER}..."
+        echo "=== Configurando ambiente de compilação NVIDIA ==="
         
-        # Opcional: ativa os módulos de kernel abertos (nvidia-open) para Ampere GA102
+        # 1. Ajuste de permissões para compatibilidade com akmods em container
+        mkdir -p /var/tmp
+        chmod 1777 /var/tmp
+
+        # 2. Habilitação do repositório RPM Fusion Nonfree (para akmod-nvidia e CUDA libs)
+        OS_VERSION=$(rpm -E %fedora)
+        if ! rpm -q rpmfusion-nonfree-release >/dev/null 2>&1; then
+          dnf install -y \
+            "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${OS_VERSION}.noarch.rpm"
+        fi
+
+        # 3. Habilitação do repositório oficial NVIDIA Container Toolkit
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
+          -o /etc/yum.repos.d/nvidia-container-toolkit.repo
+
+        # 4. Resolução dinâmica da versão exata do kernel
+        KERNEL_VERSION=$(cd /usr/lib/modules && echo *)
+        echo "Detectada versão do kernel: ${KERNEL_VERSION}"
+
+        # 5. Instalação das dependências de compilação e pacotes NVIDIA
+        dnf install -y \
+          kernel-devel-"${KERNEL_VERSION}" \
+          akmods \
+          gcc-c++ \
+          akmod-nvidia \
+          xorg-x11-drv-nvidia-cuda \
+          xorg-x11-drv-nvidia-cuda-libs \
+          nvidia-container-toolkit
+
+        # 6. Aplicação do patch de contêiner no akmodsbuild (referência: blue-build/base-images)
+        if [ -f /usr/sbin/akmodsbuild ]; then
+          sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' /usr/sbin/akmodsbuild
+        fi
+
+        # 7. Compilação forçada do módulo do kernel para o GA102 / RTX 3080 Ti
         echo "%_with_kmod_nvidia_open 1" > /etc/rpm/macros.nvidia-kmod
-        
-        # Garante que o kernel-devel esteja instalado para a compilação
-        dnf install -y kernel-devel-"${KVER}"
-        
-        # Força a compilação durante o build da imagem
-        akmods --force --kernels "${KVER}"
-        
-        # Limpa dependências pesadas de compilação
-        dnf remove -y kernel-devel gcc cpp
+        echo "Compilando módulo de kernel nvidia..."
+        akmods --force --kernels "${KERNEL_VERSION}"
+
+        # 8. Validação da presença do módulo compilado
+        if ! find "/usr/lib/modules/${KERNEL_VERSION}" -name "*nvidia*.ko*" | grep -q nvidia; then
+          echo "ERRO: Módulo NVIDIA não foi gerado com sucesso!" >&2
+          exit 1
+        fi
+        echo "Módulo NVIDIA compilado e validado com sucesso!"
+
+        # 9. Limpeza cirúrgica de compiladores pesados e repositórios temporários
+        dnf remove -y kernel-devel gcc-c++ akmods
+        rm -f /etc/yum.repos.d/nvidia-container-toolkit.repo
         dnf clean all
