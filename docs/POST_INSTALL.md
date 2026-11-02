@@ -235,3 +235,27 @@ Para garantir que terceiros com acesso físico não possam editar a linha do ker
    sudo passwd root
    ```
    *Efeito:* Garante que, se o sistema entrar em modo `emergency` ou `rescue` (por exemplo, após falha crítica de disco), o shell de manutenção só possa ser acessado mediante digitação de senha, alinhado ao padrão de segurança física *Zero Unauthenticated Recovery*.
+
+### 8.4 Inscrição de Chave MOK para Imagem Dual-GPU (`kinoite-dual` com Secure Boot)
+
+Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
+
+1. **Importar o Certificado MOK no Host:**
+   ```bash
+   sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
+   # Ou, se executando a partir do repositório/home:
+   # sudo mokutil --import ~/akmods-ublue.der
+   ```
+   *O sistema solicitará uma senha temporária (ex: `12345678`) apenas para autorizar o cadastro na reinicialização.*
+
+2. **Confirmar na Tela Azul do MOK Manager (UEFI):**
+   * Reinicie o computador (`systemctl reboot`).
+   * A tela azul do **MOK Manager** aparecerá antes do boot.
+   * Pressione qualquer tecla -> Selecione **Enroll MOK** -> **Continue** -> **Yes**.
+   * Digite a senha definida na etapa 1 e confirme com **Reboot**.
+
+3. **Verificação pós-boot:**
+   ```bash
+   nvidia-smi
+   ```
+
