@@ -262,28 +262,19 @@ Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure 
      nvidia-smi
      ```
 
-### 8.5 Inicialização 100% Sem Senhas com NVMe Encriptado (Zero-Interaction Boot)
+### 8.5 Desbloqueio Automático de Disco NVMe via fTPM 2.0 (Sem Passphrase no Boot)
 
-Para que a estação de trabalho ligue e entre diretamente na área de trabalho KDE Plasma sem solicitar nenhuma senha física (preservando a segurança criptográfica total em repouso):
+Para que a estação de trabalho ligue e descriptografe o NVMe sem exigir a digitação da passphrase do LUKS (preservando a segurança criptográfica total em repouso e a tela de login padrão do usuário):
 
-1. **Desbloqueio de Disco Sem Senha (fTPM 2.0 sem PIN):**
-   * Após qualquer alteração no MOK ou BIOS, re-sele o estado dos registradores PCR 7 e 14:
+1. **Re-selagem de Registradores PCR 7 e 14:**
+   * Após qualquer alteração no MOK ou BIOS, re-sele o estado dos registradores:
      ```bash
      sudo kinoite-setup-tpm --no-pin
      ```
    * O fTPM do processador Ryzen descriptografa a partição LUKS2 (`nvme0n1p3`) automaticamente em ~1s. Se o NVMe for fisicamente removido do computador, permanece 100% inacessível.
 
-2. **Login Automático no Desktop (Plasma Login Manager):**
-   * A imagem provisiona declarativamente o arquivo `/usr/lib/plasmalogin/plasmalogin.conf.d/10-autologin.conf`:
-     ```ini
-     [Autologin]
-     User=jj
-     Session=plasma
-     Relogin=false
-     ```
-   * Para aplicar imediatamente no host sem reiniciar para novo deployment:
-     ```bash
-     printf "[Autologin]\nUser=jj\nSession=plasma\nRelogin=false\n" | sudo tee /etc/plasmalogin.conf.d/10-autologin.conf
-     ```
+2. **Tela de Login do Usuário:**
+   * A sessão gráfica mantém a tela de login padrão do Plasma Login Manager, solicitando a senha do usuário legítimo para acesso ao desktop.
+
 
 
