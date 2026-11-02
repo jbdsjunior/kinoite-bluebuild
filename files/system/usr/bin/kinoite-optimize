@@ -348,6 +348,25 @@ if command -v vulkaninfo >/dev/null 2>&1; then
     fi
 fi
 
+# Verify NVIDIA Driver and Compute Readiness (if hardware present)
+if command -v nvidia-smi >/dev/null 2>&1; then
+    nv_gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n 1 || true)
+    if [ -n "$nv_gpu" ]; then
+        echo "[STATUS] NVIDIA Compute GPU: $nv_gpu (Driver Active & Persistent)"
+    fi
+fi
+
+# Verify Secure Boot and MOK Enrollment
+if command -v mokutil >/dev/null 2>&1; then
+    if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
+        if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
+            echo "[STATUS] Secure Boot: Active (MOK enrolled for out-of-tree drivers)"
+        else
+            echo "[STATUS] Secure Boot: Active (Standard)"
+        fi
+    fi
+fi
+
 # Verify Baloo Exclusion
 if [ -f /etc/xdg/baloofilerc ]; then
     if grep -q "Cloud" /etc/xdg/baloofilerc; then

@@ -236,11 +236,11 @@ Para garantir que terceiros com acesso físico não possam editar a linha do ker
    ```
    *Efeito:* Garante que, se o sistema entrar em modo `emergency` ou `rescue` (por exemplo, após falha crítica de disco), o shell de manutenção só possa ser acessado mediante digitação de senha, alinhado ao padrão de segurança física *Zero Unauthenticated Recovery*.
 
-### 8.4 Inscrição de Chave MOK para Imagem Dual-GPU (`kinoite-dual` com Secure Boot)
+### 8.4 Inscrição e Permanência da Chave MOK para Imagem Dual-GPU (`kinoite-dual` com Secure Boot)
 
 Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
 
-1. **Importar o Certificado MOK no Host:**
+1. **Importar o Certificado MOK no Host (Apenas no Primeiro Setup):**
    ```bash
    sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
    # Ou, se executando a partir do repositório/home:
@@ -254,8 +254,36 @@ Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure 
    * Pressione qualquer tecla -> Selecione **Enroll MOK** -> **Continue** -> **Yes**.
    * Digite a senha definida na etapa 1 e confirme com **Reboot**.
 
-3. **Verificação pós-boot:**
-   ```bash
-   nvidia-smi
-   ```
+3. **Permanência no Hardware:**
+   * Uma vez inscrito, o certificado fica gravado na **NVRAM protegida da placa-mãe**.
+   * Atualizações de imagem, updates de kernel ou drivers nunca mais solicitarão nova confirmação ou senha no MOK.
+   * Verificação:
+     ```bash
+     nvidia-smi
+     ```
+
+### 8.5 Inicialização 100% Sem Senhas com NVMe Encriptado (Zero-Interaction Boot)
+
+Para que a estação de trabalho ligue e entre diretamente na área de trabalho KDE Plasma sem solicitar nenhuma senha física (preservando a segurança criptográfica total em repouso):
+
+1. **Desbloqueio de Disco Sem Senha (fTPM 2.0 sem PIN):**
+   * Após qualquer alteração no MOK ou BIOS, re-sele o estado dos registradores PCR 7 e 14:
+     ```bash
+     sudo kinoite-setup-tpm --no-pin
+     ```
+   * O fTPM do processador Ryzen descriptografa a partição LUKS2 (`nvme0n1p3`) automaticamente em ~1s. Se o NVMe for fisicamente removido do computador, permanece 100% inacessível.
+
+2. **Login Automático no Desktop (Plasma Login Manager):**
+   * A imagem provisiona declarativamente o arquivo `/usr/lib/plasmalogin/plasmalogin.conf.d/10-autologin.conf`:
+     ```ini
+     [Autologin]
+     User=jj
+     Session=plasma
+     Relogin=false
+     ```
+   * Para aplicar imediatamente no host sem reiniciar para novo deployment:
+     ```bash
+     printf "[Autologin]\nUser=jj\nSession=plasma\nRelogin=false\n" | sudo tee /etc/plasmalogin.conf.d/10-autologin.conf
+     ```
+
 
