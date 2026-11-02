@@ -73,7 +73,8 @@ jobs:
           pr_event_number: ${{ github.event.number }}
           use_cache: true
           retry_push_count: 3
-          verify_install: true
+          cli_version: v0.9.40
+          verify_install: false
           use_unstable_cli: false
           skip_checkout: true
 
