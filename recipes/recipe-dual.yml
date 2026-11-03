@@ -4,7 +4,7 @@ name: kinoite-dual
 description: "Customized Fedora Kinoite image for Dual-GPU workstations (AMD display + NVIDIA compute)"
 
 base-image: quay.io/fedora/fedora-kinoite
-image-version: latest
+image-version: 45
 
 platforms:
   - linux/amd64
