@@ -2,6 +2,7 @@
 
 modules:
   - type: akmods
+    source: local
     env:
       MULTILIB: "0"
     install: []

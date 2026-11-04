@@ -30,8 +30,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends skopeo
           fi
-      - name: Resolve base image
-        id: resolve
+      - name: Resolve base image for AMD
+        id: resolve-amd
         run: |
           set -euo pipefail
           RECIPE_FILE="recipes/recipe-amd.yml"
@@ -46,10 +46,35 @@ jobs:
 
           echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
 
-      - name: Check base image digest
-        id: check
+      - name: Resolve base image for Dual
+        id: resolve-dual
+        run: |
+          set -euo pipefail
+          RECIPE_FILE="recipes/recipe-dual.yml"
+          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
+          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
+          FULL_IMG="${BASE_IMG}:${IMG_VER}"
+
+          if [[ -z "${BASE_IMG}" ]]; then
+            echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
+            exit 1
+          fi
+
+          echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
+
+      - name: Check base image digest for AMD
+        id: check-amd
         env:
-          IMAGE_NAME: ${{ steps.resolve.outputs.image }}
+          IMAGE_NAME: ${{ steps.resolve-amd.outputs.image }}
+        run: |
+          set -euo pipefail
+          DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Check base image digest for Dual
+        id: check-dual
+        env:
+          IMAGE_NAME: ${{ steps.resolve-dual.outputs.image }}
         run: |
           set -euo pipefail
           DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
@@ -60,20 +85,20 @@ jobs:
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
           path: ~/.cache-amd
-          key: upstream-amd-${{ steps.check.outputs.digest }}
+          key: upstream-amd-${{ steps.check-amd.outputs.digest }}
 
       - name: Check Dual cache
         id: cache-dual
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
           path: ~/.cache-dual
-          key: upstream-dual-${{ steps.check.outputs.digest }}
+          key: upstream-dual-${{ steps.check-dual.outputs.digest }}
 
       - name: Trigger AMD build
         if: steps.cache-amd.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
+          UPSTREAM_DIGEST: ${{ steps.check-amd.outputs.digest }}
           REPO: ${{ github.repository }}
           WORKFLOW_FILE: build-amd.yml
         run: |
@@ -95,7 +120,7 @@ jobs:
         if: steps.cache-dual.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
+          UPSTREAM_DIGEST: ${{ steps.check-dual.outputs.digest }}
           REPO: ${{ github.repository }}
           WORKFLOW_FILE: build-dual.yml
         run: |
