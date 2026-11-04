@@ -1,9 +1,0 @@
-name: akmods
-shortdesc: The akmods module is a tool used for managing and installing kernel modules built by Universal Blue.
-example: |
-  type: akmods
-  base: asus # if not specified, classic "main" base is used by default
-  install:
-    - openrazer
-    - v4l2loopback
-    - xone
