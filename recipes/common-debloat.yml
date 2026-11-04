@@ -9,7 +9,7 @@ modules:
         - plasma-discover-rpm-ostree
         - fedora-flathub-remote
         - kwrite
-        - plasma-welcome
+        # - plasma-welcome
         - fedora-third-party
         - fedora-workstation-repositories
 
