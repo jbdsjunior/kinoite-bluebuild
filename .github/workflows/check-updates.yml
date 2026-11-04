@@ -5,17 +5,27 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   check-and-trigger:
-    name: Check Upstream Updates
+    name: Check Updates (${{ matrix.flavor }})
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       actions: write
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: amd
+            recipe: recipes/recipe-amd.yml
+            workflow: build-amd.yml
+          - flavor: dual
+            recipe: recipes/recipe-dual.yml
+            workflow: build-dual.yml
 
     steps:
       - name: Checkout repo
@@ -30,11 +40,13 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends skopeo
           fi
-      - name: Resolve base image for AMD
-        id: resolve-amd
+
+      - name: Resolve base image (${{ matrix.flavor }})
+        id: resolve
+        env:
+          RECIPE_FILE: ${{ matrix.recipe }}
         run: |
           set -euo pipefail
-          RECIPE_FILE="recipes/recipe-amd.yml"
           BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
           IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
           FULL_IMG="${BASE_IMG}:${IMG_VER}"
@@ -46,61 +58,29 @@ jobs:
 
           echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
 
-      - name: Resolve base image for Dual
-        id: resolve-dual
-        run: |
-          set -euo pipefail
-          RECIPE_FILE="recipes/recipe-dual.yml"
-          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-          FULL_IMG="${BASE_IMG}:${IMG_VER}"
-
-          if [[ -z "${BASE_IMG}" ]]; then
-            echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
-            exit 1
-          fi
-
-          echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
-
-      - name: Check base image digest for AMD
-        id: check-amd
+      - name: Check base image digest (${{ matrix.flavor }})
+        id: check
         env:
-          IMAGE_NAME: ${{ steps.resolve-amd.outputs.image }}
+          IMAGE_NAME: ${{ steps.resolve.outputs.image }}
         run: |
           set -euo pipefail
           DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-      - name: Check base image digest for Dual
-        id: check-dual
-        env:
-          IMAGE_NAME: ${{ steps.resolve-dual.outputs.image }}
-        run: |
-          set -euo pipefail
-          DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-
-      - name: Check AMD cache
-        id: cache-amd
+      - name: Check upstream cache (${{ matrix.flavor }})
+        id: cache
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
-          path: ~/.cache-amd
-          key: upstream-amd-${{ steps.check-amd.outputs.digest }}
+          path: ~/.cache-${{ matrix.flavor }}
+          key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
 
-      - name: Check Dual cache
-        id: cache-dual
-        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
-        with:
-          path: ~/.cache-dual
-          key: upstream-dual-${{ steps.check-dual.outputs.digest }}
-
-      - name: Trigger AMD build
-        if: steps.cache-amd.outputs.cache-hit != 'true'
+      - name: Trigger build (${{ matrix.flavor }})
+        if: steps.cache.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          UPSTREAM_DIGEST: ${{ steps.check-amd.outputs.digest }}
+          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
           REPO: ${{ github.repository }}
-          WORKFLOW_FILE: build-amd.yml
+          WORKFLOW_FILE: ${{ matrix.workflow }}
         run: |
           set -euo pipefail
 
@@ -109,29 +89,7 @@ jobs:
           if [[ -n "${RUNNING}" ]]; then
             echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
           else
-            echo "Cache miss for AMD digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
-            gh workflow run "$WORKFLOW_FILE" \
-              --ref main \
-              --repo "$REPO" \
-              -f upstream_digest="${UPSTREAM_DIGEST}"
-          fi
-
-      - name: Trigger Dual build
-        if: steps.cache-dual.outputs.cache-hit != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          UPSTREAM_DIGEST: ${{ steps.check-dual.outputs.digest }}
-          REPO: ${{ github.repository }}
-          WORKFLOW_FILE: build-dual.yml
-        run: |
-          set -euo pipefail
-
-          # Avoid duplicate execution if build is already queued or running
-          RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
-          if [[ -n "${RUNNING}" ]]; then
-            echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
-          else
-            echo "Cache miss for Dual digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
+            echo "Cache miss for ${{ matrix.flavor }} digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
             gh workflow run "$WORKFLOW_FILE" \
               --ref main \
               --repo "$REPO" \
