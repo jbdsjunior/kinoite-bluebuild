@@ -66,9 +66,9 @@ dnf5 -y remove \
     akmods \
     gcc-c++
 
+# Clean build artifacts
 rm -rf /var/cache/akmods
 rm -rf /run/akmods
-rm -rf /tmp/* /var/tmp/* 2>/dev/null || true
 
 echo "==> [NVIDIA Native Build] Applying Bazzite hardening & power management..."
 # Remove Nouveau Vulkan ICDs to avoid conflicts
@@ -87,3 +87,4 @@ systemctl enable nvidia-powerd.service 2>/dev/null || true
 systemctl enable nvidia-cdi-refresh.service 2>/dev/null || true
 
 echo "==> [NVIDIA Native Build] Native build completed with zero kernel downgrade!"
+exit 0
