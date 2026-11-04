@@ -1,5 +1,12 @@
 name: build-dual
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'recipes/recipe-dual.yml'
+      - 'recipes/common-*.yml'
+      - 'files/**'
   workflow_dispatch:
     inputs:
       upstream_digest:
