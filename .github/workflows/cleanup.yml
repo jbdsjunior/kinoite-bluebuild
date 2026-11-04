@@ -17,10 +17,19 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Delete old package versions
+      - name: Delete old kinoite-amd package versions
         uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
         with:
           package-name: "kinoite-amd"
+          package-type: "container"
+          min-versions-to-keep: 15
+          delete-only-untagged-versions: "false"
+
+      - name: Delete old kinoite-dual package versions
+        uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
+        continue-on-error: true
+        with:
+          package-name: "kinoite-dual"
           package-type: "container"
           min-versions-to-keep: 15
           delete-only-untagged-versions: "false"
@@ -48,7 +57,15 @@ jobs:
         run: |
           set -euo pipefail
           echo "Scanning for superseded Actions caches in $REPO..."
-          CACHES_TO_DELETE=$(gh cache list --repo "$REPO" --limit 100 --json id,key,createdAt -q '.[] | select(.key | startswith("upstream-"))' | jq -s -r 'sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
+          
+          # Prune superseded caches independently for AMD and Dual flavors to avoid cross-invalidation
+          ALL_CACHES=$(gh cache list --repo "$REPO" --limit 100 --json id,key,createdAt 2>/dev/null || echo "[]")
+
+          AMD_SUPERSEDED=$(echo "$ALL_CACHES" | jq -r '[.[] | select(.key | startswith("upstream-amd-"))] | sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
+          DUAL_SUPERSEDED=$(echo "$ALL_CACHES" | jq -r '[.[] | select(.key | startswith("upstream-dual-"))] | sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
+
+          CACHES_TO_DELETE=$(printf "%s\n%s\n" "$AMD_SUPERSEDED" "$DUAL_SUPERSEDED" | sed '/^$/d')
+
           if [[ -n "${CACHES_TO_DELETE}" ]]; then
             echo "$CACHES_TO_DELETE" | while read -r cache_id; do
               if [[ -n "$cache_id" ]]; then

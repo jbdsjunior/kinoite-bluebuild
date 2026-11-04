@@ -89,7 +89,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 ## 5. CI/CD & Governança
 
-- **Workflows:** `check-updates.yml` (cron cada 2h) verifica digest da base e despacha `build-amd.yml` e/ou `build-dual.yml` (timeout 45m cada) conforme cache individual. `cleanup.yml` (diário) retém 15 versões no GHCR e 3 dias de runs.
+- **Workflows:** `check-updates.yml` (cron cada 2h) verifica digest da base e despacha `build-amd.yml` e/ou `build-dual.yml` (timeout 45m cada) conforme cache individual. `cleanup.yml` (diário) retém 15 versões no GHCR para `kinoite-amd` e `kinoite-dual`, 3 dias de runs e expurga caches superseded isoladamente por flavor (`upstream-amd-*` e `upstream-dual-*`).
 - **Segurança CI:** Actions pinadas por SHA, expressions seguras em `env:`, Dependabot semanal agrupado, segredos estritamente protegidos no `.gitignore`.
 
 ---
