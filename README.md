@@ -2,7 +2,6 @@
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -14,10 +13,9 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 
 ## Overview
 
-| Variant        | Base Image                      | Target                                   | Hardware Baseline                                                 |
-| :------------- | :------------------------------ | :--------------------------------------- | :---------------------------------------------------------------- |
-| `kinoite-amd`  | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest`  | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4                |
-| `kinoite-dual` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-dual:latest` | AMD Ryzen 9 5950X + Radeon RX 6600 XT (Display) + RTX 3080 Ti (Compute/LLM) |
+| Variant       | Base Image                      | Target                                  | Hardware Baseline                                    |
+| :------------ | :------------------------------ | :-------------------------------------- | :--------------------------------------------------- |
+| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 |
 
 > [!WARNING]
 > This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -29,12 +27,7 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 ### 1) Switch to the signed custom image
 
 ```bash
-# For AMD-only workstations:
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
-
-# For Dual-GPU workstations (AMD display + NVIDIA compute):
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
-
 systemctl reboot
 ```
 

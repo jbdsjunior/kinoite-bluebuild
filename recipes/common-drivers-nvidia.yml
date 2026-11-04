@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  - type: script
-    scripts:
-      - build-nvidia-kmod.sh
+  - type: akmods
+    env:
+      MULTILIB: "0"
+    install: []
+    nvidia-driver: nvidia-open
