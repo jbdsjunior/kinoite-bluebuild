@@ -91,6 +91,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 - **Workflows:** `check-updates.yml` (cron cada 2h) executa matriz paralela autônoma (`fail-fast: false`) para `amd` e `dual`, verificando digest da base upstream e despachando `build-amd.yml` e `build-dual.yml` (timeout 45m cada) conforme cache individual. `cleanup.yml` (diário) retém 15 versões no GHCR para `kinoite-amd` e `kinoite-dual`, 3 dias de runs e expurga caches superseded isoladamente por flavor (`upstream-amd-*` e `upstream-dual-*`).
 - **Segurança CI:** Actions pinadas por SHA, expressions seguras em `env:`, Dependabot semanal agrupado, segredos estritamente protegidos no `.gitignore`.
+- **Framework de Auditoria Canônica (7 Pilares):** Execução padronizada via `kinoite-optimize --audit` cobrindo Supply Chain & Chaves, Resiliência Upstream & Deriva, Btrfs NoCOW & ZRAM, Grafo PipeWire & WirePlumber, Aceleração GPU & CDI, Boot Limpo/REISUB/Sulogin e Governança de Timers.
 
 ---
 

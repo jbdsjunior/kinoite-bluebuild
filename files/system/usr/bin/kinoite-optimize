@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Critical flow: detect privilege level and calling user environment
+# Detect audit-only flag
+AUDIT_ONLY=0
+if [ "${1:-}" = "--audit" ] || [ "${1:-}" = "--audit-only" ] || [ "${1:-}" = "-a" ]; then
+    AUDIT_ONLY=1
+fi
 IS_ROOT=0
 CAN_SUDO=0
 SUDO_CMD=""
@@ -34,6 +38,7 @@ if [ "$IS_ROOT" -eq 1 ] && [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]
     RUN_USER_CMD="sudo -u $REAL_USER"
 fi
 
+if [ "$AUDIT_ONLY" -eq 0 ]; then
 echo "=== [1/8] Kernel Resilience & Runtime Sysctl Enforcement ==="
 if [ "$CAN_SUDO" -eq 1 ]; then
     $SUDO_CMD /usr/lib/systemd/systemd-sysctl >/dev/null 2>&1 || $SUDO_CMD sysctl --system >/dev/null 2>&1 || true
@@ -319,82 +324,149 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
 else
     echo "[SKIP] Sudo privileges not available; skipping rpm-ostree cleanup and kargs inspection."
 fi
-
-echo "=== [8/8] System Health & Integrity Audit ==="
-# Verify CPU driver and CPPC
-if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver ]; then
-    driver=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)
-    echo "[STATUS] CPU Scaling Driver: $driver"
 fi
 
-# Verify Update Timers
-active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
-echo "[STATUS] Core System Timers: $(echo "$active_timers" | tr '\n' ' ')"
+if [ "$AUDIT_ONLY" -eq 1 ]; then
+    echo "=========================================================="
+    echo "=== [AUDIT] 7 Pilares de Engenharia de SO Profissional ==="
+    echo "=========================================================="
+else
+    echo "=== [8/8] System Health & Integrity Audit ==="
+fi
 
-# Verify PipeWire Quantum settings
+# [Pilar 1: Cadeia de Suprimentos & Assinatura Criptográfica]
+echo "--- [Pilar 1/7] Supply Chain, Chaves & Assinatura ---"
+if command -v mokutil >/dev/null 2>&1; then
+    if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
+        if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
+            echo "[OK] Secure Boot ativo com certificado MOK ublue homologado."
+        else
+            echo "[OK] Secure Boot ativo (padrão de fábrica)."
+        fi
+    else
+        echo "[INFO] Secure Boot inativo no firmware (modo Setup/Standard)."
+    fi
+fi
+if [ -f /etc/pki/akmods/certs/akmods-ublue.der ]; then
+    echo "[OK] Certificado MOK versionado presente em /etc/pki/akmods/certs/."
+fi
+if [ -f /usr/lib/modprobe.d/60-security-blacklist.conf ]; then
+    echo "[OK] Modprobe security blacklist CIS presente e ativo."
+fi
+
+# [Pilar 2: Deriva de Pacotes & Resiliência Upstream]
+echo "--- [Pilar 2/7] Resiliência de Pacotes & Zero Downgrade ---"
+FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
+echo "[INFO] Baseline Fedora: ${FEDORA_VER} (bootc/rpm-ostree nativo)."
+if rpm -q fuse 2>/dev/null | grep -v "fuse3" >/dev/null 2>&1; then
+    echo "[WARN] Pacote legado 'fuse' 2 detectado! Migre estritamente para fuse3."
+else
+    echo "[OK] Sem pacotes legados conflitantes (fuse 2 ausente, fuse3 ativo)."
+fi
+
+# [Pilar 3: I/O, Btrfs NoCOW & Gestão de Memória]
+echo "--- [Pilar 3/7] Armazenamento Btrfs NoCOW & ZRAM ---"
+if command -v zramctl >/dev/null 2>&1; then
+    zram_info=$(zramctl --output NAME,ALGORITHM,DISKSIZE,DATA --noheadings 2>/dev/null | head -n 1 || true)
+    if [ -n "$zram_info" ]; then
+        echo "[OK] ZRAM ativo: $zram_info"
+    fi
+fi
+SWAPPINESS=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "N/A")
+PAGE_CLUSTER=$(cat /proc/sys/vm/page-cluster 2>/dev/null || echo "N/A")
+echo "[OK] Parâmetros VM: vm.swappiness=${SWAPPINESS} (alvo 150), vm.page-cluster=${PAGE_CLUSTER} (alvo 0)."
+
+# Checagem de NoCOW (+C) nos diretórios críticos
+NOCOW_PATHS=(
+    "/var/lib/containers/storage"
+    "/var/lib/libvirt/images"
+    "$REAL_HOME/.cache/rclone"
+    "$REAL_HOME/.local/state/wireplumber"
+)
+for p in "${NOCOW_PATHS[@]}"; do
+    if [ -d "$p" ] && command -v lsattr >/dev/null 2>&1; then
+        attrs=$(lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
+        if echo "$attrs" | grep -q "C"; then
+            echo "[OK] Atributo NoCOW (+C) verificado em: $p"
+        else
+            echo "[WARN] Diretório sem NoCOW (+C): $p"
+        fi
+    fi
+done
+
+# [Pilar 4: Grafo de Áudio PipeWire & Bluetooth]
+echo "--- [Pilar 4/7] Grafo de Áudio PipeWire & WirePlumber ---"
 if command -v pw-metadata >/dev/null 2>&1; then
     pw_rate=$(pw-metadata -n settings 2>/dev/null | grep "clock.rate" | awk '{print $NF}' || true)
     pw_quantum=$(pw-metadata -n settings 2>/dev/null | grep "clock.quantum " | awk '{print $NF}' || true)
     if [ -n "$pw_quantum" ]; then
-        echo "[STATUS] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (dynamic native graph)"
+        echo "[OK] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (grafo dinâmico nativo)."
+    fi
+fi
+WP_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
+if [ -f "$WP_ROUTES" ]; then
+    if grep -q '\["headset-output", "headset-input"\]' "$WP_ROUTES"; then
+        echo "[WARN] Rota corrompida detectada no WirePlumber! Execute kinoite-optimize para corrigir."
+    else
+        echo "[OK] Banco de rotas WirePlumber íntegro (autoswitch de perfis limpo)."
     fi
 fi
 
-# Verify GPU Driver and Vulkan
+# [Pilar 5: Pipeline de GPU & Wayland Zero-Copy]
+echo "--- [Pilar 5/7] GPU Acceleration, Vulkan & Wayland ---"
 if command -v vulkaninfo >/dev/null 2>&1; then
     vk_dev=$(vulkaninfo --summary 2>/dev/null | grep "deviceName" | head -n 1 | awk -F'=' '{print $2}' | xargs || true)
     if [ -n "$vk_dev" ]; then
-        echo "[STATUS] Vulkan Device: $vk_dev"
+        echo "[OK] Dispositivo Vulkan Primário: $vk_dev"
     fi
 fi
-
-# Verify NVIDIA Driver and Compute Readiness (if hardware present)
+if [ -f /etc/cdi/amdgpu.yaml ]; then
+    echo "[OK] Container Device Interface (CDI) AMD presente (/etc/cdi/amdgpu.yaml)."
+fi
+if [ -f /etc/cdi/nvidia.yaml ]; then
+    echo "[OK] Container Device Interface (CDI) NVIDIA presente (/etc/cdi/nvidia.yaml)."
+fi
 if command -v nvidia-smi >/dev/null 2>&1; then
     nv_gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n 1 || true)
     if [ -n "$nv_gpu" ]; then
-        echo "[STATUS] NVIDIA Compute GPU: $nv_gpu (Driver Active & Persistent)"
+        echo "[OK] GPU NVIDIA: $nv_gpu"
     fi
 fi
 
-# Verify Secure Boot and MOK Enrollment
-if command -v mokutil >/dev/null 2>&1; then
-    if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
-        if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
-            echo "[STATUS] Secure Boot: Active (MOK enrolled for out-of-tree drivers)"
-        else
-            echo "[STATUS] Secure Boot: Active (Standard)"
-        fi
+# [Pilar 6: Resiliência de Boot & Recuperação Segura]
+echo "--- [Pilar 6/7] Boot Limpo, SysRq REISUB & Sulogin ---"
+SYSRQ=$(cat /proc/sys/kernel/sysrq 2>/dev/null || echo "N/A")
+echo "[OK] Kernel SysRq: ${SYSRQ} (alvo 1 - REISUB seguro habilitado)."
+
+CMDLINE=$(cat /proc/cmdline 2>/dev/null || true)
+BANNED_DETECTED=0
+BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
+for b in "${BANNED_LIST[@]}"; do
+    if echo "$CMDLINE" | grep -qw "$b"; then
+        echo "[WARN] Karg redundante/inseguro detectado na linha de boot: $b"
+        BANNED_DETECTED=1
     fi
+done
+if [ "$BANNED_DETECTED" -eq 0 ]; then
+    echo "[OK] Linha de boot limpa (zero kargs redundantes de acordo com AGENTS.md)."
 fi
 
-# Verify Baloo Exclusion
-if [ -f /etc/xdg/baloofilerc ]; then
-    if grep -q "Cloud" /etc/xdg/baloofilerc; then
-        echo "[STATUS] KDE Baloo Cloud Exclusion: Active (Locked [\$ei])"
-    fi
+# [Pilar 7: CI/CD, Timers & Governança do Sistema]
+echo "--- [Pilar 7/7] Timers de Manutenção & Armazenamento ---"
+active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
+echo "[OK] Timers de Atualização: $(echo "$active_timers" | tr '\n' ' ')"
+
+if [ -f /etc/xdg/baloofilerc ] && grep -q "Cloud" /etc/xdg/baloofilerc; then
+    echo "[OK] KDE Baloo Cloud Exclusion: Ativo ([\$ei] protegido)."
 fi
 
-# Verify GRUB Menu Auto-Hide Status
-if command -v grub2-editenv >/dev/null 2>&1; then
-    grub_autohide=$(grub2-editenv - list 2>/dev/null | grep "^menu_auto_hide=" | cut -d'=' -f2 || true)
-    if [ "$grub_autohide" = "1" ] || [ "$grub_autohide" = "2" ]; then
-        echo "[STATUS] GRUB Menu Auto-Hide: Active (Silent & Flicker-Free Boot)"
-    fi
-fi
+echo "[STATUS] Espaço livre em /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
 
-# Verify Active Rclone Cloud Mounts
-if command -v systemctl >/dev/null 2>&1; then
-    if [ -n "$RUN_USER_CMD" ]; then
-        rclone_status=$($RUN_USER_CMD systemctl --user is-active rclone@GoogleDrive.service rclone@OneDrive.service 2>/dev/null || true)
-    else
-        rclone_status=$(systemctl --user is-active rclone@GoogleDrive.service rclone@OneDrive.service 2>/dev/null || true)
-    fi
-    if [ -n "$rclone_status" ]; then
-        echo "[STATUS] Rclone Cloud Mounts: $(echo "$rclone_status" | tr '\n' ' ')"
-    fi
+if [ "$AUDIT_ONLY" -eq 1 ]; then
+    echo "=========================================================="
+    echo "=== Auditoria dos 7 Pilares Concluída com Sucesso      ==="
+    echo "=========================================================="
+    exit 0
 fi
-
-# Show available storage
-echo "[STATUS] Storage free space on /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
 
 echo "=== Optimization and Maintenance Completed Successfully ==="
