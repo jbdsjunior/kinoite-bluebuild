@@ -242,9 +242,9 @@ Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure 
 
 1. **Importar o Certificado MOK no Host (Apenas no Primeiro Setup):**
    ```bash
-   sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
-   # Ou, se executando a partir do repositório/home:
-   # sudo mokutil --import ~/akmods-ublue.der
+   sudo mokutil --import /etc/pki/akmods/certs/public_key.der
+   # Ou, se executando a partir do repositório clonado:
+   # sudo mokutil --import files/nvidia/etc/pki/akmods/certs/public_key.der
    ```
    *O sistema solicitará uma senha temporária (ex: `12345678`) apenas para autorizar o cadastro na reinicialização.*
 
