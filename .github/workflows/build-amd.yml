@@ -78,6 +78,7 @@ jobs:
           use_unstable_cli: false
           skip_checkout: true
           max_layers: 256
+          chunkah: true
 
       - name: Save upstream cache on build success
         if: steps.digest.outputs.digest != '' && steps.cache-check.outputs.cache-hit != 'true'
