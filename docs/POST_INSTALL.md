@@ -1,4 +1,4 @@
-# Runbook de Instalação, Operação e Calibração de BIOS (`kinoite-amd`)
+# Runbook de Instalação, Operação e Calibração de BIOS (`kinoite-amd` / `kinoite-dual`)
 
 Guia operacional direto para particionamento, desbloqueio automático TPM 2.0, verificação pós-instalação, montagens Rclone e calibração de BIOS no hardware:
 **AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 + Gigabyte X570 AORUS PRO WIFI (BIOS F39)**.
@@ -62,11 +62,22 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:l
 
 ## 3. Manutenção e Auditoria do Sistema (`sys-optimize`)
 
-Execute o utilitário integrado de manutenção para sincronizar sysctls, tmpfiles, permissões Btrfs NoCOW, desfragmentar discos de VM, limpar caches e verificar a saúde dos subsistemas:
+O utilitário integrado opera em dois modos distintos:
 
-```bash
-sys-optimize
-```
+| Modo | Comando | Comportamento |
+| :--- | :--- | :--- |
+| **Manutenção completa** | `sys-optimize` | Executa as 8 fases: sysctl, tmpfiles/NoCOW, saúde e reclaim do Btrfs, desfragmentação de discos de VM, retenção do journald, higiene de Flatpak/contêineres, higiene de kargs/deployments e a auditoria final. |
+| **Auditoria somente leitura** | `sudo kinoite-optimize --audit` | Executa exclusivamente a fase `[8/8]`: auditoria dos 7 pilares, sem alterar o sistema. |
+
+Os 7 pilares da auditoria (AGENTS.md §5):
+
+1. Supply Chain, chaves Cosign e assinatura criptográfica.
+2. Resiliência de pacotes e ausência de downgrade (deriva upstream).
+3. Armazenamento Btrfs NoCOW e gestão de memória/ZRAM.
+4. Grafo de áudio PipeWire & WirePlumber.
+5. Aceleração de GPU, Vulkan e Wayland zero-copy.
+6. Resiliência de boot (GRUB limpo, SysRq REISUB, `sulogin`).
+7. Governança de timers de manutenção e armazenamento.
 
 Atalhos no terminal (`/etc/profile.d/60-kinoite-aliases.sh`):
 - `sys-optimize` / `optimize`: executa `/usr/bin/kinoite-optimize` (8 fases completas).

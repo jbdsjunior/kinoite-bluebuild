@@ -2,6 +2,7 @@
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
+![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -13,9 +14,10 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 
 ## Overview
 
-| Variant       | Base Image                      | Target                                  | Hardware Baseline                                    |
-| :------------ | :------------------------------ | :-------------------------------------- | :--------------------------------------------------- |
-| `kinoite-amd` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest` | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 |
+| Variant        | Base Image                      | Target                                   | Hardware Baseline                                                    |
+| :------------- | :------------------------------ | :--------------------------------------- | :------------------------------------------------------------------- |
+| `kinoite-amd`  | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest`  | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4                   |
+| `kinoite-dual` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-dual:latest` | AMD display (RDNA2) + NVIDIA compute (CUDA/akmods) + 64 GB DDR4      |
 
 > [!WARNING]
 > This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -27,7 +29,12 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 ### 1) Switch to the signed custom image
 
 ```bash
+# AMD-only variant (default)
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# Dual-GPU variant (AMD display + NVIDIA compute)
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
+
 systemctl reboot
 ```
 
@@ -36,7 +43,8 @@ systemctl reboot
 Run the unified maintenance utility after booting:
 
 ```bash
-sys-optimize
+sys-optimize                    # full 8-phase maintenance (root)
+sudo kinoite-optimize --audit   # read-only audit of the 7 engineering pillars
 ```
 
 Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE + Google Drive OAuth 2.0, ROCm CDI, and Gigabyte X570 BIOS F39 calibration): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -57,15 +65,18 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ## Repository Structure
 
-| Path                                             | Purpose                                                                 |
-| :----------------------------------------------- | :---------------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                         | Authoritative system invariants, hardware baseline, and engineering rules |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)   | Unified installation, TPM 2.0, cloud FUSE, and BIOS calibration guide   |
-| [`SECURITY.md`](SECURITY.md)                     | Cosign image verification and vulnerability reporting policy            |
-| [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml) | Main AMD BlueBuild recipe orchestrator                                |
-| [`recipes/common-*.yml`](recipes/)               | Modular recipes (drivers, tools, KVM, flatpaks, fonts, systemd, kargs)  |
-| [`files/system/`](files/system/)                 | Declarative host overlays (`sysctl.d`, `tmpfiles.d`, `pipewire`, `cdi`) |
-| [`.github/workflows/`](.github/workflows/)       | CI/CD pipelines (`build-amd.yml`, `check-updates.yml`, `cleanup.yml`)   |
+| Path                                                   | Purpose                                                                   |
+| :----------------------------------------------------- | :------------------------------------------------------------------------ |
+| [`AGENTS.md`](AGENTS.md)                               | Authoritative system invariants, hardware baseline, and engineering rules  |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)         | Unified installation, TPM 2.0, cloud FUSE, and BIOS calibration guide     |
+| [`SECURITY.md`](SECURITY.md)                           | Cosign image verification and vulnerability reporting policy              |
+| [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml)     | AMD-only BlueBuild recipe orchestrator                                    |
+| [`recipes/recipe-dual.yml`](recipes/recipe-dual.yml)   | Dual-GPU orchestrator (adds `common-drivers-nvidia.yml`)                  |
+| [`recipes/common-*.yml`](recipes/)                     | Modular recipes (drivers, tools, KVM, flatpaks, fonts, systemd, debloat)   |
+| [`files/system/`](files/system/)                       | Declarative host overlays (`sysctl.d`, `tmpfiles.d`, `profile.d`, `cdi`)  |
+| [`files/nvidia/`](files/nvidia/)                       | NVIDIA-only overlays (MOK cert, nouveau blacklist) — dual flavor only     |
+| [`files/dnf/`](files/dnf/)                             | Third-party `.repo` files consumed by the `dnf` module                    |
+| [`.github/workflows/`](.github/workflows/)             | CI/CD pipelines (`build-amd.yml`, `build-dual.yml`, `check-updates.yml`, `cleanup.yml`) |
 
 ## License
 
