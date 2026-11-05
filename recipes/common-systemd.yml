@@ -15,8 +15,8 @@ modules:
         - kinoite-maintenance.timer
 
         # Hardware diagnostics & reliability (EDAC / MCE / RAS logging)
-        - ras-mc-ctl.service
-        - rasdaemon.service
+        # - ras-mc-ctl.service
+        # - rasdaemon.service
 
         # Container automation (Podman)
         - podman-restart.service
