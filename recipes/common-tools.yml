@@ -30,13 +30,13 @@ modules:
         - rclone
 
         # Modern CLI & Terminal Workflow
-        # - eza
-        # - bat
-        # - btop
-        # - ripgrep
-        # - fd-find
-        # - fzf
-        # - zoxide
+        - eza
+        - bat
+        - btop
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
 
         # Containers & Virtualization CLI
         - distrobox
@@ -45,9 +45,7 @@ modules:
 
         # System Information & Hardware Diagnostics
         - fastfetch
-        # - kernel-tools
-        # - rasdaemon
-        # - mesa-libOpenCL
-        # - clinfo
-        # - vulkan-tools
-        # - nvtop
+        - mesa-libOpenCL
+        - clinfo
+        - vulkan-tools
+        - nvtop

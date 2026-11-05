@@ -14,10 +14,6 @@ modules:
         - flatpak-system-update.timer
         - kinoite-maintenance.timer
 
-        # Hardware diagnostics & reliability (EDAC / MCE / RAS logging)
-        # - ras-mc-ctl.service
-        # - rasdaemon.service
-
         # Container automation (Podman)
         - podman-restart.service
         - podman-auto-update.timer
