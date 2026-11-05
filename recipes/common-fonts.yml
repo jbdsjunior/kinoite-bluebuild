@@ -1,14 +1,6 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
-  - type: dnf
-    install:
-      skip-unavailable: true
-      allow-erasing: true
-      packages:
-        - liberation-fonts-all
-        - google-noto-sans-cjk-fonts # Noto CJK fallback para Flatpaks e WebKitGTK (estático)
-
   - type: fonts
     fonts:
       nerd-fonts:
