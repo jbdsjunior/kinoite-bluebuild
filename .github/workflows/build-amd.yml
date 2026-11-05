@@ -8,7 +8,7 @@ on:
         default: ""
 
 concurrency:
-  group: build-pipeline-amd-${{ github.ref_name || github.run_id }}
+  group: build-pipeline-amd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

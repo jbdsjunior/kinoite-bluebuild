@@ -8,7 +8,7 @@ on:
         default: ""
 
 concurrency:
-  group: build-pipeline-dual-${{ github.ref_name || github.run_id }}
+  group: build-pipeline-dual-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

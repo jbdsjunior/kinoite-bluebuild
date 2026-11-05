@@ -73,6 +73,7 @@ jobs:
         with:
           path: ~/.cache-${{ matrix.flavor }}
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
+          lookup-only: true
 
       - name: Trigger build (${{ matrix.flavor }})
         if: steps.cache.outputs.cache-hit != 'true'
@@ -81,6 +82,7 @@ jobs:
           UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
           REPO: ${{ github.repository }}
           WORKFLOW_FILE: ${{ matrix.workflow }}
+          REPO_REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
 
@@ -91,7 +93,7 @@ jobs:
           else
             echo "Cache miss for ${{ matrix.flavor }} digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
             gh workflow run "$WORKFLOW_FILE" \
-              --ref main \
+              --ref "$REPO_REF" \
               --repo "$REPO" \
               -f upstream_digest="${UPSTREAM_DIGEST}"
           fi
