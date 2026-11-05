@@ -11,10 +11,10 @@ modules:
       packages:
         # Hardware Acceleration & Mesa Freeworld (AMD GPU)
         - mesa-va-drivers-freeworld
+        - mesa-vulkan-drivers-freeworld
 
         # Video Codecs & FFmpeg (RPM Fusion for Dolphin thumbnails & CLI)
         - ffmpeg
-        - ffmpeg-libs
         - libva-utils
         - libheif-freeworld
 
