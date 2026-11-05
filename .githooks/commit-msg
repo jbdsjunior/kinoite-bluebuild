@@ -1,0 +1,22 @@
+#!/bin/sh
+# Enforce Conventional Commits (AGENTS.md §1).
+# Activate once per clone: git config core.hooksPath .githooks
+set -eu
+
+msg_file="${1:?commit-msg: missing message file argument}"
+subject=$(sed -n '1p' "$msg_file")
+
+# Let merge/revert/fixup/squash and empty (aborted) commits through.
+case "$subject" in
+    "") exit 0 ;;
+    "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|refactor|perf|test|build|ci|chore|style)(\([a-z0-9._/-]+\))?!?: .{3,}$'
+
+if ! printf '%s' "$subject" | grep -Eq "$pattern"; then
+    printf '\n[commit-msg] Rejected: "%s"\n' "$subject" >&2
+    printf 'Expected: <type>(<scope>): <descricao no imperativo>\n' >&2
+    printf 'Types: feat, fix, docs, refactor, perf, test, build, ci, chore, style\n\n' >&2
+    exit 1
+fi
