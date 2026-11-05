@@ -6,11 +6,11 @@ modules:
       auto-remove: true
       packages:
         - firefox
+        - kwrite
+        - plasma-welcome
         - plasma-discover-rpm-ostree
         - plasma-discover-notifier
         - fedora-flathub-remote
-        - kwrite
-        - plasma-welcome
         - fedora-third-party
         - fedora-workstation-repositories
 
