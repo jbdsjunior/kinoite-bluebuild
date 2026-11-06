@@ -26,7 +26,9 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 
 ## Quick Start
 
-### 1) Switch to the signed custom image
+The deployment uses a two-stage transition: the initial switch bootstraps the system and provisions the Cosign public keys embedded in the custom image; the post-boot switch locks signature verification (`--enforce-container-sigpolicy`) for all subsequent updates.
+
+### 1) Initial Switch (From Stock Fedora Kinoite)
 
 ```bash
 # AMD-only variant (default)
@@ -38,7 +40,19 @@ sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
 systemctl reboot
 ```
 
-### 2) Post-installation & Maintenance
+### 2) Enforce Cryptographic Signature Verification (Post-Boot)
+
+After booting into the custom image, lock updates to verified Cosign signatures:
+
+```bash
+# AMD-only variant
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# Dual-GPU variant
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
+```
+
+### 3) Post-installation & Maintenance
 
 Run the unified maintenance utility after booting:
 

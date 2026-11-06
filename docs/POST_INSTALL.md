@@ -47,15 +47,29 @@ sudo kinoite-setup-tpm --no-pin
 
 ## 2. Transição para a Imagem Customizada (`bootc`)
 
-Na instalação limpa a partir do Fedora Kinoite upstream:
+A transição a partir de uma instalação limpa do Fedora Kinoite upstream segue um protocolo de **duas etapas**:
+
+1. **Bootstrap inicial (sem imposição de política prévia):** A instalação limpa do Fedora Kinoite upstream ainda não possui as chaves públicas do seu repositório no GHCR nem a política de verificação configurada. O primeiro switch baixa a imagem OCI customizada e provisiona as chaves públicas Cosign (`/etc/pki/containers/kinoite-*.pub`), a política de contêineres (`/etc/containers/policy.json`) e os registros (`/etc/containers/registries.d/`).
+2. **Imposição criptográfica estrita (pós-boot):** Após reiniciar na imagem customizada, o sistema já dispõe das chaves e da política. O comando com `--enforce-container-sigpolicy` trava o deployment no modo assinado (`ostree-image-signed`), exigindo assinatura Cosign válida em qualquer atualização subsequente.
 
 ```bash
-# 1. Transição inicial para a imagem OCI customizada
+# --- Etapa 1: Transição inicial no Fedora upstream ---
+
+# Para estação AMD pura:
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# OU para estação Dual-GPU (AMD display + NVIDIA compute):
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
+
 systemctl reboot
 
-# 2. Opcional (após o boot): impor verificação criptográfica estrita nas próximas atualizações
+# --- Etapa 2: Ativação da assinatura estrita (executar após boot na imagem) ---
+
+# Para estação AMD pura:
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# OU para estação Dual-GPU:
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
 ```
 
 ---

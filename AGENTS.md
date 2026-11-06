@@ -85,6 +85,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
   - SSHD key-only em `50-kinoite-hardening.conf`. Blacklist CIS em `60-security-blacklist.conf`.
   - Swap preventivo OpenCL (`ocl-icd` substituindo `OpenCL-ICD-Loader` via RHBZ #2332429 em `common-tools.yml`).
   - Proibido pacotes legados (`fuse` 2) e repositórios não-oficiais conflitantes (Negativo17 rejeitado em prol do RPM Fusion Freeworld).
+  - **Transição Bootc em Duas Etapas:** O bootstrap upstream ocorre sem imposição de política de assinatura prévia (o upstream não possui a chave pública Cosign do GHCR); após o primeiro boot na imagem, a imposição estrita (`--enforce-container-sigpolicy`) trava as atualizações automáticas sob `ostree-image-signed`.
 
 ---
 
