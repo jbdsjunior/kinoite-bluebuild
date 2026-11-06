@@ -6,15 +6,15 @@ devices:
     containerEdits:
       deviceNodes:
         - path: "/dev/kfd"
-        - path: "/dev/dri/renderD128"
-        - path: "/dev/dri/card1"
+        - path: "/dev/dri/by-path/pci-0000:0c:00.0-render"
+        - path: "/dev/dri/by-path/pci-0000:0c:00.0-card"
       env:
         - "HSA_OVERRIDE_GFX_VERSION=10.3.0"
   - name: "all"
     containerEdits:
       deviceNodes:
         - path: "/dev/kfd"
-        - path: "/dev/dri/renderD128"
-        - path: "/dev/dri/card1"
+        - path: "/dev/dri/by-path/pci-0000:0c:00.0-render"
+        - path: "/dev/dri/by-path/pci-0000:0c:00.0-card"
       env:
         - "HSA_OVERRIDE_GFX_VERSION=10.3.0"

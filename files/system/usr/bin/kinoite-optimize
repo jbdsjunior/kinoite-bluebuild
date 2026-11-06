@@ -423,6 +423,9 @@ fi
 if [ -f /etc/cdi/amdgpu.yaml ]; then
     echo "[OK] Container Device Interface (CDI) AMD presente (/etc/cdi/amdgpu.yaml)."
 fi
+if [ -e /dev/dri/by-path/pci-0000:0c:00.0-render ]; then
+    echo "[OK] DRM Render Node Primário AMD 6600 XT presente (/dev/dri/by-path/pci-0000:0c:00.0-render)."
+fi
 if [ -f /etc/cdi/nvidia.yaml ]; then
     echo "[OK] Container Device Interface (CDI) NVIDIA presente (/etc/cdi/nvidia.yaml)."
 fi

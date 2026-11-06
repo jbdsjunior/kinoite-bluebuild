@@ -76,8 +76,8 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 - **Áudio PipeWire & Bluetooth:**
   - Operação 100% nativa sob a stack original do Fedora Kinoite (PipeWire e WirePlumber upstream). Quantum dinâmico (32 a 8192 amostras) e negociação automática de taxas de amostragem pelo grafo nativo, assegurando estabilidade integral em perfis de chamada e microfones Bluetooth (HSP/HFP, mSBC e CVSD) com zero perda de pacotes SCO.
 - **GPU IA, Browsers & Flatpak:**
-  - LLMs locais via Vulkan 1.4 RADV (Mesa 26.2) e CUDA/CDI dinâmico (`nvidia-cdi-refresh.service`). `DefaultLimitMEMLOCK=infinity` em `system.conf.d`, `user.conf.d` e `limits.d`. ACLs `TAG+="uaccess"` em `70-peripherals.rules`. Certificado MOK versionado em [`files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`](files/nvidia/etc/pki/akmods/certs/akmods-ublue.der).
-  - ROCm/HIP isolado via CDI (`/etc/cdi/amdgpu.yaml`). Proibido bibliotecas pesadas no host.
+  - LLMs locais via Vulkan 1.4 RADV (Mesa 26.2) e CUDA/CDI dinâmico (`nvidia-cdi-refresh.service`). `DefaultLimitMEMLOCK=infinity` em `system.conf.d`, `user.conf.d` e `limits.d`. ACLs `TAG+="uaccess"` e symlink `/dev/dri/primary-render` para RX 6600 XT em `70-peripherals.rules`. Certificado MOK versionado em [`files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`](files/nvidia/etc/pki/akmods/certs/akmods-ublue.der).
+  - ROCm/HIP isolado via CDI (`/etc/cdi/amdgpu.yaml` apontando determinístico para `by-path/pci-0000:0c:00.0-*`). Proibido bibliotecas pesadas no host.
   - **Isolamento Rigoroso de Hardware:** Arquivos e drivers específicos da NVIDIA residem exclusivamente em `files/nvidia/` e `recipes/common-drivers-nvidia.yml`, consumidos unicamente por `recipes/recipe-dual.yml`. A imagem AMD pura (`recipes/recipe-amd.yml`) consome estritamente `source: system` e permanece 100% livre de qualquer arquivo, pacote ou configuração NVIDIA.
   - Browsers Flatpak (`70-browser-flags.conf`, `chromium-flags.conf`): Wayland nativo (`--ozone-platform=wayland`), DMA-BUF zero-copy, VA-API/KWin. Overrides sincronizados via `60-flatpak-overrides.conf`.
 - **Higiene e Hardening Geral:**
