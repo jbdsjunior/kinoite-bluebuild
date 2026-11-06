@@ -307,15 +307,27 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         "page_alloc.shuffle=1"
         "btusb.enable_autosuspend=0"
     )
+    KARGS_TO_ADD=()
+    if command -v lspci >/dev/null 2>&1; then
+        if lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
+            UNWANTED_KARGS+=("nvidia-drm.modeset=1")
+            if ! echo "$CURRENT_KARGS" | grep -q "modprobe.blacklist=nvidia-drm"; then
+                KARGS_TO_ADD+=("--append-if-missing=modprobe.blacklist=nvidia-drm")
+            fi
+            if ! echo "$CURRENT_KARGS" | grep -q "rd.driver.blacklist=nvidia-drm"; then
+                KARGS_TO_ADD+=("--append-if-missing=rd.driver.blacklist=nvidia-drm")
+            fi
+        fi
+    fi
     KARGS_TO_REMOVE=()
     for k in "${UNWANTED_KARGS[@]}"; do
         if echo "$CURRENT_KARGS" | grep -q "$k"; then
             KARGS_TO_REMOVE+=("--delete-if-present=$k")
         fi
     done
-    if [ ${#KARGS_TO_REMOVE[@]} -gt 0 ]; then
-        echo "[ACTION] Removing unstable/obsolete kargs: ${KARGS_TO_REMOVE[*]}"
-        $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}"
+    if [ ${#KARGS_TO_REMOVE[@]} -gt 0 ] || [ ${#KARGS_TO_ADD[@]} -gt 0 ]; then
+        echo "[ACTION] Saneando kargs do host: ${KARGS_TO_REMOVE[*]} ${KARGS_TO_ADD[*]}"
+        $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}" "${KARGS_TO_ADD[@]}"
         echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
     else
         FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
@@ -426,14 +438,22 @@ fi
 if [ -e /dev/dri/by-path/pci-0000:0c:00.0-render ]; then
     echo "[OK] DRM Render Node Primário AMD 6600 XT presente (/dev/dri/by-path/pci-0000:0c:00.0-render)."
 fi
+if [ -e /dev/dri/primary-render ]; then
+    echo "[OK] Symlink determinístico /dev/dri/primary-render apontando para $(readlink /dev/dri/primary-render)."
+fi
 if [ -f /etc/cdi/nvidia.yaml ]; then
     echo "[OK] Container Device Interface (CDI) NVIDIA presente (/etc/cdi/nvidia.yaml)."
 fi
 if command -v nvidia-smi >/dev/null 2>&1; then
     nv_gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n 1 || true)
     if [ -n "$nv_gpu" ]; then
-        echo "[OK] GPU NVIDIA: $nv_gpu"
+        echo "[OK] GPU NVIDIA: $nv_gpu (Headless Compute/IA)"
     fi
+fi
+if [ -e /dev/dri/by-path/pci-0000:09:00.0-render ]; then
+    echo "[WARN] Render node gráfico da NVIDIA detectado (/dev/dri/by-path/pci-0000:09:00.0-render). Recomenda-se blacklist de nvidia-drm para blindar QEMU/GNOME Boxes."
+else
+    echo "[OK] Isolamento gráfico perfeito: GPU primária AMD é a detentora exclusiva de render nodes DRM."
 fi
 
 # [Pilar 6: Resiliência de Boot & Recuperação Segura]
@@ -444,6 +464,9 @@ echo "[OK] Kernel SysRq: ${SYSRQ} (alvo 1 - REISUB seguro habilitado)."
 CMDLINE=$(cat /proc/cmdline 2>/dev/null || true)
 BANNED_DETECTED=0
 BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
+if command -v lspci >/dev/null 2>&1 && lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
+    BANNED_LIST+=("nvidia-drm.modeset=1")
+fi
 for b in "${BANNED_LIST[@]}"; do
     if echo "$CMDLINE" | grep -qw "$b"; then
         echo "[WARN] Karg redundante/inseguro detectado na linha de boot: $b"
