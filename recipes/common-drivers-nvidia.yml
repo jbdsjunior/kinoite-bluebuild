@@ -6,3 +6,9 @@ modules:
       MULTILIB: "0"
     install: []
     nvidia-driver: nvidia-open
+
+  # Operação headless da GPU secundária NVIDIA no flavor dual (preserva CUDA/IA e blinda GNOME Boxes)
+  - type: kargs
+    kargs:
+      - rd.driver.blacklist=nvidia-drm
+      - modprobe.blacklist=nvidia-drm
