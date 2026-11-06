@@ -1,0 +1,11 @@
+[Unit]
+Description=Enforce Primary AMD GPU Render Node for QEMU VMs
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/kinoite-qemu-gpu-enforce
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
