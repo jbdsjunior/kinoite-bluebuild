@@ -397,11 +397,17 @@ NOCOW_PATHS=(
 )
 for p in "${NOCOW_PATHS[@]}"; do
     if [ -d "$p" ] && command -v lsattr >/dev/null 2>&1; then
-        attrs=$(lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
+        if [ "$CAN_SUDO" -eq 1 ]; then
+            attrs=$($SUDO_CMD lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
+        else
+            attrs=$(lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
+        fi
         if echo "$attrs" | grep -q "C"; then
             echo "[OK] Atributo NoCOW (+C) verificado em: $p"
-        else
+        elif [ -n "$attrs" ]; then
             echo "[WARN] Diretório sem NoCOW (+C): $p"
+        else
+            echo "[SKIP] Permissão insuficiente para inspecionar NoCOW (+C) em: $p (requer sudo)."
         fi
     fi
 done
