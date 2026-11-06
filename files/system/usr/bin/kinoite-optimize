@@ -311,12 +311,13 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
     if command -v lspci >/dev/null 2>&1; then
         if lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
             UNWANTED_KARGS+=("nvidia-drm.modeset=1")
-            if ! echo "$CURRENT_KARGS" | grep -q "modprobe.blacklist=nvidia-drm"; then
-                KARGS_TO_ADD+=("--append-if-missing=modprobe.blacklist=nvidia-drm")
-            fi
-            if ! echo "$CURRENT_KARGS" | grep -q "rd.driver.blacklist=nvidia-drm"; then
-                KARGS_TO_ADD+=("--append-if-missing=rd.driver.blacklist=nvidia-drm")
-            fi
+            for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
+                for mod in "nvidia-drm" "nvidia_drm"; do
+                    if ! echo "$CURRENT_KARGS" | grep -q "${prefix}=${mod}"; then
+                        KARGS_TO_ADD+=("--append-if-missing=${prefix}=${mod}")
+                    fi
+                done
+            done
         fi
     fi
     KARGS_TO_REMOVE=()

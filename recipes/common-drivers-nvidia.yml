@@ -11,4 +11,6 @@ modules:
   - type: kargs
     kargs:
       - rd.driver.blacklist=nvidia-drm
+      - rd.driver.blacklist=nvidia_drm
       - modprobe.blacklist=nvidia-drm
+      - modprobe.blacklist=nvidia_drm
