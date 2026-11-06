@@ -31,6 +31,5 @@ modules:
       enabled:
         - flatpak-user-update.timer
         - kinoite-user-maintenance.timer
-        - kinoite-qemu-gpu-enforce.service
         - podman-auto-update.timer
         - podman-restart.service
