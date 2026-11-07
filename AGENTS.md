@@ -4,96 +4,68 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 ---
 
-## 1. Versionamento Git
+## 1. Versionamento Git & Qualidade
 
-- **Commit Obrigatório:** Encerrar toda alteração com commit estruturado e árvore limpa (`working tree clean`).
-- **Conventional Commits:** `<type>(<scope>): <descrição no presente>` (`feat`, `fix`, `docs`, `refactor`, `chore`) seguido de corpo em bullets detalhando decisões, parâmetros, impacto e arquivos.
-- **Staging Estrito:** Adicionar arquivos explicitamente (`git add <arq1> <arq2>`); nunca usar `git add .` cego. Auditar `git status` e `git diff --cached` antes do commit; confirmar árvore limpa após commit e `git push origin <branch>`.
-- **Hook Versionado:** Ativar uma única vez por clone com `git config core.hooksPath .githooks`. O hook [`commit-msg`](.githooks/commit-msg) rejeita mensagens fora do padrão Conventional Commits.
+- **Conventional Commits:** `<type>(<scope>): <descrição no presente>` (`feat`, `fix`, `docs`, `refactor`, `chore`, `perf`) com corpo em bullets detalhando decisões e impacto. Escopo alfanumérico único sem vírgulas.
+- **Staging Estrito & Árvore Limpa:** Adicionar arquivos explicitamente (`git add <arq1> <arq2>`); nunca usar `git add .` cego. Auditar `git status` e `git diff --cached` antes do commit; finalizar sempre com `git push origin <branch>` e working tree limpa.
+- **Hook Ativo:** Garantir `.githooks` configurado (`git config core.hooksPath .githooks`).
 
 ---
 
 ## 2. Princípios de Execução & Economia de Tokens
 
-- **Prioridade Absoluta:** Segurança > Performance > Conveniência.
-- **KISS & DRY:** Zero redundância com defaults upstream do Fedora, systemd ou kernel. Proibido downgrade de pacotes, daemons legados e configs mortas.
-- **Modos de Execução (Otimização Diária vs Mudança Estrutural):**
-  - **Fast-Path (Padrão para Otimizações Diárias / Tier 3):** Para demandas rotineiras (pacotes, flags de browser, sysctl pontual, scripts CLI, fixes), NÃO criar artefatos `.md` de plano ou walkthrough. Executar o fluxo ágil: *Diagnosticar -> Implementar (mínimo) -> Validar (sintaxe shell/YAML e integridade) -> Commit e Push -> Resposta concisa*.
-  - **Full-Plan (Sob Demanda com `/plan` ou Tier 1 Crítico):** Reservado estritamente para quando o usuário solicitar explicitamente `/plan` no prompt ou para alterações de alto risco (boot/kargs/partições). Criar artefato de plano técnico e aguardar aprovação antes de tocar no código.
-- **Lean Output Policy (Economia de Tokens de Resposta):**
-  - Zero preâmbulos discursivos ou despedidas prolixas. Respostas diretas e telegráficas.
-  - Ao criar artefatos (quando em Full-Plan), nunca re-resumir o conteúdo no chat; apontar apenas o link e decisões abertas.
-  - Relatório final conciso: lista de arquivos alterados, status dos testes (`X passados`) e hash do commit.
-- **Higiene de Ferramentas:** Proibido ler arquivos grandes inteiros com `read_file`; usar filtros (`grep`, `head`, `tail`) ou delimitar `StartLine`/`EndLine`.
-- **Protocolo de Evolução de Invariantes (4 Critérios de Ouro):**
-  1. *Evidência Técnica Upstream (Data-Driven);* 2. *Análise de Blast Radius (Anti-Regressão);* 3. *Transação Atômica no Git (código + AGENTS.md sincronizados);* 4. *Rollback Garantido & Comando Instantâneo*.
-
-| Tier de Risco | Escopo | Requisito de Evolução |
-| :--- | :--- | :--- |
-| **Tier 1 (Crítico / HW & Boot)** | Bootargs, initramfs, /boot, LUKS/TPM, firmware | Rigor máximo: embasamento upstream e validação de estabilidade. |
-| **Tier 2 (Médio / SO & Kernel)** | Kargs, sysctl, ZRAM, Btrfs NoCOW, PipeWire | Rigor técnico: validação automatizada (`sysctl`, `systemd-analyze`, testes). |
-| **Tier 3 (Ágil / Apps & UX)** | Flags de browser, Rclone, fontes, aliases, timers | Rigor ágil: Fast-Path direto, DRY/KISS e zero legado. |
+- **Prioridade:** Segurança > Performance > Conveniência. Zero redundância com defaults do Fedora, systemd ou kernel. Proibido downgrade de pacotes e configs mortas (KISS/DRY).
+- **Modos de Execução:**
+  - **Fast-Path (Padrão para Tarefas Diárias):** Pacotes, flags de browser, sysctl pontual, scripts CLI, ajustes de doc e fixes: diagnosticar, implementar cirurgicamente, validar sintaxe/integridade, commit, push e resposta concisa. Sem criar artefatos de plano.
+  - **Full-Plan (Sob Demanda com `/plan` ou Mudança Estrutural Crítica):** Reservado estritamente para quando o usuário solicitar explicitamente `/plan` ou para alterações de alto risco (bootargs, initramfs, LUKS). Criar plano técnico e aguardar aprovação.
+- **Lean Output:** Respostas diretas e telegráficas. Sem preâmbulos ou despedidas. Relatório final conciso com arquivos alterados, status dos testes e hash do commit.
+- **Higiene de Ferramentas:** Proibido ler arquivos grandes inteiros com `read_file`; usar filtros (`grep`, `head`, `tail`) ou delimitar `StartLine`/`EndLine`. Comandos ruidosos devem ser filtrados ou redirecionados.
 
 ---
 
 ## 3. Hardware Baseline
 
-- **Estação Homologada:** AMD Ryzen 9 5950X (16C/32T, Zen 3, dual-CCD), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI, 64 GB DDR4 (4×16 GB), NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite (`bootc:latest`, Wayland, KDE Plasma 6, Kernel `7.2+`).
-- **CPU (Zen 3):** `amd-pstate-epp` nativo com C-states upstream do Fedora.
-- **GPU (Navi 23):** Mesa `radv` (Vulkan 1.4), VA-API no KWin/Wayland e contêineres ROCm/HIP via CDI (`/etc/cdi/amdgpu.yaml` com `HSA_OVERRIDE_GFX_VERSION=10.3.0`).
-- **Memória (64 GB):** ZRAM `zstd` em 32 GB (`60-zram-policy.conf`) e `DefaultLimitMEMLOCK=infinity` (`60-kinoite-limits.conf`) para alocação direta de modelos GGUF (`--mlock`).
-- **Armazenamento (Btrfs):** Atributo NoCOW `+C` estrito via tmpfiles `h` em diretórios de VMs e contêineres (`60-io-tuning-system.conf` e `60-io-tuning-user.conf`).
-- **Periféricos:** Periféricos HID e dispositivos de áudio USB/Bluetooth com acesso direto de usuário (`TAG+="uaccess"` em `70-peripherals.rules`).
-- **Firmware & UEFI:** Modo UEFI puro (CSM desativado) com Secure Boot e fTPM 2.0 nativos.
+- **Estação Homologada:** AMD Ryzen 9 5950X (16C/32T, Zen 3), AMD Radeon RX 6600 XT (8 GB GDDR6, Navi 23 / RDNA2), Gigabyte X570 AORUS PRO WIFI, 64 GB DDR4, NVMe 1 TB PCIe Gen4 (Btrfs), Fedora Kinoite (`bootc:latest`, Wayland, KDE Plasma 6, Kernel 7.2+).
+- **CPU & Memória:** `amd-pstate-epp` nativo; 32 GB ZRAM `zstd` (`60-zram-policy.conf`) e `DefaultLimitMEMLOCK=infinity` para alocação direta de LLMs (`--mlock`).
+- **GPU & Gráficos:** Mesa `radv` (Vulkan 1.4), VA-API no KWin/Wayland e contêineres ROCm/HIP via CDI (`/etc/cdi/amdgpu.yaml` com `HSA_OVERRIDE_GFX_VERSION=10.3.0`).
+- **Armazenamento:** Btrfs com atributo NoCOW `+C` estrito via tmpfiles `h` em diretórios de VMs e contêineres (`60-io-tuning-system.conf` e `60-io-tuning-user.conf`).
+- **Periféricos & Firmware:** Acesso direto de usuário via udev `uaccess` em `70-peripherals.rules`; modo UEFI puro com Secure Boot e fTPM 2.0 nativos.
 
 ---
 
 ## 4. Invariantes de Engenharia do Sistema
 
 - **Boot & Kernel Arguments:**
-  - Linha de boot limpa upstream gerenciada declarativamente via Bootc ([`recipes/common-kargs.yml`](recipes/common-kargs.yml) com `initcall_blacklist=simpledrm_platform_driver_init`, `rd.driver.blacklist=nouveau`, `modprobe.blacklist=nouveau`). No flavor dual, adiciona blacklist de `nvidia-drm` em [`recipes/common-drivers-nvidia.yml`](recipes/common-drivers-nvidia.yml). Proibido kargs redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`, `slab_nomerge`, `page_alloc.shuffle=1`, `btusb.enable_autosuspend=0`).
+  - Linha de boot limpa declarativa via Bootc ([`recipes/common-kargs.yml`](recipes/common-kargs.yml)): `initcall_blacklist=simpledrm_platform_driver_init`, blacklist de `nouveau` e `nvidia-drm` (no flavor dual). Proibido kargs redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
 - **Segurança Física (Padrão Zero Unauthenticated Recovery):**
-  - Proibido geradores ou drop-ins com `SYSTEMD_SULOGIN_FORCE=1` ou bypass de senha em consoles de emergência/resgate. Acesso físico de manutenção exige credencial legítima (`sulogin`).
-  - Desbloqueio TPM com autenticação de 2 fatores: Hardware fTPM + PIN (`--tpm2-with-pin=yes`) vinculado a PCR 7 + 14 em [`files/system/usr/bin/kinoite-setup-tpm`](files/system/usr/bin/kinoite-setup-tpm).
+  - Proibido bypass de autenticação em consoles de emergência (`sulogin` obrigatório; proibido `SYSTEMD_SULOGIN_FORCE=1`).
+  - Desbloqueio TPM2 em dois fatores: fTPM + PIN vinculado a PCR 7 + 14 via [`kinoite-setup-tpm`](files/system/usr/bin/kinoite-setup-tpm).
   - Bloqueio de bootloader via `grub2-setpassword` documentado em [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
-- **Sysctl & Resiliência (`90-kernel-tuning.conf`, `90-memory-fs-tuning.conf`, `90-network-tuning.conf`):**
-  - *Kernel:* `printk = 4 4 1 7`, `kptr_restrict=1`, `panic=20` (janela drm_panic QR), `panic_on_oops=1`, `panic_print=33`, `hardlockup_panic=1`, `softlockup_panic=0`, `sysrq=1` (REISUB).
-  - *Memória/ZRAM:* ZRAM zstd 32 GB (`min(ram / 2, 32768)` em `60-zram-policy.conf`), `vm.swappiness=150`, `vm.page-cluster=0`, `vm.watermark_scale_factor=125`, `vm.dirty_background_ratio=3`, `vm.dirty_ratio=10`, `vm.vfs_cache_pressure=50`, `fs.inotify.max_user_instances=8192`.
-  - *Rede:* TCP BBR + `fq` (`60-bbr.conf`), buffers 32 MB, `tcp_slow_start_after_idle=0`, `tcp_fastopen=3`, `netdev_max_backlog=16384`, `tcp_fin_timeout=15`, `tcp_mtu_probing=1`, `tcp_rfc1337=1`, ICMP redirects bloqueados. Proibido ativar `ip_forward` globalmente.
-  - *Proteção TuneD:* Symlinks em `/etc/sysctl.d/` para `/usr/lib/sysctl.d/` via `60-sysctl-protection.conf` blindam os sysctls contra sobrescrita do `tuned-ppd`.
-- **Systemd, Resiliência de Logs & Timers de Atualização:**
-  - Resiliência Journald ([`60-journald-resilience.conf`](files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf)): `SyncIntervalSec=30s` garante descarga rápida no NVMe Gen4 e elimina perda de logs pré-queda.
-  - Boot silencioso e Plymouth contínuo (`60-kinoite-boot-quiet.conf`): `ShowStatus=error`.
-  - First-boot provisioning (`kinoite-boot-init.service`): grava `menu_auto_hide=2`, `boot_success=1`, `boot_indeterminate=0` e `/boot/grub2/user.cfg` (`timeout=0`, `timeout_style=hidden`).
-  - Timers de atualização (`bootc-fetch-apply-updates`, `flatpak-system-update`, `flatpak-user-update`, `podman-auto-update`, `soar-upgrade-packages`): `OnBootSec=5m`, `OnUnitActiveSec=45m`, idle priority (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`). Sem `Persistent=true` em monotônicos.
-  - Timers de manutenção (`kinoite-maintenance.timer`, `kinoite-user-maintenance.timer`): `OnCalendar=weekly`, `RandomizedDelaySec=60min`, `Persistent=true`, idle priority.
+- **Sysctl, ZRAM & Blindagem TuneD:**
+  - `90-kernel-tuning.conf`, `90-memory-fs-tuning.conf`, `90-network-tuning.conf`: REISUB habilitado (`sysrq=1`), panic window 20s, TCP BBR + `fq`, ZRAM zstd 32 GB com `vm.swappiness=150`, sem `ip_forward` global.
+  - Symlinks em `/etc/sysctl.d/` para `/usr/lib/sysctl.d/` via `60-sysctl-protection.conf` blindam os sysctls contra sobrescrita do `tuned-ppd`.
+- **Systemd, Resiliência de Logs & Timers:**
+  - Journald com `SyncIntervalSec=30s` em NVMe Gen4 eliminando perda de logs pré-queda. Boot silencioso com `ShowStatus=error` e GRUB Auto-Hide zero-touch via `kinoite-boot-init.service`.
+  - Timers de atualização e manutenção com monotonicidade limpa e prioridade idle (`Nice=19`, `CPUSchedulingPolicy=idle`).
 - **Armazenamento Btrfs NoCOW:**
-  - Atributo `+C` estritamente via diretiva não-recursiva `h` em `60-io-tuning-system.conf` (`/var/lib/libvirt/images`, `/var/lib/containers/storage{,/volumes}`) e `60-io-tuning-user.conf` (`%h/.local/share/{libvirt/images,gnome-boxes/images,containers/storage{,/volumes}}`, `%h/.cache/rclone`, `%h/.local/state/wireplumber`). Proibido diretiva recursiva `H`.
-- **Rclone FUSE (`rclone@.service`, `GoogleDrive.env`, `OneDrive.env`):**
-  - Flags: `TimeoutStartSec=90s`, `SuccessExitStatus=143`, `--vfs-read-wait 5ms`, `--local-no-check-updated`, `--exclude ".Trash-**"`, sem `network-guard`.
-  - Cache VFS: `max-size=15G`, `max-age=24h`, `min-free-space=15G`, `write-back=10s`, `dir-cache-time=24h`, `attr-timeout=1h`, `buffer-size=32M`, `read-ahead=64M`, `read-chunk-streams=4`.
-  - Google Drive (`tpslimit=12`, `burst=100`, `chunk_size=64M`), OneDrive (`tpslimit=5`, `burst=10`, `chunk_size=50M`). Exclusão Baloo em `/etc/xdg/baloofilerc` (`[$ei]`).
-- **Áudio PipeWire & Bluetooth:**
-  - Operação 100% nativa sob a stack original do Fedora Kinoite (PipeWire e WirePlumber upstream). Quantum dinâmico (32 a 8192 amostras) e negociação automática de taxas de amostragem pelo grafo nativo, assegurando estabilidade integral em perfis de chamada e microfones Bluetooth (HSP/HFP, mSBC e CVSD) com zero perda de pacotes SCO.
-- **GPU IA, Browsers & Flatpak:**
-  - LLMs locais via Vulkan 1.4 RADV (Mesa 26.2) e CUDA/CDI dinâmico (`nvidia-cdi-refresh.service`). `DefaultLimitMEMLOCK=infinity` em `system.conf.d`, `user.conf.d` e `limits.d`. ACLs `TAG+="uaccess"` e symlink `/dev/dri/primary-render` para RX 6600 XT em `70-peripherals.rules`. Certificado MOK versionado em [`files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`](files/nvidia/etc/pki/akmods/certs/akmods-ublue.der).
-  - ROCm/HIP isolado via CDI (`/etc/cdi/amdgpu.yaml` apontando determinístico para `by-path/pci-0000:0c:00.0-*`). Proibido bibliotecas pesadas no host.
-  - **Isolamento Rigoroso de Hardware:** Arquivos e drivers específicos da NVIDIA residem exclusivamente em `files/nvidia/` e `recipes/common-drivers-nvidia.yml`, consumidos unicamente por `recipes/recipe-dual.yml`. A imagem AMD pura (`recipes/recipe-amd.yml`) consome estritamente `source: system` e permanece 100% livre de qualquer arquivo, pacote ou configuração NVIDIA. No flavor dual, a GPU NVIDIA opera como aceleradora headless de IA/CUDA com `nvidia-drm` desativado via [`files/nvidia/etc/modprobe.d/60-nvidia-headless.conf`](files/nvidia/etc/modprobe.d/60-nvidia-headless.conf) (`install nvidia_drm /usr/bin/true`) e omitido no initramfs via [`files/nvidia/etc/dracut.conf.d/99-nvidia-headless.conf`](files/nvidia/etc/dracut.conf.d/99-nvidia-headless.conf); isso impede a enumeração de render nodes gráficos conflitantes e garante que o Libvirt/QEMU e GNOME Boxes acelerem 3D exclusivamente na GPU primária AMD (Mesa RADV/RadeonSI).
-  - Browsers Flatpak (`70-browser-flags.conf`, `chromium-flags.conf`): Wayland nativo (`--ozone-platform=wayland`), DMA-BUF zero-copy, VA-API/KWin. Overrides sincronizados via `60-flatpak-overrides.conf`.
-- **Higiene e Hardening Geral:**
-  - DNS DoT Control D p2 primário + Cloudflare fallback em `60-dns-overrides.conf` (`DNSOverTLS=yes`, `DNSSEC=no`).
-  - SSHD key-only em `50-kinoite-hardening.conf`. Blacklist CIS em `60-security-blacklist.conf`.
-  - Swap preventivo OpenCL (`ocl-icd` substituindo `OpenCL-ICD-Loader` via RHBZ #2332429 em `common-tools.yml`).
-  - Proibido pacotes legados (`fuse` 2) e repositórios não-oficiais conflitantes (Negativo17 rejeitado em prol do RPM Fusion Freeworld).
-  - **Transição Bootc em Duas Etapas:** O bootstrap upstream ocorre sem imposição de política de assinatura prévia (o upstream não possui a chave pública Cosign do GHCR); após o primeiro boot na imagem, a imposição estrita (`--enforce-container-sigpolicy`) trava as atualizações automáticas sob `ostree-image-signed`.
+  - Atributo `+C` estritamente via diretiva não-recursiva `h` em tmpfiles de sistema e usuário para pastas de VMs, contêineres e caches FUSE.
+- **Rclone FUSE:**
+  - Unidade `rclone@.service` montando em `/run/user/$UID/cloud/`, isolado do Baloo, cache VFS 15 GB persistente em NoCOW, tolerância a encerramento limpo (`SuccessExitStatus=143`).
+- **Áudio PipeWire:**
+  - Stack 100% nativa upstream do Fedora Kinoite (PipeWire/WirePlumber). Negociação automática de taxas e quantum dinâmico no grafo nativo.
+- **GPU IA, Dual Flavor & Isolamento NVIDIA:**
+  - Flavor AMD (`recipe-amd.yml`): puramente Mesa RADV/RadeonSI upstream, 100% livre de binários ou drivers NVIDIA.
+  - Flavor Dual (`recipe-dual.yml`): aceleração display na RX 6600 XT; GPU NVIDIA opera exclusivamente como aceleradora headless de IA/CUDA via CDI (`nvidia-cdi-refresh.service`). Módulo `nvidia-drm` desativado no modprobe e dracut para impedir conflitos no Libvirt/QEMU e GNOME Boxes. Certificado MOK versionado em `files/nvidia/`.
+  - LLMs locais com `DefaultLimitMEMLOCK=infinity` e browsers Flatpak com Wayland nativo e VA-API via overrides centralizados.
+- **Supply Chain & Assinatura de Imagem:**
+  - Transição em duas etapas: bootstrap inicial provisiona chaves Cosign (`/etc/pki/containers/`); switch pós-boot ativa imposição estrita (`--enforce-container-sigpolicy` em `ostree-image-signed`).
 
 ---
 
 ## 5. CI/CD & Governança
 
-- **Workflows:** `check-updates.yml` (cron cada 2h) executa matriz paralela autônoma (`fail-fast: false`) para `amd` e `dual`, verificando digest da base upstream e despachando `build-amd.yml` e `build-dual.yml` (timeout 45m cada) conforme cache individual. `cleanup.yml` (diário) retém 15 versões no GHCR para `kinoite-amd` e `kinoite-dual`, 3 dias de runs e expurga caches superseded isoladamente por flavor (`upstream-amd-*` e `upstream-dual-*`).
-- **Segurança CI:** Actions pinadas por SHA, expressions seguras em `env:`, Dependabot semanal agrupado, segredos estritamente protegidos no `.gitignore`.
-- **Framework de Auditoria Canônica (7 Pilares):** Execução padronizada via `kinoite-optimize --audit` cobrindo Supply Chain & Chaves, Resiliência Upstream & Deriva, Btrfs NoCOW & ZRAM, Grafo PipeWire & WirePlumber, Aceleração GPU & CDI, Boot Limpo/REISUB/Sulogin e Governança de Timers.
+- **Pipelines GitHub Actions:** `check-updates.yml` (cron cada 2h) verifica upstream digest e despacha matriz autônoma `build-amd.yml` e `build-dual.yml`. `cleanup.yml` gerencia ciclo de vida do GHCR (15 builds retidos).
+- **Framework de Auditoria Canônica (7 Pilares):** Executado via `sys-optimize` ou `kinoite-optimize --audit` cobrindo Supply Chain/Cosign, Deriva Upstream, Btrfs NoCOW/ZRAM, Grafo PipeWire, GPU/CDI, Resiliência de Boot e Governança de Timers.
 
 ---
 
@@ -114,9 +86,8 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 ---
 
-## 7. Documentação, Idioma & Reprodutibilidade
+## 7. Documentação, Idioma & Anti-Deriva
 
-- **Política de Idioma:** [`README.md`](README.md) e [`SECURITY.md`](SECURITY.md) em inglês (audiência pública); `AGENTS.md` e [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) em pt-BR (operação local). Todo novo artefato em `docs/` segue pt-BR.
-- **Fonte Canônica Única:** `AGENTS.md` permanece monolítico de propósito — os invariantes precisam ser carregados integralmente por qualquer agente. Não fragmentar em `docs/ARCHITECTURE.md`; isso quebraria a garantia de leitura.
-- **Versionamento Flutuante:** `image-version: latest` é intencional (rolling). A reprodutibilidade vem do `check-updates.yml`, que resolve o digest upstream a cada 2h e indexa o cache por digest (`upstream-<flavor>-<digest>`). Pinar versão fixa apenas diante de exigência de hardware.
-- **Anti-Deriva:** toda mudança de invariante atualiza `AGENTS.md` no mesmo commit, conforme os 4 Critérios de Ouro (§2).
+- **Política de Idioma:** [`README.md`](README.md) e [`SECURITY.md`](SECURITY.md) em inglês (público); `AGENTS.md` e [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) em pt-BR (operação local).
+- **Fonte Canônica Única:** `AGENTS.md` permanece monolítico como autoridade absoluta para agentes. Toda mudança de invariante exige atualização simultânea em `AGENTS.md` no mesmo commit.
+- **Versionamento Flutuante:** `image-version: latest` é intencional (rolling). A reprodutibilidade é garantida pelo hash do digest upstream resolvido a cada 2h via CI.
