@@ -41,7 +41,6 @@ modules:
           # Networking & VPN
           - org.fkoehler.KTailctl
 
-          # Audio, Media & Streaming
-          - com.github.wwmm.easyeffects
+          # Media & Streaming
           - com.stremio.Stremio
           - org.qbittorrent.qBittorrent

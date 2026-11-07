@@ -83,7 +83,6 @@ NOCOW_USER_DIRS=(
     "$REAL_HOME/.local/share/containers/storage"
     "$REAL_HOME/.local/share/containers/storage/volumes"
     "$REAL_HOME/.cache/rclone"
-    "$REAL_HOME/.local/state/wireplumber"
 )
 
 # Helper function to check and apply NoCOW to a directory
@@ -133,13 +132,6 @@ if [ -d "$REAL_HOME/.cache/rclone" ]; then
     else
         echo "[OK] Rclone cache files verified (100% NoCOW)."
     fi
-fi
-
-# Sanitize corrupted WirePlumber default-routes if present
-WP_DEFAULT_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
-if [ -f "$WP_DEFAULT_ROUTES" ] && grep -q '\["headset-output", "headset-input"\]' "$WP_DEFAULT_ROUTES" 2>/dev/null; then
-    rm -f "$WP_DEFAULT_ROUTES" 2>/dev/null || true
-    echo "[FIXED] Purged corrupted WirePlumber default-routes (restored clean native state)."
 fi
 
 # Audit and purge residual desktop .Trash-* directories on active cloud mounts
@@ -349,14 +341,14 @@ fi
 
 if [ "$AUDIT_ONLY" -eq 1 ]; then
     echo "=========================================================="
-    echo "=== [AUDIT] 7 Pilares de Engenharia de SO Profissional ==="
+    echo "=== [AUDIT] 6 Pilares de Engenharia de SO Profissional ==="
     echo "=========================================================="
 else
     echo "=== [8/8] System Health & Integrity Audit ==="
 fi
 
 # [Pilar 1: Cadeia de Suprimentos & Assinatura Criptográfica]
-echo "--- [Pilar 1/7] Supply Chain, Chaves & Assinatura ---"
+echo "--- [Pilar 1/6] Supply Chain, Chaves & Assinatura ---"
 if command -v mokutil >/dev/null 2>&1; then
     if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
         if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
@@ -376,7 +368,7 @@ if [ -f /usr/lib/modprobe.d/60-security-blacklist.conf ]; then
 fi
 
 # [Pilar 2: Deriva de Pacotes & Resiliência Upstream]
-echo "--- [Pilar 2/7] Resiliência de Pacotes & Zero Downgrade ---"
+echo "--- [Pilar 2/6] Resiliência de Pacotes & Zero Downgrade ---"
 FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
 echo "[INFO] Baseline Fedora: ${FEDORA_VER} (bootc/rpm-ostree nativo)."
 if rpm -q fuse 2>/dev/null | grep -v "fuse3" >/dev/null 2>&1; then
@@ -386,7 +378,7 @@ else
 fi
 
 # [Pilar 3: I/O, Btrfs NoCOW & Gestão de Memória]
-echo "--- [Pilar 3/7] Armazenamento Btrfs NoCOW & ZRAM ---"
+echo "--- [Pilar 3/6] Armazenamento Btrfs NoCOW & ZRAM ---"
 if command -v zramctl >/dev/null 2>&1; then
     zram_info=$(zramctl --output NAME,ALGORITHM,DISKSIZE,DATA --noheadings 2>/dev/null | head -n 1 || true)
     if [ -n "$zram_info" ]; then
@@ -419,26 +411,8 @@ for p in "${NOCOW_PATHS[@]}"; do
     fi
 done
 
-# [Pilar 4: Grafo de Áudio PipeWire & Bluetooth]
-echo "--- [Pilar 4/7] Grafo de Áudio PipeWire & WirePlumber ---"
-if command -v pw-metadata >/dev/null 2>&1; then
-    pw_rate=$(pw-metadata -n settings 2>/dev/null | grep "clock.rate" | awk '{print $NF}' || true)
-    pw_quantum=$(pw-metadata -n settings 2>/dev/null | grep "clock.quantum " | awk '{print $NF}' || true)
-    if [ -n "$pw_quantum" ]; then
-        echo "[OK] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (grafo dinâmico nativo)."
-    fi
-fi
-WP_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
-if [ -f "$WP_ROUTES" ]; then
-    if grep -q '\["headset-output", "headset-input"\]' "$WP_ROUTES"; then
-        echo "[WARN] Rota corrompida detectada no WirePlumber! Execute kinoite-optimize para corrigir."
-    else
-        echo "[OK] Banco de rotas WirePlumber íntegro (autoswitch de perfis limpo)."
-    fi
-fi
-
-# [Pilar 5: Pipeline de GPU & Wayland Zero-Copy]
-echo "--- [Pilar 5/7] GPU Acceleration, Vulkan & Wayland ---"
+# [Pilar 4: Pipeline de GPU & Wayland Zero-Copy]
+echo "--- [Pilar 4/6] GPU Acceleration, Vulkan & Wayland ---"
 if command -v vulkaninfo >/dev/null 2>&1; then
     vk_dev=$(vulkaninfo --summary 2>/dev/null | grep "deviceName" | head -n 1 | awk -F'=' '{print $2}' | xargs || true)
     if [ -n "$vk_dev" ]; then
@@ -469,8 +443,8 @@ else
     echo "[OK] Isolamento gráfico perfeito: GPU primária AMD é a detentora exclusiva de render nodes DRM."
 fi
 
-# [Pilar 6: Resiliência de Boot & Recuperação Segura]
-echo "--- [Pilar 6/7] Boot Limpo, SysRq REISUB & Sulogin ---"
+# [Pilar 5: Resiliência de Boot & Recuperação Segura]
+echo "--- [Pilar 5/6] Boot Limpo, SysRq REISUB & Sulogin ---"
 SYSRQ=$(cat /proc/sys/kernel/sysrq 2>/dev/null || echo "N/A")
 echo "[OK] Kernel SysRq: ${SYSRQ} (alvo 1 - REISUB seguro habilitado)."
 
@@ -490,8 +464,8 @@ if [ "$BANNED_DETECTED" -eq 0 ]; then
     echo "[OK] Linha de boot limpa (zero kargs redundantes de acordo com AGENTS.md)."
 fi
 
-# [Pilar 7: CI/CD, Timers & Governança do Sistema]
-echo "--- [Pilar 7/7] Timers de Manutenção & Armazenamento ---"
+# [Pilar 6: CI/CD, Timers & Governança do Sistema]
+echo "--- [Pilar 6/6] Timers de Manutenção & Armazenamento ---"
 active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
 echo "[OK] Timers de Atualização: $(echo "$active_timers" | tr '\n' ' ')"
 
@@ -503,7 +477,7 @@ echo "[STATUS] Espaço livre em /var/home: $(df -h /var/home | awk 'NR==2 {print
 
 if [ "$AUDIT_ONLY" -eq 1 ]; then
     echo "=========================================================="
-    echo "=== Auditoria dos 7 Pilares Concluída com Sucesso      ==="
+    echo "=== Auditoria dos 6 Pilares Concluída com Sucesso      ==="
     echo "=========================================================="
     exit 0
 fi

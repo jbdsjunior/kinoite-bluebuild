@@ -17,9 +17,6 @@ modules:
         - ffmpeg
         - libva-utils
         - libheif-freeworld
-  
-        # Audio Codecs (Bluetooth aptX for third-party devices)
-        - pipewire-codec-aptx
 
         # GStreamer Freeworld Plugins
         - gstreamer1-plugins-bad-freeworld
