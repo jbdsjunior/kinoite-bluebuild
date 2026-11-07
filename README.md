@@ -1,7 +1,6 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-Validate](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/validate.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
 ![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
 

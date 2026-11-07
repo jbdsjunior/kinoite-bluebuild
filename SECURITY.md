@@ -27,7 +27,6 @@ To protect both user workstation privacy and project infrastructure integrity:
 
   | Workflow | `contents` | `packages` | `actions` |
   | :--- | :---: | :---: | :---: |
-  | `validate.yml` | read | – | – |
   | `build-amd.yml` / `build-dual.yml` | read | write | write |
   | `build-image.yml` (reusable) | read | write | write |
   | `check-updates.yml` | read | – | write |
