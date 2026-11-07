@@ -17,11 +17,3 @@ modules:
         if [ -f /usr/lib/dracut/dracut.conf.d/99-nvidia.conf ]; then
           sed -i 's/\bnvidia_drm\b//g' /usr/lib/dracut/dracut.conf.d/99-nvidia.conf
         fi
-
-  # Operação headless da GPU secundária NVIDIA no flavor dual (preserva CUDA/IA e blinda GNOME Boxes)
-  - type: kargs
-    kargs:
-      - rd.driver.blacklist=nvidia-drm
-      - rd.driver.blacklist=nvidia_drm
-      - modprobe.blacklist=nvidia-drm
-      - modprobe.blacklist=nvidia_drm

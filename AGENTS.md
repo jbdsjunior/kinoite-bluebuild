@@ -36,7 +36,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 ## 4. Invariantes de Engenharia do Sistema
 
 - **Boot & Kernel Arguments:**
-  - Linha de boot limpa declarativa via Bootc ([`recipes/common-kargs.yml`](recipes/common-kargs.yml)): `initcall_blacklist=simpledrm_platform_driver_init`, blacklist de `nouveau` e `nvidia-drm` (no flavor dual). Proibido kargs redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
+  - Linha de boot limpa declarativa via Bootc ([`recipes/common-kargs.yml`](recipes/common-kargs.yml) e [`recipes/dual-kargs.yml`](recipes/dual-kargs.yml)): `initcall_blacklist=simpledrm_platform_driver_init`, blacklist de `nouveau` e `nvidia-drm` (no flavor dual). Proibido kargs redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
 - **Segurança Física (Padrão Zero Unauthenticated Recovery):**
   - Proibido bypass de autenticação em consoles de emergência (`sulogin` obrigatório; proibido `SYSTEMD_SULOGIN_FORCE=1`).
   - Desbloqueio TPM2 em dois fatores: fTPM + PIN vinculado a PCR 7 + 14 via [`kinoite-setup-tpm`](files/system/usr/bin/kinoite-setup-tpm).
@@ -71,7 +71,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 | Subsistema | Arquivos de Implementação |
 | :--- | :--- |
-| **Receitas & Repositórios** | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/recipe-dual.yml`](recipes/recipe-dual.yml), [`recipes/common-kargs.yml`](recipes/common-kargs.yml), [`recipes/common-*.yml`](recipes/), [`files/dnf/terra.repo`](files/dnf/terra.repo), [`files/dnf/tailscale.repo`](files/dnf/tailscale.repo) |
+| **Receitas & Repositórios** | [`recipes/recipe-amd.yml`](recipes/recipe-amd.yml), [`recipes/recipe-dual.yml`](recipes/recipe-dual.yml), [`recipes/common-kargs.yml`](recipes/common-kargs.yml), [`recipes/dual-kargs.yml`](recipes/dual-kargs.yml), [`recipes/common-*.yml`](recipes/), [`files/dnf/terra.repo`](files/dnf/terra.repo), [`files/dnf/tailscale.repo`](files/dnf/tailscale.repo) |
 | **Sysctl, ZRAM & TuneD** | [`files/system/usr/lib/sysctl.d/90-*.conf`](files/system/usr/lib/sysctl.d/), [`files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`](files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf), [`files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`](files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf), [`files/system/usr/lib/modules-load.d/60-bbr.conf`](files/system/usr/lib/modules-load.d/60-bbr.conf) |
 | **Systemd, Boot & Timers** | [`files/system/usr/lib/systemd/system/`](files/system/usr/lib/systemd/system/), [`files/system/usr/lib/systemd/user/`](files/system/usr/lib/systemd/user/), [`files/system/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf`](files/system/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf), [`files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`](files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf) |
 | **Btrfs NoCOW & Flatpak** | [`files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`](files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf), [`files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`](files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf), [`files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`](files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf), [`files/system/usr/share/flatpak/overrides/`](files/system/usr/share/flatpak/overrides/) |

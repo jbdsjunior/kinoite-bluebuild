@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+# Baseline canônico de argumentos de kernel para imagens Fedora Kinoite Dual-GPU (AMD display + NVIDIA compute)
+# Gerenciado via bootc (/usr/lib/bootc/kargs.d/) em total conformidade com AGENTS.md §4.
+modules:
+  - type: kargs
+    kargs:
+      # Prevenção de conflito de framebuffer primitivo com Mesa/DRM no early boot
+      - initcall_blacklist=simpledrm_platform_driver_init
+      # Bloqueio estrito do driver nouveau no initramfs e userspace
+      - rd.driver.blacklist=nouveau
+      - modprobe.blacklist=nouveau
+      # Operação headless da GPU secundária NVIDIA no flavor dual (preserva CUDA/IA e blinda GNOME Boxes)
+      - rd.driver.blacklist=nvidia-drm
+      - modprobe.blacklist=nvidia-drm
