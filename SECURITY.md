@@ -2,7 +2,7 @@
 
 ## Supported Images and Releases
 
-This project builds customized Fedora Kinoite container images using BlueBuild. Security updates are tracked and applied automatically through upstream base image updates and daily package builds.
+This project builds customized Fedora Kinoite container images using BlueBuild. Security updates are tracked and applied automatically: upstream base image updates are polled every 6 hours (`check-updates.yml`) and each new upstream digest triggers a signed rebuild of both flavors (`build.yml`).
 
 | Variant                    | Reference Target                              |     Supported      |
 | :------------------------- | :-------------------------------------------- | :----------------: |
@@ -18,6 +18,14 @@ You can verify the image authenticity before rebasing or switching:
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-dual:latest
 ```
+
+Once running the custom image, signature verification is also enforced at the container-runtime level
+by switching with `bootc switch --enforce-container-sigpolicy <image>` (two-step transition described in
+[`docs/POST_INSTALL.md`](docs/POST_INSTALL.md)). From that point on, every update must carry a valid
+Cosign signature or the deployment is rejected.
+
+Repository changes are gated by `validate.yml` (yamllint, shellcheck and `bash -n`) on every pull request,
+and all third-party GitHub Actions are pinned to immutable commit SHAs.
 
 ## Supply Chain and Secret Governance
 

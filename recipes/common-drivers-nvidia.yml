@@ -7,6 +7,18 @@ modules:
     install: []
     nvidia-driver: nvidia-open
 
+  # O módulo akmods injeta /usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml com
+  # nvidia-drm.modeset=1 e blacklists de nouveau. Esse karg contradiz a operação
+  # headless da GPU NVIDIA (AGENTS.md §4) e o módulo kargs do BlueBuild é append-only,
+  # portanto a remoção é feita via script imediatamente após o akmods.
+  # Os blacklists de nouveau e nvidia_drm são declarados de forma canônica em
+  # common-kargs.yml e no módulo kargs abaixo.
+  - type: script
+    snippets:
+      - |
+        set -euo pipefail
+        rm -f /usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml
+
   # Operação headless da GPU secundária NVIDIA no flavor dual (preserva CUDA/IA e blinda GNOME Boxes)
   - type: kargs
     kargs:

@@ -8,14 +8,6 @@ modules:
         - tailscale.repo
         - terra.repo
 
-    replace:
-      # Mitigate upstream OpenCL packaging conflict (RHBZ #2332429)
-      - from-repo: fedora
-        install-weak-deps: false
-        packages:
-          - new: ocl-icd
-            old: OpenCL-ICD-Loader
-
     install:
       skip-unavailable: true
       allow-erasing: true
@@ -25,8 +17,7 @@ modules:
         - starship
         - tailscale
 
-        # Version Control & Cloud Sync
-        - git
+        # Cloud Sync
         - rclone
 
         # Modern CLI & Terminal Workflow
@@ -44,8 +35,6 @@ modules:
         - podman-docker
 
         # System Information & Hardware Diagnostics
+        # vulkan-tools já é provido pelo base Kinoite (kinoite-shared)
         - fastfetch
-        - mesa-libOpenCL
-        - clinfo
-        - vulkan-tools
         - nvtop

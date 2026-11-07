@@ -1,8 +1,8 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
+![Status-Build](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build.yml/badge.svg)
+![Status-Validate](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/validate.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -20,7 +20,7 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 | `kinoite-dual` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-dual:latest` | AMD display (RDNA2) + NVIDIA compute (CUDA/akmods) + 64 GB DDR4      |
 
 > [!WARNING]
-> This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+> This profile is calibrated for workstations with **32 GB+ RAM**: ZRAM is sized as `min(ram/2, 32 GB)` with `zstd`, plus Btrfs NoCOW rules and Zen 3/RDNA2 tuning. See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
@@ -57,11 +57,12 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:
 Run the unified maintenance utility after booting:
 
 ```bash
-sys-optimize                    # full 8-phase maintenance (root)
 sudo kinoite-optimize --audit   # read-only audit of the 7 engineering pillars
+sys-optimize                    # alias: full 7-phase maintenance (root)
 ```
 
 Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE, ROCm CDI, and recovery): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+Simplification roadmap and pending decisions: [`docs/SIMPLIFICATION.md`](docs/SIMPLIFICATION.md).
 
 ---
 
@@ -81,8 +82,9 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 | Path | Purpose |
 | :--- | :--- |
-| [`AGENTS.md`](AGENTS.md) | Authoritative system invariants, hardware baseline, and complete file traceability matrix (§6) |
+| [`AGENTS.md`](AGENTS.md) | Authoritative system invariants, hardware baseline, and subsystem/directory traceability (§6) |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery) |
+| [`docs/SIMPLIFICATION.md`](docs/SIMPLIFICATION.md) | Audit log, simplification decisions, pending package/config evaluations |
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy and vulnerability reporting |
 | [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `common-*.yml`) |
 | [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |

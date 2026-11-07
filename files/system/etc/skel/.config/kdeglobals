@@ -1,0 +1,9 @@
+[General]
+AccentColor=0,85,255
+LastUsedCustomAccentColor=0,85,255
+
+[KDE]
+AnimationDurationFactor=0.5
+LookAndFeelPackage=org.kde.breezedark.desktop
+ShowDeleteCommand=true
+SingleClick=true

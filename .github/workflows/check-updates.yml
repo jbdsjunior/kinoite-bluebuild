@@ -1,7 +1,9 @@
 name: check-updates
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    # Upstream Fedora Kinoite is rebuilt roughly once a day; polling every 6h
+    # keeps latency low without rebuilding on every few-hourly tag churn.
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -22,10 +24,8 @@ jobs:
         include:
           - flavor: amd
             recipe: recipes/recipe-amd.yml
-            workflow: build-amd.yml
           - flavor: dual
             recipe: recipes/recipe-dual.yml
-            workflow: build-dual.yml
 
     steps:
       - name: Checkout repo
@@ -75,25 +75,22 @@ jobs:
           key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
           lookup-only: true
 
+      # The cache key (upstream-<flavor>-<digest>) is the single source of truth:
+      # a digest is built once, and the workflow concurrency group prevents
+      # duplicate executions for the same flavor.
       - name: Trigger build (${{ matrix.flavor }})
         if: steps.cache.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
           REPO: ${{ github.repository }}
-          WORKFLOW_FILE: ${{ matrix.workflow }}
+          FLAVOR: ${{ matrix.flavor }}
           REPO_REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-
-          # Avoid duplicate execution if build is already queued or running
-          RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
-          if [[ -n "${RUNNING}" ]]; then
-            echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
-          else
-            echo "Cache miss for ${{ matrix.flavor }} digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
-            gh workflow run "$WORKFLOW_FILE" \
-              --ref "$REPO_REF" \
-              --repo "$REPO" \
-              -f upstream_digest="${UPSTREAM_DIGEST}"
-          fi
+          echo "Cache miss for ${FLAVOR} digest ${UPSTREAM_DIGEST}. Triggering build..."
+          gh workflow run build.yml \
+            --ref "$REPO_REF" \
+            --repo "$REPO" \
+            -f flavor="${FLAVOR}" \
+            -f upstream_digest="${UPSTREAM_DIGEST}"

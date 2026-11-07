@@ -19,25 +19,18 @@ Environment=RCLONE_TRANSFERS=4
 Environment=RCLONE_CHECKERS=8
 Environment=RCLONE_TPSLIMIT=12
 Environment=RCLONE_TPSLIMIT_BURST=20
-Environment=RCLONE_VFS_READ_AHEAD=64M
-Environment=RCLONE_VFS_READ_CHUNK_SIZE=8M
-Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
-Environment=RCLONE_VFS_READ_CHUNK_STREAMS=4
-Environment=RCLONE_VFS_CACHE_MAX_SIZE=15G
+Environment=RCLONE_VFS_CACHE_MAX_SIZE=10G
 Environment=RCLONE_VFS_CACHE_MAX_AGE=24h
-Environment=RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
-Environment=RCLONE_VFS_CACHE_POLL_INTERVAL=1m
+Environment=RCLONE_VFS_CACHE_MIN_FREE_SPACE=5G
 Environment=RCLONE_VFS_WRITE_BACK=10s
 Environment=RCLONE_DIR_CACHE_TIME=24h
-Environment=RCLONE_ATTR_TIMEOUT=1h
 Environment=RCLONE_POLL_INTERVAL=1m
 Environment=RCLONE_FLAGS=
 EnvironmentFile=-%h/.config/rclone/env/%i.env
 EnvironmentFile=-%h/.config/rclone/env/%i.local.env
 
 ExecStartPre=-/usr/bin/fusermount3 -uzq ${RCLONE_MOUNT}
-ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
-ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT} ${RCLONE_CACHE}
 
 ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --config %h/.config/rclone/rclone.conf \
@@ -46,19 +39,18 @@ ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
   --vfs-cache-max-size ${RCLONE_VFS_CACHE_MAX_SIZE} \
   --vfs-cache-max-age ${RCLONE_VFS_CACHE_MAX_AGE} \
   --vfs-cache-min-free-space ${RCLONE_VFS_CACHE_MIN_FREE_SPACE} \
-  --vfs-cache-poll-interval ${RCLONE_VFS_CACHE_POLL_INTERVAL} \
+  --vfs-cache-poll-interval 1m \
   --vfs-fast-fingerprint \
-  --vfs-read-chunk-size ${RCLONE_VFS_READ_CHUNK_SIZE} \
-  --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
-  --vfs-read-chunk-streams ${RCLONE_VFS_READ_CHUNK_STREAMS} \
-  --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
+  --vfs-read-chunk-size 8M \
+  --vfs-read-chunk-size-limit 512M \
+  --vfs-read-ahead 64M \
   --vfs-write-back ${RCLONE_VFS_WRITE_BACK} \
   --vfs-read-wait 5ms \
   --local-no-check-updated \
   --exclude ".Trash-**" \
   --exclude ".Trash/**" \
   --dir-cache-time ${RCLONE_DIR_CACHE_TIME} \
-  --attr-timeout ${RCLONE_ATTR_TIMEOUT} \
+  --attr-timeout 1h \
   --poll-interval ${RCLONE_POLL_INTERVAL} \
   --buffer-size ${RCLONE_BUFFER_SIZE} \
   --transfers ${RCLONE_TRANSFERS} \
@@ -83,9 +75,7 @@ KillMode=mixed
 TimeoutStopSec=180s
 SuccessExitStatus=143
 
-
 LimitNOFILE=1048576
-MemoryMax=4G
 CPUQuota=200%
 IOSchedulingClass=best-effort
 IOSchedulingPriority=4

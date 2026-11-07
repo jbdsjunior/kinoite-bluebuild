@@ -1,75 +1,53 @@
 #!/usr/bin/env bash
+# kinoite-optimize - maintenance and read-only audit for the kinoite-bluebuild image.
+#
+#   kinoite-optimize            full maintenance (requires root)
+#   kinoite-optimize --audit    read-only audit of the 7 engineering pillars
+#
+# Destructive operations are intentionally NOT performed here:
+#   - kernel arguments are declarative (recipes/*.yml) and managed by bootc;
+#   - Btrfs balance and cloud-side rclone dedupe are manual, opt-in actions;
+#   - VM image defragmentation is reported, never executed automatically.
 set -euo pipefail
 
-# Detect audit-only flag
 AUDIT_ONLY=0
-if [ "${1:-}" = "--audit" ] || [ "${1:-}" = "--audit-only" ] || [ "${1:-}" = "-a" ]; then
-    AUDIT_ONLY=1
-fi
-IS_ROOT=0
-CAN_SUDO=0
-SUDO_CMD=""
+case "${1:-}" in
+    --audit|--audit-only|-a) AUDIT_ONLY=1 ;;
+    "") ;;
+    *) echo "Usage: kinoite-optimize [--audit]" >&2; exit 1 ;;
+esac
 
+IS_ROOT=0
 if [ "$(id -u)" -eq 0 ]; then
     IS_ROOT=1
-    CAN_SUDO=1
-    SUDO_CMD=""
-elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-    CAN_SUDO=1
-    SUDO_CMD="sudo"
-elif [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
-    if sudo -v 2>/dev/null; then
-        CAN_SUDO=1
-        SUDO_CMD="sudo"
-    fi
 fi
 
-# Detect desktop user when executing through sudo
+# Resolve the desktop user when running through sudo
 if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
     REAL_USER="$SUDO_USER"
-    REAL_HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6 2>/dev/null || echo "$HOME")"
 else
     REAL_USER="$(id -un)"
-    REAL_HOME="$HOME"
 fi
+REAL_HOME="$(getent passwd "$REAL_USER" | cut -d: -f6)"
+[ -n "$REAL_HOME" ] || REAL_HOME="$HOME"
 
-RUN_USER_CMD=""
-if [ "$IS_ROOT" -eq 1 ] && [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
-    RUN_USER_CMD="sudo -u $REAL_USER"
-fi
-
-if [ "$AUDIT_ONLY" -eq 0 ]; then
-echo "=== [1/8] Kernel Resilience & Runtime Sysctl Enforcement ==="
-if [ "$CAN_SUDO" -eq 1 ]; then
-    $SUDO_CMD /usr/lib/systemd/systemd-sysctl >/dev/null 2>&1 || $SUDO_CMD sysctl --system >/dev/null 2>&1 || true
-    echo "[OK] Declarative sysctl policies synchronized across kernel, memory, and network."
-else
-    echo "[SKIP] Sudo privileges not available; skipping kernel sysctl updates."
-    echo "       (Run with 'sudo kinoite-optimize' to enforce kernel parameters directly)."
-fi
-
-echo "=== [2/8] Systemd Tmpfiles & Declarative NoCOW Alignment ==="
-if [ "$CAN_SUDO" -eq 1 ]; then
-    $SUDO_CMD systemd-tmpfiles --create >/dev/null 2>&1 || true
-    echo "[OK] System tmpfiles synchronized."
-fi
-
-# Ensure elegant and safe silent boot via GRUB Menu Auto-Hide
-if [ "$CAN_SUDO" -eq 1 ] && command -v grub2-editenv >/dev/null 2>&1; then
-    $SUDO_CMD grub2-editenv - set menu_auto_hide=2 >/dev/null 2>&1 || true
-    $SUDO_CMD grub2-editenv - set boot_success=1 >/dev/null 2>&1 || true
-    $SUDO_CMD grub2-editenv - set boot_indeterminate=0 >/dev/null 2>&1 || true
-    if [ -d /boot/grub2 ]; then
-        printf "set timeout=0\nset timeout_style=hidden\n" | $SUDO_CMD tee /boot/grub2/user.cfg >/dev/null 2>&1 || true
+# Run a command as root (directly when already root)
+sys() {
+    if [ "$IS_ROOT" -eq 1 ]; then
+        "$@"
+    else
+        sudo "$@"
     fi
-fi
+}
 
-if [ -n "$RUN_USER_CMD" ]; then
-    $RUN_USER_CMD systemd-tmpfiles --user --create >/dev/null 2>&1 || true
-else
-    systemd-tmpfiles --user --create >/dev/null 2>&1 || true
-fi
-echo "[OK] User tmpfiles synchronized for $REAL_USER."
+# Run a command as the desktop user (when executing under sudo)
+usr() {
+    if [ "$IS_ROOT" -eq 1 ] && [ "$REAL_USER" != "root" ]; then
+        sudo -u "$REAL_USER" "$@"
+    else
+        "$@"
+    fi
+}
 
 NOCOW_SYSTEM_DIRS=(
     "/var/lib/libvirt/images"
@@ -83,430 +61,227 @@ NOCOW_USER_DIRS=(
     "$REAL_HOME/.local/share/containers/storage"
     "$REAL_HOME/.local/share/containers/storage/volumes"
     "$REAL_HOME/.cache/rclone"
+    "$REAL_HOME/.local/state/wireplumber"
 )
 
-# Helper function to check and apply NoCOW to a directory
-apply_nocow_dir() {
-    local dir="$1"
-    local run_cmd="$2"
+nocow_has_attr() {
+    local dir="$1" runner="$2" attrs=""
+    case "$runner" in
+        sys) attrs=$(sys lsattr -d "$dir" 2>/dev/null | awk '{print $1}' || true) ;;
+        usr) attrs=$(usr lsattr -d "$dir" 2>/dev/null | awk '{print $1}' || true) ;;
+        *)   attrs=$(lsattr -d "$dir" 2>/dev/null | awk '{print $1}' || true) ;;
+    esac
+    printf '%s' "$attrs"
+}
 
-    if [ -d "$dir" ]; then
-        if ! $run_cmd lsattr -d "$dir" 2>/dev/null | grep -q "C"; then
-            if $run_cmd chattr +C "$dir" 2>/dev/null; then
-                echo "[FIXED] Applied NoCOW (+C) to directory: $dir"
-            fi
-        fi
+nocow_apply() {
+    local dir="$1" runner="$2"
+    [ -d "$dir" ] || return 0
+    if nocow_has_attr "$dir" "$runner" | grep -q 'C'; then
+        return 0
+    fi
+    case "$runner" in
+        sys) sys chattr +C "$dir" 2>/dev/null || true ;;
+        usr) usr chattr +C "$dir" 2>/dev/null || true ;;
+    esac
+    if nocow_has_attr "$dir" "$runner" | grep -q 'C'; then
+        echo "[FIXED] NoCOW (+C): $dir"
     fi
 }
 
-if [ "$CAN_SUDO" -eq 1 ]; then
+nocow_check() {
+    local dir="$1" runner="$2" attrs
+    [ -d "$dir" ] || return 0
+    attrs=$(nocow_has_attr "$dir" "$runner")
+    if [ -z "$attrs" ]; then
+        echo "[SKIP] NoCOW check without privileges: $dir"
+    elif printf '%s' "$attrs" | grep -q 'C'; then
+        echo "[OK] NoCOW (+C): $dir"
+    else
+        echo "[WARN] NoCOW (+C) missing: $dir"
+    fi
+}
+
+if [ "$AUDIT_ONLY" -eq 0 ]; then
+    if [ "$IS_ROOT" -eq 0 ] && ! sudo -n true 2>/dev/null; then
+        echo "ERROR: maintenance requires root. Use 'sudo kinoite-optimize' or 'kinoite-optimize --audit'." >&2
+        exit 1
+    fi
+
+    echo "=== [1/7] Kernel sysctl enforcement ==="
+    sys /usr/lib/systemd/systemd-sysctl >/dev/null 2>&1 || true
+    echo "[OK] Declarative sysctl policies applied."
+
+    echo "=== [2/7] Tmpfiles, NoCOW and GRUB auto-hide ==="
+    sys systemd-tmpfiles --create >/dev/null 2>&1 || true
+    usr systemd-tmpfiles --user --create >/dev/null 2>&1 || true
     for dir in "${NOCOW_SYSTEM_DIRS[@]}"; do
-        apply_nocow_dir "$dir" "$SUDO_CMD"
+        nocow_apply "$dir" sys
     done
-fi
-
-for dir in "${NOCOW_USER_DIRS[@]}"; do
-    apply_nocow_dir "$dir" "${RUN_USER_CMD:-}"
-done
-
-# Ensure user namespaces in podman storage inherit NoCOW
-if command -v podman >/dev/null 2>&1 && [ -d "$REAL_HOME/.local/share/containers/storage" ]; then
-    if [ -n "$RUN_USER_CMD" ]; then
-        $RUN_USER_CMD podman unshare find "$REAL_HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
-    else
-        podman unshare find "$REAL_HOME/.local/share/containers/storage" -type d -exec chattr +C {} + 2>/dev/null || true
-    fi
-    echo "[OK] Podman storage directory trees verified with NoCOW."
-fi
-
-# Ensure pre-existing rclone cache files are not fragmented with CoW
-if [ -d "$REAL_HOME/.cache/rclone" ]; then
-    RCLONE_FIXED=0
-    while IFS= read -r -d '' f; do
-        if ! lsattr "$f" 2>/dev/null | grep -q "C"; then
-            cp --reflink=never "$f" "${f}.nocow_tmp" 2>/dev/null && mv -f "${f}.nocow_tmp" "$f" && ((RCLONE_FIXED++)) || true
-        fi
-    done < <(find "$REAL_HOME/.cache/rclone" -type f -print0 2>/dev/null)
-    if [ "$RCLONE_FIXED" -gt 0 ]; then
-        echo "[FIXED] Recreated $RCLONE_FIXED rclone cache files with atomic NoCOW inheritance."
-    else
-        echo "[OK] Rclone cache files verified (100% NoCOW)."
-    fi
-fi
-
-# Sanitize corrupted WirePlumber default-routes if present
-WP_DEFAULT_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
-if [ -f "$WP_DEFAULT_ROUTES" ] && grep -q '\["headset-output", "headset-input"\]' "$WP_DEFAULT_ROUTES" 2>/dev/null; then
-    rm -f "$WP_DEFAULT_ROUTES" 2>/dev/null || true
-    echo "[FIXED] Purged corrupted WirePlumber default-routes (restored clean native state)."
-fi
-
-# Audit and purge residual desktop .Trash-* directories on active cloud mounts
-USER_UID="$(id -u "$REAL_USER" 2>/dev/null || echo "1000")"
-CLOUD_BASE_DIR="/run/user/${USER_UID}/cloud"
-if [ -d "$CLOUD_BASE_DIR" ] || [ -d "$REAL_HOME/Cloud" ]; then
-    TRASH_FOUND=0
-    for base in "$CLOUD_BASE_DIR" "$REAL_HOME/Cloud"; do
-        [ -d "$base" ] || continue
-        while IFS= read -r -d '' td; do
-            TRASH_FOUND=1
-            echo "[ACTION] Purging residual $(basename "$td") in $(dirname "$td")..."
-            rm -rf "$td" 2>/dev/null || true
-        done < <(find "$base" -mindepth 2 -maxdepth 2 -type d -name ".Trash-*" -print0 2>/dev/null)
+    for dir in "${NOCOW_USER_DIRS[@]}"; do
+        nocow_apply "$dir" usr
     done
-    if [ "$TRASH_FOUND" -eq 0 ]; then
-        echo "[OK] Cloud mounts verified (zero residual .Trash-* directories)."
-    else
-        echo "[OK] Cloud mounts residual trash purged."
+    echo "[OK] Tmpfiles and NoCOW attributes synchronized."
+
+    if command -v grub2-editenv >/dev/null 2>&1; then
+        sys grub2-editenv - set menu_auto_hide=2 >/dev/null 2>&1 || true
+        sys grub2-editenv - set boot_success=1 >/dev/null 2>&1 || true
+        sys grub2-editenv - set boot_indeterminate=0 >/dev/null 2>&1 || true
+        echo "[OK] GRUB auto-hide state enforced."
     fi
-fi
 
-# Audit and deduplicate Google Drive namespace (resolves duplicate filenames causing Dir.Remove not empty)
-if command -v rclone >/dev/null 2>&1 && [ -f "$REAL_HOME/.config/rclone/rclone.conf" ]; then
-    if grep -q "\[GoogleDrive\]" "$REAL_HOME/.config/rclone/rclone.conf" 2>/dev/null; then
-        echo "[ACTION] Auditing Google Drive namespace for duplicate filenames..."
-        DEDUPE_OUT=""
-        if [ -n "$RUN_USER_CMD" ]; then
-            DEDUPE_OUT=$($RUN_USER_CMD rclone dedupe --config "$REAL_HOME/.config/rclone/rclone.conf" --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
-        else
-            DEDUPE_OUT=$(rclone dedupe --config "$REAL_HOME/.config/rclone/rclone.conf" --dedupe-mode newest --drive-pacer-min-sleep 10ms --drive-pacer-burst 100 "GoogleDrive:" 2>&1 || true)
-        fi
-        if echo "$DEDUPE_OUT" | grep -qi "delet"; then
-            echo "[FIXED] Resolved duplicate files on Google Drive (clean POSIX namespace restored)."
-        else
-            echo "[OK] Google Drive namespace verified (zero duplicate filenames)."
-        fi
+    echo "=== [3/7] Btrfs health and TRIM ==="
+    if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
+        btrfs device stats /var/home 2>/dev/null || true
+        sys fstrim /var/home 2>/dev/null || true
+        echo "[OK] Btrfs device stats reported and TRIM issued."
+        echo "[INFO] Manual, opt-in: sudo btrfs balance start -dusage=10 -musage=10 /var/home"
     fi
-fi
 
-echo "=== [3/8] Btrfs Health & Storage Reclaim ==="
-if command -v btrfs >/dev/null 2>&1 && [ -d /var/home ]; then
-    echo "[STATUS] Btrfs hardware stats for /var/home:"
-    btrfs device stats /var/home 2>/dev/null || true
-
-    if [ "$CAN_SUDO" -eq 1 ]; then
-        echo "[ACTION] Running balanced chunk reclamation on /var/home (-dusage=10 -musage=10)..."
-        $SUDO_CMD btrfs balance start -dusage=10 -musage=10 /var/home 2>/dev/null || true
-        echo "[ACTION] Executing fstrim on Btrfs filesystem..."
-        $SUDO_CMD fstrim /var/home 2>/dev/null || true
-        echo "[OK] Btrfs balance and TRIM completed."
-    fi
-fi
-
-echo "=== [4/8] VM Disk Images Fragmentation Audit & Defrag ==="
-VM_DIRS=(
-    "/var/lib/libvirt/images"
-    "$REAL_HOME/.local/share/libvirt/images"
-    "$REAL_HOME/.local/share/gnome-boxes/images"
-)
-
-VM_FOUND=0
-for vm_dir in "${VM_DIRS[@]}"; do
-    if [ -d "$vm_dir" ]; then
+    echo "=== [4/7] VM disk image fragmentation report ==="
+    VM_FOUND=0
+    for vm_dir in "/var/lib/libvirt/images" "$REAL_HOME/.local/share/libvirt/images" "$REAL_HOME/.local/share/gnome-boxes/images"; do
+        [ -d "$vm_dir" ] || continue
         while IFS= read -r -d '' img; do
-            [ -f "$img" ] || continue
             VM_FOUND=1
-            extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
-            size=$(stat -c %s "$img" 2>/dev/null || echo "0")
-            size_mb=$((size / 1024 / 1024))
-            if [[ "$extents" =~ ^[0-9]+$ ]]; then
-                echo "[INFO] Disk image: $(basename "$img") [$vm_dir] -> ${size_mb}MB ($extents extents)"
-                if [ "$extents" -gt 5000 ]; then
-                    echo "[ACTION] High fragmentation detected on $(basename "$img"). Running in-place Btrfs defrag..."
-                    if [ -w "$img" ]; then
-                        btrfs filesystem defragment -f "$img" 2>/dev/null || true
-                    elif [ "$CAN_SUDO" -eq 1 ]; then
-                        $SUDO_CMD btrfs filesystem defragment -f "$img" 2>/dev/null || true
-                    fi
-                    new_extents=$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')
-                    echo "[INFO] After defrag: $new_extents extents"
-                fi
-            fi
-        done < <(find "$vm_dir" -maxdepth 2 -type f \( -name "*.qcow2" -o -name "*.raw" -o -name "*.img" \) -print0 2>/dev/null)
-    fi
-done
-
-if [ "$VM_FOUND" -eq 0 ]; then
-    echo "[OK] No virtual machine disk images found in monitored directories."
-fi
-
-echo "=== [5/8] Journald Log Retention & Cache Pruning ==="
-if command -v journalctl >/dev/null 2>&1; then
-    echo "[INFO] Current journal disk usage: $(journalctl --disk-usage 2>/dev/null)"
-    if [ "$CAN_SUDO" -eq 1 ]; then
-        $SUDO_CMD journalctl --vacuum-time=14d --vacuum-size=200M >/dev/null 2>&1 || true
-        echo "[OK] System journal vacuumed (retention: 14 days, max 200M)."
-    fi
-    if [ -n "$RUN_USER_CMD" ]; then
-        $RUN_USER_CMD journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
-    else
-        journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
-    fi
-    echo "[OK] User journal vacuumed for $REAL_USER (retention: 14 days, max 100M)."
-fi
-
-# Prune old thumbnail caches (>30 days)
-if [ -d "$REAL_HOME/.cache/thumbnails" ]; then
-    find "$REAL_HOME/.cache/thumbnails" -type f -atime +30 -delete 2>/dev/null || true
-    echo "[OK] Stale thumbnail cache pruned in $REAL_HOME."
-fi
-
-# Prune stale Hugging Face incomplete downloads or old lock files (>30 days)
-if [ -d "$REAL_HOME/.cache/huggingface/hub" ]; then
-    find "$REAL_HOME/.cache/huggingface/hub" -name "*.incomplete" -delete 2>/dev/null || true
-    find "$REAL_HOME/.cache/huggingface/hub" -name "*.lock" -atime +30 -delete 2>/dev/null || true
-    echo "[OK] Hugging Face incomplete downloads and stale lockfiles verified."
-fi
-
-echo "=== [6/8] Flatpak & Container Hygiene ==="
-if command -v flatpak >/dev/null 2>&1; then
-    FLATPAK_SCOPES=()
-    if [ -n "$RUN_USER_CMD" ] || [ "$CAN_SUDO" -eq 0 ]; then
-        FLATPAK_SCOPES+=("user")
-    fi
-    if [ "$CAN_SUDO" -eq 1 ]; then
-        FLATPAK_SCOPES+=("system")
-    fi
-
-    for scope in "${FLATPAK_SCOPES[@]}"; do
-        if [ "$scope" = "user" ]; then
-            if [ -n "$RUN_USER_CMD" ]; then
-                $RUN_USER_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
-            else
-                flatpak uninstall --unused -y >/dev/null 2>&1 || true
-            fi
-        elif [ "$scope" = "system" ]; then
-            $SUDO_CMD flatpak uninstall --unused -y >/dev/null 2>&1 || true
-        fi
+            printf '[INFO] %s -> %s\n' "$(basename "$img")" "$(filefrag "$img" 2>/dev/null | awk -F': ' '{print $2}')"
+        done < <(find "$vm_dir" -maxdepth 1 -type f \( -name '*.qcow2' -o -name '*.raw' -o -name '*.img' \) -print0 2>/dev/null)
     done
-    echo "[OK] Unused Flatpak runtimes pruned."
+    if [ "$VM_FOUND" -eq 0 ]; then
+        echo "[OK] No VM disk images found."
+    fi
+    echo "[INFO] Manual, opt-in: sudo btrfs filesystem defragment -f <image>"
+
+    echo "=== [5/7] Journald retention and cache pruning ==="
+    sys journalctl --vacuum-time=14d --vacuum-size=200M >/dev/null 2>&1 || true
+    usr journalctl --user --vacuum-time=14d --vacuum-size=100M >/dev/null 2>&1 || true
+    if [ -d "$REAL_HOME/.cache/thumbnails" ]; then
+        usr find "$REAL_HOME/.cache/thumbnails" -type f -atime +30 -delete 2>/dev/null || true
+    fi
+    echo "[OK] Journal vacuumed (system 14d/200M, user 14d/100M) and thumbnails pruned."
+
+    echo "=== [6/7] Flatpak and container hygiene ==="
+    if command -v flatpak >/dev/null 2>&1; then
+        sys flatpak uninstall --unused -y >/dev/null 2>&1 || true
+        usr flatpak uninstall --unused -y >/dev/null 2>&1 || true
+        echo "[OK] Unused Flatpak runtimes pruned."
+    fi
+    if command -v podman >/dev/null 2>&1; then
+        usr podman container prune -f >/dev/null 2>&1 || true
+        usr podman volume prune -f >/dev/null 2>&1 || true
+        usr podman image prune -f >/dev/null 2>&1 || true
+        echo "[OK] Rootless Podman storage pruned."
+    fi
+
+    echo "=== [7/7] Deployment hygiene ==="
+    if command -v rpm-ostree >/dev/null 2>&1; then
+        sys rpm-ostree cleanup -m >/dev/null 2>&1 || true
+    fi
+    echo "[OK] Deployment metadata cleaned."
 fi
 
-if command -v podman >/dev/null 2>&1; then
-    prune_targets=("container" "volume" "image")
-    for target in "${prune_targets[@]}"; do
-        if [ -n "$RUN_USER_CMD" ]; then
-            $RUN_USER_CMD podman "$target" prune -f >/dev/null 2>&1 || true
-        else
-            podman "$target" prune -f >/dev/null 2>&1 || true
-        fi
-        if [ "$CAN_SUDO" -eq 1 ]; then
-            $SUDO_CMD podman "$target" prune -f >/dev/null 2>&1 || true
-        fi
-    done
-    echo "[OK] Stopped containers, dangling volumes, and orphan images pruned."
-fi
+# ---------------------------------------------------------------------------
+# Read-only audit: 7 engineering pillars
+# ---------------------------------------------------------------------------
+echo "=========================================================="
+echo "=== AUDIT - 7 Pillars of System Engineering ==="
+echo "=========================================================="
 
-echo "=== [7/8] Host Kernel Arguments & Deployment Hygiene ==="
-if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
-    $SUDO_CMD rpm-ostree cleanup -m >/dev/null 2>&1 || true
-    echo "[OK] Deployment metadata and temporary transaction caches cleaned."
-
-    CURRENT_KARGS=$(rpm-ostree kargs 2>/dev/null || true)
-    UNWANTED_KARGS=(
-        "amd_pstate=active"
-        "tsc=reliable"
-        "nowatchdog"
-        "iommu=pt"
-        "slab_nomerge"
-        "vsyscall=none"
-        "preempt=full"
-        "page_alloc.shuffle=1"
-        "btusb.enable_autosuspend=0"
-    )
-    KARGS_TO_ADD=()
-    if command -v lspci >/dev/null 2>&1; then
-        if lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
-            UNWANTED_KARGS+=("nvidia-drm.modeset=1")
-            for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
-                for mod in "nvidia-drm" "nvidia_drm"; do
-                    if ! echo "$CURRENT_KARGS" | grep -q "${prefix}=${mod}"; then
-                        KARGS_TO_ADD+=("--append-if-missing=${prefix}=${mod}")
-                    fi
-                done
-            done
-        fi
-    fi
-    KARGS_TO_REMOVE=()
-    for k in "${UNWANTED_KARGS[@]}"; do
-        if echo "$CURRENT_KARGS" | grep -q "$k"; then
-            KARGS_TO_REMOVE+=("--delete-if-present=$k")
-        fi
-    done
-    if [ ${#KARGS_TO_REMOVE[@]} -gt 0 ] || [ ${#KARGS_TO_ADD[@]} -gt 0 ]; then
-        echo "[ACTION] Saneando kargs do host: ${KARGS_TO_REMOVE[*]} ${KARGS_TO_ADD[*]}"
-        $SUDO_CMD rpm-ostree kargs "${KARGS_TO_REMOVE[@]}" "${KARGS_TO_ADD[@]}"
-        echo "[ALERT] Kernel arguments updated. A reboot is required to apply the pure baseline."
-    else
-        FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
-        echo "[OK] Host kernel arguments are clean (pure Fedora ${FEDORA_VER} upstream baseline)."
-    fi
+echo "--- [Pillar 1/7] Supply chain & cryptographic signing ---"
+if [ -f /etc/containers/policy.json ] && grep -q 'sigstore' /etc/containers/policy.json; then
+    echo "[OK] Container signature policy active (/etc/containers/policy.json)."
 else
-    echo "[SKIP] Sudo privileges not available; skipping rpm-ostree cleanup and kargs inspection."
+    echo "[WARN] Signature policy not enforced yet (run the second 'bootc switch --enforce-container-sigpolicy')."
 fi
+if compgen -G '/etc/pki/containers/*.pub' >/dev/null; then
+    echo "[OK] Cosign public key provisioned in /etc/pki/containers/."
 fi
-
-if [ "$AUDIT_ONLY" -eq 1 ]; then
-    echo "=========================================================="
-    echo "=== [AUDIT] 7 Pilares de Engenharia de SO Profissional ==="
-    echo "=========================================================="
-else
-    echo "=== [8/8] System Health & Integrity Audit ==="
-fi
-
-# [Pilar 1: Cadeia de Suprimentos & Assinatura Criptográfica]
-echo "--- [Pilar 1/7] Supply Chain, Chaves & Assinatura ---"
-if command -v mokutil >/dev/null 2>&1; then
-    if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
-        if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
-            echo "[OK] Secure Boot ativo com certificado MOK ublue homologado."
-        else
-            echo "[OK] Secure Boot ativo (padrão de fábrica)."
-        fi
-    else
-        echo "[INFO] Secure Boot inativo no firmware (modo Setup/Standard)."
-    fi
-fi
-if [ -f /etc/pki/akmods/certs/akmods-ublue.der ]; then
-    echo "[OK] Certificado MOK versionado presente em /etc/pki/akmods/certs/."
+if command -v mokutil >/dev/null 2>&1 && mokutil --sb-state 2>/dev/null | grep -qi 'enabled'; then
+    echo "[OK] Secure Boot enabled."
 fi
 if [ -f /usr/lib/modprobe.d/60-security-blacklist.conf ]; then
-    echo "[OK] Modprobe security blacklist CIS presente e ativo."
+    echo "[OK] CIS modprobe blacklist installed."
 fi
 
-# [Pilar 2: Deriva de Pacotes & Resiliência Upstream]
-echo "--- [Pilar 2/7] Resiliência de Pacotes & Zero Downgrade ---"
-FEDORA_VER=$(rpm -E %fedora 2>/dev/null || echo "upstream")
-echo "[INFO] Baseline Fedora: ${FEDORA_VER} (bootc/rpm-ostree nativo)."
-if rpm -q fuse 2>/dev/null | grep -v "fuse3" >/dev/null 2>&1; then
-    echo "[WARN] Pacote legado 'fuse' 2 detectado! Migre estritamente para fuse3."
+echo "--- [Pillar 2/7] Package baseline & no-downgrade ---"
+echo "[INFO] Fedora baseline: $(rpm -E %fedora 2>/dev/null || echo upstream)."
+if rpm -q fuse >/dev/null 2>&1; then
+    echo "[WARN] Legacy 'fuse' (v2) package detected; prefer fuse3."
 else
-    echo "[OK] Sem pacotes legados conflitantes (fuse 2 ausente, fuse3 ativo)."
+    echo "[OK] No legacy fuse v2 package."
+fi
+if command -v bootc >/dev/null 2>&1; then
+    echo "[INFO] $(bootc status --json 2>/dev/null | grep -oE '"image":[^,]*' | head -n 1 || echo 'bootc status unavailable')"
 fi
 
-# [Pilar 3: I/O, Btrfs NoCOW & Gestão de Memória]
-echo "--- [Pilar 3/7] Armazenamento Btrfs NoCOW & ZRAM ---"
+echo "--- [Pillar 3/7] Btrfs NoCOW, ZRAM & memory ---"
 if command -v zramctl >/dev/null 2>&1; then
-    zram_info=$(zramctl --output NAME,ALGORITHM,DISKSIZE,DATA --noheadings 2>/dev/null | head -n 1 || true)
-    if [ -n "$zram_info" ]; then
-        echo "[OK] ZRAM ativo: $zram_info"
-    fi
+    echo "[OK] ZRAM: $(zramctl --output NAME,ALGORITHM,DISKSIZE,DATA --noheadings 2>/dev/null | head -n 1 || echo inactive)"
 fi
-SWAPPINESS=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "N/A")
-PAGE_CLUSTER=$(cat /proc/sys/vm/page-cluster 2>/dev/null || echo "N/A")
-echo "[OK] Parâmetros VM: vm.swappiness=${SWAPPINESS} (alvo 150), vm.page-cluster=${PAGE_CLUSTER} (alvo 0)."
-
-# Checagem de NoCOW (+C) nos diretórios críticos
-NOCOW_PATHS=(
-    "/var/lib/containers/storage"
-    "/var/lib/libvirt/images"
-    "$REAL_HOME/.cache/rclone"
-    "$REAL_HOME/.local/state/wireplumber"
-)
-for p in "${NOCOW_PATHS[@]}"; do
-    if [ -d "$p" ] && command -v lsattr >/dev/null 2>&1; then
-        if [ "$CAN_SUDO" -eq 1 ]; then
-            attrs=$($SUDO_CMD lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
-        else
-            attrs=$(lsattr -d "$p" 2>/dev/null | awk '{print $1}' || true)
-        fi
-        if echo "$attrs" | grep -q "C"; then
-            echo "[OK] Atributo NoCOW (+C) verificado em: $p"
-        elif [ -n "$attrs" ]; then
-            echo "[WARN] Diretório sem NoCOW (+C): $p"
-        else
-            echo "[SKIP] Permissão insuficiente para inspecionar NoCOW (+C) em: $p (requer sudo)."
-        fi
-    fi
+echo "[OK] vm.swappiness=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo n/a) (target 150), vm.page-cluster=$(cat /proc/sys/vm/page-cluster 2>/dev/null || echo n/a) (target 0)."
+for p in "${NOCOW_SYSTEM_DIRS[@]}" "$REAL_HOME/.local/share/containers/storage" "$REAL_HOME/.cache/rclone"; do
+    nocow_check "$p" ""
 done
 
-# [Pilar 4: Grafo de Áudio PipeWire & Bluetooth]
-echo "--- [Pilar 4/7] Grafo de Áudio PipeWire & WirePlumber ---"
+echo "--- [Pillar 4/7] PipeWire & WirePlumber ---"
 if command -v pw-metadata >/dev/null 2>&1; then
-    pw_rate=$(pw-metadata -n settings 2>/dev/null | grep "clock.rate" | awk '{print $NF}' || true)
-    pw_quantum=$(pw-metadata -n settings 2>/dev/null | grep "clock.quantum " | awk '{print $NF}' || true)
-    if [ -n "$pw_quantum" ]; then
-        echo "[OK] PipeWire Quantum: ${pw_quantum} @ ${pw_rate:-48000}Hz (grafo dinâmico nativo)."
+    pw_rate=$(usr pw-metadata -n settings 2>/dev/null | awk '/clock.rate/ {print $NF}' || true)
+    pw_quantum=$(usr pw-metadata -n settings 2>/dev/null | awk '/clock.quantum / {print $NF}' || true)
+    if [ -n "${pw_quantum:-}" ]; then
+        echo "[OK] PipeWire quantum=${pw_quantum} rate=${pw_rate:-48000} (dynamic native graph)."
     fi
 fi
 WP_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
-if [ -f "$WP_ROUTES" ]; then
-    if grep -q '\["headset-output", "headset-input"\]' "$WP_ROUTES"; then
-        echo "[WARN] Rota corrompida detectada no WirePlumber! Execute kinoite-optimize para corrigir."
-    else
-        echo "[OK] Banco de rotas WirePlumber íntegro (autoswitch de perfis limpo)."
-    fi
+if [ -f "$WP_ROUTES" ] && grep -q '\["headset-output", "headset-input"\]' "$WP_ROUTES" 2>/dev/null; then
+    echo "[WARN] Corrupted WirePlumber default-routes detected (remove the file to heal)."
+else
+    echo "[OK] WirePlumber route database clean."
 fi
 
-# [Pilar 5: Pipeline de GPU & Wayland Zero-Copy]
-echo "--- [Pilar 5/7] GPU Acceleration, Vulkan & Wayland ---"
-if command -v vulkaninfo >/dev/null 2>&1; then
-    vk_dev=$(vulkaninfo --summary 2>/dev/null | grep "deviceName" | head -n 1 | awk -F'=' '{print $2}' | xargs || true)
-    if [ -n "$vk_dev" ]; then
-        echo "[OK] Dispositivo Vulkan Primário: $vk_dev"
-    fi
-fi
+echo "--- [Pillar 5/7] GPU, Vulkan & Wayland ---"
+for node in /sys/class/drm/renderD*; do
+    [ -e "$node" ] || continue
+    pci="$(basename "$(readlink -f "$node/device")")"
+    drv="$(basename "$(readlink -f "$node/device/driver")")"
+    echo "[OK] Render node $(basename "$node") -> $pci ($drv)"
+done
 if [ -f /etc/cdi/amdgpu.yaml ]; then
-    echo "[OK] Container Device Interface (CDI) AMD presente (/etc/cdi/amdgpu.yaml)."
-fi
-if [ -e /dev/dri/by-path/pci-0000:0c:00.0-render ]; then
-    echo "[OK] DRM Render Node Primário AMD 6600 XT presente (/dev/dri/by-path/pci-0000:0c:00.0-render)."
-fi
-if [ -e /dev/dri/primary-render ]; then
-    echo "[OK] Symlink determinístico /dev/dri/primary-render apontando para $(readlink /dev/dri/primary-render)."
+    echo "[OK] AMD CDI present (/etc/cdi/amdgpu.yaml)."
 fi
 if [ -f /etc/cdi/nvidia.yaml ]; then
-    echo "[OK] Container Device Interface (CDI) NVIDIA presente (/etc/cdi/nvidia.yaml)."
+    echo "[OK] NVIDIA CDI present (/etc/cdi/nvidia.yaml)."
+fi
+if lsmod 2>/dev/null | grep -q '^nvidia_drm'; then
+    echo "[WARN] nvidia_drm loaded: dual flavor expects headless NVIDIA (blacklisted)."
+else
+    echo "[OK] nvidia_drm absent (headless NVIDIA compute isolation)."
 fi
 if command -v nvidia-smi >/dev/null 2>&1; then
-    nv_gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n 1 || true)
-    if [ -n "$nv_gpu" ]; then
-        echo "[OK] GPU NVIDIA: $nv_gpu (Headless Compute/IA)"
-    fi
-fi
-if [ -e /dev/dri/by-path/pci-0000:09:00.0-render ]; then
-    echo "[WARN] Render node gráfico da NVIDIA detectado (/dev/dri/by-path/pci-0000:09:00.0-render). Recomenda-se blacklist de nvidia-drm para blindar QEMU/GNOME Boxes."
-else
-    echo "[OK] Isolamento gráfico perfeito: GPU primária AMD é a detentora exclusiva de render nodes DRM."
+    echo "[OK] NVIDIA: $(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>/dev/null | head -n 1 || echo unavailable)"
 fi
 
-# [Pilar 6: Resiliência de Boot & Recuperação Segura]
-echo "--- [Pilar 6/7] Boot Limpo, SysRq REISUB & Sulogin ---"
-SYSRQ=$(cat /proc/sys/kernel/sysrq 2>/dev/null || echo "N/A")
-echo "[OK] Kernel SysRq: ${SYSRQ} (alvo 1 - REISUB seguro habilitado)."
-
-CMDLINE=$(cat /proc/cmdline 2>/dev/null || true)
+echo "--- [Pillar 6/7] Boot resilience & recovery ---"
+echo "[OK] kernel.sysrq=$(cat /proc/sys/kernel/sysrq 2>/dev/null || echo n/a) (target 1 - REISUB enabled)."
+BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "nvidia-drm.modeset=1")
+CMDLINE="$(cat /proc/cmdline 2>/dev/null || true)"
 BANNED_DETECTED=0
-BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
-if command -v lspci >/dev/null 2>&1 && lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
-    BANNED_LIST+=("nvidia-drm.modeset=1")
-fi
 for b in "${BANNED_LIST[@]}"; do
-    if echo "$CMDLINE" | grep -qw "$b"; then
-        echo "[WARN] Karg redundante/inseguro detectado na linha de boot: $b"
+    if echo "$CMDLINE" | grep -qw -- "$b"; then
+        echo "[WARN] Redundant/forbidden kernel argument on boot: $b"
         BANNED_DETECTED=1
     fi
 done
 if [ "$BANNED_DETECTED" -eq 0 ]; then
-    echo "[OK] Linha de boot limpa (zero kargs redundantes de acordo com AGENTS.md)."
+    echo "[OK] Clean boot command line (no forbidden kargs)."
 fi
 
-# [Pilar 7: CI/CD, Timers & Governança do Sistema]
-echo "--- [Pilar 7/7] Timers de Manutenção & Armazenamento ---"
-active_timers=$(systemctl is-active bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer 2>/dev/null || true)
-echo "[OK] Timers de Atualização: $(echo "$active_timers" | tr '\n' ' ')"
+echo "--- [Pillar 7/7] Timers & storage governance ---"
+TIMERS=(bootc-fetch-apply-updates.timer flatpak-system-update.timer podman-auto-update.timer kinoite-maintenance.timer)
+for t in "${TIMERS[@]}"; do
+    printf '[%s] %s\n' "$(systemctl is-active "$t" 2>/dev/null || echo inactive)" "$t"
+done
+echo "[INFO] Free space on /var/home: $(df -h /var/home 2>/dev/null | awk 'NR==2 {print $4}')"
 
-if [ -f /etc/xdg/baloofilerc ] && grep -q "Cloud" /etc/xdg/baloofilerc; then
-    echo "[OK] KDE Baloo Cloud Exclusion: Ativo ([\$ei] protegido)."
-fi
-
-echo "[STATUS] Espaço livre em /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
-
-if [ "$AUDIT_ONLY" -eq 1 ]; then
-    echo "=========================================================="
-    echo "=== Auditoria dos 7 Pilares Concluída com Sucesso      ==="
-    echo "=========================================================="
-    exit 0
-fi
-
-echo "=== Optimization and Maintenance Completed Successfully ==="
+echo "=========================================================="
+echo "=== Audit finished (read-only, no changes applied)     ==="
+echo "=========================================================="
