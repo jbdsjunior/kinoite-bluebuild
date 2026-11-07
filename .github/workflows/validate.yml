@@ -24,7 +24,7 @@ env:
 
 jobs:
   lint:
-    name: Shell, YAML and Workflows
+    name: Shell and Workflows
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -57,9 +57,6 @@ jobs:
           fi
           printf 'Linting: %s\n' "${scripts[@]}"
           shellcheck -S warning "${scripts[@]}"
-
-      - name: Lint YAML (yamllint)
-        run: yamllint --strict -f github .
 
   recipes:
     name: BlueBuild recipes

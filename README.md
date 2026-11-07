@@ -95,24 +95,14 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
-| [`.github/workflows/`](.github/workflows/) | Static validation, build (manual/update-triggered), update check and registry cleanup |
+| [`.github/workflows/`](.github/workflows/) | Image build (manual/update-triggered), update check and registry cleanup |
 | [`.github/scripts/`](.github/scripts/) | Shared CI helpers (base image digest resolution) |
-| [`Makefile`](Makefile) | Local entry points: `make lint`, `make validate`, `make check`, `make hooks` |
 
-## Validation and Development
-
-Every push and pull request runs a static validation workflow (`validate.yml`) that
-lints shell scripts (`shellcheck`), YAML (`yamllint`), workflows (`actionlint`) and
-validates both recipes with the BlueBuild CLI. It never builds or publishes images.
+## Builds
 
 Image builds are intentionally **manual** (`workflow_dispatch` of `build-amd.yml` /
 `build-dual.yml`) or triggered by `check-updates.yml` when the upstream base image
 digest changes.
-
-```bash
-make check    # shellcheck + yamllint + actionlint + bluebuild validate
-make hooks    # enable the repository commit-msg hook (Conventional Commits)
-```
 
 Convention: user-facing documentation in pt-BR, code/CI/assets in English.
 
