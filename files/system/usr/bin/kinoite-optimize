@@ -311,13 +311,16 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
     KARGS_TO_ADD=()
     if command -v lspci >/dev/null 2>&1; then
         if lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
-            UNWANTED_KARGS+=("nvidia-drm.modeset=1")
+            UNWANTED_KARGS+=(
+                "nvidia-drm.modeset=1"
+                "nvidia_drm.modeset=1"
+                "modprobe.blacklist=nvidia_drm"
+                "rd.driver.blacklist=nvidia_drm"
+            )
             for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
-                for mod in "nvidia-drm" "nvidia_drm"; do
-                    if ! echo "$CURRENT_KARGS" | grep -q "${prefix}=${mod}"; then
-                        KARGS_TO_ADD+=("--append-if-missing=${prefix}=${mod}")
-                    fi
-                done
+                if ! echo "$CURRENT_KARGS" | grep -q "${prefix}=nvidia-drm"; then
+                    KARGS_TO_ADD+=("--append-if-missing=${prefix}=nvidia-drm")
+                fi
             done
         fi
     fi
@@ -453,7 +456,7 @@ CMDLINE=$(cat /proc/cmdline 2>/dev/null || true)
 BANNED_DETECTED=0
 BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "vsyscall=none" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
 if command -v lspci >/dev/null 2>&1 && lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
-    BANNED_LIST+=("nvidia-drm.modeset=1")
+    BANNED_LIST+=("nvidia-drm.modeset=1" "nvidia_drm.modeset=1")
 fi
 for b in "${BANNED_LIST[@]}"; do
     if echo "$CMDLINE" | grep -qw "$b"; then

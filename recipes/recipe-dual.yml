@@ -28,7 +28,7 @@ modules:
 
   - from-file: common-systemd.yml
   - from-file: common-flatpaks.yml
-  - from-file: dual-kargs.yml
+  - from-file: common-kargs-dual.yml
   - type: initramfs
     env:
       DRACUT_NO_XATTR: '1'
