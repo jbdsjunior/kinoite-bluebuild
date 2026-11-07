@@ -31,17 +31,17 @@ sudo kinoite-setup-tpm
 # Ou defina explicitamente com PIN (Recomendado - 2 Fatores: Hardware fTPM + PIN):
 sudo kinoite-setup-tpm --pin
 
-# Modo desatendido sem PIN (apenas chave de hardware TPM):
+# Modo desatendido sem PIN (apenas chave de hardware fTPM bound a PCR 7 + 14):
 sudo kinoite-setup-tpm --no-pin
 ```
 
 *(Opcional: caso queira especificar explicitamente um dispositivo, utilize `sudo kinoite-setup-tpm /dev/nvme0n1p3 --pin`)*.
 
 > [!TIP]
-> **Modelo Apple de Proteção Física (PIN + PCR 7/14):** Com a opção `--pin`, o disco só é descriptografado pelo TPM se o usuário digitar o PIN no teclado durante a inicialização. Isso impede que qualquer pessoa com acesso físico ao computador ligue a máquina e acesse os dados. O fTPM possui proteção de hardware contra ataques de força bruta (*anti-hammering lockout*).
+> **Modelo Apple de Proteção Física (PIN + PCR 7/14):** Com a opção `--pin`, o disco só é descriptografado pelo TPM se o usuário digitar o PIN no teclado durante a inicialização. Com `--no-pin`, o fTPM descriptografa o disco automaticamente em ~1s mantendo a tela de login padrão do usuário. Em ambos os modos, a integridade do firmware e bootloader é verificada via PCR 7 + 14, impedindo acesso a dados se o NVMe for fisicamente removido.
 
 > [!NOTE]
-> **Pós-Atualização de BIOS:** Se atualizar a BIOS no futuro, digite a senha manual no primeiro boot e re-execute o mesmo comando (`sudo kinoite-setup-tpm --pin`), que recria o slot TPM de forma idempotente.
+> **Pós-Atualização de BIOS ou Chave MOK:** Se atualizar a BIOS ou inscrever novas chaves MOK, digite a senha manual no primeiro boot e re-execute o comando (`sudo kinoite-setup-tpm --pin` ou `--no-pin`), que recria o slot TPM de forma idempotente.
 
 ---
 
@@ -71,6 +71,25 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:l
 # OU para estação Dual-GPU:
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
 ```
+
+### 2.1 Inscrição e Permanência da Chave MOK (`kinoite-dual` com Secure Boot)
+
+Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
+
+1. **Importar o Certificado MOK no Host (Apenas no Primeiro Setup):**
+   ```bash
+   sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
+   ```
+   *O sistema solicitará uma senha temporária (ex: `12345678`) apenas para autorizar o cadastro na reinicialização.*
+
+2. **Confirmar na Tela Azul do MOK Manager (UEFI):**
+   * Reinicie o computador (`systemctl reboot`).
+   * A tela azul do **MOK Manager** aparecerá antes do boot.
+   * Selecione **Enroll MOK** -> **Continue** -> **Yes** -> digite a senha da etapa 1 e confirme com **Reboot**.
+
+3. **Permanência no Hardware:**
+   * O certificado fica gravado na NVRAM protegida da placa-mãe de forma permanente. Atualizações de imagem ou kernel não solicitam nova confirmação.
+   * Verificação: `nvidia-smi`.
 
 ---
 
@@ -260,46 +279,3 @@ Para garantir que terceiros com acesso físico não possam editar a linha do ker
    sudo passwd root
    ```
    *Efeito:* Garante que, se o sistema entrar em modo `emergency` ou `rescue` (por exemplo, após falha crítica de disco), o shell de manutenção só possa ser acessado mediante digitação de senha, alinhado ao padrão de segurança física *Zero Unauthenticated Recovery*.
-
-### 8.4 Inscrição e Permanência da Chave MOK para Imagem Dual-GPU (`kinoite-dual` com Secure Boot)
-
-Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
-
-1. **Importar o Certificado MOK no Host (Apenas no Primeiro Setup):**
-   ```bash
-   sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
-   # Ou, se executando a partir do repositório/home:
-   # sudo mokutil --import ~/akmods-ublue.der
-   ```
-   *O sistema solicitará uma senha temporária (ex: `12345678`) apenas para autorizar o cadastro na reinicialização.*
-
-2. **Confirmar na Tela Azul do MOK Manager (UEFI):**
-   * Reinicie o computador (`systemctl reboot`).
-   * A tela azul do **MOK Manager** aparecerá antes do boot.
-   * Pressione qualquer tecla -> Selecione **Enroll MOK** -> **Continue** -> **Yes**.
-   * Digite a senha definida na etapa 1 e confirme com **Reboot**.
-
-3. **Permanência no Hardware:**
-   * Uma vez inscrito, o certificado fica gravado na **NVRAM protegida da placa-mãe**.
-   * Atualizações de imagem, updates de kernel ou drivers nunca mais solicitarão nova confirmação ou senha no MOK.
-   * Verificação:
-     ```bash
-     nvidia-smi
-     ```
-
-### 8.5 Desbloqueio Automático de Disco NVMe via fTPM 2.0 (Sem Passphrase no Boot)
-
-Para que a estação de trabalho ligue e descriptografe o NVMe sem exigir a digitação da passphrase do LUKS (preservando a segurança criptográfica total em repouso e a tela de login padrão do usuário):
-
-1. **Re-selagem de Registradores PCR 7 e 14:**
-   * Após qualquer alteração no MOK ou BIOS, re-sele o estado dos registradores:
-     ```bash
-     sudo kinoite-setup-tpm --no-pin
-     ```
-   * O fTPM do processador Ryzen descriptografa a partição LUKS2 (`nvme0n1p3`) automaticamente em ~1s. Se o NVMe for fisicamente removido do computador, permanece 100% inacessível.
-
-2. **Tela de Login do Usuário:**
-   * A sessão gráfica mantém a tela de login padrão do Plasma Login Manager, solicitando a senha do usuário legítimo para acesso ao desktop.
-
-
-

@@ -134,6 +134,13 @@ if [ -d "$REAL_HOME/.cache/rclone" ]; then
     fi
 fi
 
+# Sanitize corrupted WirePlumber default-routes if present
+WP_DEFAULT_ROUTES="$REAL_HOME/.local/state/wireplumber/default-routes"
+if [ -f "$WP_DEFAULT_ROUTES" ] && grep -q '\["headset-output", "headset-input"\]' "$WP_DEFAULT_ROUTES" 2>/dev/null; then
+    rm -f "$WP_DEFAULT_ROUTES" 2>/dev/null || true
+    echo "[FIXED] Purged corrupted WirePlumber default-routes (restored clean native state)."
+fi
+
 # Audit and purge residual desktop .Trash-* directories on active cloud mounts
 USER_UID="$(id -u "$REAL_USER" 2>/dev/null || echo "1000")"
 CLOUD_BASE_DIR="/run/user/${USER_UID}/cloud"
