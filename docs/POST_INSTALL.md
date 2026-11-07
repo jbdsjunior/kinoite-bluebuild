@@ -9,7 +9,7 @@ Guia operacional para particionamento LUKS2/Btrfs, desbloqueio seguro TPM 2.0, m
 ### 1.1 Particionamento Recomendado
 
 No instalador do Fedora (Anaconda), selecione o particionamento automático ou personalizado com a opção **"Criptografar meus dados"** (LUKS2) ativada.
-Não crie partição de swap em disco; o sistema provisiona ZRAM automaticamente via `60-zram-policy.conf` (`zram-size = min(ram / 2, 32768)` e `vm.swappiness=150`).
+Não crie partição de swap em disco; o sistema provisiona automaticamente **32 GB de ZRAM `zstd`** via `60-zram-policy.conf` (`vm.swappiness=150`).
 
 ### 1.2 Configurar Desbloqueio Seguro TPM 2.0 (Dois Fatores: Hardware fTPM + PIN)
 
@@ -34,17 +34,34 @@ sudo kinoite-setup-tpm --no-pin
 > [!NOTE]
 > **Pós-Atualização de Firmware (UEFI) ou Chave MOK:** Se atualizar o firmware da placa-mãe ou inscrever novas chaves MOK, digite a senha manual no primeiro boot e re-execute o comando (`sudo kinoite-setup-tpm --pin` ou `--no-pin`), que recria o slot TPM de forma idempotente.
 
-> [!IMPORTANT]
-> **Initramfs e PCR 14:** o utilitário não reescreve mais `/boot/initramfs-<kver>.img` diretamente (esse arquivo pertence ao deployment). A regeneração é solicitada via `rpm-ostree initramfs --enable` e aplicada no próximo deployment. O binding em PCR 14 inclui medições de kernel/initramfs: após updates de kernel, se o desbloqueio automático falhar, re-execute `sudo kinoite-setup-tpm --pin` (ou `--no-pin`) para re-selar o slot.
-
 ---
 
 ## 2. Transição para a Imagem Customizada (`bootc`)
 
-A transição segue o protocolo de **duas etapas** descrito no [README](../README.md#quick-start):
-bootstrap inicial (`bootc switch` sem política, provisiona as chaves Cosign em `/etc/pki/containers/`)
-e imposição estrita (`bootc switch --enforce-container-sigpolicy`, trava o deployment em
-`ostree-image-signed`). Os mesmos comandos valem para `kinoite-amd` e `kinoite-dual`.
+A transição a partir de uma instalação limpa do Fedora Kinoite upstream segue um protocolo de **duas etapas**:
+
+1. **Bootstrap inicial (sem imposição de política prévia):** A instalação limpa do Fedora Kinoite upstream ainda não possui as chaves públicas do seu repositório no GHCR nem a política de verificação configurada. O primeiro switch baixa a imagem OCI customizada e provisiona as chaves públicas Cosign (`/etc/pki/containers/kinoite-*.pub`), a política de contêineres (`/etc/containers/policy.json`) e os registros (`/etc/containers/registries.d/`).
+2. **Imposição criptográfica estrita (pós-boot):** Após reiniciar na imagem customizada, o sistema já dispõe das chaves e da política. O comando com `--enforce-container-sigpolicy` trava o deployment no modo assinado (`ostree-image-signed`), exigindo assinatura Cosign válida em qualquer atualização subsequente.
+
+```bash
+# --- Etapa 1: Transição inicial no Fedora upstream ---
+
+# Para estação AMD pura:
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# OU para estação Dual-GPU (AMD display + NVIDIA compute):
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
+
+systemctl reboot
+
+# --- Etapa 2: Ativação da assinatura estrita (executar após boot na imagem) ---
+
+# Para estação AMD pura:
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
+
+# OU para estação Dual-GPU:
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
+```
 
 ### 2.1 Inscrição e Permanência da Chave MOK (`kinoite-dual` com Secure Boot)
 
@@ -73,8 +90,8 @@ O utilitário integrado opera em dois modos distintos:
 
 | Modo | Comando | Comportamento |
 | :--- | :--- | :--- |
-| **Manutenção completa** | `sudo kinoite-optimize` (alias `sys-optimize`) | Executa as 7 fases: sysctl, tmpfiles/NoCOW + GRUB auto-hide, saúde do Btrfs/TRIM, relatório de fragmentação de VMs, retenção do journald, higiene de Flatpak/Podman, higiene de deployment; em seguida roda a auditoria. |
-| **Auditoria somente leitura** | `kinoite-optimize --audit` | Executa apenas a auditoria dos 7 pilares, sem alterar o sistema (não requer root, embora alguns checks sejam pulados sem privilégio). |
+| **Manutenção completa** | `sys-optimize` | Executa as 8 fases: sysctl, tmpfiles/NoCOW, saúde e reclaim do Btrfs, desfragmentação de discos de VM, retenção do journald, higiene de Flatpak/contêineres, higiene de kargs/deployments e a auditoria final. |
+| **Auditoria somente leitura** | `sudo kinoite-optimize --audit` | Executa exclusivamente a fase `[8/8]`: auditoria dos 7 pilares, sem alterar o sistema. |
 
 Os 7 pilares da auditoria (AGENTS.md §5):
 
@@ -109,66 +126,9 @@ A estação suporta aceleração total na **RX 6600 XT** através de duas camada
    podman run -d --device amd.com/gpu=all --ipc=host -v ollama:/root/.ollama:Z -p 11434:11434 --name ollama docker.io/ollama/ollama:rocm
    ```
 
-> [!NOTE]
-> **OpenCL/ROCm não rodam mais no host:** `mesa-libOpenCL`/`clinfo` foram removidos da imagem
-> (filosofia Kinoite: ferramentas de GPU ficam no container). Use a imagem ROCm oficial, que já traz
-> `HSA_OVERRIDE_GFX_VERSION=10.3.0` no CDI. O `amdgpu.yaml` versionado é um snapshot desta máquina
-> (endereço PCI fixo); em outro hardware regenere com `amd-ctk cdi generate --output=/etc/cdi/amdgpu.yaml`.
-
 ---
 
-## 5. DNS privado com DoT (opt-in)
-
-A imagem **não fixa resolvedores DNS**: hardcodar um resolver de terceiros (com as suas escolhas de
-`DNSOverTLS`/`DNSSEC`) quebra VPNs, portais cativos e split-DNS corporativo. O
-`/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf` da imagem apenas habilita `MulticastDNS=resolve`
-e desativa `LLMNR`.
-
-Se você quiser DNS criptografado com filtragem de anúncios/rastreadores no host, aplique a configuração
-por máquina (sobrevive a updates da imagem porque `/etc` é mutável):
-
-```bash
-sudo mkdir -p /etc/systemd/resolved.conf.d
-sudo tee /etc/systemd/resolved.conf.d/70-dot-privado.conf >/dev/null <<'EOF'
-[Resolve]
-# Control D (p2 = Block Malware + Ads + Trackers) em portas 853 dedicadas (.11)
-DNS=76.76.2.11#p2.freedns.controld.com 76.76.10.11#p2.freedns.controld.com
-DNS=2606:1a40::11#p2.freedns.controld.com 2606:1a40:1::11#p2.freedns.controld.com
-
-# Fallback: Cloudflare com DoT
-FallbackDNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com
-FallbackDNS=2606:4700:4700::1111#cloudflare-dns.com 2606:4700:4700::1001#cloudflare-dns.com
-
-# TLS estrito: impede downgrade para texto claro
-DNSOverTLS=yes
-
-# Obrigatoriamente 'no' com resolvers de bloqueio: o Control D responde domínios
-# bloqueados com respostas sintéticas, o que invalida assinaturas DNSSEC e gera
-# feature loops de degradação no systemd-resolved.
-DNSSEC=no
-
-MulticastDNS=resolve
-LLMNR=no
-EOF
-sudo systemctl restart systemd-resolved
-resolvectl status | head -20
-```
-
-Para reverter ao comportamento padrão (DHCP/NetworkManager):
-
-```bash
-sudo rm /etc/systemd/resolved.conf.d/70-dot-privado.conf
-sudo systemctl restart systemd-resolved
-```
-
-> [!WARNING]
-> Em máquinas com VPN corporativa ou Tailscale em modo *MagicDNS*, mantenha `DNS`/`FallbackDNS` vazios:
-> o `systemd-resolved` já recebe os servidores por link (`resolvectl dns <iface>`). Forçar um resolver
-> global desvia consultas internas e pode quebrar a resolução de hosts privados.
-
----
-
-## 6. Montagens FUSE de Nuvem (Rclone)
+## 5. Montagens FUSE de Nuvem (Rclone)
 
 Os remotes montam automaticamente fora da home em `/run/user/$UID/cloud/<Remote>` com cache VFS persistente em `~/.cache/rclone` (`0700`, NoCOW `+C`):
 
@@ -188,7 +148,7 @@ rclone config reconnect GoogleDrive:
 
 ---
 
-## 7. Rollback e Recuperação de Emergência
+## 6. Rollback e Recuperação de Emergência
 
 ```bash
 # Reverter para a imagem do deployment anterior
@@ -203,11 +163,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 8. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
+## 7. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
 
 O Fedora Kinoite utiliza o mecanismo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
 
-### 8.1 Provisionamento 100% Nativo na Imagem
+### 7.1 Provisionamento 100% Nativo na Imagem
 
 Como o Fedora Kinoite (`bootc`/`rpm-ostree`) mantém permanentemente múltiplos deployments (sistema ativo + rollback), o GRUB é configurado em modo forçado (`menu_auto_hide=2` + `user.cfg`) através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service):
 
@@ -221,7 +181,7 @@ Caso deseje verificar o status do ambiente GRUB no host:
 sudo grub2-editenv - list | grep menu_auto_hide
 ```
 
-### 8.2 Salvaguardas de Segurança e Rollback Automático
+### 7.2 Salvaguardas de Segurança e Rollback Automático
 
 - **Fallback Automático (`grub-boot-success.timer`):** O timer de sessão do usuário aguarda 2 minutos de desktop estável para confirmar o boot. Se o sistema falhar ao inicializar ou desligar abruptamente, o GRUB **automaticamente reexibe o menu com as opções de rollback no próximo boot**.
 - **Acesso Manual ao Menu:** Para forçar a exibição do menu do GRUB a qualquer momento, ligue o computador mantendo pressionada a tecla **`Shift`** ou tocando repetidamente em **`Esc`** ou **`F8`**.
@@ -231,7 +191,7 @@ sudo grub2-editenv - list | grep menu_auto_hide
   sudo rm -f /boot/grub2/user.cfg
   ```
 
-### 8.3 Bloqueio de Bootloader e Console (Zero Unauthenticated Recovery)
+### 7.3 Bloqueio de Bootloader e Console (Zero Unauthenticated Recovery)
 
 Para garantir que terceiros com acesso físico não possam editar a linha do kernel (`init=/bin/bash` ou parâmetros não autorizados):
 

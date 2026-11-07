@@ -1,38 +1,25 @@
-name: build
+name: build-amd
 on:
   workflow_dispatch:
     inputs:
-      flavor:
-        description: "Flavor to build"
-        required: false
-        default: "both"
-        type: choice
-        options:
-          - both
-          - amd
-          - dual
       upstream_digest:
         description: "Upstream base image digest that triggered the build (optional, resolved automatically if blank)"
         required: false
         default: ""
 
 concurrency:
-  group: build-pipeline-${{ github.ref }}-${{ inputs.flavor }}
+  group: build-pipeline-amd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build kinoite-${{ matrix.flavor }}
+  build-amd:
+    name: Build Custom AMD Image
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
       contents: read
       packages: write
       actions: write
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: ${{ fromJSON(inputs.flavor == 'both' && '["amd","dual"]' || format('["{0}"]', inputs.flavor)) }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,11 +34,11 @@ jobs:
         id: digest
         env:
           INPUT_DIGEST: ${{ inputs.upstream_digest }}
-          RECIPE_FILE: recipes/recipe-${{ matrix.flavor }}.yml
         run: |
           set -euo pipefail
           DIGEST="${INPUT_DIGEST}"
           if [[ -z "${DIGEST}" ]]; then
+            RECIPE_FILE="recipes/recipe-amd.yml"
             BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
             IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
             FULL_IMG="${BASE_IMG}:${IMG_VER}"
@@ -63,22 +50,22 @@ jobs:
           fi
 
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
-          mkdir -p ~/.cache-${{ matrix.flavor }}
-          echo "${DIGEST}" > ~/.cache-${{ matrix.flavor }}/upstream-digest.txt
+          mkdir -p ~/.cache-amd
+          echo "${DIGEST}" > ~/.cache-amd/upstream-digest.txt
 
       - name: Check if upstream cache entry exists
         id: cache-check
         if: steps.digest.outputs.digest != ''
         uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
-          path: ~/.cache-${{ matrix.flavor }}
-          key: upstream-${{ matrix.flavor }}-${{ steps.digest.outputs.digest }}
+          path: ~/.cache-amd
+          key: upstream-amd-${{ steps.digest.outputs.digest }}
           lookup-only: true
 
-      - name: Build kinoite-${{ matrix.flavor }}
+      - name: Build Custom AMD Image
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1
         with:
-          recipe: recipe-${{ matrix.flavor }}.yml
+          recipe: recipe-amd.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: ${{ steps.repo.outputs.owner }}
@@ -98,5 +85,5 @@ jobs:
         continue-on-error: true
         uses: actions/cache/save@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
         with:
-          path: ~/.cache-${{ matrix.flavor }}
-          key: upstream-${{ matrix.flavor }}-${{ steps.digest.outputs.digest }}
+          path: ~/.cache-amd
+          key: upstream-amd-${{ steps.digest.outputs.digest }}

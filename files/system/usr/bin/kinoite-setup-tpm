@@ -131,40 +131,29 @@ systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
 # shellcheck disable=SC2086
 systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7+14 $PIN_ARG "$DEVICE"
 
-# Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found.
-# crypttab fields: <name> <device> <password> <options> - the option must be appended
-# to the 4th field, never to the password field.
+# Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
 LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
 if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
     if grep -q "$LUKS_UUID" /etc/crypttab; then
-        if grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
-            echo "[OK] /etc/crypttab already configures tpm2-device=auto."
-        else
-            awk -v uuid="$LUKS_UUID" 'BEGIN{OFS=" "}
-                $0 ~ uuid {
-                    if (NF >= 4 && $4 != "none") { $4 = $4 ",tpm2-device=auto" }
-                    else { $4 = "tpm2-device=auto" }
-                }
-                { print }' /etc/crypttab > /etc/crypttab.new
-            mv /etc/crypttab.new /etc/crypttab
-            echo "[OK] Appended tpm2-device=auto to /etc/crypttab options field."
+        if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
+            sed -i "s/\(.*$LUKS_UUID.*none.*\)/\1,tpm2-device=auto/" /etc/crypttab
+            echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
         fi
     fi
 fi
 
-echo "=== [4/4] Initramfs regeneration (ostree/bootc aware) ==="
-# On rpm-ostree/bootc deployments the initramfs belongs to the deployment:
-# /boot/initramfs-<kver>.img is a symlink into /boot/ostree/... and must never be
-# overwritten in place (it is not reproducible and is discarded by the next update).
-if command -v rpm-ostree >/dev/null 2>&1; then
-    rpm-ostree initramfs --enable
-    echo "[OK] Initramfs regeneration tracked by ostree (applied on the next deployment)."
-elif command -v bootc >/dev/null 2>&1; then
-    echo "[INFO] bootc detected: /etc/crypttab is re-read on the next 'bootc update'."
-else
-    echo "[WARN] Non-ostree system detected, regenerating initramfs locally..."
-    TMPDIR=/var/tmp dracut --kver "$(uname -r)" --force --reproducible
-    echo "[OK] Initramfs regenerated for kernel $(uname -r)."
+echo "=== [4/4] Regenerating Initramfs ==="
+KERNEL_VER="$(uname -r)"
+INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
+
+if command -v dracut >/dev/null 2>&1; then
+    echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
+    TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"
+    echo "[OK] Initramfs regenerated successfully at $INITRAMFS_TARGET."
+elif command -v rpm-ostree >/dev/null 2>&1; then
+    echo "Regenerating initramfs via rpm-ostree..."
+    rpm-ostree initramfs --enable || true
+    echo "[OK] rpm-ostree initramfs tracking enabled."
 fi
 
 echo "=== TPM 2.0 Auto-Unlock Configuration Completed Successfully ==="

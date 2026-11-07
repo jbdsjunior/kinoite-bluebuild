@@ -55,3 +55,9 @@ if command -v fzf >/dev/null 2>&1; then
         fi
     fi
 fi
+
+# Critical flow: display fastfetch once per interactive terminal session
+if [ -t 1 ] && command -v fastfetch >/dev/null 2>&1 && [ -z "${FASTFETCH_SHOWN:-}" ]; then
+    export FASTFETCH_SHOWN=1
+    fastfetch
+fi

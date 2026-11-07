@@ -1,0 +1,21 @@
+[Unit]
+Description=Apply Flatpak system updates
+Documentation=man:flatpak(1) man:flatpak-update(1)
+After=network-online.target
+Wants=network-online.target
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+
+Environment=XDG_CACHE_HOME=/tmp
+ExecStart=/usr/bin/flatpak --system update -y --noninteractive
+ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
+
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle

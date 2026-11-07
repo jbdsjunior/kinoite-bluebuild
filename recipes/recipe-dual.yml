@@ -34,3 +34,4 @@ modules:
       DRACUT_NO_XATTR: '1'
 
   - type: signing
+
