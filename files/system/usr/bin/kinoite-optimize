@@ -462,7 +462,7 @@ for b in "${BANNED_LIST[@]}"; do
     fi
 done
 if [ "$BANNED_DETECTED" -eq 0 ]; then
-    echo "[OK] Linha de boot limpa (zero kargs redundantes de acordo com AGENTS.md)."
+    echo "[OK] Linha de boot limpa (zero kargs redundantes detectados)."
 fi
 
 # [Pilar 6: CI/CD, Timers & Governança do Sistema]

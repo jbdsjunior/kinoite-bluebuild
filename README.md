@@ -20,7 +20,7 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 | `kinoite-dual` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-dual:latest` | AMD display (RDNA2) + NVIDIA compute (CUDA/akmods) + 64 GB DDR4      |
 
 > [!WARNING]
-> This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`AGENTS.md`](AGENTS.md) and [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+> This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
@@ -81,16 +81,12 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 | Path | Purpose |
 | :--- | :--- |
-| [`AGENTS.md`](AGENTS.md) | Authoritative system invariants, hardware baseline, and complete file traceability matrix (§6) |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery) |
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy and vulnerability reporting |
 | [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `common-*.yml`) |
 | [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`.github/workflows/`](.github/workflows/) | Autonomous CI/CD build, update check, and container registry cleanup pipelines |
-
-> [!NOTE]
-> For the comprehensive subsystem-by-subsystem file mapping and implementation details, refer to [`AGENTS.md §6`](AGENTS.md#6-rastreabilidade-de-arquivos).
 
 ## License
 

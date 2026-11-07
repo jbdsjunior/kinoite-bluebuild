@@ -25,7 +25,7 @@ modules:
         # (virtqemud/virtnetworkd/virtstoraged/virtnodedevd/virtproxyd/
         # virtsecretd/virtnwfilterd) are preset-enabled by Fedora upstream
         # (90-default.preset) and applied at build time; re-declaring them
-        # is forbidden (AGENTS.md §4).
+        # is redundant and avoided.
 
     user:
       enabled:

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Enforce Conventional Commits (AGENTS.md §1).
+# Enforce Conventional Commits.
 # Activate once per clone: git config core.hooksPath .githooks
 set -eu
 
