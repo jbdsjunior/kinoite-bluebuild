@@ -10,8 +10,26 @@ platforms:
   - linux/amd64
 
 modules:
-  - from-file: common-stage1.yml
-  - from-file: common-stage2.yml
+  # System-wide configuration overlays (sysctl, tmpfiles, systemd, udev, polkit)
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Package set: debloat, core apps, fonts and AMD/multimedia drivers
+  - from-file: common-debloat.yml
+  - from-file: common-core.yml
+  - from-file: common-fonts.yml
+  - from-file: common-drivers.yml
+
+  # Virtualization, CLI tooling, services and Flatpaks
+  - from-file: common-kvm.yml
+  - from-file: common-tools.yml
+  - from-file: common-systemd.yml
+  - from-file: common-flatpaks.yml
+
+  # Kernel arguments must come after every module that writes a kargs file
+  - from-file: common-kargs.yml
 
   - type: initramfs
     env:

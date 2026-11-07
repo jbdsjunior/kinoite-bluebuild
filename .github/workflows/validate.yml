@@ -80,6 +80,19 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve base image references
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for recipe in recipes/recipe-*.yml; do
+            image="$(.github/scripts/resolve-base-digest.sh --image-only "$recipe")"
+            if [ -z "$image" ]; then
+              echo "ERROR: empty base image reference for $recipe" >&2
+              exit 1
+            fi
+            echo "$recipe -> $image"
+          done
+
       - name: Fetch BlueBuild CLI from the pinned release image
         env:
           IMAGE: ghcr.io/blue-build/cli:v0.9.40-installer
