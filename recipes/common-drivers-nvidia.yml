@@ -7,6 +7,17 @@ modules:
     install: []
     nvidia-driver: nvidia-open
 
+  # Sanitização cirúrgica: neutraliza kargs conflitantes e força o dracut a omitir nvidia_drm
+  - type: script
+    snippets:
+      - |
+        # Purga karg conflitante nvidia-drm.modeset=1 e duplicidades geradas pelo akmods
+        rm -f /usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml
+        # Impede que o dracut force o carregamento de nvidia_drm no ramdisk do boot
+        if [ -f /usr/lib/dracut/dracut.conf.d/99-nvidia.conf ]; then
+          sed -i 's/\bnvidia_drm\b//g' /usr/lib/dracut/dracut.conf.d/99-nvidia.conf
+        fi
+
   # Operação headless da GPU secundária NVIDIA no flavor dual (preserva CUDA/IA e blinda GNOME Boxes)
   - type: kargs
     kargs:

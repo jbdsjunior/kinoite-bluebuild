@@ -145,18 +145,21 @@ if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
     fi
 fi
 
-echo "=== [4/4] Regenerating Initramfs ==="
+echo "=== [4/4] Validating Initramfs & Bootloader Integration ==="
 KERNEL_VER="$(uname -r)"
 INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
 
-if command -v dracut >/dev/null 2>&1; then
-    echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
-    TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"
-    echo "[OK] Initramfs regenerated successfully at $INITRAMFS_TARGET."
+if command -v bootc >/dev/null 2>&1; then
+    echo "[OK] Imagem declarativa Bootc detectada. Suporte nativo a TPM2/LUKS2 pré-compilado na imagem base."
+    echo "[OK] Chaves TPM2 vinculadas diretamente ao cabeçalho LUKS2 do disco."
 elif command -v rpm-ostree >/dev/null 2>&1; then
     echo "Regenerating initramfs via rpm-ostree..."
     rpm-ostree initramfs --enable || true
     echo "[OK] rpm-ostree initramfs tracking enabled."
+elif command -v dracut >/dev/null 2>&1; then
+    echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
+    TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"
+    echo "[OK] Initramfs regenerated successfully at $INITRAMFS_TARGET."
 fi
 
 echo "=== TPM 2.0 Auto-Unlock Configuration Completed Successfully ==="

@@ -300,6 +300,7 @@ if command -v rpm-ostree >/dev/null 2>&1 && [ "$CAN_SUDO" -eq 1 ]; then
         "amd_pstate=active"
         "tsc=reliable"
         "nowatchdog"
+        "amd_iommu=on"
         "iommu=pt"
         "slab_nomerge"
         "vsyscall=none"
@@ -428,8 +429,8 @@ fi
 if [ -e /dev/dri/primary-render ]; then
     echo "[OK] Symlink determinístico /dev/dri/primary-render apontando para $(readlink /dev/dri/primary-render)."
 fi
-if [ -f /etc/cdi/nvidia.yaml ]; then
-    echo "[OK] Container Device Interface (CDI) NVIDIA presente (/etc/cdi/nvidia.yaml)."
+if [ -f /etc/cdi/nvidia.yaml ] || [ -f /run/cdi/nvidia.yaml ] || [ -f /var/run/cdi/nvidia.yaml ]; then
+    echo "[OK] Container Device Interface (CDI) NVIDIA presente e ativo."
 fi
 if command -v nvidia-smi >/dev/null 2>&1; then
     nv_gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n 1 || true)
