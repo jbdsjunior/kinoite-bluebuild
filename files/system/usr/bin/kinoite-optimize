@@ -10,6 +10,9 @@ SCRIPT_NAME="${0##*/}"
 
 MODE="apply"
 
+# Warnings raised by the read-only audit; drives the --audit exit status.
+AUDIT_WARNINGS=0
+
 # Hardware contract of the reference workstation (see docs/POST_INSTALL.md).
 # Override via environment when the GPUs move to different PCI slots.
 AMD_RENDER_PATH="${AMD_RENDER_PATH:-/dev/dri/by-path/pci-0000:0c:00.0-render}"
@@ -28,6 +31,7 @@ Modes:
 Notes:
   * Phase 7 may modify the host kernel arguments and require a reboot.
   * Without root privileges, privileged phases are skipped with a [SKIP] notice.
+  * --audit exits non-zero when any of the six pillars reports a [WARN].
 EOF
 }
 
@@ -473,8 +477,15 @@ is_nvidia_headless_image() {
 # ---------------------------------------------------------------------------
 # Audit: six engineering pillars
 # ---------------------------------------------------------------------------
+audit_warn() {
+    echo "[WARN] $*"
+    AUDIT_WARNINGS=$((AUDIT_WARNINGS + 1))
+}
+
 audit_pillars() {
     local fedora_version
+
+    AUDIT_WARNINGS=0
 
     echo "--- [Pillar 1/6] Supply Chain, Keys & Signing ---"
     if command -v mokutil >/dev/null 2>&1; then
@@ -499,7 +510,7 @@ audit_pillars() {
     fedora_version="$(rpm -E %fedora 2>/dev/null || echo "upstream")"
     echo "[INFO] Fedora baseline: ${fedora_version} (native bootc/rpm-ostree)."
     if rpm -q fuse 2>/dev/null | grep -v "fuse3" >/dev/null 2>&1; then
-        echo "[WARN] Legacy 'fuse' 2 package detected. Migrate strictly to fuse3."
+        audit_warn "Legacy 'fuse' 2 package detected. Migrate strictly to fuse3."
     else
         echo "[OK] No legacy conflicting packages (fuse 2 absent, fuse3 active)."
     fi
@@ -540,7 +551,7 @@ audit_pillars() {
         if echo "$attrs" | grep -q "C"; then
             echo "[OK] NoCOW (+C) attribute verified on: $path"
         elif [[ -n "$attrs" ]]; then
-            echo "[WARN] Directory without NoCOW (+C): $path"
+            audit_warn "Directory without NoCOW (+C): $path"
         else
             echo "[SKIP] Insufficient permissions to inspect NoCOW (+C) on: $path (requires sudo)."
         fi
@@ -578,7 +589,7 @@ audit_pillars() {
 
     if [[ -e "$NVIDIA_RENDER_PATH" ]]; then
         if is_nvidia_headless_image; then
-            echo "[WARN] NVIDIA graphics render node detected (${NVIDIA_RENDER_PATH}) on a headless-NVIDIA image."
+            audit_warn "NVIDIA graphics render node detected (${NVIDIA_RENDER_PATH}) on a headless-NVIDIA image."
             echo "       nvidia-drm blacklisting is not effective; QEMU/GNOME Boxes may be affected."
         else
             echo "[INFO] NVIDIA graphics render node detected (${NVIDIA_RENDER_PATH}); expected on the kinoite-amd flavor."
@@ -611,12 +622,35 @@ audit_pillars() {
     fi
     for banned in "${banned_list[@]}"; do
         if echo "$cmdline" | grep -qw "$banned"; then
-            echo "[WARN] Redundant/unsafe karg detected on the boot line: $banned"
+            audit_warn "Redundant/unsafe karg detected on the boot line: $banned"
             detected=1
         fi
     done
     if [[ "$detected" -eq 0 ]]; then
         echo "[OK] Clean boot line (zero redundant kargs detected)."
+    fi
+
+    # Sulogin: root authentication on emergency/rescue consoles (AGENTS §7).
+    local root_state
+    if command -v passwd >/dev/null 2>&1 &&
+        root_state="$(passwd -S root 2>/dev/null | awk '{print $2}')" &&
+        [[ -n "$root_state" ]]; then
+        case "$root_state" in
+            P)
+                echo "[OK] Root password set: sulogin protects emergency/rescue consoles."
+                ;;
+            NP)
+                audit_warn "Root account has no password: sulogin would grant an unauthenticated emergency shell."
+                ;;
+            L)
+                audit_warn "Root account is locked: sulogin cannot authenticate recovery sessions (set a root password to keep recovery access)."
+                ;;
+            *)
+                echo "[INFO] Root account state '${root_state}': sulogin enforcement not verifiable."
+                ;;
+        esac
+    else
+        echo "[SKIP] Root account state unavailable (run as root to verify sulogin enforcement)."
     fi
 
     echo "--- [Pillar 6/6] Maintenance Timers & Storage ---"
@@ -658,7 +692,11 @@ main() {
 
         echo "=== [8/8] System Health & Integrity Audit ==="
         audit_pillars
-        echo "=== Optimization and Maintenance Completed Successfully ==="
+        if [[ "$AUDIT_WARNINGS" -gt 0 ]]; then
+            echo "=== Optimization completed with ${AUDIT_WARNINGS} audit warning(s) ==="
+        else
+            echo "=== Optimization and Maintenance Completed Successfully ==="
+        fi
         return 0
     fi
 
@@ -667,8 +705,14 @@ main() {
     echo "============================================================="
     audit_pillars
     echo "============================================================="
+    if [[ "$AUDIT_WARNINGS" -gt 0 ]]; then
+        echo "=== Six-Pillar Audit Failed: ${AUDIT_WARNINGS} warning(s) detected"
+        echo "============================================================="
+        return 1
+    fi
     echo "=== Six-Pillar Audit Completed Successfully"
     echo "============================================================="
+    return 0
 }
 
 main "$@"
