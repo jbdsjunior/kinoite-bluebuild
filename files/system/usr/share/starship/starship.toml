@@ -4,10 +4,7 @@ add_newline = true
 command_timeout = 1000
 palette = "kinoite"
 
-format = """
-$os$username$hostname$container$directory$git_branch$git_status$fill$cmd_duration
-$character
-"""
+format = "$os$username$hostname$container$directory$git_branch$git_status$fill$cmd_duration$character"
 
 [palettes.kinoite]
 fg = "#d9e0ee"

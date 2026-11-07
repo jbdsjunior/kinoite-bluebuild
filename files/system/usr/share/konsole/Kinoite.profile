@@ -1,6 +1,6 @@
 [Appearance]
 ColorScheme=Kinoite
-Font=JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0
+Font=JetBrainsMono Nerd Font,11,-1,5,50,0,0,0,0,0
 LineSpacing=1
 CursorShape=0
 BlinkingCursorEnabled=true
@@ -19,5 +19,6 @@ UnderlineFilesEnabled=true
 BellMode=0
 
 [Scrolling]
-HistoryMode=2
+HistoryMode=1
+HistorySize=10000
 ScrollBarPosition=1
