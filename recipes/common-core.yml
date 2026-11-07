@@ -14,8 +14,6 @@ modules:
         - smartmontools
 
         - icoutils
-        - kio-admin
-        - ksshaskpass
         - kf6-kimageformats
         - qt6-qtimageformats
 

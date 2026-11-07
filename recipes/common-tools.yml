@@ -25,8 +25,7 @@ modules:
         - starship
         - tailscale
 
-        # Version Control & Cloud Sync
-        - git
+        # Cloud Sync
         - rclone
 
         # Modern CLI & Terminal Workflow
@@ -44,8 +43,8 @@ modules:
         - podman-docker
 
         # System Information & Hardware Diagnostics
+        # vulkan-tools já é provido pelo base Kinoite (kinoite-shared)
         - fastfetch
         - mesa-libOpenCL
         - clinfo
-        - vulkan-tools
         - nvtop
