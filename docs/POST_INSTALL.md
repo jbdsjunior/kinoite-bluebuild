@@ -80,7 +80,7 @@ Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure 
    ```bash
    sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
    ```
-   *O sistema solicitará uma senha temporária (ex: `12345678`) apenas para autorizar o cadastro na reinicialização.*
+   *Defina uma senha temporária de sua escolha apenas para autorizar o cadastro na reinicialização.*
 
 2. **Confirmar na Tela Azul do MOK Manager (UEFI):**
    * Reinicie o computador (`systemctl reboot`).
@@ -112,12 +112,10 @@ Os 7 pilares da auditoria (AGENTS.md §5):
 6. Resiliência de boot (GRUB limpo, SysRq REISUB, `sulogin`).
 7. Governança de timers de manutenção e armazenamento.
 
-Atalhos no terminal (`/etc/profile.d/60-kinoite-aliases.sh`):
-- `sys-optimize` / `optimize`: executa `/usr/bin/kinoite-optimize` (8 fases completas).
+Atalhos adicionais no terminal (`60-kinoite-aliases.sh`):
 - `sysup`: `sudo bootc update`.
 - `rollback`: `sudo bootc rollback`.
-- `status-rclone`: `systemctl --user status "rclone@*"`.
-- `logs-rclone`: `journalctl --user -u "rclone@*" -f`.
+- `status-rclone` / `logs-rclone`: monitoramento de serviços Rclone do usuário.
 - `setup-tpm`: `sudo kinoite-setup-tpm`.
 
 ---
@@ -156,7 +154,6 @@ rclone config reconnect GoogleDrive:
 ```
 
 - **Higiene:** O Dolphin e o subsistema KIO estão pré-configurados (`/etc/xdg/kiorc` e `/etc/xdg/dolphinrc`) com `ConfirmDelete=true`, `ConfirmTrash=false` e `ShowDeleteCommand=true`, permitindo excluir diretamente para a lixeira remota da nuvem sem criar pastas `.Trash-1000`. Além disso, o Rclone bloqueia a sincronização de `.Trash-*` via `--exclude`. Pastas em `/run/user` já estão excluídas do indexador Baloo.
-- **Client ID Dedicado:** Para conexões corporativas/intensivas no Google Drive sem limite semanal, defina seu Client ID próprio no Google Cloud Console e publique-o em modo de produção (sem logotipo para liberação imediata).
 
 ---
 
@@ -191,15 +188,6 @@ Caso deseje verificar o status do ambiente GRUB no host:
 
 ```bash
 sudo grub2-editenv - list | grep menu_auto_hide
-```
-
-Para aplicar manualmente no host a qualquer momento:
-
-```bash
-sudo grub2-editenv - set menu_auto_hide=2
-sudo grub2-editenv - set boot_success=1
-sudo grub2-editenv - set boot_indeterminate=0
-printf "set timeout=0\nset timeout_style=hidden\n" | sudo tee /boot/grub2/user.cfg
 ```
 
 ### 7.2 Salvaguardas de Segurança e Rollback Automático

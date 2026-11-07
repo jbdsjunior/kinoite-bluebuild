@@ -43,7 +43,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 - **GPU (Navi 23):** Mesa `radv` (Vulkan 1.4), VA-API no KWin/Wayland e contêineres ROCm/HIP via CDI (`/etc/cdi/amdgpu.yaml` com `HSA_OVERRIDE_GFX_VERSION=10.3.0`).
 - **Memória (64 GB):** ZRAM `zstd` em 32 GB (`60-zram-policy.conf`) e `DefaultLimitMEMLOCK=infinity` (`60-kinoite-limits.conf`) para alocação direta de modelos GGUF (`--mlock`).
 - **Armazenamento (Btrfs):** Atributo NoCOW `+C` estrito via tmpfiles `h` em diretórios de VMs e contêineres (`60-io-tuning-system.conf` e `60-io-tuning-user.conf`).
-- **Periféricos:** Headset USB MCHOSE X9, fones BT Baseus Bass EP10 Pro, caixa Tribit XSound Go, mouses HID VXE e BY Tech (`TAG+="uaccess"` em `70-peripherals.rules`).
+- **Periféricos:** Periféricos HID e dispositivos de áudio USB/Bluetooth com acesso direto de usuário (`TAG+="uaccess"` em `70-peripherals.rules`).
 - **Firmware & UEFI:** Modo UEFI puro (CSM desativado) com Secure Boot e fTPM 2.0 nativos.
 
 ---
