@@ -87,11 +87,23 @@ if ! cryptsetup isLuks "$DEVICE"; then
     exit 1
 fi
 
-# Optional recovery key generation
+# Optional recovery key generation (idempotent: never accumulates orphan keys)
+has_recovery_key() {
+    cryptsetup luksDump --dump-json-metadata "$DEVICE" 2>/dev/null | grep -q '"systemd-recovery"' ||
+        cryptsetup luksDump "$DEVICE" 2>/dev/null | grep -q 'systemd-recovery'
+}
+
 if [ "$SKIP_RECOVERY" -eq 0 ]; then
     echo "=== [2/4] Generating Offline Recovery Key ==="
-    echo "Notice: Save the printed recovery key in a secure offline location."
-    systemd-cryptenroll --recovery-key "$DEVICE" || true
+    if has_recovery_key; then
+        echo "[SKIP] A systemd-recovery key is already enrolled; keeping the existing one."
+        echo "       (Delete it first if it was lost, or re-run with --skip-recovery-key.)"
+    else
+        echo "Notice: Save the printed recovery key in a secure offline location."
+        if ! systemd-cryptenroll --recovery-key "$DEVICE"; then
+            echo "[WARN] Recovery key enrollment failed; continuing with TPM 2.0 enrollment only." >&2
+        fi
+    fi
 else
     echo "=== [2/4] Skipping Recovery Key Generation (--skip-recovery-key) ==="
 fi
@@ -100,10 +112,10 @@ fi
 if [ "$PIN_MODE" = "auto" ]; then
     if [ -t 0 ] && [ -t 1 ]; then
         echo ""
-        echo "=== Configuração de PIN de Segurança (Padrão Apple Secure Enclave / FileVault) ==="
-        echo "Com um PIN, o TPM só descriptografa o disco se o usuário digitar o PIN no boot,"
-        echo "impedindo que o sistema seja desbloqueado por terceiros com acesso físico."
-        if read -r -t 30 -p "Deseja proteger o desbloqueio TPM 2.0 com um PIN de segurança? [S/n]: " REPLY; then
+        echo "=== TPM 2.0 PIN policy (Apple Secure Enclave / FileVault model) ==="
+        echo "With a PIN, the TPM only unseals the disk key when the PIN is typed at boot,"
+        echo "preventing third parties with physical access from unlocking the system."
+        if read -r -t 30 -p "Protect TPM 2.0 unlock with a security PIN? [Y/n]: " REPLY; then
             if [[ ! "$REPLY" =~ ^[Nn]$ ]]; then
                 PIN_MODE="yes"
             else
@@ -111,7 +123,7 @@ if [ "$PIN_MODE" = "auto" ]; then
             fi
         else
             echo ""
-            echo "[INFO] Timeout ou terminal não-interativo; prosseguindo sem PIN..."
+            echo "[INFO] Timeout or non-interactive terminal; continuing without a PIN..."
             PIN_MODE="no"
         fi
     else
@@ -119,16 +131,22 @@ if [ "$PIN_MODE" = "auto" ]; then
     fi
 fi
 
-ENROLL_ARGS=("--tpm2-device=auto" "--tpm2-pcrs=7+14")
+# --wipe-slot=tpm2 combined with --tpm2-device=auto enrolls first and only then
+# wipes older TPM2 enrollments (excluding the new one), so a failed enrollment
+# can never leave the volume without TPM unlock.
+ENROLL_ARGS=("--tpm2-device=auto" "--tpm2-pcrs=7+14" "--wipe-slot=tpm2")
 if [ "$PIN_MODE" = "yes" ]; then
     ENROLL_ARGS+=("--tpm2-with-pin=yes")
-    echo "[INFO] Ativando autenticação de dois fatores: TPM 2.0 + PIN (--tpm2-with-pin=yes)..."
+    echo "[INFO] Enabling two-factor authentication: TPM 2.0 + PIN (--tpm2-with-pin=yes)..."
 fi
 
 echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 + 14 ==="
-# Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after UEFI firmware update)
-systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
-systemd-cryptenroll "${ENROLL_ARGS[@]}" "$DEVICE"
+# Idempotent re-enrollment (e.g. after a UEFI firmware update): the enrollment is
+# completed before any previous TPM2 slot is wiped.
+if ! systemd-cryptenroll "${ENROLL_ARGS[@]}" "$DEVICE"; then
+    echo "ERROR: TPM 2.0 enrollment failed. Existing LUKS unlock methods were left untouched." >&2
+    exit 1
+fi
 
 # Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
 LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
