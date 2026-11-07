@@ -23,4 +23,5 @@ jobs:
       flavor: dual
       recipe: recipe-dual.yml
       upstream_digest: ${{ inputs.upstream_digest }}
-    secrets: inherit
+    secrets:
+      SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}

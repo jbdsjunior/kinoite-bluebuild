@@ -15,6 +15,10 @@ on:
         required: false
         type: string
         default: ""
+    secrets:
+      SIGNING_SECRET:
+        description: "Cosign private key used to sign the published image"
+        required: true
 
 jobs:
   build:
@@ -35,6 +39,14 @@ jobs:
         id: repo
         run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
+      - name: Ensure skopeo is available
+        run: |
+          set -euo pipefail
+          if ! command -v skopeo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends skopeo
+          fi
+
       - name: Resolve upstream digest for cache
         id: digest
         env:
@@ -42,16 +54,15 @@ jobs:
           RECIPE_FILE: recipes/${{ inputs.recipe }}
         run: |
           set -euo pipefail
-          DIGEST="${INPUT_DIGEST}"
+          if [[ -n "${INPUT_DIGEST}" ]]; then
+            DIGEST="${INPUT_DIGEST}"
+          else
+            DIGEST="$(.github/scripts/resolve-base-digest.sh "$RECIPE_FILE")"
+          fi
+
           if [[ -z "${DIGEST}" ]]; then
-            BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-            IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-            FULL_IMG="${BASE_IMG}:${IMG_VER}"
-            if ! command -v skopeo >/dev/null 2>&1; then
-              sudo apt-get update
-              sudo apt-get install -y --no-install-recommends skopeo
-            fi
-            DIGEST=$(skopeo inspect "docker://${FULL_IMG}" --format '{{.Digest}}')
+            echo "ERROR: could not resolve the upstream digest for ${RECIPE_FILE}" >&2
+            exit 1
           fi
 
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
@@ -74,8 +85,8 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: ${{ steps.repo.outputs.owner }}
-          # Required by blue-build/github-action action.yml schema (even if empty on workflow_dispatch)
-          pr_event_number: ${{ github.event.number }}
+          # Required by blue-build/github-action action.yml schema (0 when not a PR event)
+          pr_event_number: ${{ github.event.number || 0 }}
           use_cache: true
           retry_push_count: 3
           cli_version: v0.9.40

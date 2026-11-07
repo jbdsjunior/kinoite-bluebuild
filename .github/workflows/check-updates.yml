@@ -47,24 +47,24 @@ jobs:
           RECIPE_FILE: ${{ matrix.recipe }}
         run: |
           set -euo pipefail
-          BASE_IMG=$(awk -F': ' '/^base-image:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-          IMG_VER=$(awk -F': ' '/^image-version:/ {print $2; exit}' "$RECIPE_FILE" | tr -d '"'\'' ')
-          FULL_IMG="${BASE_IMG}:${IMG_VER}"
+          IMAGE="$(.github/scripts/resolve-base-digest.sh --image-only "$RECIPE_FILE")"
 
-          if [[ -z "${BASE_IMG}" ]]; then
+          if [[ -z "${IMAGE}" ]]; then
             echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
             exit 1
           fi
 
-          echo "image=${FULL_IMG}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Check base image digest (${{ matrix.flavor }})
         id: check
         env:
+          RECIPE_FILE: ${{ matrix.recipe }}
           IMAGE_NAME: ${{ steps.resolve.outputs.image }}
         run: |
           set -euo pipefail
-          DIGEST=$(skopeo inspect "docker://${IMAGE_NAME}" --format '{{.Digest}}')
+          echo "Inspecting ${IMAGE_NAME}"
+          DIGEST=$(.github/scripts/resolve-base-digest.sh "$RECIPE_FILE")
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Check upstream cache (${{ matrix.flavor }})

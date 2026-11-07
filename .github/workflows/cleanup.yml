@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Scanning for superseded Actions caches in $REPO..."
-          
+
           # Prune superseded caches independently for AMD and Dual flavors to avoid cross-invalidation
           ALL_CACHES=$(gh cache list --repo "$REPO" --limit 100 --json id,key,createdAt 2>/dev/null || echo "[]")
 
