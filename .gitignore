@@ -33,14 +33,10 @@ auth.json
 /Containerfile
 
 # Local development/runtime artifacts
-/tests/tmp/
 *.log
 *.logs
 *.tmp
 *.cache
-*.pyc
-__pycache__/
-tmp/
 *.bak
 *.orig
 *~

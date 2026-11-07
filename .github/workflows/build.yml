@@ -1,0 +1,49 @@
+name: build
+
+# Single entry point for image builds. Triggered manually (workflow_dispatch)
+# or by check-updates.yml when the upstream base image changed and the
+# published image is stale.
+
+run-name: build (${{ inputs.flavor }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: "Flavor to build"
+        required: true
+        type: choice
+        options:
+          - all
+          - amd
+          - dual
+        default: all
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-${{ github.ref }}-${{ inputs.flavor }}
+  cancel-in-progress: false
+
+jobs:
+  amd:
+    name: Build AMD image
+    if: inputs.flavor != 'dual'
+    uses: ./.github/workflows/build-image.yml
+    with:
+      flavor: amd
+      recipe: recipe-amd.yml
+    secrets:
+      SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+
+  dual:
+    name: Build Dual-GPU image
+    if: inputs.flavor != 'amd'
+    uses: ./.github/workflows/build-image.yml
+    with:
+      flavor: dual
+      recipe: recipe-dual.yml
+    secrets:
+      SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}

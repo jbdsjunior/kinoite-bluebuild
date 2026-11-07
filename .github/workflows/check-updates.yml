@@ -1,99 +1,140 @@
 name: check-updates
+
+# Hourly freshness check, stateless by design:
+#
+#   upstream digest = digest of the base image declared by the recipe
+#   current digest  = `org.opencontainers.image.base.digest` label of the image
+#                     already published to GHCR (written by the build)
+#
+# A build is dispatched only when the published image is missing, was built
+# from another base, or is behind the upstream digest. Repeated runs are cheap
+# and no external state (Actions cache, files, tags) is required.
+
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: write
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: check-updates
+  cancel-in-progress: false
 
 jobs:
-  check-and-trigger:
-    name: Check Updates (${{ matrix.flavor }})
+  check:
+    name: Check ${{ matrix.flavor }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      actions: write
-      contents: read
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         include:
           - flavor: amd
             recipe: recipes/recipe-amd.yml
-            workflow: build-amd.yml
+            image: kinoite-amd
           - flavor: dual
             recipe: recipes/recipe-dual.yml
-            workflow: build-dual.yml
-
+            image: kinoite-dual
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Install dependencies
+      - name: Install skopeo
         run: |
           set -euo pipefail
-          if ! command -v skopeo >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends skopeo
-          fi
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends skopeo
 
-      - name: Resolve base image (${{ matrix.flavor }})
-        id: resolve
+      - name: Compare upstream base with the published image
+        id: compare
         env:
-          RECIPE_FILE: ${{ matrix.recipe }}
+          RECIPE: ${{ matrix.recipe }}
+          IMAGE: ${{ matrix.image }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
-          IMAGE="$(.github/scripts/resolve-base-digest.sh --image-only "$RECIPE_FILE")"
 
-          if [[ -z "${IMAGE}" ]]; then
-            echo "Failed to resolve base image from ${RECIPE_FILE}" >&2
+          BASE_IMAGE="$(yq -r '.["base-image"] // ""' "$RECIPE")"
+          IMAGE_VERSION="$(yq -r '.["image-version"] // ""' "$RECIPE")"
+          if [[ -z "$BASE_IMAGE" || -z "$IMAGE_VERSION" ]]; then
+            echo "ERROR: could not read base-image/image-version from $RECIPE" >&2
+            exit 1
+          fi
+          BASE_REF="${BASE_IMAGE}:${IMAGE_VERSION}"
+
+          UPSTREAM_DIGEST="$(skopeo inspect --format '{{.Digest}}' "docker://${BASE_REF}")"
+          if [[ -z "$UPSTREAM_DIGEST" ]]; then
+            echo "ERROR: could not resolve the digest of ${BASE_REF}" >&2
             exit 1
           fi
 
-          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          PUBLISHED="ghcr.io/${REPO_OWNER,,}/${IMAGE}:latest"
+          CURRENT_NAME="$(skopeo inspect --format '{{index .Labels "org.opencontainers.image.base.name"}}' "docker://${PUBLISHED}" 2>/dev/null || true)"
+          CURRENT_DIGEST="$(skopeo inspect --format '{{index .Labels "org.opencontainers.image.base.digest"}}' "docker://${PUBLISHED}" 2>/dev/null || true)"
 
-      - name: Check base image digest (${{ matrix.flavor }})
-        id: check
-        env:
-          RECIPE_FILE: ${{ matrix.recipe }}
-          IMAGE_NAME: ${{ steps.resolve.outputs.image }}
-        run: |
-          set -euo pipefail
-          echo "Inspecting ${IMAGE_NAME}"
-          DIGEST=$(.github/scripts/resolve-base-digest.sh "$RECIPE_FILE")
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Recipe base: ${BASE_REF}@${UPSTREAM_DIGEST}"
+          echo "Published  : ${PUBLISHED}"
+          echo "Image base : ${CURRENT_NAME:-<none>}@${CURRENT_DIGEST:-<none>}"
 
-      - name: Check upstream cache (${{ matrix.flavor }})
-        id: cache
-        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
-        with:
-          path: ~/.cache-${{ matrix.flavor }}
-          key: upstream-${{ matrix.flavor }}-${{ steps.check.outputs.digest }}
-          lookup-only: true
+          if [[ "$CURRENT_NAME" == "$BASE_REF" && "$CURRENT_DIGEST" == "$UPSTREAM_DIGEST" ]]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Trigger build (${{ matrix.flavor }})
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Dispatch build if stale
+        if: steps.compare.outputs.up_to_date != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          UPSTREAM_DIGEST: ${{ steps.check.outputs.digest }}
           REPO: ${{ github.repository }}
-          WORKFLOW_FILE: ${{ matrix.workflow }}
           REPO_REF: ${{ github.ref_name }}
+          FLAVOR: ${{ matrix.flavor }}
+          # After a failed build, wait this many hours before retrying the flavor.
+          BACKOFF_HOURS: "2"
         run: |
           set -euo pipefail
 
-          # Avoid duplicate execution if build is already queued or running
-          RUNNING=$(gh run list --repo "$REPO" --workflow="$WORKFLOW_FILE" --json status -q '.[] | select(.status == "in_progress" or .status == "queued") | .status' | head -n 1)
-          if [[ -n "${RUNNING}" ]]; then
-            echo "Build workflow $WORKFLOW_FILE is already ${RUNNING}. Skipping trigger to prevent duplicate execution."
-          else
-            echo "Cache miss for ${{ matrix.flavor }} digest ${UPSTREAM_DIGEST}. Triggering $WORKFLOW_FILE..."
-            gh workflow run "$WORKFLOW_FILE" \
-              --ref "$REPO_REF" \
-              --repo "$REPO" \
-              -f upstream_digest="${UPSTREAM_DIGEST}"
+          RUNS="$(gh run list --repo "$REPO" --workflow=build.yml --limit 50 \
+            --json status,conclusion,createdAt,displayTitle)"
+
+          RUNNING="$(jq -r --arg f "$FLAVOR" '
+            first(
+              .[]
+              | select(.status == "queued" or .status == "in_progress")
+              | select((.displayTitle | endswith("(" + $f + ")")) or (.displayTitle | endswith("(all)")))
+              | .status
+            ) // empty' <<<"$RUNS")"
+
+          if [[ -n "$RUNNING" ]]; then
+            echo "build.yml is already ${RUNNING} for ${FLAVOR}; skipping dispatch."
+            exit 0
           fi
+
+          RECENT_FAILURE="$(jq -r --arg f "$FLAVOR" --argjson hours "$BACKOFF_HOURS" '
+            (now - ($hours * 3600)) as $cutoff
+            | first(
+                .[]
+                | select(.conclusion == "failure")
+                | select(.displayTitle | endswith("(" + $f + ")"))
+                | select((.createdAt | fromdateiso8601) > $cutoff)
+                | .createdAt
+              ) // empty' <<<"$RUNS")"
+
+          if [[ -n "$RECENT_FAILURE" ]]; then
+            echo "A ${FLAVOR} build failed at ${RECENT_FAILURE}; backing off ${BACKOFF_HOURS}h."
+            exit 0
+          fi
+
+          echo "Published ${FLAVOR} image is stale; dispatching build.yml..."
+          gh workflow run build.yml --repo "$REPO" --ref "$REPO_REF" -f flavor="$FLAVOR"
+
+      - name: Report up to date
+        if: steps.compare.outputs.up_to_date == 'true'
+        run: echo "${IMAGE} is already built from the current upstream base."
+        env:
+          IMAGE: ${{ matrix.image }}

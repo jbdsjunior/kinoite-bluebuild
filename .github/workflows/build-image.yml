@@ -1,4 +1,9 @@
 name: build-image
+
+# Reusable build: pulls the base image, layers the recipe modules, pushes and
+# signs the result. It carries no update-detection logic; deciding whether a
+# build is needed is the job of check-updates.yml.
+
 on:
   workflow_call:
     inputs:
@@ -10,11 +15,6 @@ on:
         description: "Recipe filename in recipes/"
         required: true
         type: string
-      upstream_digest:
-        description: "Upstream base image digest (optional, resolved automatically if blank)"
-        required: false
-        type: string
-        default: ""
     secrets:
       SIGNING_SECRET:
         description: "Cosign private key used to sign the published image"
@@ -28,7 +28,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      actions: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,45 +37,6 @@ jobs:
       - name: Normalize repository owner
         id: repo
         run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-
-      - name: Ensure skopeo is available
-        run: |
-          set -euo pipefail
-          if ! command -v skopeo >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends skopeo
-          fi
-
-      - name: Resolve upstream digest for cache
-        id: digest
-        env:
-          INPUT_DIGEST: ${{ inputs.upstream_digest }}
-          RECIPE_FILE: recipes/${{ inputs.recipe }}
-        run: |
-          set -euo pipefail
-          if [[ -n "${INPUT_DIGEST}" ]]; then
-            DIGEST="${INPUT_DIGEST}"
-          else
-            DIGEST="$(.github/scripts/resolve-base-digest.sh "$RECIPE_FILE")"
-          fi
-
-          if [[ -z "${DIGEST}" ]]; then
-            echo "ERROR: could not resolve the upstream digest for ${RECIPE_FILE}" >&2
-            exit 1
-          fi
-
-          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
-          mkdir -p ~/.cache-${{ inputs.flavor }}
-          echo "${DIGEST}" > ~/.cache-${{ inputs.flavor }}/upstream-digest.txt
-
-      - name: Check if upstream cache entry exists
-        id: cache-check
-        if: steps.digest.outputs.digest != ''
-        uses: actions/cache/restore@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
-        with:
-          path: ~/.cache-${{ inputs.flavor }}
-          key: upstream-${{ inputs.flavor }}-${{ steps.digest.outputs.digest }}
-          lookup-only: true
 
       - name: Build Custom ${{ inputs.flavor }} Image
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1
@@ -95,11 +55,3 @@ jobs:
           skip_checkout: true
           max_layers: 256
           chunkah: true
-
-      - name: Save upstream cache on build success
-        if: steps.digest.outputs.digest != '' && steps.cache-check.outputs.cache-hit != 'true'
-        continue-on-error: true
-        uses: actions/cache/save@3edfce9056124e459a23f683a21433670d47daca # v6.1.0
-        with:
-          path: ~/.cache-${{ inputs.flavor }}
-          key: upstream-${{ inputs.flavor }}-${{ steps.digest.outputs.digest }}

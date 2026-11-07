@@ -1,8 +1,7 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
-![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
-![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
+![Status-Build](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
@@ -94,14 +93,15 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
-| [`.github/workflows/`](.github/workflows/) | Image build (manual/update-triggered), update check and registry cleanup |
-| [`.github/scripts/`](.github/scripts/) | Shared CI helpers (base image digest resolution) |
+| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), hourly freshness check and registry cleanup |
 
 ## Builds
 
-Image builds are intentionally **manual** (`workflow_dispatch` of `build-amd.yml` /
-`build-dual.yml`) or triggered by `check-updates.yml` when the upstream base image
-digest changes.
+Image builds run manually (`workflow_dispatch` of `build.yml`, pick `all`, `amd`
+or `dual`) or are dispatched by `check-updates.yml`. Every hour the check
+compares the base image digest declared in each recipe with the
+`org.opencontainers.image.base.digest` label of the image already published to
+GHCR and only triggers a build when the published image is missing or stale.
 
 Convention: user-facing documentation in pt-BR, code/CI/assets in English.
 

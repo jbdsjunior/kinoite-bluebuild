@@ -32,8 +32,8 @@ jobs:
           min-versions-to-keep: 15
           delete-only-untagged-versions: "false"
 
-  delete-old-runs-and-caches:
-    name: Delete Old Runs and Stale Caches
+  delete-old-runs:
+    name: Delete Old Workflow Runs
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -48,29 +48,3 @@ jobs:
           retain_days: 3
           keep_minimum_runs: 3
 
-      - name: Prune superseded actions caches
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          echo "Scanning for superseded Actions caches in $REPO..."
-
-          # Prune superseded caches independently for AMD and Dual flavors to avoid cross-invalidation
-          ALL_CACHES=$(gh cache list --repo "$REPO" --limit 100 --json id,key,createdAt 2>/dev/null || echo "[]")
-
-          AMD_SUPERSEDED=$(echo "$ALL_CACHES" | jq -r '[.[] | select(.key | startswith("upstream-amd-"))] | sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
-          DUAL_SUPERSEDED=$(echo "$ALL_CACHES" | jq -r '[.[] | select(.key | startswith("upstream-dual-"))] | sort_by(.createdAt) | reverse | .[1:] | .[].id' 2>/dev/null || true)
-
-          CACHES_TO_DELETE=$(printf "%s\n%s\n" "$AMD_SUPERSEDED" "$DUAL_SUPERSEDED" | sed '/^$/d')
-
-          if [[ -n "${CACHES_TO_DELETE}" ]]; then
-            echo "$CACHES_TO_DELETE" | while read -r cache_id; do
-              if [[ -n "$cache_id" ]]; then
-                echo "Deleting superseded cache ID: $cache_id"
-                gh cache delete "$cache_id" --repo "$REPO" || true
-              fi
-            done
-          else
-            echo "No superseded caches found to prune."
-          fi
