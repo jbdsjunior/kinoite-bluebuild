@@ -14,8 +14,6 @@ modules:
     files:
       - source: system
         destination: /
-      - source: nvidia
-        destination: /
 
   - from-file: common-debloat.yml
   - from-file: common-core.yml
@@ -29,7 +27,6 @@ modules:
   - from-file: common-systemd.yml
   - from-file: common-flatpaks.yml
   - from-file: common-kargs.yml
-  - from-file: common-kargs-nvidia.yml
   - type: initramfs
     env:
       DRACUT_NO_XATTR: '1'

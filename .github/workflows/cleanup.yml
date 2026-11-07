@@ -10,26 +10,24 @@ concurrency:
 
 jobs:
   delete-old-images:
-    name: Delete Old Container Images
+    name: Delete Old Container Images (${{ matrix.package }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - "kinoite-amd"
+          - "kinoite-dual"
     steps:
-      - name: Delete old kinoite-amd package versions
-        uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
-        with:
-          package-name: "kinoite-amd"
-          package-type: "container"
-          min-versions-to-keep: 15
-          delete-only-untagged-versions: "false"
-
-      - name: Delete old kinoite-dual package versions
+      - name: Delete old package versions
         uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
         continue-on-error: true
         with:
-          package-name: "kinoite-dual"
+          package-name: ${{ matrix.package }}
           package-type: "container"
           min-versions-to-keep: 15
           delete-only-untagged-versions: "false"
