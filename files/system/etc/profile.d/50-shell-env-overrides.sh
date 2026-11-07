@@ -23,7 +23,7 @@ fi
 unset _fd_bin
 
 if command -v starship >/dev/null 2>&1; then
-    if [ -f "/usr/share/starship/starship.toml" ]; then
+    if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/starship.toml" ] && [ -f "/usr/share/starship/starship.toml" ]; then
         export STARSHIP_CONFIG="/usr/share/starship/starship.toml"
     fi
 

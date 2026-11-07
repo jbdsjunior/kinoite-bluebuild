@@ -1,4 +1,4 @@
 [Confirmations]
 ConfirmDelete=true
 ConfirmEmptyTrash=true
-ConfirmTrash=true
+ConfirmTrash=false
