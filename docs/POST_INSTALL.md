@@ -92,6 +92,10 @@ O utilitário integrado opera em dois modos distintos:
 | :--- | :--- | :--- |
 | **Manutenção completa** | `sys-optimize` | Executa as 8 fases: sysctl, tmpfiles/NoCOW, saúde e reclaim do Btrfs, desfragmentação de discos de VM, retenção do journald, higiene de Flatpak/contêineres, higiene de kargs/deployments e a auditoria final. |
 | **Auditoria somente leitura** | `sudo kinoite-optimize --audit` | Executa exclusivamente a auditoria dos 6 pilares, sem alterar o sistema. |
+| **Ajuda** | `kinoite-optimize --help` | Lista modos e avisos de segurança. |
+
+> [!WARNING]
+> A fase 7 remove kargs de tuning que não sejam baseline upstream (`amd_pstate=active`, `nowatchdog`, `preempt=full`, etc.) e reaplica os blocklists do flavor dual. Se houver alteração, o comando avisa que **um reboot é necessário**. Prefira `--audit` quando quiser apenas inspecionar.
 
 Os 6 pilares da auditoria canônica:
 
@@ -205,3 +209,31 @@ Para garantir que terceiros com acesso físico não possam editar a linha do ker
    sudo passwd root
    ```
    *Efeito:* Garante que, se o sistema entrar em modo `emergency` ou `rescue` (por exemplo, após falha crítica de disco), o shell de manutenção só possa ser acessado mediante digitação de senha, alinhado ao padrão de segurança física *Zero Unauthenticated Recovery*.
+
+---
+
+## 8. Comportamentos Padrão da Imagem (o que muda em relação ao Fedora upstream)
+
+Estes padrões são aplicados pela própria imagem e não exigem ação no pós-instalação — mas você precisa conhecê-los antes de depurar um comportamento inesperado.
+
+| Área | Padrão aplicado | Como reverter |
+| :--- | :--- | :--- |
+| SSH | `PermitRootLogin no`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `MaxAuthTries 3`, `X11Forwarding no` (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`) | Criar `/etc/ssh/sshd_config.d/99-local.conf` com as diretivas desejadas (drop-ins são lidos em ordem alfabética) e `sudo systemctl restart sshd` |
+| DNS | `systemd-resolved` com Control D (bloqueio de malware/ads) + DNS-over-TLS obrigatório, DNSSEC desativado de propósito | `/etc/systemd/resolved.conf.d/60-dns-overrides.conf` + `sudo systemctl restart systemd-resolved` |
+| Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
+| Atualizações | `bootc update` a cada 45 min após o boot, Flatpak (sistema e usuário) e `podman auto-update` na mesma cadência | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
+| GRUB | Auto-hide forçado (`menu_auto_hide=2`, `timeout=0`) com rollback automático em falha de boot | Seção 7.2 |
+| KDE | `SingleClick=true`, tema Breeze Dark, Baloo sem indexar `Cloud`/`rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
+| Kargs | `kinoite-optimize` (fase 7) remove tuning não-upstream e reaplica os blocklists do dual | `--audit` para inspecionar antes; ajustes manuais não são preservados |
+
+### 8.1 Contrato de hardware (endereços PCI)
+
+O flavor é calibrado para a estação de referência e **codifica os endereços PCI da GPU AMD e da NVIDIA** na imagem:
+
+| Elemento | Caminho fixo | Arquivo |
+| :--- | :--- | :--- |
+| CDI AMD (ROCm/HIP) | `/dev/dri/by-path/pci-0000:0c:00.0-{render,card}` | `files/system/etc/cdi/amdgpu.yaml` |
+| Symlink `primary-render` | `pci-0000:0c:00.0` | `files/system/usr/lib/udev/rules.d/70-peripherals.rules` |
+| Auditoria (Pilar 4) | `pci-0000:0c:00.0` e `pci-0000:09:00.0` | `kinoite-optimize` |
+
+Se as GPUs mudarem de slot (troca de placa-mãe, reordenação de barramento), atualize os três pontos ou sobrescreva na auditoria com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`. Caso contrário, o CDI e o symlink ficarão apontando para nós inexistentes.

@@ -23,7 +23,17 @@ cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-dual:latest
 
 To protect both user workstation privacy and project infrastructure integrity:
 - **Zero Credentials in Code:** Secrets, OAuth tokens, SSH keys, and WireGuard/OpenVPN profiles are strictly excluded via `.gitignore` and enforced before commits.
-- **Minimal Workflow Permissions:** All GitHub Actions run with strictly scoped least-privilege tokens (`contents: read`, pinned action commit SHAs).
+- **Least-Privilege Workflow Tokens:** each workflow declares the minimum scope it needs and third-party actions are pinned to commit SHAs:
+
+  | Workflow | `contents` | `packages` | `actions` |
+  | :--- | :---: | :---: | :---: |
+  | `validate.yml` | read | – | – |
+  | `build-amd.yml` / `build-dual.yml` | read | write | write |
+  | `build-image.yml` (reusable) | read | write | write |
+  | `check-updates.yml` | read | – | write |
+  | `cleanup.yml` | read | write | write |
+
+  `packages: write` is required exclusively to push signed images to GHCR and `actions: write` to manage Actions caches and dispatch builds. Only `SIGNING_SECRET` is forwarded to the reusable build workflow (no `secrets: inherit`).
 - **Public Key Only:** Only the public verification key (`cosign.pub`) is tracked in the repository. Signing keys remain secured within GitHub Actions Secrets (`SIGNING_SECRET`).
 
 ## Reporting a Vulnerability

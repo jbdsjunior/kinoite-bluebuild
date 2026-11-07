@@ -1,6 +1,7 @@
 <div align="center">
 
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
+![Status-Validate](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/validate.yml/badge.svg)
 ![Status-AMD](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-amd.yml/badge.svg)
 ![Status-Dual](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build-dual.yml/badge.svg)
 
@@ -58,8 +59,13 @@ Run the unified maintenance utility after booting:
 
 ```bash
 sys-optimize                    # full 8-phase maintenance (root)
-sudo kinoite-optimize --audit   # read-only audit of the 7 engineering pillars
+sudo kinoite-optimize --audit   # read-only audit of the 6 engineering pillars
+sudo kinoite-optimize --help    # usage, modes and safety notes
 ```
+
+> [!NOTE]
+> `sys-optimize` phase 7 sanitizes the host kernel arguments (removing non-upstream
+> tuning kargs) and may require a reboot. Use `--audit` for a read-only check.
 
 Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE, ROCm CDI, and recovery): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
@@ -81,12 +87,34 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 | Path | Purpose |
 | :--- | :--- |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery) |
-| [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy and vulnerability reporting |
-| [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `common-*.yml`) |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery, default behaviors) |
+| [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy, workflow permissions and vulnerability reporting |
+| [`cosign.pub`](cosign.pub) | Public Cosign verification key (the signing key lives in `SIGNING_SECRET`) |
+| [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `common-*.yml` stages) |
 | [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |
+| [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
-| [`.github/workflows/`](.github/workflows/) | Autonomous CI/CD build, update check, and container registry cleanup pipelines |
+| [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
+| [`.github/workflows/`](.github/workflows/) | Static validation, build (manual/update-triggered), update check and registry cleanup |
+| [`.github/scripts/`](.github/scripts/) | Shared CI helpers (base image digest resolution) |
+| [`Makefile`](Makefile) | Local entry points: `make lint`, `make validate`, `make check`, `make hooks` |
+
+## Validation and Development
+
+Every push and pull request runs a static validation workflow (`validate.yml`) that
+lints shell scripts (`shellcheck`), YAML (`yamllint`), workflows (`actionlint`) and
+validates both recipes with the BlueBuild CLI. It never builds or publishes images.
+
+Image builds are intentionally **manual** (`workflow_dispatch` of `build-amd.yml` /
+`build-dual.yml`) or triggered by `check-updates.yml` when the upstream base image
+digest changes.
+
+```bash
+make check    # shellcheck + yamllint + actionlint + bluebuild validate
+make hooks    # enable the repository commit-msg hook (Conventional Commits)
+```
+
+Convention: user-facing documentation in pt-BR, code/CI/assets in English.
 
 ## License
 
