@@ -1,7 +1,7 @@
-# Runbook de Instalação, Operação e Calibração de BIOS (`kinoite-amd` / `kinoite-dual`)
+# Runbook de Instalação e Operação (`kinoite-amd` / `kinoite-dual`)
 
-Guia operacional direto para particionamento, desbloqueio automático TPM 2.0, verificação pós-instalação, montagens Rclone e calibração de BIOS no hardware:
-**AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4 + Gigabyte X570 AORUS PRO WIFI (BIOS F39)**.
+Guia operacional direto para particionamento, desbloqueio automático TPM 2.0, verificação pós-instalação e montagens Rclone:
+**AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4**.
 
 ---
 
@@ -160,59 +160,7 @@ rclone config reconnect GoogleDrive:
 
 ---
 
-## 6. Calibração de BIOS — Gigabyte X570 AORUS PRO WIFI (F39) + 5950X + 64 GB
-
-Topologia física de memória (4 DIMMs mistos, 2 DPC / 3 ranks por canal):
-- **A1/B1 (Stubs):** 16 GB 1R genérico.
-- **A2/B2 (Terminações Físicas Daisy-Chain):** 16 GB 2R KingSpec (obrigatório nas pontas).
-
-### Tabela de Configuração Rápida (Profile A — Baseline Estável)
-
-Pressione `<Delete>` no boot e `<F2>` para **Advanced Mode**:
-
-| Menu BIOS | Parâmetro | Valor Configurado | Justificativa |
-| :--- | :--- | :--- | :--- |
-| **Tweaker** | `X.M.P.` | `Profile1` (DDR4-3200) | Clock nominal homologado |
-| | `FCLK Frequency` | `1600MHz` | Proporção 1:1 estrita (`UCLK==MEMCLK`) |
-| | `Gear Down Mode` | `Enabled` | Estabilidade do barramento de comando |
-| | `Power Down Enable` | `Disabled` | Elimina latência de wakeup de C-state |
-| | `CAD Bus Timing` | `24-24-24-24 Ω` | Força de condução balanceada |
-| | `Data Bus Timing` | `ProcODT = 40.0 Ω` / `RttPark = RZQ/5` | Previne reflexão de sinal nos stubs |
-| | `DRAM Voltage` | `1.350 V` | Teto seguro de retenção térmica |
-| | `CPU VCORE SOC` | `1.100 V` | Impede aquecimento do soquete AM4 |
-| | `Power Supply Idle`| `Typical Current Idle` | Previne travamentos em C6 idle |
-| **Settings**| `Above 4G` / `Re-Size BAR`| `Enabled` | SAM de 8192 MB na GPU RX 6600 XT |
-| | `AMD CPU fTPM` | `Enabled` | Necessário para PCR 7 LUKS |
-| | `TSME` | `Disabled` | Elimina overhead de criptografia de DRAM |
-| **AMD CBS** | `IOMMU` | `Enabled` | Isolamento DMA para KVM e CDI |
-| | `Auto Self Refresh`| `Enabled` | Refrescamento capacitivo estendido |
-| | `CPPC` / `Preferred Cores`| `Enabled` | Obrigatório para o driver `amd-pstate-epp` |
-| | `PBO` | `Auto` (Stock: 142W/95A/140A) | Evita degradação por tensão |
-| | `Curve Optimizer` | `Disabled` | Zero instabilidade no CCD0 |
-| **Boot** | `CSM Support` / `Fast Boot` | `Disabled` | Modo UEFI puro nativo |
-
-Salvar em **Save Profiles → Slot 1** (`Profile 1 - Stable Baseline 64GB`) e pressionar `<F10>`.
-
-### 6.1 Diagnóstico & Prevenção de Quedas em Idle (Zen 3 C6 Lockup)
-
-Processadores AMD Zen 3 com dual-CCD (como o Ryzen 9 5950X de 16 núcleos) podem sofrer *voltage droop* transiente ao alternar rapidamente de alta carga (ex.: encerramento de navegadores ou renderização pesada) para repouso profundo (*C6 Deep Sleep*). Caso ocorra um reset abrupto sem mensagens de erro no disco:
-
-1. **Ajuste Obrigatório no Setup UEFI:**
-   - Entre na BIOS (`<Delete>` no boot) e confirme que `Settings` -> `AMD CBS` -> `CPU Common Options` -> **`Power Supply Idle Control`** está fixado em **`Typical Current Idle`** (e não `Auto` ou `Low Current Idle`).
-   - Garanta que `Curve Optimizer` esteja **`Disabled`** (evitando subtensões no CCD0).
-2. **Inspeção de Quedas no Sistema:**
-   ```bash
-   # Verifica se o último encerramento foi classificado como crash
-   last -x -n 10
-   # Inspeciona mensagens de recuperação de journald
-   journalctl -b 0 | grep -i "uncleanly"
-   ```
-3. **QR Code em Kernel Panic (`drm_panic`):**
-   - O kernel mantém uma janela de **20 segundos** (`kernel.panic = 20`) exibindo um QR Code ou texto de pânico no monitor antes de reiniciar. Aponte a câmera do celular para o QR Code para obter o rastreamento da pilha de chamadas (*backtrace*).
-
----
-
-## 7. Rollback e Recuperação de Emergência
+## 6. Rollback e Recuperação de Emergência
 
 ```bash
 # Reverter para a imagem do deployment anterior
@@ -227,11 +175,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 ---
 
-## 8. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
+## 7. Inicialização Silenciosa e Elegante (Zero-Touch GRUB Auto-Hide)
 
 O Fedora Kinoite utiliza o mecanismo **GRUB Menu Auto-Hide** com transição *flicker-free* via tema Plymouth BGRT (o logotipo da placa-mãe AORUS permanece estático até a tela de login/desbloqueio sem cortes de tela preta).
 
-### 8.1 Provisionamento 100% Nativo na Imagem
+### 7.1 Provisionamento 100% Nativo na Imagem
 
 Como o Fedora Kinoite (`bootc`/`rpm-ostree`) mantém permanentemente múltiplos deployments (sistema ativo + rollback), o GRUB é configurado em modo forçado (`menu_auto_hide=2` + `user.cfg`) através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service):
 
@@ -254,7 +202,7 @@ sudo grub2-editenv - set boot_indeterminate=0
 printf "set timeout=0\nset timeout_style=hidden\n" | sudo tee /boot/grub2/user.cfg
 ```
 
-### 8.2 Salvaguardas de Segurança e Rollback Automático
+### 7.2 Salvaguardas de Segurança e Rollback Automático
 
 - **Fallback Automático (`grub-boot-success.timer`):** O timer de sessão do usuário aguarda 2 minutos de desktop estável para confirmar o boot. Se o sistema falhar ao inicializar ou desligar abruptamente, o GRUB **automaticamente reexibe o menu com as opções de rollback no próximo boot**.
 - **Acesso Manual ao Menu:** Para forçar a exibição do menu do GRUB a qualquer momento, ligue o computador mantendo pressionada a tecla **`Shift`** ou tocando repetidamente em **`Esc`** ou **`F8`**.
@@ -264,7 +212,7 @@ printf "set timeout=0\nset timeout_style=hidden\n" | sudo tee /boot/grub2/user.c
   sudo rm -f /boot/grub2/user.cfg
   ```
 
-### 8.3 Bloqueio de Bootloader e Console (Padrão Apple Firmware Password)
+### 7.3 Bloqueio de Bootloader e Console (Padrão Apple Firmware Password)
 
 Para garantir que terceiros com acesso físico não possam editar a linha do kernel (`init=/bin/bash` ou parâmetros não autorizados):
 

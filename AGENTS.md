@@ -30,7 +30,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 | Tier de Risco | Escopo | Requisito de Evolução |
 | :--- | :--- | :--- |
-| **Tier 1 (Crítico / HW & Boot)** | Bootargs, initramfs, /boot, LUKS/TPM, firmware | Rigor máximo: embasamento upstream e validação de estabilidade (`POST_INSTALL.md §6`). |
+| **Tier 1 (Crítico / HW & Boot)** | Bootargs, initramfs, /boot, LUKS/TPM, firmware | Rigor máximo: embasamento upstream e validação de estabilidade. |
 | **Tier 2 (Médio / SO & Kernel)** | Kargs, sysctl, ZRAM, Btrfs NoCOW, PipeWire | Rigor técnico: validação automatizada (`sysctl`, `systemd-analyze`, testes). |
 | **Tier 3 (Ágil / Apps & UX)** | Flags de browser, Rclone, fontes, aliases, timers | Rigor ágil: Fast-Path direto, DRY/KISS e zero legado. |
 
@@ -44,7 +44,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 - **Memória (64 GB):** ZRAM `zstd` em 32 GB (`60-zram-policy.conf`) e `DefaultLimitMEMLOCK=infinity` (`60-kinoite-limits.conf`) para alocação direta de modelos GGUF (`--mlock`).
 - **Armazenamento (Btrfs):** Atributo NoCOW `+C` estrito via tmpfiles `h` em diretórios de VMs e contêineres (`60-io-tuning-system.conf` e `60-io-tuning-user.conf`).
 - **Periféricos:** Headset USB MCHOSE X9, fones BT Baseus Bass EP10 Pro, caixa Tribit XSound Go, mouses HID VXE e BY Tech (`TAG+="uaccess"` em `70-peripherals.rules`).
-- **Firmware & BIOS:** Calibração física documentada em [`docs/POST_INSTALL.md` §6](docs/POST_INSTALL.md#6-calibração-de-bios--gigabyte-x570-aorus-pro-wifi-f39--5950x--64-gb).
+- **Firmware & UEFI:** Modo UEFI puro (CSM desativado) com Secure Boot e fTPM 2.0 nativos.
 
 ---
 

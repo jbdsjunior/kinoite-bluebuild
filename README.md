@@ -61,7 +61,7 @@ sys-optimize                    # full 8-phase maintenance (root)
 sudo kinoite-optimize --audit   # read-only audit of the 7 engineering pillars
 ```
 
-Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE + Google Drive OAuth 2.0, ROCm CDI, and Gigabyte X570 BIOS F39 calibration): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
+Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE, ROCm CDI, and recovery): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
 
 ---
 
@@ -82,7 +82,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | Path | Purpose |
 | :--- | :--- |
 | [`AGENTS.md`](AGENTS.md) | Authoritative system invariants, hardware baseline, and complete file traceability matrix (§6) |
-| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, BIOS calibration) |
+| [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery) |
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy and vulnerability reporting |
 | [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `common-*.yml`) |
 | [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |
