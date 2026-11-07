@@ -10,26 +10,16 @@ platforms:
   - linux/amd64
 
 modules:
-  - type: files
-    files:
-      - source: system
-        destination: /
+  - from-file: common-stage1.yml
 
-  - from-file: common-debloat.yml
-  - from-file: common-core.yml
-  - from-file: common-fonts.yml
-
-  - from-file: common-drivers.yml
+  # NVIDIA/akmods entre as etapas: preserva a precedência dos kargs de
+  # common-kargs.yml (etapa 2) sobre o arquivo gerado pelo akmods.
   - from-file: common-drivers-nvidia.yml
-  - from-file: common-kvm.yml
-  - from-file: common-tools.yml
 
-  - from-file: common-systemd.yml
-  - from-file: common-flatpaks.yml
-  - from-file: common-kargs.yml
+  - from-file: common-stage2.yml
+
   - type: initramfs
     env:
       DRACUT_NO_XATTR: '1'
 
   - type: signing
-

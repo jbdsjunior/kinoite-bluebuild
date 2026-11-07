@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+# Etapa 1 — overlays de sistema e pacotes base (comum a todos os flavors).
+# O flavor dual insere `common-drivers-nvidia.yml` imediatamente após esta etapa,
+# antes da etapa 2, para preservar a ordem histórica do build.
+modules:
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  - from-file: common-debloat.yml
+  - from-file: common-core.yml
+  - from-file: common-fonts.yml
+
+  - from-file: common-drivers.yml
