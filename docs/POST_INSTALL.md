@@ -1,26 +1,17 @@
 # Runbook de Instalação e Operação (`kinoite-amd` / `kinoite-dual`)
 
-Guia operacional direto para particionamento, desbloqueio automático TPM 2.0, verificação pós-instalação e montagens Rclone:
-**AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4**.
+Guia operacional para particionamento LUKS2/Btrfs, desbloqueio seguro TPM 2.0, manutenção e montagens Rclone.
 
 ---
 
 ## 1. Instalação e Desbloqueio TPM 2.0 (PCR 7)
 
-### 1.1 Particionamento Recomendado (1 TB NVMe — `nvme0n1`)
+### 1.1 Particionamento Recomendado
 
-No Fedora Anaconda (**Custom Partitioning**), configure LUKS2 + Btrfs sem swap em disco (a imagem provisiona **32 GB ZRAM `zstd`** via `60-zram-policy.conf` com `vm.swappiness=150`):
+No instalador do Fedora (Anaconda), selecione o particionamento automático ou personalizado com a opção **"Criptografar meus dados"** (LUKS2) ativada.
+Não crie partição de swap em disco; o sistema provisiona automaticamente **32 GB de ZRAM `zstd`** via `60-zram-policy.conf` (`vm.swappiness=150`).
 
-```text
-/dev/nvme0n1p1 : 1024 MiB | /boot/efi | EFI System Partition (vfat)
-/dev/nvme0n1p2 : 2048 MiB | /boot     | ext4 (bootloader e kernel)
-/dev/nvme0n1p3 : ~950 GiB | LUKS2     | Pool Btrfs [compress=zstd:1]:
-  ├── Subvolume: root  -> /
-  ├── Subvolume: home  -> /var/home
-  └── Subvolume: vms   -> /var/lib/libvirt/images [nodatacow]
-```
-
-### 1.2 Configurar Desbloqueio Seguro TPM 2.0 (Padrão Apple Secure Enclave / FileVault)
+### 1.2 Configurar Desbloqueio Seguro TPM 2.0 (Dois Fatores: Hardware fTPM + PIN)
 
 Execute o utilitário integrado de provisionamento (a partição LUKS raiz é detectada automaticamente):
 
@@ -38,7 +29,7 @@ sudo kinoite-setup-tpm --no-pin
 *(Opcional: caso queira especificar explicitamente um dispositivo, utilize `sudo kinoite-setup-tpm /dev/nvme0n1p3 --pin`)*.
 
 > [!TIP]
-> **Modelo Apple de Proteção Física (PIN + PCR 7/14):** Com a opção `--pin`, o disco só é descriptografado pelo TPM se o usuário digitar o PIN no teclado durante a inicialização. Com `--no-pin`, o fTPM descriptografa o disco automaticamente em ~1s mantendo a tela de login padrão do usuário. Em ambos os modos, a integridade do firmware e bootloader é verificada via PCR 7 + 14, impedindo acesso a dados se o NVMe for fisicamente removido.
+> **Proteção Física de Dois Fatores (PIN + PCR 7/14):** Com a opção `--pin`, o disco só é descriptografado pelo TPM se o usuário digitar o PIN no teclado durante a inicialização. Com `--no-pin`, o fTPM descriptografa o disco automaticamente em ~1s mantendo a tela de login padrão do usuário. Em ambos os modos, a integridade do firmware e bootloader é verificada via PCR 7 + 14, impedindo acesso a dados se o NVMe for fisicamente removido.
 
 > [!NOTE]
 > **Pós-Atualização de Firmware (UEFI) ou Chave MOK:** Se atualizar o firmware da placa-mãe ou inscrever novas chaves MOK, digite a senha manual no primeiro boot e re-execute o comando (`sudo kinoite-setup-tpm --pin` ou `--no-pin`), que recria o slot TPM de forma idempotente.
@@ -153,7 +144,7 @@ systemctl --user enable --now rclone@OneDrive.service
 rclone config reconnect GoogleDrive:
 ```
 
-- **Higiene:** O Dolphin e o subsistema KIO estão pré-configurados (`/etc/xdg/kiorc` e `/etc/xdg/dolphinrc`) com `ConfirmDelete=true`, `ConfirmTrash=false` e `ShowDeleteCommand=true`, permitindo excluir diretamente para a lixeira remota da nuvem sem criar pastas `.Trash-1000`. Além disso, o Rclone bloqueia a sincronização de `.Trash-*` via `--exclude`. Pastas em `/run/user` já estão excluídas do indexador Baloo.
+- **Higiene:** Os diretórios remotos são montados em `/run/user/` (excluídos do indexador Baloo) e o Dolphin/KIO está pré-configurado para exclusão direta na nuvem sem poluição de pastas locais `.Trash-*`.
 
 ---
 
@@ -200,7 +191,7 @@ sudo grub2-editenv - list | grep menu_auto_hide
   sudo rm -f /boot/grub2/user.cfg
   ```
 
-### 7.3 Bloqueio de Bootloader e Console (Padrão Apple Firmware Password)
+### 7.3 Bloqueio de Bootloader e Console (Zero Unauthenticated Recovery)
 
 Para garantir que terceiros com acesso físico não possam editar a linha do kernel (`init=/bin/bash` ou parâmetros não autorizados):
 

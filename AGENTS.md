@@ -52,7 +52,7 @@ Fonte canônica única (*Single Source of Truth*) para agentes que operam no rep
 
 - **Boot & Kernel Arguments:**
   - Linha de boot limpa upstream gerenciada declarativamente via Bootc ([`recipes/common-kargs.yml`](recipes/common-kargs.yml) com `initcall_blacklist=simpledrm_platform_driver_init`, `rd.driver.blacklist=nouveau`, `modprobe.blacklist=nouveau`). No flavor dual, adiciona blacklist de `nvidia-drm` em [`recipes/common-drivers-nvidia.yml`](recipes/common-drivers-nvidia.yml). Proibido kargs redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`, `slab_nomerge`, `page_alloc.shuffle=1`, `btusb.enable_autosuspend=0`).
-- **Segurança Física (Padrão Apple - Zero Unauthenticated Recovery):**
+- **Segurança Física (Padrão Zero Unauthenticated Recovery):**
   - Proibido geradores ou drop-ins com `SYSTEMD_SULOGIN_FORCE=1` ou bypass de senha em consoles de emergência/resgate. Acesso físico de manutenção exige credencial legítima (`sulogin`).
   - Desbloqueio TPM com autenticação de 2 fatores: Hardware fTPM + PIN (`--tpm2-with-pin=yes`) vinculado a PCR 7 + 14 em [`files/system/usr/bin/kinoite-setup-tpm`](files/system/usr/bin/kinoite-setup-tpm).
   - Bloqueio de bootloader via `grub2-setpassword` documentado em [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
