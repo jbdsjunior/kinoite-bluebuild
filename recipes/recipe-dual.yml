@@ -28,7 +28,8 @@ modules:
 
   - from-file: common-systemd.yml
   - from-file: common-flatpaks.yml
-  - from-file: common-kargs-dual.yml
+  - from-file: common-kargs.yml
+  - from-file: common-kargs-nvidia.yml
   - type: initramfs
     env:
       DRACUT_NO_XATTR: '1'
