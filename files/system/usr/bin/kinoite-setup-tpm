@@ -126,7 +126,7 @@ if [ "$PIN_MODE" = "yes" ]; then
 fi
 
 echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 + 14 ==="
-# Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after BIOS update)
+# Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after UEFI firmware update)
 systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
 # shellcheck disable=SC2086
 systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7+14 $PIN_ARG "$DEVICE"
