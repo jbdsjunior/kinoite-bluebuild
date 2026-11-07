@@ -7,6 +7,11 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
 concurrency:
   group: build-pipeline-dual-${{ github.ref }}
   cancel-in-progress: true
