@@ -8,8 +8,7 @@ modules:
         - kinoite-boot-init.service
 
         # Base update automation & timers (no upstream preset)
-        # flatpak-*-update.service/timer are shipped by the Fedora flatpak package
-        # (do not re-ship them: only enable here).
+        # flatpak-*-update units are provisioned by files/system to automate background updates
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
         - kinoite-maintenance.timer
