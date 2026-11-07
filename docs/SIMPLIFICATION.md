@@ -36,7 +36,6 @@ utilitário de terminal, é container; se tem janela, é Flatpak.**
 | `replace: ocl-icd ← OpenCL-ICD-Loader` | **removido** | Só existia por causa de `mesa-libOpenCL`/`clinfo`, que saíram da imagem. |
 | `mesa-libOpenCL` (43,8 MB) + `clinfo` (0,2 MB) | **removidos** | OpenCL de host é nicho; a stack ROCm/OpenCL vive no container. Economia ≈ 44 MB. |
 | `git` (completo) | **removido** | O base instala `git-core` **de propósito** para não puxar Perl. A camada adicionava `perl-Git`/`perl-libs` (~17 MB) sem função. |
-| Modern CLI (`eza`, `bat`, `btop`, `ripgrep`, `fd-find`, `fzf`, `zoxide`) | **removidos** | Utilitários de terminal e desenvolvimento; pertencem ao Distrobox/container, mantendo a imagem do host atômica e minimalista. |
 | Mascaramento de `systemd-remount-fs.service` | **removido** | Workaround legado de Silverblue/rpm-ostree; em bootc+composefs o `/` é somente leitura e o mask podia impedir remontagem de `/boot` conforme o fstab. |
 
 ### 2.2 Kernel arguments (flavor dual)

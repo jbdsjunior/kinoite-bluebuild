@@ -20,6 +20,15 @@ modules:
         # Cloud Sync
         - rclone
 
+        # Modern CLI & Terminal Workflow
+        - eza
+        - bat
+        - btop
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+
         # Containers & Virtualization CLI
         - distrobox
         - docker-compose
