@@ -1,0 +1,3 @@
+# Baseline declarativo de kargs headless para GPU NVIDIA secundária (AMD display + NVIDIA compute)
+# Sobrescreve a configuração automática do akmods, blindando Wayland e VMs QEMU
+kargs = ["rd.driver.blacklist=nvidia-drm", "modprobe.blacklist=nvidia-drm"]
