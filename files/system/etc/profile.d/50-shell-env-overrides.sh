@@ -3,7 +3,7 @@
 # Critical flow: bypass non-interactive shell sessions immediately
 case "$-" in
     *i*) ;;
-      *) return 0 2>/dev/null ;;
+      *) return 0 2>/dev/null || exit 0 ;;
 esac
 
 # FZF configuration (requires conditional binary detection, cannot use environment.d)

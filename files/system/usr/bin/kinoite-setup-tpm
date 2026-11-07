@@ -119,24 +119,27 @@ if [ "$PIN_MODE" = "auto" ]; then
     fi
 fi
 
-PIN_ARG=""
+ENROLL_ARGS=("--tpm2-device=auto" "--tpm2-pcrs=7+14")
 if [ "$PIN_MODE" = "yes" ]; then
-    PIN_ARG="--tpm2-with-pin=yes"
+    ENROLL_ARGS+=("--tpm2-with-pin=yes")
     echo "[INFO] Ativando autenticação de dois fatores: TPM 2.0 + PIN (--tpm2-with-pin=yes)..."
 fi
 
 echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 + 14 ==="
 # Wipe existing TPM2 slot if present to permit idempotent re-enrollment (e.g. after UEFI firmware update)
 systemd-cryptenroll --wipe-slot=tpm2 "$DEVICE" 2>/dev/null || true
-# shellcheck disable=SC2086
-systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7+14 $PIN_ARG "$DEVICE"
+systemd-cryptenroll "${ENROLL_ARGS[@]}" "$DEVICE"
 
 # Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
 LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
 if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
     if grep -q "$LUKS_UUID" /etc/crypttab; then
         if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
-            sed -i "s/\(.*$LUKS_UUID.*none.*\)/\1,tpm2-device=auto/" /etc/crypttab
+            if grep "$LUKS_UUID" /etc/crypttab | grep -qE "none\s+[a-zA-Z0-9]"; then
+                sed -i "/$LUKS_UUID/s/$/,tpm2-device=auto/" /etc/crypttab
+            else
+                sed -i "/$LUKS_UUID/s/$/ tpm2-device=auto/" /etc/crypttab
+            fi
             echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
         fi
     fi

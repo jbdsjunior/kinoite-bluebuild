@@ -1,2 +1,2 @@
 [General]
-exclude folders[$ei]=$HOME/Cloud,/run/user
+exclude folders[$ei]=$HOME/Cloud,$HOME/.cache/rclone,/run/user

@@ -83,6 +83,7 @@ NOCOW_USER_DIRS=(
     "$REAL_HOME/.local/share/containers/storage"
     "$REAL_HOME/.local/share/containers/storage/volumes"
     "$REAL_HOME/.cache/rclone"
+    "$REAL_HOME/.local/state/wireplumber"
 )
 
 # Helper function to check and apply NoCOW to a directory
@@ -398,10 +399,8 @@ echo "[OK] Parâmetros VM: vm.swappiness=${SWAPPINESS} (alvo 150), vm.page-clust
 
 # Checagem de NoCOW (+C) nos diretórios críticos
 NOCOW_PATHS=(
-    "/var/lib/containers/storage"
-    "/var/lib/libvirt/images"
-    "$REAL_HOME/.cache/rclone"
-    "$REAL_HOME/.local/state/wireplumber"
+    "${NOCOW_SYSTEM_DIRS[@]}"
+    "${NOCOW_USER_DIRS[@]}"
 )
 for p in "${NOCOW_PATHS[@]}"; do
     if [ -d "$p" ] && command -v lsattr >/dev/null 2>&1; then
@@ -477,7 +476,7 @@ echo "[OK] Kernel SysRq: ${SYSRQ} (alvo 1 - REISUB seguro habilitado)."
 
 CMDLINE=$(cat /proc/cmdline 2>/dev/null || true)
 BANNED_DETECTED=0
-BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
+BANNED_LIST=("preempt=full" "nowatchdog" "tsc=reliable" "amd_iommu=on" "iommu=pt" "amd_pstate=active" "slab_nomerge" "vsyscall=none" "page_alloc.shuffle=1" "btusb.enable_autosuspend=0")
 if command -v lspci >/dev/null 2>&1 && lspci | grep -qi "VGA.*AMD" && lspci | grep -qi "NVIDIA"; then
     BANNED_LIST+=("nvidia-drm.modeset=1")
 fi
