@@ -1,47 +1,49 @@
 # Diretrizes Operacionais do Agente (AGENTS.md)
 
-Este arquivo contém apenas as invariantes críticas sempre ativas para minimizar o consumo de tokens em cada rodada de auditoria e edição.
-O catálogo linear completo de frases simples descrevendo cada arquivo do projeto está em `docs/DIRECTIVES.md`.
+Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e invariantes operacionais para agentes e desenvolvedores.
+O catálogo linear de frases simples com a arquitetura e arquivos do sistema operacional está em `docs/DIRECTIVES.md`.
 
-## Arquitetura Essencial e Papel das GPUs
+## Papel e Modo de Operação do Agente de IA
 
-- O projeto constrói imagens imutáveis Fedora Kinoite via BlueBuild, Bootc e OSTree nas variantes `kinoite-amd` (100% AMD) e `kinoite-dual` (display AMD + computação NVIDIA).
-- A árvore `/usr/lib/` e `/usr/share/` concentra as configurações do sistema para manter o `/etc/` limpo e seguir a regra de zero duplicação.
-- A GPU primária AMD Radeon RX 6600 XT (`0000:0c:00.0`) é dedicada exclusivamente ao display Wayland, KDE Plasma, aceleração Vulkan/VA-API e máquinas virtuais.
-- A GPU secundária NVIDIA GeForce RTX 3080 Ti (`0000:09:00.0`) opera estritamente headless na imagem `kinoite-dual` apenas para IA e CUDA, sem render nodes DRM.
-- Os guias operacionais e diretrizes (`AGENTS.md`, `docs/DIRECTIVES.md` e `docs/POST_INSTALL.md`) utilizam português do Brasil e `README.md`, `SECURITY.md`, código, scripts e mensagens de sistema utilizam inglês.
+- O modelo opera prioritariamente em modo declarativo, econômico e cirúrgico, evitando verbosidade desnecessária.
+- As respostas devem ser densas, objetivas e em português do Brasil, utilizando links clicáveis com o esquema `file://`.
+- É obrigatório minimizar o consumo de tokens: nunca leia arquivos inteiros quando apenas partes específicas forem necessárias.
+- Utilize `read_file` com parâmetros `StartLine` e `EndLine`, ou `grep` antes de abrir arquivos extensos.
+- Para leitura de documentação externa ou busca web, use ferramentas locais ou endpoints dedicados sem despejar HTML bruto no contexto.
+- Ao rodar comandos no terminal, evite comandos que emitam centenas de linhas sem filtro (`grep`, `head -n 40`, `tail -n 40`).
+- Use `edit_file` com alvos cirúrgicos e mínimos em vez de reescrever arquivos inteiros com `write_file`.
 
-## Invariantes de Engenharia e Regras Proibidas
+## Fluxo de Trabalho e Planejamento
 
-- É terminantemente proibido adicionar `nvidia-drm.modeset=1` ou permitir a criação de render nodes DRM na GPU secundária NVIDIA.
-- É proibido incluir qualquer arquivo, driver ou módulo da NVIDIA na imagem `kinoite-amd`.
-- É proibido desativar a autenticação obrigatória de root (`sulogin`) em consoles de recuperação ou emergência.
-- É proibido adicionar kargs redundantes ou obsoletos como `preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt` ou `amd_pstate=active`.
-- É proibido colocar arquivos de configuração de sistema em `/etc/` quando o subsistema suportar diretórios em `/usr/lib/` ou `/usr/share/`.
-- É proibido realizar downgrade de pacotes base do Fedora ou reintroduzir scripts imperativos (`type: script`) nas receitas quando houver solução declarativa.
+- Demandas de modificação estrutural, refatoração ou adição de componentes devem ser planejadas antes da execução.
+- Sempre verifique o estado do repositório (`git status -s`) antes de iniciar modificações no código ou configurações.
+- Quando houver ambiguidade no requisito, solicite alinhamento antes de tomar decisões arquiteturais irreversíveis.
+- Mudanças que afetem arquivos do repositório exigem sincronização imediata da frase descritiva em `docs/DIRECTIVES.md`.
+- Concluída a tarefa, realize testes de integridade e apresente um resumo enxuto do que foi validado.
 
-## Critérios para Adição de Novos Softwares
+## Práticas de Git e Controle de Versão
 
-- Aplicativos com interface gráfica devem ser instalados exclusivamente via Flatpak em `recipes/common-flatpaks.yml`.
-- Linguagens de programação, SDKs e ambientes de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
-- A imagem base OSTree recebe apenas drivers de hardware, virtualização, serviços de infraestrutura e utilitários CLI essenciais.
-- Configurações de aplicativos de usuário devem ser aplicadas via `user-tmpfiles.d` usando templates armazenados em `/usr/share/`.
+- Os commits devem seguir rigorosamente o padrão Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`).
+- Não realize `git commit -a` ou adicione diretórios inteiros sem inspeção.
+- O stage de alterações deve ser feito de forma individual por arquivo através de `git add <caminho/do/arquivo>`.
+- Inspecione detalhadamente o diff preparado com `git diff --cached` antes de efetivar o commit.
+- O `.gitignore` deve proteger a governança de segredos e manter arquivos de regras e documentação devidamente rastreados.
+- O envio ao repositório remoto deve ser realizado somente após todas as verificações pré-commit passarem sem erros.
 
-## Validação Obrigatória Pré-Commit e Boas Práticas de Git
+## Validação Obrigatória Pré-Commit
 
-- Todo script shell alterado deve passar na verificação de sintaxe `bash -n` sem erros.
-- Todos os arquivos YAML de receitas e workflows devem ser validados com um parser YAML estrito antes do commit.
-- Arquivos TOML de kargs e arquivos `.conf` do systemd/sysctl devem ser validados quanto à sintaxe antes do commit.
-- Qualquer alteração nas regras do sistema deve ser validada executando `kinoite-optimize --audit` com aprovação nos 6 pilares.
-- Sempre que adicionar, remover ou alterar a função de um arquivo do repositório, sincronize a frase correspondente em `docs/DIRECTIVES.md`.
-- Os commits devem seguir o padrão Conventional Commits (`feat`, `fix`, `refactor`, `docs`, `ci`, `chore`) com `git add <arquivo>` individual e inspeção de `git diff --cached`.
+- Todo script shell (`.sh` ou executável em `files/system/usr/bin/`) deve passar na verificação `bash -n` sem erros de sintaxe.
+- Todos os manifestos YAML em `recipes/` e `.github/` devem ser validados quanto à sintaxe antes de qualquer commit.
+- Arquivos de configuração TOML e arquivos de unidades/sysctl/modprobe do systemd devem ser verificados contra erros de formato.
+- Qualquer alteração nas regras de sistema deve ser validada executando `./files/system/usr/bin/kinoite-optimize --audit` com 100% de aprovação.
+- Verifique se a cobertura de arquivos em `docs/DIRECTIVES.md` permanece em 100% após a criação, exclusão ou renomeação de arquivos.
 
-## Índice de Leitura Cirúrgica (`docs/DIRECTIVES.md`)
+## Índice de Consulta Cirúrgica (`docs/DIRECTIVES.md`)
 
-- Nunca leia `docs/DIRECTIVES.md` inteiro sem necessidade; consulte apenas o intervalo de linhas da categoria pertinente com `read_file` (`StartLine`/`EndLine`) ou `grep`.
-- Arquitetura, organização do repositório, hardware/GPUs e flavors: linhas 6 a 42 de `docs/DIRECTIVES.md`.
-- Receitas BlueBuild, kargs e isolamento NVIDIA: linhas 44 a 71 de `docs/DIRECTIVES.md`.
-- Armazenamento Btrfs NoCOW, ZRAM, limites de memória, segurança, rede e DNS: linhas 73 a 101 de `docs/DIRECTIVES.md`.
-- Timers systemd de atualização/manutenção, desktop KDE e navegadores: linhas 103 a 140 de `docs/DIRECTIVES.md`.
-- Aceleração de IA/CDI, periféricos, Rclone, utilitários locais e CI/CD: linhas 142 a 168 de `docs/DIRECTIVES.md`.
-- Invariantes de engenharia, regras proibidas, adição de software e validação pré-commit: linhas 170 a 192 de `docs/DIRECTIVES.md`.
+- Consulte `docs/DIRECTIVES.md` sob demanda utilizando `read_file` pelo intervalo de linhas da categoria necessária.
+- Arquitetura, organização do repositório, hardware e flavors: linhas 6 a 42 de `docs/DIRECTIVES.md`.
+- Receitas BlueBuild, módulos e isolamento NVIDIA: linhas 44 a 71 de `docs/DIRECTIVES.md`.
+- Armazenamento Btrfs NoCOW, ZRAM, limites de memória e segurança: linhas 73 a 101 de `docs/DIRECTIVES.md`.
+- Timers de automação, ambiente desktop KDE e navegadores: linhas 103 a 140 de `docs/DIRECTIVES.md`.
+- Aceleração de IA, CDI, periféricos, Rclone e CI/CD: linhas 142 a 168 de `docs/DIRECTIVES.md`.
+- Invariantes de engenharia, regras proibidas e critérios de software: linhas 170 a 192 de `docs/DIRECTIVES.md`.
