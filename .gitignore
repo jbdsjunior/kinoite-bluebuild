@@ -54,4 +54,3 @@ Thumbs.db
 .agents/**/*.tmp
 .agents/**/*.log
 *.local.md
-AGENTS.md
