@@ -1,7 +1,13 @@
 # Diretrizes Operacionais do Agente (AGENTS.md)
 
-Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e invariantes operacionais para agentes e desenvolvedores.
-O catálogo linear de frases simples com a arquitetura e arquivos do sistema operacional está em `docs/DIRECTIVES.md`.
+Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e governança de contexto para agentes e desenvolvedores.
+
+## Separação de Responsabilidades dos Arquivos de Diretrizes
+
+- O arquivo `AGENTS.md` contém exclusivamente: regras de operação do modelo de IA, boas práticas de Git, fluxo de trabalho/planejamento, testes de validação pré-commit e o índice de consulta de diretrizes.
+- É proibido inserir no `AGENTS.md` descrições técnicas de hardware, arquitetura do SO, parâmetros de configuração ou inventário de arquivos do repositório.
+- O arquivo `docs/DIRECTIVES.md` contém exclusivamente: o catálogo linear completo de frases simples que descrevem a arquitetura do SO, hardware, GPUs, receitas BlueBuild, kargs, serviços, arquivos de configuração e regras de engenharia do sistema.
+- É proibido inserir no `docs/DIRECTIVES.md` instruções de comportamento de IA, comandos de terminal para agentes, práticas de Git ou regras de interação.
 
 ## Papel e Modo de Operação do Agente de IA
 
