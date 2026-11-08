@@ -27,12 +27,11 @@ To protect both user workstation privacy and project infrastructure integrity:
 
   | Workflow | `contents` | `packages` | `actions` |
   | :--- | :---: | :---: | :---: |
-  | `build.yml` (calls `build-image.yml`) | read | write | – |
-  | `build-image.yml` (reusable) | read | write | – |
+  | `build.yml` | read | write | – |
   | `check-updates.yml` | read | – | write |
   | `cleanup.yml` | read | write | write |
 
-  `packages: write` is required exclusively to push signed images to GHCR and `actions: write` to dispatch/delete workflow runs. Only `SIGNING_SECRET` is forwarded to the reusable build workflow (no `secrets: inherit`).
+  `packages: write` is required exclusively to push signed images to GHCR and `actions: write` to dispatch/delete workflow runs. The Cosign private key is accessed securely via repository secret (`SIGNING_SECRET`).
 - **Public Key Only:** Only the public verification key (`cosign.pub`) is tracked in the repository. Signing keys remain secured within GitHub Actions Secrets (`SIGNING_SECRET`).
 
 ## Reporting a Vulnerability
