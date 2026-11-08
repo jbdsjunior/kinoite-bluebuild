@@ -1,6 +1,6 @@
 [Appearance]
 ColorScheme=Kinoite
-Font=JetBrainsMono Nerd Font,11,-1,5,50,0,0,0,0,0
+Font=JetBrainsMono Nerd Font,10,-1,5,50,0,0,0,0,0
 LineSpacing=1
 CursorShape=0
 BlinkingCursorEnabled=true
