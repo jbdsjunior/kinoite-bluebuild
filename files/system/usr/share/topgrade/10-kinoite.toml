@@ -1,0 +1,6 @@
+# Declarative baseline overrides for Topgrade on Fedora Kinoite
+# Merged automatically into ~/.config/topgrade.d/ on user session start
+
+[misc]
+# Disable steps that conflict with immutable OS package management or Distrobox containers
+disable = ["toolbx", "tailscale"]

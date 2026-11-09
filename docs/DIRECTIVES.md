@@ -12,7 +12,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - O diretório `recipes/` centraliza os manifestos principais `recipe-*.yml` e submódulos compartilhados `common-*.yml`.
 - O diretório `files/system/` armazena todos os arquivos de configuração comuns a todas as imagens.
 - O diretório `files/nvidia/` armazena exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
-- O diretório `files/dnf/` armazena as definições de repositórios externos de pacotes.
+- O diretório `files/dnf/` armazena as definições de repositórios externos de software.
 - `AGENTS.md`: define as invariantes críticas, regras proibidas, validações pré-commit e o índice de leitura cirúrgica para agentes de IA.
 - `docs/DIRECTIVES.md`: armazena o catálogo completo de frases simples lineares sobre o hardware, a arquitetura e cada arquivo do repositório.
 - `docs/POST_INSTALL.md`: documenta o guia operacional pós-instalação com foco em TPM 2.0, Rclone, manutenção e recuperação.
@@ -45,27 +45,26 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 
 - `recipes/recipe-amd.yml`: manifesto principal que compila a imagem limpa para sistemas exclusivos AMD.
 - `recipes/recipe-dual.yml`: manifesto principal que compila a imagem para estações Dual-GPU com display AMD e computação NVIDIA.
-- `recipes/common-core.yml`: instala aplicativos essenciais do KDE Plasma, utilitários de monitoramento de hardware e pacotes de idioma português.
-- `recipes/common-debloat.yml`: remove navegadores nativos redundantes, pacotes de boas-vindas e agentes de convidado de máquinas virtuais inúteis em bare metal.
+- `recipes/common-core.yml`: instala aplicativos essenciais do KDE Plasma, utilitários de monitoramento de hardware e suporte ao idioma português.
+- `recipes/common-debloat.yml`: remove navegadores nativos redundantes, utilitários de boas-vindas e agentes de máquinas virtuais desnecessários em bare metal.
 - `recipes/common-drivers.yml`: instala drivers de aceleração de vídeo Mesa Freeworld e codecs multimídia completos da RPM Fusion para a GPU AMD.
 - `recipes/common-drivers-nvidia.yml`: compila o driver `nvidia-open` via akmods e aplica declarativamente os arquivos de isolamento headless de `files/nvidia/`.
 - `recipes/common-fonts.yml`: instala a fonte de interface Inter Variable e as fontes monoespaçadas Nerd Fonts (JetBrainsMono, FiraCode e Symbols).
 - `recipes/common-flatpaks.yml`: instala a seleção padronizada de aplicativos Flatpak de escopo de sistema para navegadores, desenvolvimento, IA e produtividade.
 - `recipes/common-kargs.yml`: define a baseline compartilhada de argumentos de boot que bloqueia o driver nouveau e desativa o framebuffer simpledrm.
-- `recipes/common-kvm.yml`: instala a pilha de virtualização KVM/QEMU, GNOME Boxes e suporte a emulação de TPM 2.0 via swtpm.
+- `recipes/common-kvm.yml`: instala a pilha de virtualização KVM/QEMU, GNOME Boxes e suporte a emulação de TPM 2.0.
 - `recipes/common-systemd.yml`: habilita os serviços e timers de automação nos escopos de sistema e usuário e mascara o `systemd-remount-fs.service`.
-- `recipes/common-tools.yml`: instala ferramentas modernas de linha de comando (`eza`, `bat`, `btop`, `ripgrep`, `fd-find`, `fzf`, `zoxide`, `starship`, `topgrade`, `git`, `rclone`, `distrobox`, `docker-compose`, `podman-docker`, `tailscale`, `fastfetch`, `mesa-libOpenCL`, `clinfo` e `vulkan-tools`) e resolve o conflito de pacotes OpenCL substituindo `OpenCL-ICD-Loader` por `ocl-icd`.
+- `recipes/common-tools.yml`: instala ferramentas modernas de linha de comando para produtividade no terminal, contêineres, sincronização em nuvem e diagnósticos de hardware.
 
 ## Kernel Arguments (Kargs) e Isolamento de Drivers
 
-- A linha de boot do sistema é mantida limpa, enxuta e declarativa através de arquivos nativos do Bootc.
 - `initcall_blacklist=simpledrm_platform_driver_init`: evita conflitos de framebuffer primitivo com o driver DRM da AMD durante o early boot.
 - `rd.driver.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau na fase de initramfs.
 - `modprobe.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau no userspace.
 - `rd.driver.blacklist=nvidia-drm`: impede a inicialização do módulo de modosetting de vídeo da NVIDIA no initramfs da imagem dual.
 - `modprobe.blacklist=nvidia-drm`: impede a criação do nó gráfico `/dev/dri/renderD129` pela NVIDIA preservando `/dev/nvidia*` e `/dev/nvidia-uvm` para CUDA.
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve declarativamente o arquivo gerado pelo akmods, eliminando `nvidia-drm.modeset=1` e aplicando o blacklist de `nvidia-drm`.
-- `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: substitui declarativamente o arquivo do pacote RPM omitindo `nvidia_drm` da diretiva `force_drivers`.
+- `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: substitui declarativamente a configuração padrão do dracut omitindo `nvidia_drm` da diretiva `force_drivers`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: reforça no dracut a omissão explícita dos módulos `nvidia_drm` e `nvidia-drm` da imagem do ramdisk.
 - `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm` no modprobe e redireciona tentativas de carregamento para `/usr/bin/true`.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação de módulos akmods pelo Secure Boot.
@@ -97,8 +96,8 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `files/system/usr/lib/sysctl.d/90-network-tuning.conf`: ativa controle de congestionamento TCP BBR com fila justa (`fq`), amplia buffers TCP para 32 MB, ativa TCP Fast Open e bloqueia redirecionamentos ICMP.
 - `files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`: configura DNS-over-TLS estrito usando Control D (com bloqueio nativo de malware, anúncios e trackers) e Cloudflare como fallback.
 - `files/system/usr/lib/firewalld/zones/tailscale.xml`: declara a zona confiável do firewall dedicada à interface `tailscale0` da VPN mesh.
-- `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale para atualização contínua do pacote `tailscale`.
-- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs para fornecimento dos pacotes `starship` e `topgrade`.
+- `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale para a VPN mesh.
+- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs para fornecimento de ferramentas complementares de terminal.
 
 ## Atualização Contínua e Timers Automáticos
 
@@ -138,6 +137,8 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `files/system/usr/share/starship/starship.toml`: configura o prompt Starship em linha única com indicadores enxutos de diretório, branch Git, linguagens, contêiner/Distrobox e duração de comandos.
 - `files/system/etc/profile.d/50-shell-env-overrides.sh`: inicializa FZF (com `fd`), Starship e Zoxide em shells interativos Bash/Zsh e executa o Fastfetch apenas uma vez por sessão de terminal.
 - `files/system/etc/profile.d/60-kinoite-aliases.sh`: disponibiliza aliases para `eza`, `bat`, `btop`, `topgrade`, proteção interativa (`cp -i`, `rm -i`) e atalhos rápidos de diagnóstico de serviços, GPUs e Bootc.
+- `files/system/usr/share/topgrade/10-kinoite.toml`: define as exclusões declarativas de passos conflitantes ou redundantes no sistema imutável para o atualizador Topgrade.
+- `files/system/usr/share/user-tmpfiles.d/70-topgrade.conf`: provisiona o drop-in de configuração do Topgrade em `~/.config/topgrade.d/` automaticamente no login do usuário.
 
 ## Aceleração de IA, CDI, Periféricos e Virtualização
 

@@ -48,8 +48,8 @@ Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e 
 
 - Consulte `docs/DIRECTIVES.md` sob demanda utilizando `read_file` pelo intervalo de linhas da categoria necessária.
 - Arquitetura, organização do repositório, hardware e flavors: linhas 6 a 42 de `docs/DIRECTIVES.md`.
-- Receitas BlueBuild, módulos e isolamento NVIDIA: linhas 44 a 71 de `docs/DIRECTIVES.md`.
-- Armazenamento Btrfs NoCOW, ZRAM, limites de memória e segurança: linhas 73 a 101 de `docs/DIRECTIVES.md`.
-- Timers de automação, ambiente desktop KDE e navegadores: linhas 103 a 140 de `docs/DIRECTIVES.md`.
-- Aceleração de IA, CDI, periféricos, Rclone e CI/CD: linhas 142 a 168 de `docs/DIRECTIVES.md`.
-- Invariantes de engenharia, regras proibidas e critérios de software: linhas 170 a 192 de `docs/DIRECTIVES.md`.
+- Receitas BlueBuild, módulos e isolamento NVIDIA: linhas 44 a 70 de `docs/DIRECTIVES.md`.
+- Armazenamento Btrfs NoCOW, ZRAM, limites de memória e segurança: linhas 72 a 100 de `docs/DIRECTIVES.md`.
+- Timers de automação, ambiente desktop KDE e navegadores: linhas 102 a 141 de `docs/DIRECTIVES.md`.
+- Aceleração de IA, CDI, periféricos, Rclone e CI/CD: linhas 143 a 169 de `docs/DIRECTIVES.md`.
+- Invariantes de engenharia, regras proibidas e critérios de software: linhas 171 a 193 de `docs/DIRECTIVES.md`.
