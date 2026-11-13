@@ -101,9 +101,12 @@
 
 - `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland nativo, GPU AMD, VA-API e desativa telemetria em Chromium.
 - `files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`: provisiona `chromium-flags.conf` para Brave e Chrome no login.
-- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
-- `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak para Brave, Chrome, Firefox e VS Code.
+- `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Jan, Brave, Chrome, Firefox e VS Code).
+- `files/system/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
 - `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo, socket Podman (`ro`) e `ELECTRON_OZONE_PLATFORM_HINT=auto` no VS Code Flatpak.
+- `files/system/usr/share/flatpak/overrides/global`: aplica leitura de `gtk-3.0`/`gtk-4.0`/`fontconfig`/`kdeglobals`, Wayland nativo em Electron, FreeType e `LIBVA_DRIVER_NAME=radeonsi` para todos os Flatpaks.
+- `files/system/usr/share/flatpak/overrides/org.mozilla.firefox`: habilita `MOZ_ENABLE_WAYLAND=1` e integração D-Bus com KDE Plasma no Firefox Flatpak.
+- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
 - `files/system/etc/fonts/conf.d/64-font-rendering.conf`: configura hinting leve, RGB subpixel, Inter Variable e fallback JetBrainsMono Nerd Font.
 - `files/system/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas, oculta barra de menus e ativa miniaturas locais no Dolphin.
