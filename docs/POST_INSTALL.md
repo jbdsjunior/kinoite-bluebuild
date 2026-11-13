@@ -223,7 +223,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
 | Atualizações | `bootc update` a cada 45 min após o boot, Flatpak (sistema e usuário) e `podman auto-update` na mesma cadência | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
 | GRUB | Auto-hide forçado (`menu_auto_hide=2`, `timeout=0`) com rollback automático em falha de boot | Seção 7.2 |
-| KDE | `SingleClick=true`, tema Breeze Dark, Baloo sem indexar `Cloud`/`rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
+| KDE | `SingleClick=true`, tema Breeze Dark, Baloo sem indexar `rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 | Kargs | `kinoite-optimize` (fase 7) remove tuning não-upstream e reaplica os blocklists do dual | `--audit` para inspecionar antes; ajustes manuais não são preservados |
 
 ### 8.1 Contrato de hardware (endereços PCI)

@@ -7,6 +7,3 @@ modules:
     kargs:
       # Prevenção de conflito de framebuffer primitivo com Mesa/DRM no early boot
       - initcall_blacklist=simpledrm_platform_driver_init
-      # Bloqueio estrito do driver nouveau no initramfs e userspace
-      - rd.driver.blacklist=nouveau
-      - modprobe.blacklist=nouveau

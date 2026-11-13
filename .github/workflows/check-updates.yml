@@ -1,6 +1,6 @@
 name: check-updates
 
-# Hourly freshness check, stateless by design:
+# Scheduled freshness check (every 2 hours), stateless by design:
 #
 #   upstream digest = digest of the base image declared by the recipe
 #   current digest  = `org.opencontainers.image.base.digest` label of the image

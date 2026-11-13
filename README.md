@@ -95,12 +95,12 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
-| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), hourly freshness check and registry cleanup |
+| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 2h) and registry cleanup |
 
 ## Builds
 
 Image builds run manually (`workflow_dispatch` of `build.yml`, pick `all`, `amd`
-or `dual`) or are dispatched by `check-updates.yml`. Every hour the check
+or `dual`) or are dispatched by `check-updates.yml`. Every 2 hours the check
 compares the base image digest declared in each recipe with the
 `org.opencontainers.image.base.digest` label of the image already published to
 GHCR and only triggers a build when the published image is missing or stale.

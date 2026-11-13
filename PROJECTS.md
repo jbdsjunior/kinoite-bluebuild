@@ -52,7 +52,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `recipes/common-drivers-nvidia.yml`: compila o driver `nvidia-open` via akmods e aplica declarativamente os arquivos de isolamento headless de `files/nvidia/`.
 - `recipes/common-fonts.yml`: instala a fonte de interface Inter Variable e as fontes monoespaçadas Nerd Fonts (JetBrainsMono, FiraCode e Symbols).
 - `recipes/common-flatpaks.yml`: instala a seleção padronizada de aplicativos Flatpak de escopo de sistema para navegadores, desenvolvimento, IA e produtividade.
-- `recipes/common-kargs.yml`: define a baseline compartilhada de argumentos de boot que bloqueia o driver nouveau e desativa o framebuffer simpledrm.
+- `recipes/common-kargs.yml`: define a baseline compartilhada de argumentos de boot que desativa o framebuffer simpledrm.
 - `recipes/common-kvm.yml`: instala a pilha de virtualização KVM/QEMU, GNOME Boxes e suporte a emulação de TPM 2.0.
 - `recipes/common-systemd.yml`: habilita os serviços e timers de automação nos escopos de sistema e usuário e mascara o `systemd-remount-fs.service`.
 - `recipes/common-tools.yml`: instala ferramentas modernas de linha de comando para produtividade no terminal, contêineres, sincronização em nuvem e diagnósticos de hardware.
@@ -60,11 +60,11 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 ## Kernel Arguments (Kargs) e Isolamento de Drivers
 
 - `initcall_blacklist=simpledrm_platform_driver_init`: evita conflitos de framebuffer primitivo com o driver DRM da AMD durante o early boot.
-- `rd.driver.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau na fase de initramfs.
-- `modprobe.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau no userspace.
+- `rd.driver.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau na fase de initramfs da imagem dual.
+- `modprobe.blacklist=nouveau`: bloqueia o carregamento do driver open-source nouveau no userspace da imagem dual.
 - `rd.driver.blacklist=nvidia-drm`: impede a inicialização do módulo de modosetting de vídeo da NVIDIA no initramfs da imagem dual.
 - `modprobe.blacklist=nvidia-drm`: impede a criação do nó gráfico `/dev/dri/renderD129` pela NVIDIA preservando `/dev/nvidia*` e `/dev/nvidia-uvm` para CUDA.
-- `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve declarativamente o arquivo gerado pelo akmods, eliminando `nvidia-drm.modeset=1` e aplicando o blacklist de `nvidia-drm`.
+- `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve declarativamente o arquivo gerado pelo akmods, eliminando `nvidia-drm.modeset=1` e aplicando o blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: substitui declarativamente a configuração padrão do dracut omitindo `nvidia_drm` da diretiva `force_drivers`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: reforça no dracut a omissão explícita dos módulos `nvidia_drm` e `nvidia-drm` da imagem do ramdisk.
 - `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm` no modprobe e redireciona tentativas de carregamento para `/usr/bin/true`.
@@ -128,7 +128,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: provisiona os overrides Flatpak para Brave, Chrome, Firefox e VS Code em `/var/lib/flatpak/overrides/`.
 - `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera acesso de leitura ao socket do Podman e ativa Wayland nativo no VS Code Flatpak.
 - `files/system/etc/fonts/conf.d/64-font-rendering.conf`: configura hinting leve e subpixel RGB, define Inter Variable como fonte sans-serif padrão e prioriza JetBrainsMono Nerd Font com fallback de símbolos.
-- `files/system/etc/xdg/baloofilerc`: exclui pastas de nuvem (`~/Cloud`), cache do rclone e montagens FUSE em `/run/user` da indexação de arquivos do KDE Baloo.
+- `files/system/etc/xdg/baloofilerc`: exclui o cache do rclone e montagens FUSE em `/run/user` da indexação de arquivos do KDE Baloo.
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas antigas, oculta barra de menus e ativa pré-visualização completa de miniaturas locais no Dolphin.
 - `files/system/etc/xdg/kdeglobals`: aplica tema Breeze Dark com destaque azul, animações rápidas (0.5x), clique simples para abrir itens e desativa miniaturas em pastas remotas.
 - `files/system/etc/xdg/kiorc`: exige confirmação antes de excluir permanentemente arquivos ou esvaziar a lixeira.
@@ -164,7 +164,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 ## CI/CD, Pipelines e Assinatura Criptográfica
 
 - `.github/workflows/build.yml`: workflow parametrizado que compila as imagens (`amd`, `dual` ou `all`) via BlueBuild e assina os contêineres com a chave privada Cosign.
-- `.github/workflows/check-updates.yml`: rotina executada de hora em hora que compara o digest da imagem base upstream com o label `org.opencontainers.image.base.digest` publicado no GHCR e aciona o build apenas quando há atualização real.
+- `.github/workflows/check-updates.yml`: rotina executada a cada 2 horas que compara o digest da imagem base upstream com o label `org.opencontainers.image.base.digest` publicado no GHCR e aciona o build apenas quando há atualização real.
 - `.github/workflows/cleanup.yml`: rotina diária que remove versões antigas das imagens `kinoite-amd` e `kinoite-dual` em paralelo (mantendo as 15 mais recentes) e limpa históricos de execuções de workflows.
 - `.github/dependabot.yml`: verifica semanalmente atualizações de versão das GitHub Actions utilizadas nos workflows.
 - `cosign.pub`: chave pública embutida e versionada para verificação criptográfica das imagens com `bootc switch --enforce-container-sigpolicy`.
@@ -174,7 +174,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - É terminantemente proibido adicionar `nvidia-drm.modeset=1` ou permitir a criação de render nodes DRM na GPU secundária NVIDIA.
 - É proibido desativar a autenticação `sulogin` em modo de resgate ou emergência.
 - É proibido adicionar kargs redundantes ou obsoletos como `preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt` ou `amd_pstate=active`.
-- É proibido colocar arquivos de configuração de sistema em `/etc/` quando o subsistema suportar diretórios em `/usr/lib/` ou `/usr/share/`.
+- É proibido colocar arquivos de configuração de sistema em `/etc/` quando o subsistema suportar diretórios em `/usr/lib/` ou `/usr/share/` (exceções válidas no Fedora: `profile.d`, `security/limits.d`, `ssh/sshd_config.d`, `containers/nodocker`, `fonts/conf.d`, `xdg`, `cdi` e `pki/akmods/certs`).
 - É proibido realizar downgrade de pacotes base do Fedora ou reintroduzir scripts imperativos (`type: script`) nas receitas quando houver solução declarativa.
 
 ## Critérios para Adição de Novos Softwares
