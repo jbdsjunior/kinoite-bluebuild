@@ -99,7 +99,7 @@
 
 - `files/system/usr/share/browser-configs/chromium-flags.conf`: ativa Wayland nativo, GPU AMD, VA-API e desativa telemetria em Chromium.
 - `files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`: provisiona `chromium-flags.conf` para Brave e Chrome no login.
-- `files/system/usr/share/browser-configs/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
+- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
 - `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak para Brave, Chrome, Firefox e VS Code.
 - `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera socket Podman (`ro`) e Wayland nativo no VS Code Flatpak.
 - `files/system/etc/fonts/conf.d/64-font-rendering.conf`: configura hinting leve, RGB subpixel, Inter Variable e fallback JetBrainsMono Nerd Font.
@@ -111,7 +111,7 @@
 - `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10, histórico de 10.000 linhas e esquema `Kinoite`.
 - `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura de alto contraste para o Konsole.
 - `files/system/usr/share/starship/starship.toml`: configura prompt Starship em linha única para Git, contêiner e duração.
-- `files/system/etc/profile.d/50-shell-env-overrides.sh`: inicializa FZF, Starship, Zoxide e Fastfetch sob demanda em shells interativos.
+- `files/system/etc/profile.d/50-kinoite-env.sh`: inicializa FZF, Starship, Zoxide e Fastfetch sob demanda em shells interativos.
 - `files/system/etc/profile.d/60-kinoite-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `rm -i`) e atalhos de diagnóstico.
 - `files/system/usr/share/topgrade/10-kinoite.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) no Topgrade.
 - `files/system/usr/share/user-tmpfiles.d/70-topgrade.conf`: copia o drop-in do Topgrade para `~/.config/topgrade.d/` no login.
@@ -121,7 +121,7 @@
 - `files/system/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd` e nós `0000:0c:00.0` da RX 6600 XT com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
 - `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
 - `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB e `/dev/kfd`, cria `/dev/dri/primary-render` e força scheduler `none` no NVMe.
-- `files/system/usr/share/polkit-1/rules.d/51-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
+- `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/system/etc/containers/nodocker`: silencia avisos da CLI `podman-docker`.
 - `files/system/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O.
 - `files/system/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
