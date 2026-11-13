@@ -144,11 +144,21 @@ LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
 if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
     if grep -q "$LUKS_UUID" /etc/crypttab; then
         if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
-            if grep "$LUKS_UUID" /etc/crypttab | grep -qE "none\s+[a-zA-Z0-9]"; then
-                sed -i "/$LUKS_UUID/s/$/,tpm2-device=auto/" /etc/crypttab
-            else
-                sed -i "/$LUKS_UUID/s/$/ tpm2-device=auto/" /etc/crypttab
-            fi
+            local_tmp="$(mktemp)"
+            awk -v uuid="$LUKS_UUID" '
+                $0 !~ /^[[:space:]]*#/ && index($0, uuid) > 0 {
+                    if (NF >= 4 && $4 != "" && $4 != "-") {
+                        $4 = $4 ",tpm2-device=auto"
+                    } else if (NF == 3) {
+                        $4 = "tpm2-device=auto"
+                    } else if (NF == 2) {
+                        $3 = "none"
+                        $4 = "tpm2-device=auto"
+                    }
+                }
+                { print }
+            ' /etc/crypttab >"$local_tmp" && mv "$local_tmp" /etc/crypttab
+            chmod 0600 /etc/crypttab 2>/dev/null || true
             echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
         fi
     fi
@@ -159,8 +169,8 @@ KERNEL_VER="$(uname -r)"
 INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
 
 if command -v bootc >/dev/null 2>&1; then
-    echo "[OK] Imagem declarativa Bootc detectada. Suporte nativo a TPM2/LUKS2 pré-compilado na imagem base."
-    echo "[OK] Chaves TPM2 vinculadas diretamente ao cabeçalho LUKS2 do disco."
+    echo "[OK] Declarative Bootc image detected. Native TPM2/LUKS2 support is pre-built in the base image."
+    echo "[OK] TPM2 keys bound directly to the LUKS2 header on disk."
 elif command -v dracut >/dev/null 2>&1; then
     echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
     TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"

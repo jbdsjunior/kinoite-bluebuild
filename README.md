@@ -56,13 +56,13 @@ sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:
 Run the unified maintenance utility after booting:
 
 ```bash
-sys-optimize                    # full 8-phase maintenance (root)
+sudo kinoite-optimize           # full 8-phase maintenance (alias: sys-optimize)
 sudo kinoite-optimize --audit   # read-only audit of the 6 engineering pillars
-sudo kinoite-optimize --help    # usage, modes and safety notes
+kinoite-optimize --help         # usage, modes and safety notes
 ```
 
 > [!NOTE]
-> `sys-optimize` phase 7 sanitizes the host kernel arguments (removing non-upstream
+> `kinoite-optimize` phase 7 sanitizes the host kernel arguments (removing non-upstream
 > tuning kargs) and may require a reboot. Use `--audit` for a read-only check.
 
 Full operational guide (partitioning, TPM 2.0 PCR 7 auto-unlock, Rclone FUSE, ROCm CDI, and recovery): [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -101,9 +101,10 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 
 Image builds run manually (`workflow_dispatch` of `build.yml`, pick `all`, `amd`
 or `dual`) or are dispatched by `check-updates.yml`. Every 2 hours the check
-compares the base image digest declared in each recipe with the
-`org.opencontainers.image.base.digest` label of the image already published to
-GHCR and only triggers a build when the published image is missing or stale.
+compares the base image digest declared in each recipe and the latest repository
+input commit timestamp against the `org.opencontainers.image.base.digest` and
+`org.opencontainers.image.created` labels published to GHCR, triggering a build
+only when the published image is missing or stale.
 
 Convention: user-facing documentation in pt-BR, code/CI/assets in English.
 

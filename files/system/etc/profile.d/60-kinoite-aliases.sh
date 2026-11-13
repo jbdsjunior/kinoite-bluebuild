@@ -6,27 +6,10 @@ case "$-" in
       *) return 0 2>/dev/null || exit 0 ;;
 esac
 
-if command -v eza >/dev/null 2>&1; then
-    alias ls='eza --icons=auto --group-directories-first'
-    alias ll='eza -lh --icons=auto --group-directories-first --git'
-    alias la='eza -lha --icons=auto --group-directories-first --git'
-    alias lt='eza --tree --icons=auto --level=2'
-    alias tree='eza --tree --icons=auto'
-else
-    alias ls='ls --color=auto'
-    alias ll='ls -l --color=auto'
-    alias la='ls -la --color=auto'
-fi
+alias ls='ls --color=auto'
+alias ll='ls -lh --color=auto --group-directories-first'
+alias la='ls -lha --color=auto --group-directories-first'
 alias grep='grep --color=auto'
-
-if command -v bat >/dev/null 2>&1; then
-    alias cat='bat --plain --paging=never'
-fi
-
-if command -v btop >/dev/null 2>&1; then
-    alias top='btop'
-    alias htop='btop'
-fi
 
 # Security alert: prevent accidental file truncation or overwriting
 alias cp='cp -i'

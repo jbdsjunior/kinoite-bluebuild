@@ -1,6 +1,7 @@
 [Unit]
 Description=Weekly User Maintenance and Hygiene Timer
 Documentation=man:systemd.timer(5)
+ConditionUser=!@system
 
 [Timer]
 OnCalendar=weekly

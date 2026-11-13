@@ -84,13 +84,13 @@ Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure 
 
 ---
 
-## 3. Manutenção e Auditoria do Sistema (`sys-optimize`)
+## 3. Manutenção e Auditoria do Sistema (`kinoite-optimize`)
 
-O utilitário integrado opera em dois modos distintos:
+O utilitário integrado (também disponível via alias `sys-optimize`) opera em dois modos distintos:
 
 | Modo | Comando | Comportamento |
 | :--- | :--- | :--- |
-| **Manutenção completa** | `sys-optimize` | Executa as 8 fases: sysctl, tmpfiles/NoCOW, saúde e reclaim do Btrfs, desfragmentação de discos de VM, retenção do journald, higiene de Flatpak/contêineres, higiene de kargs/deployments e a auditoria final. |
+| **Manutenção completa** | `sudo kinoite-optimize` | Executa as 8 fases: sysctl, tmpfiles/NoCOW, saúde e reclaim do Btrfs, desfragmentação de discos de VM, retenção do journald, higiene de Flatpak/contêineres, higiene de kargs/deployments e a auditoria final. |
 | **Auditoria somente leitura** | `sudo kinoite-optimize --audit` | Executa exclusivamente a auditoria dos 6 pilares, sem alterar o sistema. |
 | **Ajuda** | `kinoite-optimize --help` | Lista modos e avisos de segurança. |
 
@@ -160,6 +160,9 @@ systemctl reboot
 
 # Reverter para o Fedora Kinoite upstream oficial
 sudo bootc switch quay.io/fedora/fedora-kinoite:latest
+
+# Inspecionar logs de atualização automática em background
+journalctl -u bootc-fetch-apply-updates.service -n 50 --no-pager
 ```
 
 - **SysRq REISUB (`kernel.sysrq = 1`):** Em caso de congelamento gráfico, segure `Alt + SysRq` e digite pausadamente `R` → `E` → `I` → `S` → `U` → `B` para descarregar caches Btrfs e reiniciar com segurança.
@@ -226,14 +229,14 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | KDE | `SingleClick=true`, tema Breeze Dark, Baloo sem indexar `rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 | Kargs | `kinoite-optimize` (fase 7) remove tuning não-upstream e reaplica os blocklists do dual | `--audit` para inspecionar antes; ajustes manuais não são preservados |
 
-### 8.1 Contrato de hardware (endereços PCI)
+### 8.1 Detecção Dinâmica de GPUs (Agnóstica a Slot PCI)
 
-O flavor é calibrado para a estação de referência e **codifica os endereços PCI da GPU AMD e da NVIDIA** na imagem:
+A imagem não depende mais de endereços PCI estáticos: os vínculos gráficos e de computação são resolvidos dinamicamente pelo driver do kernel (`amdgpu` / `nvidia`):
 
-| Elemento | Caminho fixo | Arquivo |
+| Elemento | Mecanismo dinâmico | Arquivo |
 | :--- | :--- | :--- |
-| CDI AMD (ROCm/HIP) | `/dev/dri/by-path/pci-0000:0c:00.0-{render,card}` | `files/system/etc/cdi/amdgpu.yaml` |
-| Symlink `primary-render` | `pci-0000:0c:00.0` | `files/system/usr/lib/udev/rules.d/70-peripherals.rules` |
-| Auditoria (Pilar 4) | `pci-0000:0c:00.0` e `pci-0000:09:00.0` | `kinoite-optimize` |
+| Symlink `primary-render` | Regra `udev` por `DRIVERS=="amdgpu"` | [`files/system/usr/lib/udev/rules.d/70-peripherals.rules`](../files/system/usr/lib/udev/rules.d/70-peripherals.rules) |
+| CDI AMD (ROCm/HIP) | Mapeia `/dev/dri/primary-render` → `/dev/dri/renderD128` e `/dev/kfd` | [`files/system/etc/cdi/amdgpu.yaml`](../files/system/etc/cdi/amdgpu.yaml) |
+| Auditoria (Pilar 4) | Varre `/sys/class/drm/renderD*/device/driver` para `amdgpu` e `nvidia` | [`files/system/usr/bin/kinoite-optimize`](../files/system/usr/bin/kinoite-optimize) |
 
-Se as GPUs mudarem de slot (troca de placa-mãe, reordenação de barramento), atualize os três pontos ou sobrescreva na auditoria com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`. Caso contrário, o CDI e o symlink ficarão apontando para nós inexistentes.
+Caso seja necessário forçar um nó específico durante uma auditoria manual, sobrescreva com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`.

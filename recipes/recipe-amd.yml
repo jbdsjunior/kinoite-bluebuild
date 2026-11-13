@@ -16,15 +16,10 @@ modules:
       - source: system
         destination: /
 
-  # Package set: debloat, core apps, fonts and AMD/multimedia drivers
-  - from-file: modules/common-debloat.yml
-  - from-file: modules/common-core.yml
-  - from-file: modules/common-fonts.yml
-  - from-file: modules/common-drivers.yml
+  # Consolidated RPM package set, fonts, multimedia codecs and virtualization
+  - from-file: modules/common-packages.yml
 
-  # Virtualization, CLI tooling, services and Flatpaks
-  - from-file: modules/common-kvm.yml
-  - from-file: modules/common-tools.yml
+  # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml
   - from-file: modules/common-flatpaks.yml
 

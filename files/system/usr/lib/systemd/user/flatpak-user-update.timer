@@ -1,6 +1,7 @@
 [Unit]
 Description=Timer for User Flatpak Updates
 Documentation=man:flatpak-update(1) man:systemd.timer(5)
+ConditionUser=!@system
 
 [Timer]
 RandomizedDelaySec=2m

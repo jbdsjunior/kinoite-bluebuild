@@ -1,6 +1,7 @@
 [Unit]
 Description=Apply Flatpak user updates
 Documentation=man:flatpak(1) man:flatpak-update(1)
+ConditionUser=!@system
 ConditionACPower=true
 
 [Service]

@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+      files:
+        - tailscale.repo
+        - terra.repo
+
+    remove:
+      auto-remove: true
+      packages:
+        - firefox
+        - kwrite
+        - plasma-discover-rpm-ostree
+        - plasma-discover-notifier
+
+    replace:
+      # Mitigate upstream OpenCL packaging conflict (RHBZ #2332429)
+      - from-repo: fedora
+        install-weak-deps: false
+        packages:
+          - new: ocl-icd
+            old: OpenCL-ICD-Loader
+
+    install:
+      allow-erasing: true
+      exclude:
+        - virt-viewer
+      packages:
+        # Localization, KDE Plasma Integration & Sensors
+        - langpacks-pt_BR
+        - lm_sensors
+        - plasma-firewall
+        - kio-admin
+        - ksshaskpass
+        - qt6-qtimageformats
+        - rsms-inter-vf-fonts
+
+        # Hardware Acceleration & Multimedia Codecs (RPM Fusion)
+        - mesa-va-drivers-freeworld
+        - ffmpeg
+        - libva-utils
+        - libheif-freeworld
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-ugly
+
+        # Virtualization Stack (KVM / QEMU / Libvirt / GNOME Boxes)
+        - "@virtualization"
+        - gnome-boxes
+
+        # Infrastructure, Cloud Sync, Containers & GPU Diagnostics
+        - topgrade
+        - starship
+        - tailscale
+        - git
+        - rclone
+        - distrobox
+        - mesa-libOpenCL
+        - clinfo
+        - vulkan-tools
+        - nvtop
+
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - FiraCode
+        - JetBrainsMono
+        - NerdFontsSymbolsOnly

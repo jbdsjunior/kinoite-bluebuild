@@ -1,6 +1,7 @@
 [Unit]
 Description=Rclone mount for KDE Plasma - %i
 Documentation=https://rclone.org/commands/rclone_mount/
+ConditionUser=!@system
 ConditionPathExists=%h/.config/rclone/rclone.conf
 StartLimitIntervalSec=10min
 StartLimitBurst=20

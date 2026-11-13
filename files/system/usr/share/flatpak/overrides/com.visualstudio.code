@@ -1,4 +1,5 @@
 [Context]
+sockets=wayland;fallback-x11;
 filesystems=xdg-run/podman:ro;
 
 [Environment]

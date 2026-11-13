@@ -5,10 +5,11 @@ name: check-updates
 #   upstream digest = digest of the base image declared by the recipe
 #   current digest  = `org.opencontainers.image.base.digest` label of the image
 #                     already published to GHCR (written by the build)
+#   repo input ts   = latest commit timestamp touching recipe/files/cosign.pub
 #
 # A build is dispatched only when the published image is missing, was built
-# from another base, or is behind the upstream digest. Repeated runs are cheap
-# and no external state (Actions cache, files, tags) is required.
+# from another base, is behind the upstream digest, or is older than repo
+# build inputs. Repeated runs are cheap and no external state is required.
 
 on:
   schedule:
@@ -42,17 +43,21 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Install skopeo
+      - name: Ensure skopeo is installed
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends skopeo
+          if ! command -v skopeo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends skopeo
+          fi
 
-      - name: Compare upstream base with the published image
+      - name: Compare upstream base and repo inputs with the published image
         id: compare
         env:
+          FLAVOR: ${{ matrix.flavor }}
           RECIPE: ${{ matrix.recipe }}
           IMAGE: ${{ matrix.image }}
           REPO_OWNER: ${{ github.repository_owner }}
@@ -74,14 +79,28 @@ jobs:
           fi
 
           PUBLISHED="ghcr.io/${REPO_OWNER,,}/${IMAGE}:latest"
-          CURRENT_NAME="$(skopeo inspect --format '{{index .Labels "org.opencontainers.image.base.name"}}' "docker://${PUBLISHED}" 2>/dev/null || true)"
-          CURRENT_DIGEST="$(skopeo inspect --format '{{index .Labels "org.opencontainers.image.base.digest"}}' "docker://${PUBLISHED}" 2>/dev/null || true)"
+          IMAGE_META="$(skopeo inspect "docker://${PUBLISHED}" 2>/dev/null || true)"
+          CURRENT_NAME="$(jq -r '.Labels["org.opencontainers.image.base.name"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
+          CURRENT_DIGEST="$(jq -r '.Labels["org.opencontainers.image.base.digest"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
+          IMAGE_CREATED="$(jq -r '.Labels["org.opencontainers.image.created"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
 
-          echo "Recipe base: ${BASE_REF}@${UPSTREAM_DIGEST}"
-          echo "Published  : ${PUBLISHED}"
-          echo "Image base : ${CURRENT_NAME:-<none>}@${CURRENT_DIGEST:-<none>}"
+          REPO_PATHS=("$RECIPE" "recipes/modules" "files/system" "files/dnf" "cosign.pub")
+          if [[ "$FLAVOR" == "dual" ]]; then
+            REPO_PATHS+=("files/nvidia")
+          fi
+          LATEST_COMMIT_TS="$(git log -1 --format=%ct -- "${REPO_PATHS[@]}" || echo 0)"
+          IMAGE_CREATED_TS=0
+          if [[ -n "$IMAGE_CREATED" ]]; then
+            IMAGE_CREATED_TS="$(date -d "$IMAGE_CREATED" +%s 2>/dev/null || echo 0)"
+          fi
 
-          if [[ "$CURRENT_NAME" == "$BASE_REF" && "$CURRENT_DIGEST" == "$UPSTREAM_DIGEST" ]]; then
+          echo "Recipe base    : ${BASE_REF}@${UPSTREAM_DIGEST}"
+          echo "Published      : ${PUBLISHED}"
+          echo "Image base     : ${CURRENT_NAME:-<none>}@${CURRENT_DIGEST:-<none>}"
+          echo "Image created  : ${IMAGE_CREATED:-<none>} (epoch=${IMAGE_CREATED_TS})"
+          echo "Latest input ts: ${LATEST_COMMIT_TS}"
+
+          if [[ "$CURRENT_NAME" == "$BASE_REF" && "$CURRENT_DIGEST" == "$UPSTREAM_DIGEST" && "$LATEST_COMMIT_TS" -le "$IMAGE_CREATED_TS" ]]; then
             echo "up_to_date=true" >> "$GITHUB_OUTPUT"
           else
             echo "up_to_date=false" >> "$GITHUB_OUTPUT"

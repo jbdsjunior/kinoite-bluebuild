@@ -31,6 +31,7 @@ modules:
           - md.obsidian.Obsidian
           - io.anytype.anytype
           - io.github.alainm23.planify
+          - org.kde.okular
           - org.onlyoffice.desktopeditors
 
           # Backup & Resilience

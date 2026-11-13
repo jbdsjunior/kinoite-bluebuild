@@ -1,6 +1,7 @@
 [Unit]
 Description=Weekly User Maintenance and Cache Hygiene
 Documentation=man:journalctl(1) man:podman(1)
+ConditionUser=!@system
 ConditionACPower=true
 
 [Service]

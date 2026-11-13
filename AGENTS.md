@@ -24,6 +24,7 @@
 
 - Valide todos os scripts `.sh` e executáveis em `files/system/usr/bin/` com `bash -n`.
 - Valide a sintaxe de todos os arquivos YAML (`recipes/`, `.github/`, `amdgpu.yaml`), TOML, XML e units systemd.
+- Valide as receitas com `bluebuild validate recipes/recipe-amd.yml` e `bluebuild validate recipes/recipe-dual.yml` quando o CLI estiver disponível.
 - Execute `./files/system/usr/bin/kinoite-optimize --audit` com aprovação integral após mudanças de sistema.
 - Confirme cobertura de 100% dos arquivos do repositório em `PROJECTS.md`.
 

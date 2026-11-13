@@ -13,11 +13,23 @@ MODE="apply"
 # Warnings raised by the read-only audit; drives the --audit exit status.
 AUDIT_WARNINGS=0
 
-# Hardware contract of the reference workstation (see docs/POST_INSTALL.md).
-# Override via environment when the GPUs move to different PCI slots.
-AMD_RENDER_PATH="${AMD_RENDER_PATH:-/dev/dri/by-path/pci-0000:0c:00.0-render}"
-AMD_CARD_PATH="${AMD_CARD_PATH:-/dev/dri/by-path/pci-0000:0c:00.0-card}"
-NVIDIA_RENDER_PATH="${NVIDIA_RENDER_PATH:-/dev/dri/by-path/pci-0000:09:00.0-render}"
+# Dynamic DRM render node detection by kernel driver (override via environment if needed).
+find_drm_render_node() {
+    local target_driver="$1"
+    local drm_dir driver_link
+    for drm_dir in /sys/class/drm/renderD*; do
+        [[ -e "$drm_dir" ]] || continue
+        driver_link="$(readlink -f "${drm_dir}/device/driver" 2>/dev/null || true)"
+        if [[ "${driver_link##*/}" == "$target_driver" ]]; then
+            printf '/dev/dri/%s\n' "${drm_dir##*/}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+AMD_RENDER_PATH="${AMD_RENDER_PATH:-$(find_drm_render_node amdgpu || true)}"
+NVIDIA_RENDER_PATH="${NVIDIA_RENDER_PATH:-$(find_drm_render_node nvidia || true)}"
 NVIDIA_HEADLESS_MARKER="/usr/lib/modprobe.d/60-nvidia-headless.conf"
 
 usage() {
@@ -231,25 +243,6 @@ phase_tmpfiles_and_nocow() {
             echo "[OK] Cloud mounts verified (zero residual .Trash-* directories)."
         else
             echo "[OK] Cloud mount residual trash purged."
-        fi
-    fi
-
-    # Deduplicate the Google Drive namespace (duplicate names break Dir.Remove).
-    if [[ "$USER_SCOPE" -eq 1 ]] && command -v rclone >/dev/null 2>&1 &&
-        [[ -f "${REAL_HOME}/.config/rclone/rclone.conf" ]] &&
-        grep -q "\[GoogleDrive\]" "${REAL_HOME}/.config/rclone/rclone.conf" 2>/dev/null; then
-        echo "[ACTION] Auditing Google Drive namespace for duplicate filenames..."
-        local dedupe_out
-        dedupe_out="$(as_user rclone dedupe \
-            --config "${REAL_HOME}/.config/rclone/rclone.conf" \
-            --dedupe-mode newest \
-            --drive-pacer-min-sleep 10ms \
-            --drive-pacer-burst 100 \
-            "GoogleDrive:" 2>&1 || true)"
-        if echo "$dedupe_out" | grep -qi "delet"; then
-            echo "[FIXED] Resolved duplicate files on Google Drive (clean POSIX namespace restored)."
-        else
-            echo "[OK] Google Drive namespace verified (zero duplicate filenames)."
         fi
     fi
 }
@@ -514,7 +507,11 @@ audit_pillars() {
     local swappiness page_cluster
     swappiness="$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "N/A")"
     page_cluster="$(cat /proc/sys/vm/page-cluster 2>/dev/null || echo "N/A")"
-    echo "[OK] VM parameters: vm.swappiness=${swappiness} (target 150), vm.page-cluster=${page_cluster} (target 0)."
+    if [[ "$swappiness" == "150" && "$page_cluster" == "0" ]]; then
+        echo "[OK] VM parameters: vm.swappiness=${swappiness} (target 150), vm.page-cluster=${page_cluster} (target 0)."
+    else
+        audit_warn "VM parameter drift: vm.swappiness=${swappiness} (target 150), vm.page-cluster=${page_cluster} (target 0)."
+    fi
 
     local nocow_paths=(
         "/var/lib/libvirt/images"
@@ -556,8 +553,10 @@ audit_pillars() {
     if [[ -f /etc/cdi/amdgpu.yaml ]]; then
         echo "[OK] AMD Container Device Interface (CDI) present (/etc/cdi/amdgpu.yaml)."
     fi
-    if [[ -e "$AMD_RENDER_PATH" ]]; then
+    if [[ -n "${AMD_RENDER_PATH:-}" && -e "$AMD_RENDER_PATH" ]]; then
         echo "[OK] AMD DRM render node present (${AMD_RENDER_PATH})."
+    else
+        audit_warn "AMD DRM render node not detected via amdgpu driver."
     fi
     if [[ -e /dev/dri/primary-render ]]; then
         echo "[OK] Deterministic /dev/dri/primary-render symlink pointing to $(readlink /dev/dri/primary-render)."
@@ -574,7 +573,7 @@ audit_pillars() {
         fi
     fi
 
-    if [[ -e "$NVIDIA_RENDER_PATH" ]]; then
+    if [[ -n "${NVIDIA_RENDER_PATH:-}" && -e "$NVIDIA_RENDER_PATH" ]]; then
         if is_nvidia_headless_image; then
             audit_warn "NVIDIA graphics render node detected (${NVIDIA_RENDER_PATH}) on a headless-NVIDIA image."
             echo "       nvidia-drm blacklisting is not effective; QEMU/GNOME Boxes may be affected."
@@ -588,7 +587,11 @@ audit_pillars() {
     echo "--- [Pillar 5/6] Boot Resilience, SysRq REISUB & Sulogin ---"
     local sysrq
     sysrq="$(cat /proc/sys/kernel/sysrq 2>/dev/null || echo "N/A")"
-    echo "[OK] Kernel SysRq: ${sysrq} (target 1 - safe REISUB enabled)."
+    if [[ "$sysrq" == "1" ]]; then
+        echo "[OK] Kernel SysRq: ${sysrq} (target 1 - safe REISUB enabled)."
+    else
+        audit_warn "Kernel SysRq mismatch: ${sysrq} (expected 1 for safe REISUB)."
+    fi
 
     local cmdline banned_list banned detected=0
     cmdline="$(cat /proc/cmdline 2>/dev/null || true)"
@@ -641,13 +644,27 @@ audit_pillars() {
     fi
 
     echo "--- [Pillar 6/6] Maintenance Timers & Storage ---"
-    local active_timers
-    active_timers="$(systemctl is-active \
-        bootc-fetch-apply-updates.timer \
-        flatpak-system-update.timer \
-        podman-auto-update.timer 2>/dev/null || true)"
-    if [[ -n "$active_timers" ]]; then
-        echo "[OK] Update timers: $(echo "$active_timers" | tr '\n' ' ')"
+    local required_timers=(
+        "bootc-fetch-apply-updates.timer"
+        "flatpak-system-update.timer"
+        "podman-auto-update.timer"
+        "kinoite-maintenance.timer"
+    )
+    local timer_states
+    if timer_states="$(systemctl is-active "${required_timers[@]}" 2>/dev/null)" ||
+        [[ -n "$timer_states" ]]; then
+        local idx=0 state inactive_timers=()
+        while IFS= read -r state; do
+            if [[ "$state" != "active" ]]; then
+                inactive_timers+=("${required_timers[$idx]}(${state:-unknown})")
+            fi
+            idx=$((idx + 1))
+        done <<<"$timer_states"
+        if [[ ${#inactive_timers[@]} -gt 0 ]]; then
+            audit_warn "Inactive maintenance timer(s): ${inactive_timers[*]}"
+        else
+            echo "[OK] Update and maintenance timers: all ${#required_timers[@]} active."
+        fi
     else
         echo "[SKIP] Timer state unavailable (systemd not reachable from this session)."
     fi

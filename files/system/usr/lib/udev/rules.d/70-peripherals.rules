@@ -10,10 +10,12 @@ KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", MODE="0660", TA
 # Peripheral access: ITE RGB motherboard and LED controller
 KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", MODE="0660", TAG+="uaccess"
 
+# Android ADB, Fastboot, Recovery & Bootloader USB access (Google, OnePlus, Samsung, Motorola, Xiaomi, Qualcomm, MediaTek)
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1|2a70|04e8|22b8|2717|05c6|0e8d", MODE="0660", TAG+="uaccess"
+
 # AMD Radeon RX 6600 XT compute & render nodes: dynamic seat ACLs for local AI (ROCm/Vulkan) & primary render symlink
 SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"
-SUBSYSTEM=="drm", KERNEL=="renderD*", ENV{ID_PATH}=="pci-0000:0c:00.0", TAG+="uaccess", SYMLINK+="dri/primary-render"
+SUBSYSTEM=="drm", KERNEL=="renderD*", DRIVERS=="amdgpu", TAG+="uaccess", SYMLINK+="dri/primary-render"
 
 # NVMe Gen4 I/O scheduler: force none (multi-queue hardware controller bypasses kernel I/O CPU scheduler overhead)
 ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="none"
-
