@@ -45,7 +45,7 @@
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1` e aplicando blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` para carregar módulos NVIDIA sob demanda no userspace.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: omite `nvidia_drm` e `nvidia-drm` do initramfs.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true` e ativa PAT + Resizable BAR na RTX 3080 Ti.
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true` e ativa Resizable BAR na RTX 3080 Ti.
 - `files/nvidia/usr/lib/environment.d/60-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` para impedir que aplicações host capturem EGL/GLX da NVIDIA.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
