@@ -86,7 +86,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | Path | Purpose |
 | :--- | :--- |
 | [`AGENTS.md`](AGENTS.md) | Lean agent invariants, forbidden rules, pre-commit checks, and surgical index |
-| [`docs/DIRECTIVES.md`](docs/DIRECTIVES.md) | Complete linear catalog of project architecture, hardware, and per-file directives |
+| [`PROJECTS.md`](PROJECTS.md) | Complete linear catalog of project architecture, hardware, and per-file directives |
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery, default behaviors) |
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy, workflow permissions and vulnerability reporting |
 | [`cosign.pub`](cosign.pub) | Public Cosign verification key (the signing key lives in `SIGNING_SECRET`) |

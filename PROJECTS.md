@@ -14,12 +14,13 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - O diretório `files/nvidia/` armazena exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
 - O diretório `files/dnf/` armazena as definições de repositórios externos de software.
 - `AGENTS.md`: define as invariantes críticas, regras proibidas, validações pré-commit e o índice de leitura cirúrgica para agentes de IA.
-- `docs/DIRECTIVES.md`: armazena o catálogo completo de frases simples lineares sobre o hardware, a arquitetura e cada arquivo do repositório.
+- `PROJECTS.md`: armazena o catálogo completo de frases simples lineares sobre o hardware, a arquitetura e cada arquivo do repositório.
 - `docs/POST_INSTALL.md`: documenta o guia operacional pós-instalação com foco em TPM 2.0, Rclone, manutenção e recuperação.
 - `README.md`: apresenta a visão geral do projeto, instruções rápidas de mudança de imagem e estrutura de diretórios.
 - `SECURITY.md`: define a política de verificação de assinatura Cosign e o modelo de permissões mínimas do CI/CD.
 - `LICENSE`: declara o licenciamento do projeto sob a licença Apache 2.0.
-- Os guias operacionais e diretrizes (`AGENTS.md`, `docs/DIRECTIVES.md` e `docs/POST_INSTALL.md`) utilizam português do Brasil e `README.md`, `SECURITY.md`, código, scripts e mensagens de sistema utilizam inglês.
+- `.gitignore`: define os padrões de exclusão de artefatos locais e temporários, preservando arquivos de regras, documentação e chaves públicas rastreados.
+- Os guias operacionais e diretrizes (`AGENTS.md`, `PROJECTS.md` e `docs/POST_INSTALL.md`) utilizam português do Brasil e `README.md`, `SECURITY.md`, código, scripts e mensagens de sistema utilizam inglês.
 
 ## Hardware da Estação e Papel das GPUs
 
@@ -182,12 +183,3 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - Linguagens de programação, SDKs e ambientes de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
 - A imagem base OSTree recebe apenas drivers de hardware, virtualização, serviços de infraestrutura e utilitários CLI essenciais.
 - Configurações de aplicativos de usuário devem ser aplicadas via `user-tmpfiles.d` usando templates armazenados em `/usr/share/`.
-
-## Validação Obrigatória Pré-Commit e Boas Práticas de Git
-
-- Todo script shell alterado deve passar na verificação de sintaxe `bash -n` sem erros.
-- Todos os arquivos YAML de receitas e workflows devem ser validados com um parser YAML estrito antes do commit.
-- Arquivos TOML de kargs e arquivos `.conf` do systemd/sysctl devem ser validados quanto à sintaxe antes do commit.
-- Qualquer alteração nas regras do sistema deve ser validada executando `kinoite-optimize --audit` com aprovação nos 6 pilares.
-- Os commits devem seguir o padrão Conventional Commits (`feat`, `fix`, `refactor`, `docs`, `ci`, `chore`).
-- Os arquivos devem ser adicionados ao stage individualmente com `git add <arquivo>`, inspecionando `git diff --cached` antes de confirmar o commit.

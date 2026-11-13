@@ -4,10 +4,12 @@ Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e 
 
 ## Separação de Responsabilidades dos Arquivos de Diretrizes
 
+- `AGENTS.md` e `PROJECTS.md` são as únicas fontes de verdade (SSOT) do projeto: `AGENTS.md` governa regras de processo, Git e validação; `PROJECTS.md` governa arquitetura, hardware, arquivos e invariantes de sistema.
+- Documentos voltados a usuários e GitHub (`README.md`, `SECURITY.md` e `docs/POST_INSTALL.md`) são derivados e devem ser mantidos sincronizados a partir de `PROJECTS.md` em caso de divergência.
 - O arquivo `AGENTS.md` contém exclusivamente: regras de operação do modelo de IA, boas práticas de Git, fluxo de trabalho/planejamento, testes de validação pré-commit e o índice de consulta de diretrizes.
 - É proibido inserir no `AGENTS.md` descrições técnicas de hardware, arquitetura do SO, parâmetros de configuração ou inventário de arquivos do repositório.
-- O arquivo `docs/DIRECTIVES.md` contém exclusivamente: o catálogo linear completo de frases simples que descrevem a arquitetura do SO, hardware, GPUs, receitas BlueBuild, kargs, serviços, arquivos de configuração e regras de engenharia do sistema.
-- É proibido inserir no `docs/DIRECTIVES.md` instruções de comportamento de IA, comandos de terminal para agentes, práticas de Git ou regras de interação.
+- O arquivo `PROJECTS.md` contém exclusivamente: o catálogo linear completo de frases simples que descrevem a arquitetura do SO, hardware, GPUs, receitas BlueBuild, kargs, serviços, arquivos de configuração e regras de engenharia do sistema.
+- É proibido inserir no `PROJECTS.md` instruções de comportamento de IA, comandos de terminal para agentes, práticas de Git ou regras de interação.
 
 ## Papel e Modo de Operação do Agente de IA
 
@@ -24,7 +26,7 @@ Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e 
 - Demandas de modificação estrutural, refatoração ou adição de componentes devem ser planejadas antes da execução.
 - Sempre verifique o estado do repositório (`git status -s`) antes de iniciar modificações no código ou configurações.
 - Quando houver ambiguidade no requisito, solicite alinhamento antes de tomar decisões arquiteturais irreversíveis.
-- Mudanças que afetem arquivos do repositório exigem sincronização imediata da frase descritiva em `docs/DIRECTIVES.md`.
+- Mudanças que afetem arquivos do repositório exigem sincronização imediata da frase descritiva em `PROJECTS.md`.
 - Concluída a tarefa, realize testes de integridade e apresente um resumo enxuto do que foi validado.
 
 ## Práticas de Git e Controle de Versão
@@ -42,14 +44,14 @@ Este arquivo define os fluxos de trabalho, práticas de Git, regras de LLM/IA e 
 - Todos os manifestos YAML em `recipes/` e `.github/` devem ser validados quanto à sintaxe antes de qualquer commit.
 - Arquivos de configuração TOML e arquivos de unidades/sysctl/modprobe do systemd devem ser verificados contra erros de formato.
 - Qualquer alteração nas regras de sistema deve ser validada executando `./files/system/usr/bin/kinoite-optimize --audit` com 100% de aprovação.
-- Verifique se a cobertura de arquivos em `docs/DIRECTIVES.md` permanece em 100% após a criação, exclusão ou renomeação de arquivos.
+- Verifique se a cobertura de arquivos em `PROJECTS.md` permanece em 100% após a criação, exclusão ou renomeação de arquivos.
 
-## Índice de Consulta Cirúrgica (`docs/DIRECTIVES.md`)
+## Índice de Consulta Cirúrgica (`PROJECTS.md`)
 
-- Consulte `docs/DIRECTIVES.md` sob demanda utilizando `read_file` pelo intervalo de linhas da categoria necessária.
-- Arquitetura, organização do repositório, hardware e flavors: linhas 6 a 42 de `docs/DIRECTIVES.md`.
-- Receitas BlueBuild, módulos e isolamento NVIDIA: linhas 44 a 70 de `docs/DIRECTIVES.md`.
-- Armazenamento Btrfs NoCOW, ZRAM, limites de memória e segurança: linhas 72 a 100 de `docs/DIRECTIVES.md`.
-- Timers de automação, ambiente desktop KDE e navegadores: linhas 102 a 141 de `docs/DIRECTIVES.md`.
-- Aceleração de IA, CDI, periféricos, Rclone e CI/CD: linhas 143 a 169 de `docs/DIRECTIVES.md`.
-- Invariantes de engenharia, regras proibidas e critérios de software: linhas 171 a 193 de `docs/DIRECTIVES.md`.
+- Consulte `PROJECTS.md` sob demanda utilizando `read_file` pelo intervalo de linhas da categoria necessária.
+- Arquitetura, organização do repositório, hardware e flavors: linhas 6 a 43 de `PROJECTS.md`.
+- Receitas BlueBuild, módulos e isolamento NVIDIA: linhas 45 a 71 de `PROJECTS.md`.
+- Armazenamento Btrfs NoCOW, ZRAM, limites de memória e segurança: linhas 73 a 101 de `PROJECTS.md`.
+- Timers de automação, ambiente desktop KDE e navegadores: linhas 103 a 142 de `PROJECTS.md`.
+- Aceleração de IA, CDI, periféricos, Rclone e CI/CD: linhas 144 a 170 de `PROJECTS.md`.
+- Invariantes de engenharia, regras proibidas e critérios de software: linhas 172 a 185 de `PROJECTS.md`.

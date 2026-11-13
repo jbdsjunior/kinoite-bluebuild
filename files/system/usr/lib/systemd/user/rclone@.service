@@ -2,8 +2,6 @@
 Description=Rclone mount for KDE Plasma - %i
 Documentation=https://rclone.org/commands/rclone_mount/
 ConditionPathExists=%h/.config/rclone/rclone.conf
-After=network-online.target
-Wants=network-online.target
 StartLimitIntervalSec=10min
 StartLimitBurst=20
 
