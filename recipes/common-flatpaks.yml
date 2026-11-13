@@ -22,6 +22,7 @@ modules:
           - com.visualstudio.code
           - io.github.DenysMb.Kontainer
           - io.github.mfat.sshpilot
+          - org.kde.kate
 
           # Artificial Intelligence & Local LLMs
           - ai.jan.Jan
@@ -43,4 +44,7 @@ modules:
 
           # Media & Streaming
           - com.stremio.Stremio
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
           - org.qbittorrent.qBittorrent

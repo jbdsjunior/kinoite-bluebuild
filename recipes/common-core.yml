@@ -3,7 +3,6 @@
 modules:
   - type: dnf
     install:
-      skip-unavailable: true
       allow-erasing: true
       packages:
         - langpacks-pt_BR
@@ -18,9 +17,3 @@ modules:
         - ksshaskpass
         - kf6-kimageformats
         - qt6-qtimageformats
-
-        - kate
-
-        - elisa-player
-        - gwenview
-        - haruna

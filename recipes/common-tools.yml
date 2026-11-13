@@ -17,7 +17,6 @@ modules:
             old: OpenCL-ICD-Loader
 
     install:
-      skip-unavailable: true
       allow-erasing: true
       packages:
         # External Repository Packages (Terra & Tailscale)
