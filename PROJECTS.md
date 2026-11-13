@@ -60,6 +60,7 @@
 - `files/system/usr/lib/systemd/user.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de usuário.
 - `files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`: ativa `sysrq=1` (REISUB), `kptr_restrict=1` e `panic=20`.
 - `files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`: protege os sysctls do projeto via symlinks em `/etc/sysctl.d/` contra sobrescrita do TuneD.
+- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`) e ativa PAT + Resizable BAR na RTX 3080 Ti.
 - `files/system/usr/lib/modprobe.d/60-security-blacklist.conf`: bloqueia protocolos/filesystems obsoletos (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`).
 - `files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
 - `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s.
@@ -126,7 +127,8 @@
 
 - `files/system/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` (mapeado dinamicamente de `/dev/dri/primary-render`) e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
 - `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `LIBVA_DRIVER_NAME=radeonsi`, `VDPAU_DRIVER=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
-- `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, dispositivos Android ADB/Fastboot e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e força scheduler `none` no NVMe.
+- `files/system/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
+- `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, dispositivos Android ADB/Fastboot e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
 - `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/system/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
 - `files/system/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
