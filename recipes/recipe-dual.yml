@@ -18,9 +18,10 @@ modules:
 
   # Consolidated RPM package set, fonts, multimedia codecs and virtualization
   - from-file: modules/common-packages.yml
+  - from-file: modules/common-fonts.yml
 
   # NVIDIA/akmods layer: must precede initramfs and follow the AMD drivers
-  - from-file: modules/common-drivers-nvidia.yml
+  - from-file: modules/dual-drivers-nvidia.yml
 
   # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml

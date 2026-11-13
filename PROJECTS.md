@@ -30,8 +30,9 @@
 
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-dual.yml`: compila a imagem `kinoite-dual` para estações Dual-GPU AMD + NVIDIA.
-- `recipes/modules/common-packages.yml`: consolida em camada única DNF + fontes a remoção de bloat (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`), troca `ocl-icd`, localização `langpacks-pt_BR`, KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), codecs RPM Fusion (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer), pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`), ferramentas CLI/diagnóstico (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`), `rsms-inter-vf-fonts` e Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
-- `recipes/modules/common-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
+- `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
+- `recipes/modules/common-packages.yml`: consolida em camada única DNF a remoção de bloat (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`), troca `ocl-icd`, localização `langpacks-pt_BR`, KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), codecs RPM Fusion (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer), pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`), ferramentas CLI/diagnóstico (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`) e `rsms-inter-vf-fonts`.
+- `recipes/modules/dual-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
 - `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara `systemd-remount-fs.service` e `intel_lpmd.service`.
@@ -44,7 +45,7 @@
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1` e aplicando blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` para carregar módulos NVIDIA sob demanda no userspace.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: omite `nvidia_drm` e `nvidia-drm` do initramfs.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` e redireciona carregamentos para `/usr/bin/true`.
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true` e ativa PAT + Resizable BAR na RTX 3080 Ti.
 - `files/nvidia/usr/lib/environment.d/60-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` para impedir que aplicações host capturem EGL/GLX da NVIDIA.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
@@ -60,7 +61,7 @@
 - `files/system/usr/lib/systemd/user.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de usuário.
 - `files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`: ativa `sysrq=1` (REISUB), `kptr_restrict=1` e `panic=20`.
 - `files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`: protege os sysctls do projeto via symlinks em `/etc/sysctl.d/` contra sobrescrita do TuneD.
-- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`) e ativa PAT + Resizable BAR na RTX 3080 Ti.
+- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
 - `files/system/usr/lib/modprobe.d/60-security-blacklist.conf`: bloqueia protocolos/filesystems obsoletos (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`).
 - `files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
 - `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s.

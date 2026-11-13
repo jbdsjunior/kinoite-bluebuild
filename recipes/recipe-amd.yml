@@ -18,6 +18,7 @@ modules:
 
   # Consolidated RPM package set, fonts, multimedia codecs and virtualization
   - from-file: modules/common-packages.yml
+  - from-file: modules/common-fonts.yml
 
   # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml
