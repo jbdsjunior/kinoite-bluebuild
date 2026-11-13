@@ -143,7 +143,6 @@
 - `.github/workflows/build.yml`: compila `amd`, `dual` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
 - `.github/workflows/check-updates.yml`: verifica a cada 2 horas se o digest upstream mudou ou se commits recentes tocaram entradas da receita em relação ao GHCR e dispara build apenas se necessário.
 - `.github/workflows/cleanup.yml`: remove versões antigas das imagens mantendo 15 e limpa históricos de runs diariamente.
-- `.github/workflows/validate.yml`: valida scripts Shell (`bash -n`), sintaxe YAML, cobertura de `PROJECTS.md` e receitas BlueBuild em todo `push`/`pull_request`.
 - `.github/dependabot.yml`: verifica semanalmente atualizações das GitHub Actions.
 - `cosign.pub`: chave pública embutida para verificação criptográfica das imagens via Bootc.
 

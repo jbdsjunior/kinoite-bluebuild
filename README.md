@@ -1,6 +1,5 @@
 <div align="center">
 
-![Status-Validate](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/validate.yml/badge.svg)
 ![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
 ![Status-Build](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build.yml/badge.svg)
 
@@ -96,7 +95,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
-| [`.github/workflows/`](.github/workflows/) | CI validation (`validate.yml`), image build (`build.yml`), upstream check (every 2h) and registry cleanup |
+| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 2h) and registry cleanup |
 
 ## Builds
 
