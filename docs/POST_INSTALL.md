@@ -224,7 +224,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | SSH | `PermitRootLogin no`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `MaxAuthTries 3`, `X11Forwarding no` (`/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`) | Criar `/etc/ssh/sshd_config.d/99-local.conf` com as diretivas desejadas (drop-ins são lidos em ordem alfabética) e `sudo systemctl restart sshd` |
 | DNS | `systemd-resolved` com Control D (bloqueio de malware/ads) + DNS-over-TLS obrigatório, DNSSEC desativado de propósito | `/etc/systemd/resolved.conf.d/60-dns-overrides.conf` + `sudo systemctl restart systemd-resolved` |
 | Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
-| Atualizações | `bootc update` a cada 45 min após o boot, Flatpak (sistema e usuário) e `podman auto-update` na mesma cadência | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
+| Atualizações | `bootc update` e Flatpak (sistema e usuário) a cada 15 min (2 min após o boot); `podman auto-update` a cada 45 min | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
 | GRUB | Auto-hide forçado (`menu_auto_hide=2`, `timeout=0`) com rollback automático em falha de boot | Seção 7.2 |
 | KDE | `SingleClick=true`, Breeze Dark, fontes nativas do Plasma 6, `breezerc` sem bordas, blur no KWin, Konsole translúcido e Baloo sem indexar `rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 | Btrfs Scrub | `kinoite-btrfs-scrub.timer` mensal em AC (`Nice=19`, `idle`) em `/var/home` | `sudo systemctl disable --now kinoite-btrfs-scrub.timer` |

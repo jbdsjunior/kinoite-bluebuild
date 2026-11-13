@@ -77,11 +77,11 @@
 
 - Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) apenas na tomada com jitter de `2m`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
 - `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` em prioridade ociosa na tomada.
-- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 5m do boot e a cada 45m.
+- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 2m do boot e a cada 15m.
 - `files/system/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos.
-- `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 5m do boot e a cada 45m.
+- `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 2m do boot e a cada 15m.
 - `files/system/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 5m do login e a cada 45m (`ConditionUser=!@system`).
+- `files/system/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 2m do login e a cada 15m (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/system/podman-auto-update.service.d/override.conf`: restringe auto-update Podman de sistema à tomada em prioridade ociosa.
 - `files/system/usr/lib/systemd/system/podman-auto-update.timer.d/override.conf`: verifica updates Podman de sistema após 5m do boot e a cada 45m.
 - `files/system/usr/lib/systemd/user/podman-auto-update.service.d/override.conf`: executa auto-update Podman de usuário em prioridade ociosa na tomada (`ConditionUser=!@system`).
