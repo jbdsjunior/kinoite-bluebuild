@@ -226,7 +226,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
 | Atualizações | `bootc update` a cada 45 min após o boot, Flatpak (sistema e usuário) e `podman auto-update` na mesma cadência | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
 | GRUB | Auto-hide forçado (`menu_auto_hide=2`, `timeout=0`) com rollback automático em falha de boot | Seção 7.2 |
-| KDE | `SingleClick=true`, Breeze Dark, `Inter Variable` + `JetBrainsMono Nerd Font`, `breezerc` sem bordas, blur no KWin, Konsole translúcido e Baloo sem indexar `rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
+| KDE | `SingleClick=true`, Breeze Dark, fontes nativas do Plasma 6, `breezerc` sem bordas, blur no KWin, Konsole translúcido e Baloo sem indexar `rclone`/`/run/user` | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 | Btrfs Scrub | `kinoite-btrfs-scrub.timer` mensal em AC (`Nice=19`, `idle`) em `/var/home` | `sudo systemctl disable --now kinoite-btrfs-scrub.timer` |
 | Energia (`tuned`) | Perfil `throughput-performance` aplicado no primeiro boot via `kinoite-boot-init.service` | `tuned-adm profile balanced` ou slider de energia do Plasma |
 | OOMD (`user-.slice`) | `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` em `60-kinoite-oomd.conf` | Drop-in em `/etc/systemd/system/user-.slice.d/` |
