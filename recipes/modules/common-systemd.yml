@@ -6,6 +6,10 @@ modules:
       masked:
         - systemd-remount-fs.service
         - intel_lpmd.service
+        - NetworkManager-wait-online.service
+        - ModemManager.service
+        - raid-check.timer
+        - dnf-makecache.timer
       enabled:
         # Native first-boot initialization (GRUB auto-hide)
         - kinoite-boot-init.service

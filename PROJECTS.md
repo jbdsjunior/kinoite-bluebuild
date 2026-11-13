@@ -91,7 +91,8 @@
 - `files/system/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa Podman de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.timer`: agenda limpeza semanal de usuário (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB no primeiro boot preservando acesso via tecla Shift.
+- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) e aplica o perfil `throughput-performance` do `tuned` no primeiro boot.
+- `files/system/usr/lib/systemd/system/user-.slice.d/60-kinoite-oomd.conf`: habilita `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` nas sessões de usuário.
 - `files/system/usr/bin/kinoite-optimize`: executa manutenção local em 8 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
 - `files/system/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
