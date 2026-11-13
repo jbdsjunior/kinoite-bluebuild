@@ -650,6 +650,9 @@ audit_pillars() {
         "podman-auto-update.timer"
         "kinoite-maintenance.timer"
     )
+    if [[ -f /usr/lib/systemd/system/kinoite-btrfs-scrub.timer ]]; then
+        required_timers+=("kinoite-btrfs-scrub.timer")
+    fi
     local timer_states
     if timer_states="$(systemctl is-active "${required_timers[@]}" 2>/dev/null)" ||
         [[ -n "$timer_states" ]]; then
