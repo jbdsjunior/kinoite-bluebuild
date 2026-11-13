@@ -3,3 +3,9 @@ DefaultProfile=Kinoite.profile
 
 [KonsoleWindow]
 ShowMenuBarByDefault=false
+
+[TabBar]
+ExpandTabWidth=false
+NewTabBehavior=PutNewTabAtTheEnd
+TabBarPosition=Top
+TabBarVisibility=ShowTabBarWhenNeeded

@@ -55,6 +55,7 @@ modules:
         # Infrastructure, Cloud Sync, Containers & GPU Diagnostics
         - topgrade
         - starship
+        - fastfetch
         - tailscale
         - git
         - rclone

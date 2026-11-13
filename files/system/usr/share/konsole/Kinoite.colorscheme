@@ -1,16 +1,16 @@
 [General]
-Description=Kinoite Tokyo Night
-Opacity=1
+Description=Kinoite Tokyo Night (macOS Frosted Glass)
+Opacity=0.92
 Blur=true
 
 [Background]
-Color=26,27,38
+Color=22,22,30
 
 [BackgroundIntense]
 Color=36,40,59
 
 [Foreground]
-Color=217,224,238
+Color=220,224,238
 
 [ForegroundIntense]
 Color=255,255,255

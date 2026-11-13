@@ -18,7 +18,7 @@
 
 - Use Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`).
 - Nunca use `git commit -a`; adicione cada arquivo individualmente com `git add <arquivo>`.
-- Revise `git diff --cached` antes do commit e faça `git push` apenas após aprovação de todas as validações.
+- Revise `git diff --cached` antes do commit e faça `git push` automaticamente ao concluir ajustes após aprovação de todas as validações.
 
 ## Validação Pré-Commit
 

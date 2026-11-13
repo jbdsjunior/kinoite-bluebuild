@@ -4,10 +4,11 @@ add_newline = true
 command_timeout = 1000
 palette = "kinoite"
 
-format = "$os$username$hostname$container$directory$git_branch$git_status$fill$cmd_duration$character"
+format = "$os$username$hostname$container$directory$git_branch$git_status$python$nodejs$rust$golang\n$character"
+right_format = "$status$cmd_duration"
 
 [palettes.kinoite]
-fg = "#d9e0ee"
+fg = "#dce0ee"
 blue = "#7aa2f7"
 green = "#9ece6a"
 yellow = "#e0af68"
@@ -19,68 +20,91 @@ magenta = "#bb9af7"
 [os]
 disabled = false
 style = "bold blue"
-format = "[$symbol]($style)"
+format = "[$symbol]($style) "
 
 [os.symbols]
-Fedora = " "
-Ubuntu = " "
-Arch = "󰣇 "
-Debian = " "
-Alpine = " "
+Fedora = ""
+Ubuntu = ""
+Arch = "󰣇"
+Debian = ""
+Alpine = ""
 
 [username]
 show_always = false
 style_user = "bold green"
 style_root = "bold red"
-format = "[$user ]($style)"
+format = "[$user]($style) "
 
 [hostname]
 ssh_only = true
 style = "bold yellow"
-format = "[@$hostname ]($style)"
+format = "[@$hostname]($style) "
 
 [container]
-format = '[$symbol$name ](bold cyan)'
+format = '[$symbol$name](bold cyan) '
 symbol = "󰏖 "
 
 [directory]
-style = "bold fg"
-truncation_length = 4
-truncate_to_repo = false
+style = "bold blue"
+truncation_length = 3
+truncate_to_repo = true
 read_only = " 󰌾"
 read_only_style = "bold red"
-home_symbol = " ~"
+home_symbol = "~"
 truncation_symbol = "…/"
 format = "[$path]($style)[$read_only]($read_only_style) "
 
 [git_branch]
 symbol = " "
-style = "bold blue"
-format = "[$symbol$branch ]($style)"
+style = "bold magenta"
+format = "[$symbol$branch]($style) "
 
 [git_status]
-style = "bold yellow"
+style = "yellow"
 format = "([$all_status$ahead_behind]($style) )"
 conflicted = "󰞇 "
 ahead = "⇡${count} "
 behind = "⇣${count} "
 diverged = "⇕⇡${ahead_count}⇣${behind_count} "
 untracked = "󰋖 "
-stashed = "📦 "
+stashed = "󰏗 "
 modified = "󰝌 "
 staged = "󰐗 "
 renamed = "󰑕 "
 deleted = "󰮈 "
 
-[fill]
-symbol = " "
+[python]
+symbol = " "
+style = "cyan"
+format = "[$symbol($version )]($style)"
+
+[nodejs]
+symbol = " "
+style = "green"
+format = "[$symbol($version )]($style)"
+
+[rust]
+symbol = " "
+style = "red"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = " "
+style = "cyan"
+format = "[$symbol($version )]($style)"
+
+[status]
+disabled = false
+symbol = "✘ "
+style = "bold red"
+format = "[$symbol$status]($style) "
 
 [cmd_duration]
-min_time = 800
+min_time = 1000
 style = "gray"
-format = "[󰔛 ${duration}]($style)"
+format = "[󰔛 $duration]($style)"
 
 [character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[✗](bold red)"
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
 vimcmd_symbol = "[❮](bold blue)"

@@ -17,3 +17,9 @@ if command -v starship >/dev/null 2>&1; then
         eval "$(starship init zsh)"
     fi
 fi
+
+# Show compact system summary once per top-level interactive terminal (skip embedded IDE terminals)
+if [ -t 1 ] && [ -z "${FASTFETCH_SHOWN:-}" ] && [ "${TERM_PROGRAM:-}" != "vscode" ] && command -v fastfetch >/dev/null 2>&1; then
+    export FASTFETCH_SHOWN=1
+    fastfetch
+fi

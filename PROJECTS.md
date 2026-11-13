@@ -30,7 +30,7 @@
 
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-dual.yml`: compila a imagem `kinoite-dual` para estações Dual-GPU AMD + NVIDIA.
-- `recipes/modules/common-packages.yml`: consolida em camada única DNF + fontes a remoção de bloat (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`), troca `ocl-icd`, localização `langpacks-pt_BR`, KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), codecs RPM Fusion (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer), pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`), ferramentas CLI/diagnóstico (`topgrade`, `starship`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`), `rsms-inter-vf-fonts` e Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
+- `recipes/modules/common-packages.yml`: consolida em camada única DNF + fontes a remoção de bloat (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`), troca `ocl-icd`, localização `langpacks-pt_BR`, KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), codecs RPM Fusion (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer), pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`), ferramentas CLI/diagnóstico (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`), `rsms-inter-vf-fonts` e Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
 - `recipes/modules/common-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
@@ -105,12 +105,14 @@
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas, oculta barra de menus e ativa miniaturas locais no Dolphin.
 - `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas.
 - `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
-- `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão e oculta a barra de menus do Konsole.
+- `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
 - `files/system/etc/xdg/kwinrulesrc`: força posicionamento centralizado no KWin para janelas iniciais do Brave e Google Chrome em Wayland.
-- `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10, histórico de 10.000 linhas e esquema `Kinoite`.
-- `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura de alto contraste para o Konsole.
-- `files/system/usr/share/starship/starship.toml`: configura prompt Starship em linha única para Git, contêiner e duração.
-- `files/system/etc/profile.d/50-kinoite-env.sh`: inicializa Starship sob demanda em shells interativos (`bash`/`zsh`).
+- `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
+- `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
+- `files/system/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
+- `files/system/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs).
+- `files/system/usr/share/user-tmpfiles.d/70-fastfetch.conf`: sincroniza `config.jsonc` do Fastfetch em `~/.config/fastfetch/` no login.
+- `files/system/etc/profile.d/50-kinoite-env.sh`: inicializa Starship e exibe Fastfetch uma vez por sessão interativa fora de terminais embutidos de IDE.
 - `files/system/etc/profile.d/60-kinoite-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`) e atalhos de diagnóstico/manutenção.
 - `files/system/usr/share/topgrade/10-kinoite.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) no Topgrade.
 - `files/system/usr/share/user-tmpfiles.d/70-topgrade.conf`: copia o drop-in do Topgrade para `~/.config/topgrade.d/` no login.
