@@ -65,7 +65,7 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `rd.driver.blacklist=nvidia-drm`: impede a inicialização do módulo de modosetting de vídeo da NVIDIA no initramfs da imagem dual.
 - `modprobe.blacklist=nvidia-drm`: impede a criação do nó gráfico `/dev/dri/renderD129` pela NVIDIA preservando `/dev/nvidia*` e `/dev/nvidia-uvm` para CUDA.
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve declarativamente o arquivo gerado pelo akmods, eliminando `nvidia-drm.modeset=1` e aplicando o blacklist de `nouveau` e `nvidia-drm`.
-- `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: substitui declarativamente a configuração padrão do dracut omitindo `nvidia_drm` da diretiva `force_drivers`.
+- `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: substitui declarativamente a configuração padrão do dracut mantendo apenas `amdgpu` em `force_drivers` e deixando os módulos NVIDIA para carregamento sob demanda no userspace.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: reforça no dracut a omissão explícita dos módulos `nvidia_drm` e `nvidia-drm` da imagem do ramdisk.
 - `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm` no modprobe e redireciona tentativas de carregamento para `/usr/bin/true`.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação de módulos akmods pelo Secure Boot.

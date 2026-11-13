@@ -39,35 +39,26 @@ for arg in "$@"; do
     esac
 done
 
+detect_luks_device() {
+    local mount_point src dm_name c_dev
+    command -v cryptsetup >/dev/null 2>&1 || return 1
+    for mount_point in / /var/home; do
+        src="$(findmnt -n -o SOURCE "$mount_point" 2>/dev/null || true)"
+        [[ "$src" =~ ^/dev/mapper/ ]] || continue
+        dm_name="$(basename "$src")"
+        c_dev="$(cryptsetup status "$dm_name" 2>/dev/null | awk '/^\s*device:/ {print $2}' || true)"
+        if [ -n "$c_dev" ] && [ -e "$c_dev" ]; then
+            echo "[INFO] Auto-detected LUKS partition from ${mount_point}: ${c_dev}" >&2
+            printf '%s\n' "$c_dev"
+            return 0
+        fi
+    done
+    return 1
+}
+
 if [ -z "$DEVICE" ]; then
     echo "Scanning active system mounts to detect root LUKS partition..."
-    # Probe root filesystem mount source
-    ROOT_SRC="$(findmnt -n -o SOURCE / 2>/dev/null || true)"
-    if [[ "$ROOT_SRC" =~ ^/dev/mapper/ ]]; then
-        DM_NAME="$(basename "$ROOT_SRC")"
-        if command -v cryptsetup >/dev/null 2>&1; then
-            C_DEV="$(cryptsetup status "$DM_NAME" 2>/dev/null | grep -E "^\s*device:" | awk '{print $2}' || true)"
-            if [ -n "$C_DEV" ] && [ -e "$C_DEV" ]; then
-                DEVICE="$C_DEV"
-                echo "[INFO] Auto-detected root LUKS partition: $DEVICE"
-            fi
-        fi
-    fi
-
-    # Fallback probe /var/home if root is not on mapper
-    if [ -z "$DEVICE" ]; then
-        VAR_SRC="$(findmnt -n -o SOURCE /var/home 2>/dev/null || true)"
-        if [[ "$VAR_SRC" =~ ^/dev/mapper/ ]]; then
-            DM_NAME="$(basename "$VAR_SRC")"
-            if command -v cryptsetup >/dev/null 2>&1; then
-                C_DEV="$(cryptsetup status "$DM_NAME" 2>/dev/null | grep -E "^\s*device:" | awk '{print $2}' || true)"
-                if [ -n "$C_DEV" ] && [ -e "$C_DEV" ]; then
-                    DEVICE="$C_DEV"
-                    echo "[INFO] Auto-detected LUKS partition from /var/home: $DEVICE"
-                fi
-            fi
-        fi
-    fi
+    DEVICE="$(detect_luks_device || true)"
 fi
 
 if [ -z "$DEVICE" ]; then
@@ -170,10 +161,6 @@ INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
 if command -v bootc >/dev/null 2>&1; then
     echo "[OK] Imagem declarativa Bootc detectada. Suporte nativo a TPM2/LUKS2 pré-compilado na imagem base."
     echo "[OK] Chaves TPM2 vinculadas diretamente ao cabeçalho LUKS2 do disco."
-elif command -v rpm-ostree >/dev/null 2>&1; then
-    echo "Regenerating initramfs via rpm-ostree..."
-    rpm-ostree initramfs --enable || true
-    echo "[OK] rpm-ostree initramfs tracking enabled."
 elif command -v dracut >/dev/null 2>&1; then
     echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
     TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"

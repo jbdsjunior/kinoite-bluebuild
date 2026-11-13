@@ -3,13 +3,7 @@ Description=Flatpak System Updates Timer
 Documentation=man:flatpak-update(1) man:systemd.timer(5)
 
 [Timer]
-# Reset base upstream timer triggers before declaring the project cadence,
-# mirroring the bootc/podman overrides (prevents duplicated update runs).
-OnBootSec=
-OnUnitActiveSec=
-OnUnitInactiveSec=
-OnCalendar=
-RandomizedDelaySec=0
+RandomizedDelaySec=2m
 Persistent=false
 OnBootSec=5m
 OnUnitActiveSec=45m

@@ -413,7 +413,7 @@ phase_kargs() {
     )
 
     local -a kargs_to_add=() kargs_to_remove=()
-    local prefix karg
+    local prefix mod karg
 
     if is_dual_gpu; then
         unwanted_kargs+=(
@@ -423,9 +423,11 @@ phase_kargs() {
             "rd.driver.blacklist=nvidia_drm"
         )
         for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
-            if ! echo "$current_kargs" | grep -q "${prefix}=nvidia-drm"; then
-                kargs_to_add+=("--append-if-missing=${prefix}=nvidia-drm")
-            fi
+            for mod in "nouveau" "nvidia-drm"; do
+                if ! echo "$current_kargs" | grep -q "${prefix}=${mod}"; then
+                    kargs_to_add+=("--append-if-missing=${prefix}=${mod}")
+                fi
+            done
         done
     fi
 
