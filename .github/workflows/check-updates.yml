@@ -139,7 +139,7 @@ jobs:
             | first(
                 .[]
                 | select(.conclusion == "failure")
-                | select(.displayTitle | endswith("(" + $f + ")"))
+                | select((.displayTitle | endswith("(" + $f + ")")) or (.displayTitle | endswith("(all)")))
                 | select((.createdAt | fromdateiso8601) > $cutoff)
                 | .createdAt
               ) // empty' <<<"$RUNS")"

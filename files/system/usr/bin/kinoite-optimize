@@ -219,7 +219,7 @@ phase_tmpfiles_and_nocow() {
             while IFS= read -r line; do
                 attrs="${line%% *}"
                 file="${line#* }"
-                if [[ -n "$file" && "$attrs" != *C* ]]; then
+                if [[ -f "$file" && "$attrs" != *C* ]]; then
                     cp --reflink=never "$file" "${file}.nocow_tmp" 2>/dev/null &&
                         mv -f "${file}.nocow_tmp" "$file" &&
                         { ((rclone_fixed++)) || true; }
@@ -426,7 +426,7 @@ phase_kargs() {
     local prefix mod karg
     mapfile -t unwanted_kargs < <(get_unwanted_kargs)
 
-    if is_dual_gpu; then
+    if is_nvidia_headless_image; then
         for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
             for mod in "nouveau" "nvidia-drm"; do
                 if ! echo "$current_kargs" | grep -qwF "${prefix}=${mod}"; then

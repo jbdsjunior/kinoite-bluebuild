@@ -112,7 +112,7 @@
 - `files/system/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas e oculta barra de menus no Dolphin preservando thumbnailers nativos do KF6.
 - `files/system/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
-- `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
+- `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark (`ColorScheme=BreezeDark`, ícones `breeze-dark`), destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
 - `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) sem sobrescrever preferências de tela do usuário.
 - `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
 - `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
@@ -130,7 +130,7 @@
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
 - `files/system/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` (mapeado dinamicamente de `/dev/dri/primary-render`) e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
-- `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `LIBVA_DRIVER_NAME=radeonsi`, `VDPAU_DRIVER=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
+- `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
 - `files/system/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
 - `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, dispositivos Android ADB/Fastboot e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
 - `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.

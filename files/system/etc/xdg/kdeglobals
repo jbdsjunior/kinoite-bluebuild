@@ -1,6 +1,10 @@
 [General]
 AccentColor=0,85,255
+ColorScheme=BreezeDark
 LastUsedCustomAccentColor=0,85,255
+
+[Icons]
+Theme=breeze-dark
 
 [KDE]
 AnimationDurationFactor=0.5
