@@ -162,19 +162,24 @@ apply_nocow_dir() {
 # ---------------------------------------------------------------------------
 # Phase 2: tmpfiles, silent boot, NoCOW alignment and cloud mount hygiene
 # ---------------------------------------------------------------------------
-phase_tmpfiles_and_nocow() {
-    local system_nocow_dirs=(
-        "/var/lib/libvirt/images"
-        "/var/lib/containers/storage"
-        "/var/lib/containers/storage/volumes"
-    )
-    local user_nocow_dirs=(
-        "${REAL_HOME}/.local/share/libvirt/images"
-        "${REAL_HOME}/.local/share/gnome-boxes/images"
-        "${REAL_HOME}/.local/share/containers/storage"
-        "${REAL_HOME}/.local/share/containers/storage/volumes"
+NOCOW_SYSTEM_DIRS=(
+    "/var/lib/libvirt/images"
+    "/var/lib/containers/storage"
+    "/var/lib/containers/storage/volumes"
+)
+
+get_nocow_user_dirs() {
+    printf '%s\n' \
+        "${REAL_HOME}/.local/share/libvirt/images" \
+        "${REAL_HOME}/.local/share/gnome-boxes/images" \
+        "${REAL_HOME}/.local/share/containers/storage" \
+        "${REAL_HOME}/.local/share/containers/storage/volumes" \
         "${REAL_HOME}/.cache/rclone"
-    )
+}
+
+phase_tmpfiles_and_nocow() {
+    local -a user_nocow_dirs=()
+    mapfile -t user_nocow_dirs < <(get_nocow_user_dirs)
 
     echo "=== [2/8] Systemd Tmpfiles & Declarative NoCOW Alignment ==="
     if [[ "$CAN_SUDO" -eq 1 ]]; then
@@ -187,10 +192,9 @@ phase_tmpfiles_and_nocow() {
         echo "[OK] User tmpfiles synchronized for ${REAL_USER}."
     fi
 
-    # Helper: ensure the +C (NoCOW) attribute on a directory.
     if [[ "$CAN_SUDO" -eq 1 ]]; then
         local dir
-        for dir in "${system_nocow_dirs[@]}"; do
+        for dir in "${NOCOW_SYSTEM_DIRS[@]}"; do
             apply_nocow_dir "$dir" root
         done
     fi
@@ -209,16 +213,18 @@ phase_tmpfiles_and_nocow() {
             echo "[OK] Podman storage directory trees verified with NoCOW."
         fi
 
-        # Recreate pre-existing rclone cache files without CoW extents.
+        # Recreate pre-existing rclone cache files without CoW extents (batch lsattr).
         if [[ -d "${REAL_HOME}/.cache/rclone" ]]; then
-            local rclone_fixed=0
-            while IFS= read -r -d '' file; do
-                if ! lsattr "$file" 2>/dev/null | grep -q "C"; then
+            local rclone_fixed=0 attrs file
+            while IFS= read -r line; do
+                attrs="${line%% *}"
+                file="${line#* }"
+                if [[ -n "$file" && "$attrs" != *C* ]]; then
                     cp --reflink=never "$file" "${file}.nocow_tmp" 2>/dev/null &&
                         mv -f "${file}.nocow_tmp" "$file" &&
                         { ((rclone_fixed++)) || true; }
                 fi
-            done < <(find "${REAL_HOME}/.cache/rclone" -type f -print0 2>/dev/null)
+            done < <(find "${REAL_HOME}/.cache/rclone" -type f -exec lsattr {} + 2>/dev/null || true)
             if [[ "$rclone_fixed" -gt 0 ]]; then
                 echo "[FIXED] Recreated ${rclone_fixed} rclone cache files with atomic NoCOW inheritance."
             else
@@ -286,7 +292,10 @@ phase_vm_images() {
         while IFS= read -r -d '' image; do
             [[ -f "$image" ]] || continue
             vm_found=1
-            extents="$(filefrag "$image" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')"
+            extents="$(filefrag "$image" 2>/dev/null | awk '{print $(NF-2)}' || true)"
+            if [[ -z "$extents" && "$CAN_SUDO" -eq 1 ]]; then
+                extents="$("${ROOT_CMD[@]}" filefrag "$image" 2>/dev/null | awk '{print $(NF-2)}' || true)"
+            fi
             size_mb=$((($(stat -c %s "$image" 2>/dev/null || echo "0")) / 1024 / 1024))
             if [[ "$extents" =~ ^[0-9]+$ ]]; then
                 echo "[INFO] Disk image: $(basename "$image") [$vm_dir] -> ${size_mb}MB ($extents extents)"
@@ -297,7 +306,7 @@ phase_vm_images() {
                     elif [[ "$CAN_SUDO" -eq 1 ]]; then
                         "${ROOT_CMD[@]}" btrfs filesystem defragment -f "$image" 2>/dev/null || true
                     fi
-                    new_extents="$(filefrag "$image" 2>/dev/null | awk -F': ' '{print $2}' | awk '{print $1}')"
+                    new_extents="$(filefrag "$image" 2>/dev/null | awk '{print $(NF-2)}' || true)"
                     echo "[INFO] After defrag: ${new_extents} extents"
                 fi
             fi
@@ -376,6 +385,27 @@ phase_container_hygiene() {
     fi
 }
 
+get_unwanted_kargs() {
+    printf '%s\n' \
+        "amd_pstate=active" \
+        "tsc=reliable" \
+        "nowatchdog" \
+        "amd_iommu=on" \
+        "iommu=pt" \
+        "slab_nomerge" \
+        "vsyscall=none" \
+        "preempt=full" \
+        "page_alloc.shuffle=1" \
+        "btusb.enable_autosuspend=0"
+    if is_nvidia_headless_image || is_dual_gpu; then
+        printf '%s\n' \
+            "nvidia-drm.modeset=1" \
+            "nvidia_drm.modeset=1" \
+            "modprobe.blacklist=nvidia_drm" \
+            "rd.driver.blacklist=nvidia_drm"
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Phase 7: host kernel arguments and deployment hygiene
 # ---------------------------------------------------------------------------
@@ -392,32 +422,14 @@ phase_kargs() {
     local current_kargs
     current_kargs="$(rpm-ostree kargs 2>/dev/null || true)"
 
-    local unwanted_kargs=(
-        "amd_pstate=active"
-        "tsc=reliable"
-        "nowatchdog"
-        "amd_iommu=on"
-        "iommu=pt"
-        "slab_nomerge"
-        "vsyscall=none"
-        "preempt=full"
-        "page_alloc.shuffle=1"
-        "btusb.enable_autosuspend=0"
-    )
-
-    local -a kargs_to_add=() kargs_to_remove=()
+    local -a unwanted_kargs=() kargs_to_add=() kargs_to_remove=()
     local prefix mod karg
+    mapfile -t unwanted_kargs < <(get_unwanted_kargs)
 
     if is_dual_gpu; then
-        unwanted_kargs+=(
-            "nvidia-drm.modeset=1"
-            "nvidia_drm.modeset=1"
-            "modprobe.blacklist=nvidia_drm"
-            "rd.driver.blacklist=nvidia_drm"
-        )
         for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
             for mod in "nouveau" "nvidia-drm"; do
-                if ! echo "$current_kargs" | grep -q "${prefix}=${mod}"; then
+                if ! echo "$current_kargs" | grep -qwF "${prefix}=${mod}"; then
                     kargs_to_add+=("--append-if-missing=${prefix}=${mod}")
                 fi
             done
@@ -425,7 +437,7 @@ phase_kargs() {
     fi
 
     for karg in "${unwanted_kargs[@]}"; do
-        if echo "$current_kargs" | grep -q "$karg"; then
+        if echo "$current_kargs" | grep -qwF "$karg"; then
             kargs_to_remove+=("--delete-if-present=$karg")
         fi
     done
@@ -485,6 +497,9 @@ audit_pillars() {
     if [[ -f /usr/lib/modprobe.d/60-security-blacklist.conf ]]; then
         echo "[OK] CIS modprobe security blacklist present and active."
     fi
+    if [[ -f /etc/containers/policy.json ]] && grep -q "sigstoreSigned" /etc/containers/policy.json; then
+        echo "[OK] Cosign sigstore policy configured in /etc/containers/policy.json."
+    fi
 
     echo "--- [Pillar 2/6] Package Resilience & Zero Downgrade ---"
     fedora_version="$(rpm -E %fedora 2>/dev/null || echo "upstream")"
@@ -513,16 +528,9 @@ audit_pillars() {
         audit_warn "VM parameter drift: vm.swappiness=${swappiness} (target 150), vm.page-cluster=${page_cluster} (target 0)."
     fi
 
-    local nocow_paths=(
-        "/var/lib/libvirt/images"
-        "/var/lib/containers/storage"
-        "/var/lib/containers/storage/volumes"
-        "${REAL_HOME}/.local/share/libvirt/images"
-        "${REAL_HOME}/.local/share/gnome-boxes/images"
-        "${REAL_HOME}/.local/share/containers/storage"
-        "${REAL_HOME}/.local/share/containers/storage/volumes"
-        "${REAL_HOME}/.cache/rclone"
-    )
+    local -a nocow_paths=("${NOCOW_SYSTEM_DIRS[@]}") user_nocow=()
+    mapfile -t user_nocow < <(get_nocow_user_dirs)
+    nocow_paths+=("${user_nocow[@]}")
     local path attrs
     for path in "${nocow_paths[@]}"; do
         [[ -d "$path" ]] || continue
@@ -538,6 +546,21 @@ audit_pillars() {
             audit_warn "Directory without NoCOW (+C): $path"
         else
             echo "[SKIP] Insufficient permissions to inspect NoCOW (+C) on: $path (requires sudo)."
+        fi
+    done
+
+    local nvme_ra_file ra_val
+    for nvme_ra_file in /sys/block/nvme*n*/queue/read_ahead_kb; do
+        [[ -r "$nvme_ra_file" ]] || continue
+        ra_val="$(cat "$nvme_ra_file" 2>/dev/null || true)"
+        if [[ "$ra_val" == "256" ]]; then
+            echo "[OK] NVMe read_ahead_kb=${ra_val} (${nvme_ra_file%/queue/read_ahead_kb})."
+        elif [[ -n "$ra_val" ]]; then
+            if [[ -d /usr/lib/tuned/profiles/kinoite-performance ]]; then
+                audit_warn "NVMe read_ahead_kb drift on ${nvme_ra_file}: ${ra_val} (target 256)."
+            else
+                echo "[INFO] NVMe read_ahead_kb=${ra_val} (${nvme_ra_file%/queue/read_ahead_kb}); target 256 applies after kinoite-performance deploy."
+            fi
         fi
     done
 
@@ -593,25 +616,12 @@ audit_pillars() {
         audit_warn "Kernel SysRq mismatch: ${sysrq} (expected 1 for safe REISUB)."
     fi
 
-    local cmdline banned_list banned detected=0
+    local cmdline banned detected=0
+    local -a banned_list=()
     cmdline="$(cat /proc/cmdline 2>/dev/null || true)"
-    banned_list=(
-        "preempt=full"
-        "nowatchdog"
-        "tsc=reliable"
-        "amd_iommu=on"
-        "iommu=pt"
-        "amd_pstate=active"
-        "slab_nomerge"
-        "vsyscall=none"
-        "page_alloc.shuffle=1"
-        "btusb.enable_autosuspend=0"
-    )
-    if is_nvidia_headless_image || is_dual_gpu; then
-        banned_list+=("nvidia-drm.modeset=1" "nvidia_drm.modeset=1")
-    fi
+    mapfile -t banned_list < <(get_unwanted_kargs)
     for banned in "${banned_list[@]}"; do
-        if echo "$cmdline" | grep -qw "$banned"; then
+        if echo "$cmdline" | grep -qwF "$banned"; then
             audit_warn "Redundant/unsafe karg detected on the boot line: $banned"
             detected=1
         fi
@@ -670,6 +680,35 @@ audit_pillars() {
         fi
     else
         echo "[SKIP] Timer state unavailable (systemd not reachable from this session)."
+    fi
+
+    if [[ "$USER_SCOPE" -eq 1 ]]; then
+        local user_uid runtime_dir
+        user_uid="$(id -u "$REAL_USER" 2>/dev/null || true)"
+        runtime_dir="/run/user/${user_uid}"
+        if [[ -n "$user_uid" && -S "${runtime_dir}/systemd/private" ]]; then
+            local user_units=(
+                "flatpak-user-update.timer"
+                "kinoite-user-maintenance.timer"
+                "podman-auto-update.timer"
+                "virtqemud-session.service"
+            )
+            local u_states u_idx=0 u_state inactive_user=()
+            u_states="$(as_user env XDG_RUNTIME_DIR="$runtime_dir" systemctl --user is-active "${user_units[@]}" 2>/dev/null || true)"
+            if [[ -n "$u_states" ]]; then
+                while IFS= read -r u_state; do
+                    if [[ "$u_state" != "active" ]]; then
+                        inactive_user+=("${user_units[$u_idx]}(${u_state:-unknown})")
+                    fi
+                    u_idx=$((u_idx + 1))
+                done <<<"$u_states"
+                if [[ ${#inactive_user[@]} -gt 0 ]]; then
+                    audit_warn "Inactive user unit(s): ${inactive_user[*]}"
+                else
+                    echo "[OK] User maintenance timers & virtqemud-session: all ${#user_units[@]} active."
+                fi
+            fi
+        fi
     fi
 
     if [[ -f /etc/xdg/baloofilerc ]] && grep -qE "rclone|/run/user" /etc/xdg/baloofilerc; then

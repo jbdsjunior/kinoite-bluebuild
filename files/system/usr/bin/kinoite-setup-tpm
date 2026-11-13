@@ -144,7 +144,8 @@ LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
 if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
     if grep -q "$LUKS_UUID" /etc/crypttab; then
         if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
-            local_tmp="$(mktemp)"
+            local_tmp="$(mktemp /etc/crypttab.XXXXXX)"
+            trap 'rm -f "$local_tmp"' EXIT
             awk -v uuid="$LUKS_UUID" '
                 $0 !~ /^[[:space:]]*#/ && index($0, uuid) > 0 {
                     if (NF >= 4 && $4 != "" && $4 != "-") {
@@ -158,7 +159,11 @@ if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
                 }
                 { print }
             ' /etc/crypttab >"$local_tmp" && mv "$local_tmp" /etc/crypttab
+            trap - EXIT
             chmod 0600 /etc/crypttab 2>/dev/null || true
+            if command -v restorecon >/dev/null 2>&1; then
+                restorecon /etc/crypttab 2>/dev/null || true
+            fi
             echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
         fi
     fi

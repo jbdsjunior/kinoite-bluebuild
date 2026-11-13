@@ -61,10 +61,10 @@
 - `files/system/usr/lib/systemd/user.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de usuário.
 - `files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`: ativa `sysrq=1` (REISUB), `kptr_restrict=1` e `panic=20`.
 - `files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`: protege os sysctls do projeto via symlinks em `/etc/sysctl.d/` contra sobrescrita do TuneD.
-- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
+- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia e ativa modo ativo no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
 - `files/system/usr/lib/modprobe.d/60-security-blacklist.conf`: bloqueia protocolos/filesystems obsoletos (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`).
 - `files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
-- `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s.
+- `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s e aplica retenção contínua (`SystemMaxUse=200M`, `MaxRetentionSec=14day`).
 - `files/system/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf`: define `ShowStatus=error` para boot silencioso exibindo apenas falhas.
 - `files/system/usr/lib/modules-load.d/60-bbr.conf`: carrega `sch_fq` e `tcp_bbr` no boot.
 - `files/system/usr/lib/sysctl.d/90-network-tuning.conf`: ativa TCP BBR/FQ, buffers até 32 MB, TCP Fast Open e bloqueio de redirects ICMP.
@@ -93,24 +93,24 @@
 - `files/system/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa Podman de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.timer`: agenda limpeza semanal de usuário (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) e aplica o perfil `throughput-performance` do `tuned` no primeiro boot.
+- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) e aplica o perfil `kinoite-performance` do `tuned` no primeiro boot.
+- `files/system/usr/lib/tuned/profiles/kinoite-performance/tuned.conf`: herda `throughput-performance` preservando `readahead=256` em NVMe e parâmetros de memória (`dirty_bytes=10%`, `dirty_background_bytes=3%`, `vm.swappiness=150`).
 - `files/system/usr/lib/systemd/system/user-.slice.d/60-kinoite-oomd.conf`: habilita `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` nas sessões de usuário.
 - `files/system/usr/bin/kinoite-optimize`: executa manutenção local em 8 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
 - `files/system/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
 ## Desktop KDE, Navegadores e Terminal
 
-- `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland nativo, GPU AMD, VA-API e desativa telemetria em Chromium.
+- `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland nativo, GPU AMD, VA-API decode/encode e desativa telemetria em Chromium.
 - `files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`: provisiona `chromium-flags.conf` para Brave e Chrome no login.
 - `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Jan, Brave, Chrome, Firefox e VS Code).
 - `files/system/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
 - `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo e socket Podman (`ro`) no VS Code Flatpak.
 - `files/system/usr/share/flatpak/overrides/global`: aplica leitura de `gtk-3.0`/`gtk-4.0`/`fontconfig`/`kdeglobals`, Wayland nativo em Electron, FreeType e `LIBVA_DRIVER_NAME=radeonsi` para todos os Flatpaks.
-- `files/system/usr/share/flatpak/overrides/org.mozilla.firefox`: habilita `MOZ_ENABLE_WAYLAND=1` e integração D-Bus com KDE Plasma no Firefox Flatpak.
-- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
-- `files/system/etc/fonts/conf.d/64-font-rendering.conf`: configura hinting leve, RGB subpixel, Inter Variable e fallback JetBrainsMono Nerd Font.
+- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de Brave, Chrome e Firefox com KDE Plasma.
+- `files/system/etc/fonts/conf.d/64-font-rendering.conf`: define aliases de fontes (`Inter Variable`, `JetBrainsMono Nerd Font`, `FiraCode Nerd Font`) preservando preferências de renderização do usuário no KDE.
 - `files/system/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
-- `files/system/etc/xdg/dolphinrc`: desativa restauração de abas, oculta barra de menus e ativa miniaturas locais no Dolphin.
+- `files/system/etc/xdg/dolphinrc`: desativa restauração de abas e oculta barra de menus no Dolphin preservando thumbnailers nativos do KF6.
 - `files/system/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
 - `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
 - `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) sem sobrescrever preferências de tela do usuário.

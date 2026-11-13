@@ -32,7 +32,7 @@ alias status-bootc='sudo bootc status'
 
 alias status-fw='systemctl status firewalld'
 alias status-dns='systemctl status systemd-resolved'
-alias status-kvm='systemctl status virtqemud.socket virtqemud.service'
+alias status-kvm='systemctl --user status virtqemud-session.service'
 alias status-tailscale='tailscale status'
 alias status-podman='systemctl status podman-auto-update.timer'
 alias status-podman-user='systemctl --user status podman-auto-update.timer'
@@ -46,11 +46,6 @@ alias logs-rclone='journalctl --user -u "rclone@*" -f'
 alias restart-rclone='systemctl --user restart "rclone@*"'
 
 alias gpu-top='nvtop'
-alias gpu-stat='nvtop'
-
-alias tmpfiles-system='sudo systemd-tmpfiles --create'
-alias tmpfiles-user='systemd-tmpfiles --user --create'
-alias tmpfiles-all='sudo systemd-tmpfiles --create && systemd-tmpfiles --user --create'
 
 alias podman-cleanup='podman system prune -af && podman volume prune -f'
 alias distrobox-list='distrobox list'
