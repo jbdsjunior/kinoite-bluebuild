@@ -31,36 +31,38 @@ modules:
         - virt-viewer
       packages:
         # Localization, KDE Plasma Integration & Sensors
+        - kio-admin
+        - ksshaskpass
         - langpacks-pt_BR
         - lm_sensors
         - plasma-firewall
-        - kio-admin
-        - ksshaskpass
         - qt6-qtimageformats
+
+        # System Typography (RPM)
         - rsms-inter-vf-fonts
 
         # Hardware Acceleration & Multimedia Codecs (RPM Fusion)
-        - mesa-va-drivers-freeworld
         - ffmpeg
-        - libva-utils
-        - libheif-freeworld
-        - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
+        - libheif-freeworld
+        - libva-utils
+        - mesa-va-drivers-freeworld
 
         # Virtualization Stack (KVM / QEMU / Libvirt / GNOME Boxes)
         - "@virtualization"
         - gnome-boxes
 
         # Infrastructure, Cloud Sync, Containers & GPU Diagnostics
-        - topgrade
-        - starship
-        - fastfetch
-        - tailscale
-        - git
-        - rclone
-        - distrobox
-        - mesa-libOpenCL
         - clinfo
-        - vulkan-tools
+        - distrobox
+        - fastfetch
+        - git
+        - mesa-libOpenCL
         - nvtop
+        - rclone
+        - starship
+        - tailscale
+        - topgrade
+        - vulkan-tools
