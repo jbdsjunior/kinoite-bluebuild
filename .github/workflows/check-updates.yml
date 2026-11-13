@@ -84,9 +84,9 @@ jobs:
           CURRENT_DIGEST="$(jq -r '.Labels["org.opencontainers.image.base.digest"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
           IMAGE_CREATED="$(jq -r '.Labels["org.opencontainers.image.created"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
 
-          REPO_PATHS=("$RECIPE" "recipes/modules" "files/system" "files/dnf" "cosign.pub")
+          REPO_PATHS=("$RECIPE" "recipes/modules/common-*.yml" "files/system" "files/dnf" "cosign.pub")
           if [[ "$FLAVOR" == "dual" ]]; then
-            REPO_PATHS+=("files/nvidia")
+            REPO_PATHS+=("recipes/modules/dual-*.yml" "files/nvidia")
           fi
           LATEST_COMMIT_TS="$(git log -1 --format=%ct -- "${REPO_PATHS[@]}" || echo 0)"
           IMAGE_CREATED_TS=0
