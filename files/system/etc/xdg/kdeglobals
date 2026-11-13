@@ -1,6 +1,14 @@
 [General]
 AccentColor=0,85,255
 LastUsedCustomAccentColor=0,85,255
+font=Inter Variable,10,-1,5,400,0,0,0,0,0
+fixed=JetBrainsMono Nerd Font,10,-1,5,400,0,0,0,0,0
+smallestReadableFont=Inter Variable,8,-1,5,400,0,0,0,0,0
+toolBarFont=Inter Variable,10,-1,5,400,0,0,0,0,0
+menuFont=Inter Variable,10,-1,5,400,0,0,0,0,0
+
+[WM]
+activeFont=Inter Variable,10,-1,5,500,0,0,0,0,0
 
 [KDE]
 AnimationDurationFactor=0.5

@@ -1,0 +1,10 @@
+[Unit]
+Description=Kinoite Monthly Btrfs Scrub on /var/home
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/btrfs scrub start -B /var/home
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle

@@ -1,0 +1,11 @@
+[Unit]
+Description=Monthly Btrfs Scrub on /var/home
+
+[Timer]
+OnCalendar=monthly
+AccuracySec=6h
+Persistent=true
+RandomizedDelaySec=60min
+
+[Install]
+WantedBy=timers.target

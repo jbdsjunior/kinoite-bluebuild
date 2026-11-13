@@ -85,6 +85,8 @@
 - `files/system/usr/lib/systemd/user/podman-auto-update.service.d/override.conf`: executa auto-update Podman de usuário em prioridade ociosa na tomada (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/podman-auto-update.timer.d/override.conf`: verifica updates Podman de usuário após 5m do login e a cada 45m (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/podman-restart.service.d/override.conf`: impede execução de `podman-restart.service` para contas `@system` como `plasmalogin`.
+- `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.service`: executa `btrfs scrub start -B /var/home` em prioridade idle somente em alimentação AC.
+- `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.timer`: agenda o scrub mensal de `/var/home`.
 - `files/system/usr/lib/systemd/system/kinoite-maintenance.service`: limpa contêineres/volumes/imagens Podman de sistema e limita journald a 200 MB / 14 dias.
 - `files/system/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa Podman de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
@@ -103,7 +105,9 @@
 - `files/system/etc/fonts/conf.d/64-font-rendering.conf`: configura hinting leve, RGB subpixel, Inter Variable e fallback JetBrainsMono Nerd Font.
 - `files/system/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas, oculta barra de menus e ativa miniaturas locais no Dolphin.
-- `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas.
+- `files/system/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
+- `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, tipografia `Inter Variable` e `JetBrainsMono Nerd Font`, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas.
+- `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) sem sobrescrever preferências de tela do usuário.
 - `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
 - `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
 - `files/system/etc/xdg/kwinrulesrc`: força posicionamento centralizado no KWin para janelas iniciais do Brave e Google Chrome em Wayland.

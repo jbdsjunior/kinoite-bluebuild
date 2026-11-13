@@ -14,6 +14,7 @@ modules:
         - bootc-fetch-apply-updates.timer
         - flatpak-system-update.timer
         - kinoite-maintenance.timer
+        - kinoite-btrfs-scrub.timer
 
         # Container automation (Podman)
         - podman-restart.service
