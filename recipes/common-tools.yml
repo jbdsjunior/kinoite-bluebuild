@@ -30,9 +30,7 @@ modules:
 
         # Modern CLI & Terminal Workflow
         - eza
-        - bat
         - btop
-        - ripgrep
         - fd-find
         - fzf
         - zoxide
@@ -40,7 +38,6 @@ modules:
         # Containers & Virtualization CLI
         - distrobox
         - docker-compose
-        - podman-docker
 
         # System Information & Hardware Diagnostics
         - fastfetch
