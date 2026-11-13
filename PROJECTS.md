@@ -108,6 +108,7 @@
 - `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark, destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas.
 - `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
 - `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão e oculta a barra de menus do Konsole.
+- `files/system/etc/xdg/kwinrulesrc`: força posicionamento centralizado no KWin para janelas iniciais do Brave e Google Chrome em Wayland.
 - `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10, histórico de 10.000 linhas e esquema `Kinoite`.
 - `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura de alto contraste para o Konsole.
 - `files/system/usr/share/starship/starship.toml`: configura prompt Starship em linha única para Git, contêiner e duração.

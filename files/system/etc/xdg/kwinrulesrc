@@ -1,0 +1,10 @@
+[General]
+count=1
+rules=kinoite-browser-center
+
+[kinoite-browser-center]
+Description=Centralizar janelas iniciais do Brave e Google Chrome
+placement=Centered
+placementrule=2
+wmclass=brave-browser|google-chrome
+wmclassmatch=3
