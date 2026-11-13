@@ -5,6 +5,8 @@ modules:
     configurations:
       - notify: false
         scope: system
+        remove:
+          - org.gnome.Boxes
         install:
           # Application & Package Management
           - com.github.tchx84.Flatseal

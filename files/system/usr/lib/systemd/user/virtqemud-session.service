@@ -1,0 +1,12 @@
+[Unit]
+Description=Libvirt QEMU Session Daemon
+ConditionUser=!@system
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/virtqemud
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
