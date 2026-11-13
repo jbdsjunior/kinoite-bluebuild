@@ -17,19 +17,19 @@ modules:
         destination: /
 
   # Package set: debloat, core apps, fonts and AMD/multimedia drivers
-  - from-file: common-debloat.yml
-  - from-file: common-core.yml
-  - from-file: common-fonts.yml
-  - from-file: common-drivers.yml
+  - from-file: modules/common-debloat.yml
+  - from-file: modules/common-core.yml
+  - from-file: modules/common-fonts.yml
+  - from-file: modules/common-drivers.yml
 
   # Virtualization, CLI tooling, services and Flatpaks
-  - from-file: common-kvm.yml
-  - from-file: common-tools.yml
-  - from-file: common-systemd.yml
-  - from-file: common-flatpaks.yml
+  - from-file: modules/common-kvm.yml
+  - from-file: modules/common-tools.yml
+  - from-file: modules/common-systemd.yml
+  - from-file: modules/common-flatpaks.yml
 
   # Kernel arguments must come after every module that writes a kargs file
-  - from-file: common-kargs.yml
+  - from-file: modules/common-kargs.yml
 
   - type: initramfs
     env:

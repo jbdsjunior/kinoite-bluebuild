@@ -14,7 +14,7 @@
 
 ## Estrutura do Repositório e Documentação
 
-- `recipes/` reúne os manifestos principais (`recipe-*.yml`) e módulos compartilhados (`common-*.yml`).
+- `recipes/` reúne os manifestos principais (`recipe-*.yml`) e `recipes/modules/` reúne os módulos compartilhados (`common-*.yml`).
 - `files/system/` contém as configurações comuns a todas as imagens.
 - `files/nvidia/` contém exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
 - `files/dnf/` contém as definições de repositórios externos RPM.
@@ -30,16 +30,16 @@
 
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-dual.yml`: compila a imagem `kinoite-dual` para estações Dual-GPU AMD + NVIDIA.
-- `recipes/common-core.yml`: instala localização `langpacks-pt_BR`, integração KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`) e `lm_sensors`.
-- `recipes/common-debloat.yml`: remove `firefox`, `kwrite`, `plasma-discover-rpm-ostree` e `plasma-discover-notifier`.
-- `recipes/common-drivers.yml`: instala `mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld` e plugins GStreamer da RPM Fusion.
-- `recipes/common-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`) e aplica os arquivos de `files/nvidia/`.
-- `recipes/common-fonts.yml`: instala `rsms-inter-vf-fonts` e Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
-- `recipes/common-flatpaks.yml`: declara os 23 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2.
-- `recipes/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
-- `recipes/common-kvm.yml`: instala a pilha KVM/QEMU/libvirt (`@virtualization`) com suporte a TPM 2.0 e exclui `virt-viewer`.
-- `recipes/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara `systemd-remount-fs.service`.
-- `recipes/common-tools.yml`: instala infraestrutura e diagnóstico de hardware (`topgrade`, `starship`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`).
+- `recipes/modules/common-core.yml`: instala localização `langpacks-pt_BR`, integração KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`) e `lm_sensors`.
+- `recipes/modules/common-debloat.yml`: remove `firefox`, `kwrite`, `plasma-discover-rpm-ostree` e `plasma-discover-notifier`.
+- `recipes/modules/common-drivers.yml`: instala `mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld` e plugins GStreamer da RPM Fusion.
+- `recipes/modules/common-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`) e aplica os arquivos de `files/nvidia/`.
+- `recipes/modules/common-fonts.yml`: instala `rsms-inter-vf-fonts` e Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
+- `recipes/modules/common-flatpaks.yml`: declara os 23 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2.
+- `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
+- `recipes/modules/common-kvm.yml`: instala a pilha KVM/QEMU/libvirt (`@virtualization`) com suporte a TPM 2.0 e exclui `virt-viewer`.
+- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara `systemd-remount-fs.service`.
+- `recipes/modules/common-tools.yml`: instala infraestrutura e diagnóstico de hardware (`topgrade`, `starship`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`).
 
 ## Kernel Arguments e Isolamento NVIDIA
 
@@ -143,6 +143,6 @@
 - É proibido adicionar kargs obsoletos ou redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
 - É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `security/limits.d`, `ssh/sshd_config.d`, `containers/nodocker`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`).
 - É proibido fazer downgrade de pacotes base ou usar `type: script` nas receitas quando houver solução declarativa.
-- Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/common-flatpaks.yml`.
+- Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-flatpaks.yml`.
 - Linguagens, SDKs e CLIs de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
 - Configurações de usuário devem ser aplicadas via `user-tmpfiles.d` usando templates em `/usr/share/`.
