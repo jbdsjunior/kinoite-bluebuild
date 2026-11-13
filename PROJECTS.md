@@ -103,7 +103,7 @@
 - `files/system/usr/share/user-tmpfiles.d/70-browser-flags.conf`: provisiona `chromium-flags.conf` para Brave e Chrome no login.
 - `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Jan, Brave, Chrome, Firefox e VS Code).
 - `files/system/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
-- `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo, socket Podman (`ro`) e `ELECTRON_OZONE_PLATFORM_HINT=auto` no VS Code Flatpak.
+- `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo e socket Podman (`ro`) no VS Code Flatpak.
 - `files/system/usr/share/flatpak/overrides/global`: aplica leitura de `gtk-3.0`/`gtk-4.0`/`fontconfig`/`kdeglobals`, Wayland nativo em Electron, FreeType e `LIBVA_DRIVER_NAME=radeonsi` para todos os Flatpaks.
 - `files/system/usr/share/flatpak/overrides/org.mozilla.firefox`: habilita `MOZ_ENABLE_WAYLAND=1` e integração D-Bus com KDE Plasma no Firefox Flatpak.
 - `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de navegadores com KDE Plasma.
@@ -143,6 +143,7 @@
 - `.github/workflows/build.yml`: compila `amd`, `dual` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
 - `.github/workflows/check-updates.yml`: verifica a cada 2 horas se o digest upstream mudou ou se commits recentes tocaram entradas da receita em relação ao GHCR e dispara build apenas se necessário.
 - `.github/workflows/cleanup.yml`: remove versões antigas das imagens mantendo 15 e limpa históricos de runs diariamente.
+- `.github/workflows/validate.yml`: valida scripts Shell (`bash -n`), sintaxe YAML, cobertura de `PROJECTS.md` e receitas BlueBuild em todo `push`/`pull_request`.
 - `.github/dependabot.yml`: verifica semanalmente atualizações das GitHub Actions.
 - `cosign.pub`: chave pública embutida para verificação criptográfica das imagens via Bootc.
 
