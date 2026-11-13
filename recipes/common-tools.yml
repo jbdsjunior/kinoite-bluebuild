@@ -28,19 +28,10 @@ modules:
         - git
         - rclone
 
-        # Modern CLI & Terminal Workflow
-        - eza
-        - btop
-        - fd-find
-        - fzf
-        - zoxide
-
         # Containers & Virtualization CLI
         - distrobox
-        - docker-compose
 
         # System Information & Hardware Diagnostics
-        - fastfetch
         - mesa-libOpenCL
         - clinfo
         - vulkan-tools

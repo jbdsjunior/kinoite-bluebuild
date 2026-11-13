@@ -6,6 +6,5 @@ modules:
       allow-erasing: true
       packages:
         - "@virtualization"
-        - gnome-boxes
       exclude:
         - virt-viewer

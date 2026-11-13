@@ -47,13 +47,13 @@ Todas as diretrizes estão listadas de forma linear e organizadas em categorias 
 - `recipes/recipe-amd.yml`: manifesto principal que compila a imagem limpa para sistemas exclusivos AMD.
 - `recipes/recipe-dual.yml`: manifesto principal que compila a imagem para estações Dual-GPU com display AMD e computação NVIDIA.
 - `recipes/common-core.yml`: instala aplicativos essenciais do KDE Plasma, utilitários de monitoramento de hardware e suporte ao idioma português.
-- `recipes/common-debloat.yml`: remove navegadores nativos redundantes, utilitários de boas-vindas e agentes de máquinas virtuais desnecessários em bare metal.
+- `recipes/common-debloat.yml`: remove navegadores e utilitários nativos substituídos (`firefox`, `kwrite`, `plasma-discover-rpm-ostree` e `plasma-discover-notifier`).
 - `recipes/common-drivers.yml`: instala drivers de aceleração de vídeo Mesa Freeworld e codecs multimídia completos da RPM Fusion para a GPU AMD.
 - `recipes/common-drivers-nvidia.yml`: compila o driver `nvidia-open` via akmods e aplica declarativamente os arquivos de isolamento headless de `files/nvidia/`.
 - `recipes/common-fonts.yml`: instala a fonte de interface Inter Variable e as fontes monoespaçadas Nerd Fonts (JetBrainsMono, FiraCode e Symbols).
 - `recipes/common-flatpaks.yml`: instala a seleção padronizada de aplicativos Flatpak de escopo de sistema para navegadores, desenvolvimento, IA e produtividade.
 - `recipes/common-kargs.yml`: define a baseline compartilhada de argumentos de boot que desativa o framebuffer simpledrm.
-- `recipes/common-kvm.yml`: instala a pilha de virtualização KVM/QEMU, GNOME Boxes e suporte a emulação de TPM 2.0.
+- `recipes/common-kvm.yml`: instala a pilha de virtualização KVM/QEMU/libvirt (`@virtualization`) com suporte a emulação de TPM 2.0.
 - `recipes/common-systemd.yml`: habilita os serviços e timers de automação nos escopos de sistema e usuário e mascara o `systemd-remount-fs.service`.
 - `recipes/common-tools.yml`: instala ferramentas modernas de linha de comando para produtividade no terminal, contêineres, sincronização em nuvem e diagnósticos de hardware.
 

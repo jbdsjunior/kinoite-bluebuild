@@ -6,12 +6,10 @@ modules:
       allow-erasing: true
       packages:
         - langpacks-pt_BR
-        - tesseract-langpack-por
 
         - lm_sensors
         - plasma-firewall
 
-        - icoutils
         - kio-admin
         - ksshaskpass
         - qt6-qtimageformats
