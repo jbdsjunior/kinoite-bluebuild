@@ -7,7 +7,6 @@ devices:
       deviceNodes:
         - path: "/dev/kfd"
         - path: "/dev/dri/renderD128"
-          hostPath: "/dev/dri/primary-render"
         - path: "/dev/dri/card0"
       env:
         - "HSA_OVERRIDE_GFX_VERSION=10.3.0"
@@ -16,7 +15,6 @@ devices:
       deviceNodes:
         - path: "/dev/kfd"
         - path: "/dev/dri/renderD128"
-          hostPath: "/dev/dri/primary-render"
         - path: "/dev/dri/card0"
       env:
         - "HSA_OVERRIDE_GFX_VERSION=10.3.0"
