@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Description": "Centraliza janelas normais novas na área útil do monitor em Wayland",
+        "Id": "kinoite-window-center",
+        "License": "MIT",
+        "Name": "Kinoite Window Center",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript"
+}

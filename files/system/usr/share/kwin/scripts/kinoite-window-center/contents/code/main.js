@@ -1,20 +1,9 @@
-const TARGETS = new Set([
-    "com.brave.browser",
-    "com.google.chrome",
-    "brave-browser",
-    "google-chrome"
-]);
-
 function centerWindow(w) {
-    if (!w || !w.normalWindow || w.fullScreen || !w.moveable) {
-        return;
-    }
-    var cls = (w.resourceClass || "").toLowerCase();
-    if (!TARGETS.has(cls)) {
+    if (!w || !w.normalWindow || w.fullScreen || w.minimized || w.modal || w.transientFor || !w.moveable || w.skipTaskbar) {
         return;
     }
     var area = workspace.clientArea(KWin.PlacementArea, w);
-    if (w.width >= area.width && w.height >= area.height) {
+    if (w.width >= area.width - 2 && w.height >= area.height - 2) {
         return;
     }
     w.frameGeometry = {

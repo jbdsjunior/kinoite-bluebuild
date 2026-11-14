@@ -113,12 +113,11 @@
 - `files/system/etc/xdg/dolphinrc`: desativa restauração de abas e oculta barra de menus no Dolphin preservando thumbnailers nativos do KF6.
 - `files/system/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
 - `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark (`ColorScheme=BreezeDark`, ícones `breeze-dark`), destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
-- `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) e ativa o script `kinoite-browser-center` sem sobrescrever preferências de tela do usuário.
+- `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) e ativa o script `kinoite-window-center` sem sobrescrever preferências de tela do usuário.
 - `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
 - `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
-- `files/system/etc/xdg/kwinrulesrc`: define posicionamento centralizado (`placement=5`) no KWin para `com.brave.Browser`, `com.google.Chrome`, `brave-browser` e `google-chrome`.
-- `files/system/usr/share/kwin/scripts/kinoite-browser-center/metadata.json`: manifesto KPackage (`KWin/Script`) do script de centralização de navegadores Chromium em Wayland.
-- `files/system/usr/share/kwin/scripts/kinoite-browser-center/contents/code/main.js`: centraliza janelas iniciais (incluindo o seletor de perfis do Brave) na `PlacementArea` do monitor após o commit inicial do Chromium em Wayland.
+- `files/system/usr/share/kwin/scripts/kinoite-window-center/metadata.json`: manifesto KPackage (`KWin/Script`) do script genérico de centralização de janelas em Wayland.
+- `files/system/usr/share/kwin/scripts/kinoite-window-center/contents/code/main.js`: centraliza automaticamente janelas normais novas na `PlacementArea` do monitor ativo sem precisar listar aplicativos específicos.
 - `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
 - `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
 - `files/system/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
