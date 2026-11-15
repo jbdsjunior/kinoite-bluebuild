@@ -35,7 +35,7 @@
 - `recipes/modules/dual-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
-- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara `systemd-remount-fs.service` e `intel_lpmd.service`.
+- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `drkonqi-coredump-pickup.service`).
 
 ## Kernel Arguments e Isolamento NVIDIA
 

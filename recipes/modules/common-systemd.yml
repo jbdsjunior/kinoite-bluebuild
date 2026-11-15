@@ -34,6 +34,8 @@ modules:
         # is redundant and avoided.
 
     user:
+      masked:
+        - drkonqi-coredump-pickup.service
       enabled:
         - flatpak-user-update.timer
         - kinoite-browser-flags.service
