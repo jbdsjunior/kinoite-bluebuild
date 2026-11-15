@@ -105,7 +105,7 @@
 
 ## Desktop KDE, Navegadores e Terminal
 
-- `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland nativo, GPU AMD, VA-API decode e desativa telemetria em Chromium (sem encode/zero-copy/overlay conflituosos em WebRTC).
+- `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland automático, GPU AMD, VA-API decode e desativa telemetria em Chromium (preservando Cast e evitando conflitos em WebRTC e teclado `us-alt-intl`).
 - `files/system/usr/lib/systemd/user/kinoite-browser-flags.service`: sincroniza `chromium-flags.conf` para Brave e Chrome no login sem erro de permissão em `systemd-tmpfiles` (`ConditionUser=!@system`).
 - `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Jan, Brave, Chrome, Firefox e VS Code).
 - `files/system/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
