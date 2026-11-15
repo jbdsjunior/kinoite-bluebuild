@@ -6,6 +6,8 @@ modules:
       masked:
         - systemd-remount-fs.service
         - intel_lpmd.service
+        - thermald.service
+        - lm_sensors.service
         - NetworkManager-wait-online.service
         - ModemManager.service
         - raid-check.timer

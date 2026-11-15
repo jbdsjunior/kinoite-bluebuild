@@ -35,7 +35,7 @@
 - `recipes/modules/dual-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
-- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `drkonqi-coredump-pickup.service`).
+- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `thermald.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `ModemManager.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`).
 
 ## Kernel Arguments e Isolamento NVIDIA
 
@@ -66,9 +66,10 @@
 - `files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
 - `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s e aplica retenção contínua (`SystemMaxUse=200M`, `MaxRetentionSec=14day`).
 - `files/system/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf`: define `ShowStatus=error` para boot silencioso exibindo apenas falhas.
+- `files/system/usr/lib/dracut/dracut.conf.d/60-kinoite-initrd.conf`: inclui `/etc/nsswitch.conf`, `/usr/lib/{group,passwd}` e `60-kinoite-boot-quiet.conf` no initramfs não-hostonly para resolver grupos via `nss-altfiles` em `udevd`/`tmpfiles`.
 - `files/system/usr/lib/modules-load.d/60-bbr.conf`: carrega `sch_fq` e `tcp_bbr` no boot.
 - `files/system/usr/lib/sysctl.d/90-network-tuning.conf`: ativa TCP BBR/FQ, buffers até 32 MB, TCP Fast Open e bloqueio de redirects ICMP.
-- `files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`: aplica DNS-over-TLS estrito com Control D (`p2`) e fallback Cloudflare.
+- `files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`: aplica DNS-over-TLS estrito com Control D (`p2`), fallback Cloudflare e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
 - `files/system/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
 - `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs.
@@ -96,6 +97,9 @@
 - `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) e aplica o perfil `kinoite-performance` do `tuned` no primeiro boot.
 - `files/system/usr/lib/tuned/profiles/kinoite-performance/tuned.conf`: herda `throughput-performance` preservando `readahead=256` em NVMe e parâmetros de memória (`dirty_bytes=10%`, `dirty_background_bytes=3%`, `vm.swappiness=150`).
 - `files/system/usr/lib/systemd/system/user-.slice.d/60-kinoite-oomd.conf`: habilita `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` nas sessões de usuário.
+- `files/system/etc/NetworkManager/dispatcher.d/04-iscsi`: sobrescreve o dispatcher upstream do `iscsi-initiator-utils` para recarregar `iscsi.service` apenas quando ativo.
+- `files/system/usr/share/smartmontools/smartd.conf`: monitora discos compatíveis com SMART sem sondagem ATA `-n standby` em pontes USB.
+- `files/system/usr/lib/systemd/system/smartd.service.d/override.conf`: aponta `smartd.service` para `/usr/share/smartmontools/smartd.conf` mantendo `$smartd_opts`.
 - `files/system/usr/bin/kinoite-optimize`: executa manutenção local em 8 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
 - `files/system/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
@@ -155,7 +159,7 @@
 - É proibido desativar `sulogin` em modos de resgate ou emergência.
 - É proibido adicionar kargs obsoletos ou redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
 - É proibido codificar endereços PCI estáticos (`pci-0000:..`) em regras `udev`, specs CDI ou scripts quando houver detecção por driver.
-- É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `security/limits.d`, `ssh/sshd_config.d`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`).
+- É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `security/limits.d`, `ssh/sshd_config.d`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`, `NetworkManager/dispatcher.d`).
 - É proibido fazer downgrade de pacotes base ou usar `type: script` nas receitas quando houver solução declarativa.
 - Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-flatpaks.yml` (exceção: `gnome-boxes` RPM para integração direta com libvirt/virgl/SPICE).
 - Linguagens, SDKs e CLIs de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
