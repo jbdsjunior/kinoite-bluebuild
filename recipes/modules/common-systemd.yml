@@ -36,6 +36,7 @@ modules:
     user:
       enabled:
         - flatpak-user-update.timer
+        - kinoite-browser-flags.service
         - kinoite-user-maintenance.timer
         - podman-auto-update.timer
         - podman-restart.service
