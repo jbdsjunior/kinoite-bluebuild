@@ -461,7 +461,7 @@ is_dual_gpu() {
     lspci 2>/dev/null | grep -qi "VGA.*AMD" && lspci 2>/dev/null | grep -qi "NVIDIA"
 }
 
-# True when the running image ships the headless-NVIDIA overlay (flavor dual).
+# True when the running image ships the headless-NVIDIA overlay (flavor cuda).
 is_nvidia_headless_image() {
     [[ -f "$NVIDIA_HEADLESS_MARKER" ]]
 }

@@ -1,4 +1,4 @@
-# Runbook de Instalação e Operação (`kinoite-amd` / `kinoite-dual`)
+# Runbook de Instalação e Operação (`kinoite-amd` / `kinoite-cuda`)
 
 Guia operacional para particionamento LUKS2/Btrfs, desbloqueio seguro TPM 2.0, manutenção e montagens Rclone.
 
@@ -49,8 +49,8 @@ A transição a partir de uma instalação limpa do Fedora Kinoite upstream segu
 # Para estação AMD pura:
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# OU para estação Dual-GPU (AMD display + NVIDIA compute):
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
+# OU para estação com NVIDIA CUDA headless (AMD display + NVIDIA compute):
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-cuda:latest
 
 systemctl reboot
 
@@ -59,13 +59,13 @@ systemctl reboot
 # Para estação AMD pura:
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# OU para estação Dual-GPU:
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
+# OU para estação com NVIDIA CUDA headless:
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-cuda:latest
 ```
 
-### 2.1 Inscrição e Permanência da Chave MOK (`kinoite-dual` com Secure Boot)
+### 2.1 Inscrição e Permanência da Chave MOK (`kinoite-cuda` com Secure Boot)
 
-Ao utilizar a imagem Dual-GPU (`kinoite-dual`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
+Ao utilizar a imagem CUDA (`kinoite-cuda`) em placas-mãe com **UEFI Secure Boot ativo**, os módulos do driver proprietário NVIDIA (`nvidia.ko`, `nvidia-uvm.ko`) exigem a inscrição do certificado Machine Owner Key (MOK) do build:
 
 1. **Importar o Certificado MOK no Host (Apenas no Primeiro Setup):**
    ```bash
@@ -95,7 +95,7 @@ O utilitário integrado (também disponível via alias `sys-optimize`) opera em 
 | **Ajuda** | `kinoite-optimize --help` | Lista modos e avisos de segurança. |
 
 > [!WARNING]
-> A fase 7 remove kargs de tuning que não sejam baseline upstream (`amd_pstate=active`, `nowatchdog`, `preempt=full`, etc.) e reaplica os blocklists do flavor dual. Se houver alteração, o comando avisa que **um reboot é necessário**. Prefira `--audit` quando quiser apenas inspecionar.
+> A fase 7 remove kargs de tuning que não sejam baseline upstream (`amd_pstate=active`, `nowatchdog`, `preempt=full`, etc.) e reaplica os blocklists do flavor `cuda`. Se houver alteração, o comando avisa que **um reboot é necessário**. Prefira `--audit` quando quiser apenas inspecionar.
 
 Os 6 pilares da auditoria canônica:
 
@@ -231,7 +231,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | Energia (`tuned`) | Perfil `kinoite-performance` aplicado no primeiro boot via `kinoite-boot-init.service` | `tuned-adm profile balanced` ou slider de energia do Plasma |
 | OOMD (`user-.slice`) | `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` em `60-kinoite-oomd.conf` | Drop-in em `/etc/systemd/system/user-.slice.d/` |
 | Flatpaks | Override `global` (GTK/fontconfig/kdeglobals, Electron Wayland, `LIBVA_DRIVER_NAME=radeonsi`), integração KDE nos navegadores e Jan GPU/ROCm | `flatpak override --reset` ou Flatseal |
-| Kargs | `kinoite-optimize` (fase 7) remove tuning não-upstream e reaplica os blocklists do dual | `--audit` para inspecionar antes; ajustes manuais não são preservados |
+| Kargs | `kinoite-optimize` (fase 7) remove tuning não-upstream e reaplica os blocklists do flavor `cuda` | `--audit` para inspecionar antes; ajustes manuais não são preservados |
 
 ### 8.1 Detecção Dinâmica de GPUs (Agnóstica a Slot PCI)
 

@@ -16,7 +16,7 @@ Immutable OCI image based on **Fedora Kinoite (latest stable / KDE Plasma 6 / Wa
 | Variant        | Base Image                      | Target                                   | Hardware Baseline                                                    |
 | :------------- | :------------------------------ | :--------------------------------------- | :------------------------------------------------------------------- |
 | `kinoite-amd`  | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-amd:latest`  | AMD Ryzen 9 5950X + Radeon RX 6600 XT + 64 GB DDR4                   |
-| `kinoite-dual` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-dual:latest` | AMD display (RDNA2) + NVIDIA compute (CUDA/akmods) + 64 GB DDR4      |
+| `kinoite-cuda` | `quay.io/fedora/fedora-kinoite` | `ghcr.io/jbdsjunior/kinoite-cuda:latest` | AMD display (RDNA2) + NVIDIA compute (CUDA/akmods) + 64 GB DDR4      |
 
 > [!WARNING]
 > This profile is calibrated for workstations with **64 GB RAM** (32 GB ZRAM `zstd` swap, Btrfs NoCOW rules, and Zen 3/RDNA2 tuning). See [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md).
@@ -33,8 +33,8 @@ The deployment uses a two-stage transition: the initial switch bootstraps the sy
 # AMD-only variant (default)
 sudo bootc switch ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# Dual-GPU variant (AMD display + NVIDIA compute)
-sudo bootc switch ghcr.io/jbdsjunior/kinoite-dual:latest
+# CUDA variant (AMD display + headless NVIDIA compute)
+sudo bootc switch ghcr.io/jbdsjunior/kinoite-cuda:latest
 
 systemctl reboot
 ```
@@ -47,8 +47,8 @@ After booting into the custom image, lock updates to verified Cosign signatures:
 # AMD-only variant
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-amd:latest
 
-# Dual-GPU variant
-sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-dual:latest
+# CUDA variant
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/jbdsjunior/kinoite-cuda:latest
 ```
 
 ### 3) Post-installation & Maintenance
@@ -90,17 +90,17 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`docs/POST_INSTALL.md`](docs/POST_INSTALL.md) | Operational post-install guide (TPM 2.0, Rclone FUSE, maintenance, recovery, default behaviors) |
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy, workflow permissions and vulnerability reporting |
 | [`cosign.pub`](cosign.pub) | Public Cosign verification key (the signing key lives in `SIGNING_SECRET`) |
-| [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-dual.yml`, `modules/common-*.yml`) |
+| [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-cuda.yml`, `modules/common-*.yml`) |
 | [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |
 | [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
-| [`files/nvidia/`](files/nvidia/) | Dual-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
+| [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
 | [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 2h) and registry cleanup |
 
 ## Builds
 
 Image builds run manually (`workflow_dispatch` of `build.yml`, pick `all`, `amd`
-or `dual`) or are dispatched by `check-updates.yml`. Every 2 hours the check
+or `cuda`) or are dispatched by `check-updates.yml`. Every 2 hours the check
 compares the base image digest declared in each recipe and the latest repository
 input commit timestamp against the `org.opencontainers.image.base.digest` and
 `org.opencontainers.image.created` labels published to GHCR, triggering a build

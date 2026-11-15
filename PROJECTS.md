@@ -5,7 +5,7 @@
 - O projeto é modular, declarativo e organizado em camadas BlueBuild sobre Fedora Kinoite gerenciado via Bootc.
 - A árvore `/usr/lib/` e `/usr/share/` concentra as configurações do sistema para manter `/etc/` limpo.
 - O flavor `kinoite-amd` atende sistemas 100% AMD sem nenhum arquivo, driver ou karg NVIDIA.
-- O flavor `kinoite-dual` herda toda a base AMD e adiciona a camada de drivers e isolamento headless NVIDIA.
+- O flavor `kinoite-cuda` herda toda a base AMD e adiciona a camada de drivers e isolamento headless NVIDIA para CUDA/compute.
 - A estação de referência usa Ryzen 9 5950X (`amd-pstate-epp`), placa Gigabyte X570 AORUS PRO WIFI em UEFI com Secure Boot e fTPM 2.0, 64 GB DDR4 e 32 GB ZRAM zstd.
 - A GPU primária é a AMD Radeon RX 6600 XT (`amdgpu`), dedicada a display Wayland, KDE Plasma, Vulkan/VA-API e VMs.
 - A GPU secundária é a NVIDIA RTX 3080 Ti (`nvidia`), isolada em modo headless exclusivamente para CUDA, PyTorch e LLMs locais.
@@ -29,10 +29,10 @@
 ## Receitas BlueBuild
 
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
-- `recipes/recipe-dual.yml`: compila a imagem `kinoite-dual` para estações Dual-GPU AMD + NVIDIA.
+- `recipes/recipe-cuda.yml`: compila a imagem `kinoite-cuda` para estações AMD + NVIDIA headless (CUDA/compute).
 - `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
 - `recipes/modules/common-packages.yml`: consolida em camada única DNF a remoção de bloat (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`), troca `ocl-icd`, localização `langpacks-pt_BR`, KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), codecs RPM Fusion (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer), pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`), ferramentas CLI/diagnóstico (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`) e `rsms-inter-vf-fonts`.
-- `recipes/modules/dual-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
+- `recipes/modules/cuda-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
 - `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `thermald.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `ModemManager.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`).
@@ -40,7 +40,7 @@
 ## Kernel Arguments e Isolamento NVIDIA
 
 - `initcall_blacklist=simpledrm_platform_driver_init` evita conflito de framebuffer com Mesa/DRM no boot.
-- `rd.driver.blacklist=nouveau` e `modprobe.blacklist=nouveau` bloqueiam `nouveau` no initramfs e userspace da imagem dual.
+- `rd.driver.blacklist=nouveau` e `modprobe.blacklist=nouveau` bloqueiam `nouveau` no initramfs e userspace da imagem `kinoite-cuda`.
 - `rd.driver.blacklist=nvidia-drm` e `modprobe.blacklist=nvidia-drm` impedem nó gráfico DRM na NVIDIA preservando nós CUDA (`/dev/nvidia*`).
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1` e aplicando blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` para carregar módulos NVIDIA sob demanda no userspace.
@@ -147,7 +147,7 @@
 
 ## CI/CD e Assinatura
 
-- `.github/workflows/build.yml`: compila `amd`, `dual` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
+- `.github/workflows/build.yml`: compila `amd`, `cuda` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
 - `.github/workflows/check-updates.yml`: verifica a cada 2 horas se o digest upstream mudou ou se commits recentes tocaram entradas da receita em relação ao GHCR e dispara build apenas se necessário.
 - `.github/workflows/cleanup.yml`: remove versões antigas das imagens mantendo 15 e limpa históricos de runs diariamente.
 - `.github/dependabot.yml`: verifica semanalmente atualizações das GitHub Actions.

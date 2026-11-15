@@ -16,7 +16,7 @@ on:
         options:
           - all
           - amd
-          - dual
+          - cuda
         default: all
 
 permissions:
@@ -40,16 +40,16 @@ jobs:
             amd)
               echo 'matrix={"include":[{"flavor":"amd","recipe":"recipe-amd.yml"}]}' >> "$GITHUB_OUTPUT"
               ;;
-            dual)
-              echo 'matrix={"include":[{"flavor":"dual","recipe":"recipe-dual.yml"}]}' >> "$GITHUB_OUTPUT"
+            cuda)
+              echo 'matrix={"include":[{"flavor":"cuda","recipe":"recipe-cuda.yml"}]}' >> "$GITHUB_OUTPUT"
               ;;
             *)
-              echo 'matrix={"include":[{"flavor":"amd","recipe":"recipe-amd.yml"},{"flavor":"dual","recipe":"recipe-dual.yml"}]}' >> "$GITHUB_OUTPUT"
+              echo 'matrix={"include":[{"flavor":"amd","recipe":"recipe-amd.yml"},{"flavor":"cuda","recipe":"recipe-cuda.yml"}]}' >> "$GITHUB_OUTPUT"
               ;;
           esac
 
   build:
-    name: Build Custom ${{ matrix.flavor == 'dual' && 'Dual-GPU' || 'AMD' }} Image
+    name: Build Custom ${{ matrix.flavor == 'cuda' && 'CUDA' || 'AMD' }} Image
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 45

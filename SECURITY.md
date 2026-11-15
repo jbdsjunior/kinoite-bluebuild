@@ -7,7 +7,7 @@ This project builds customized Fedora Kinoite container images using BlueBuild. 
 | Variant                    | Reference Target                              |     Supported      |
 | :------------------------- | :-------------------------------------------- | :----------------: |
 | `kinoite-amd:latest`       | `ghcr.io/jbdsjunior/kinoite-amd:latest`       | :white_check_mark: |
-| `kinoite-dual:latest`      | `ghcr.io/jbdsjunior/kinoite-dual:latest`      | :white_check_mark: |
+| `kinoite-cuda:latest`      | `ghcr.io/jbdsjunior/kinoite-cuda:latest`      | :white_check_mark: |
 
 ## Image Verification and Integrity
 
@@ -16,7 +16,7 @@ You can verify the image authenticity before rebasing or switching:
 
 ```bash
 cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-amd:latest
-cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-dual:latest
+cosign verify --key cosign.pub ghcr.io/jbdsjunior/kinoite-cuda:latest
 ```
 
 ## Supply Chain and Secret Governance
