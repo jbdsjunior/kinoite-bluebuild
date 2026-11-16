@@ -9,6 +9,7 @@ ConditionACPower=true
 Type=oneshot
 
 Environment=XDG_CACHE_HOME=/tmp
+ExecCondition=/usr/bin/nm-online -q -t 45
 ExecStart=/usr/bin/flatpak --system update -y --noninteractive
 ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
 

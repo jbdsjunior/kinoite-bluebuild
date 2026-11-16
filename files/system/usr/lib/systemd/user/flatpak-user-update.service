@@ -7,6 +7,7 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 
+ExecCondition=/usr/bin/nm-online -q -t 45
 ExecStart=/usr/bin/flatpak --user update -y --noninteractive
 ExecStart=/usr/bin/flatpak --user uninstall --unused -y --noninteractive
 

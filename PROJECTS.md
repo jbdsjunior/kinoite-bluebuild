@@ -76,8 +76,8 @@
 
 ## Serviços, Timers e Manutenção
 
-- Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) apenas na tomada com jitter de `2m`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
-- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` em prioridade ociosa na tomada.
+- Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) apenas na tomada com jitter de `2m` e `ExecCondition=/usr/bin/nm-online -q -t 45` para pular sem erro quando o modem/rede estiver offline; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
+- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` (`Type=exec`, `Restart=on-failure` até 3x e guarda `nm-online`) em prioridade ociosa na tomada.
 - `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 5m do boot e a cada 15m.
 - `files/system/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos.
 - `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 5m do boot e a cada 15m.
