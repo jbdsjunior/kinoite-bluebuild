@@ -78,11 +78,14 @@
 
 - Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) apenas na tomada com jitter de `2m`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
 - `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` em prioridade ociosa na tomada.
-- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 2m do boot e a cada 15m.
+- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 5m do boot e a cada 15m.
 - `files/system/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos.
-- `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 2m do boot e a cada 15m.
+- `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 5m do boot e a cada 15m.
 - `files/system/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 2m do login e a cada 15m (`ConditionUser=!@system`).
+- `files/system/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 5m do login e a cada 15m (`ConditionUser=!@system`).
+- `files/system/usr/lib/systemd/user/drkonqi-coredump-cleanup.timer.d/override.conf`: corrige o ciclo de ordenação upstream do KDE Plasma com `timers.target` (`DefaultDependencies=no`).
+- `files/system/usr/lib/systemd/user/plasma-startupsound.service.d/override.conf`: ordena o som de login após `pipewire-pulse`/`wireplumber` com retentativa tolerante a negociação Bluetooth.
+- `files/system/usr/share/wireplumber/wireplumber.conf.d/51-bluez-keepalive.conf`: desativa `session.suspend-timeout-seconds` em nós `bluez_output.*` para evitar `AVDTP START: Bad State (49)`.
 - `files/system/usr/lib/systemd/system/podman-auto-update.service.d/override.conf`: restringe auto-update Podman de sistema à tomada em prioridade ociosa.
 - `files/system/usr/lib/systemd/system/podman-auto-update.timer.d/override.conf`: verifica updates Podman de sistema após 5m do boot e a cada 45m.
 - `files/system/usr/lib/systemd/user/podman-auto-update.service.d/override.conf`: executa auto-update Podman de usuário em prioridade ociosa na tomada (`ConditionUser=!@system`).
@@ -140,7 +143,7 @@
 - `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, dispositivos Android ADB/Fastboot e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
 - `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/system/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão do usuário (`qemu:///session`) desde o login para acesso imediato no GNOME Boxes (`ConditionUser=!@system`).
+- `files/system/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão gráfica (`graphical-session.target`) após `default.target` para acesso imediato no GNOME Boxes sem ciclo em `basic.target` (`ConditionUser=!@system`).
 - `files/system/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
 - `files/system/usr/share/rclone/env/OneDrive.env`: configura rate limits (5 TPS), Delta API e chunks de 50M para Microsoft Graph.
 - `files/system/usr/share/user-tmpfiles.d/70-rclone-env.conf`: cria `~/.config/rclone/env/` e `/run/user/%U/cloud` e copia os perfis padrão no login.

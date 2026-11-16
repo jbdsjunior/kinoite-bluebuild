@@ -6,7 +6,7 @@ ConditionUser=!@system
 [Timer]
 RandomizedDelaySec=1m
 Persistent=false
-OnBootSec=2m
+OnBootSec=5m
 OnUnitActiveSec=15m
 AccuracySec=1m
 
