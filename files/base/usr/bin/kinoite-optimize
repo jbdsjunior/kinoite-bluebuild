@@ -507,7 +507,7 @@ audit_pillars() {
     echo "--- [Pillar 2/6] Package Resilience & Zero Downgrade ---"
     fedora_version="$(rpm -E %fedora 2>/dev/null || echo "upstream")"
     echo "[INFO] Fedora baseline: ${fedora_version} (native bootc/rpm-ostree)."
-    if rpm -q fuse 2>/dev/null | grep -v "fuse3" >/dev/null 2>&1; then
+    if rpm -q fuse >/dev/null 2>&1; then
         audit_warn "Legacy 'fuse' 2 package detected. Migrate strictly to fuse3."
     else
         echo "[OK] No legacy conflicting packages (fuse 2 absent, fuse3 active)."
@@ -620,7 +620,7 @@ audit_pillars() {
     cmdline="$(cat /proc/cmdline 2>/dev/null || true)"
     mapfile -t banned_list < <(get_unwanted_kargs)
     for banned in "${banned_list[@]}"; do
-        if echo "$cmdline" | grep -qwF "$banned"; then
+        if grep -qwF "$banned" <<<"$cmdline"; then
             audit_warn "Redundant/unsafe karg detected on the boot line: $banned"
             detected=1
         fi
@@ -707,6 +707,16 @@ audit_pillars() {
                     echo "[OK] User maintenance timers & virtqemud-session: all ${#user_units[@]} active."
                 fi
             fi
+        fi
+    fi
+
+    if [[ -f /usr/lib/systemd/system/rasdaemon.service ]]; then
+        local ras_state
+        ras_state="$(systemctl is-active rasdaemon.service 2>/dev/null || true)"
+        if [[ "$ras_state" == "active" ]]; then
+            echo "[OK] Hardware RAS/MCE error daemon (rasdaemon): active."
+        elif [[ -n "$ras_state" ]]; then
+            audit_warn "Hardware RAS/MCE error daemon (rasdaemon) is ${ras_state}."
         fi
     fi
 

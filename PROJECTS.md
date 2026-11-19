@@ -41,7 +41,7 @@
 - `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`), realiza a mitigação OpenCL (`ocl-icd` substituindo `OpenCL-ICD-Loader`), instala aceleração gráfica/computacional (`mesa-va-drivers-freeworld`, `mesa-libOpenCL`) e utilitários de diagnóstico de GPU (`libva-utils`, `clinfo`, `vulkan-tools`).
 - `recipes/modules/common-kvm.yml`: instala a pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`).
 - `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync, rede e monitoramento (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `nvtop`).
-- `recipes/modules/cuda-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
+- `recipes/modules/cuda-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
 - `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário (incluindo `rasdaemon.service`) e mascara unidades desnecessárias (`systemd-remount-fs.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`), mantendo `ModemManager.service` desmascarado para evitar erros D-Bus.
@@ -145,7 +145,7 @@
 
 - `files/ai/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
 - `files/ai/usr/lib/environment.d/60-ai-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`).
-- `files/ai/usr/lib/tmpfiles.d/60-ai-flatpak-overrides.conf`: aplica o override Flatpak declarativo de IA local (`ai.jan.Jan`).
+- `files/ai/usr/lib/tmpfiles.d/61-ai-flatpak-overrides.conf`: aplica o override Flatpak declarativo de IA local (`ai.jan.Jan`) após criação do diretório base por `60-flatpak-overrides.conf`.
 - `files/ai/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
 - `files/desktop/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
 - `files/base/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
