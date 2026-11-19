@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - tailscale.repo
+        - terra.repo
+
+    install:
+      allow-erasing: true
+      packages:
+        # Infrastructure, Cloud Sync, Containers & GPU Diagnostics
+        - clinfo
+        - distrobox
+        - fastfetch
+        - git
+        - mesa-libOpenCL
+        - nvtop
+        - rclone
+        - starship
+        - tailscale
+        - topgrade
+        - vulkan-tools

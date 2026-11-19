@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+
+    install:
+      allow-erasing: true
+      packages:
+        # Hardware Acceleration & Multimedia Codecs (RPM Fusion)
+        - ffmpeg
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
+        - libheif-freeworld
+        - libva-utils
+        - mesa-va-drivers-freeworld
