@@ -19,7 +19,7 @@
 - `files/desktop/` contém as configurações de ambiente desktop KDE Plasma, fontes, terminais, navegadores e Flatpaks.
 - `files/rclone/` contém as definições de montagem automática em nuvem via Rclone.
 - `files/virt/` contém as configurações de sessão e autorização da pilha de virtualização KVM/Libvirt.
-- `files/ai/` contém as configurações de IA local e aceleração AMD ROCm/CDI/Jan.
+- `files/rocm/` contém as configurações da pilha de computação AMD ROCm/HIP (CDI, variáveis e Flatpak Jan).
 - `files/nvidia/` contém exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
 - `files/dnf/` contém as definições de repositórios externos RPM.
 - `AGENTS.md` define processo, Git, validações pré-commit e categorias de consulta para agentes de IA.
@@ -143,10 +143,10 @@
 
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
-- `files/ai/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
-- `files/ai/usr/lib/environment.d/60-ai-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`).
-- `files/ai/usr/lib/tmpfiles.d/61-ai-flatpak-overrides.conf`: aplica o override Flatpak declarativo de IA local (`ai.jan.Jan`) após criação do diretório base por `60-flatpak-overrides.conf`.
-- `files/ai/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
+- `files/rocm/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
+- `files/rocm/usr/lib/environment.d/60-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`).
+- `files/rocm/usr/lib/tmpfiles.d/61-rocm-flatpak-overrides.conf`: aplica o override Flatpak declarativo de computação AMD ROCm (`ai.jan.Jan`) após criação do diretório base por `60-flatpak-overrides.conf`.
+- `files/rocm/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
 - `files/desktop/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
 - `files/base/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
 - `files/base/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).

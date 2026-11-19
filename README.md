@@ -95,7 +95,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/desktop/`](files/desktop/) | Desktop overlays (KDE Plasma, fonts, Konsole, Starship, Fastfetch, Chromium, Flatpaks) |
 | [`files/rclone/`](files/rclone/) | Cloud storage overlays (Rclone user service and Google Drive / OneDrive profiles) |
 | [`files/virt/`](files/virt/) | Virtualization overlays (KVM/libvirt polkit rule and `virtqemud-session.service`) |
-| [`files/ai/`](files/ai/) | Local AI overlays (AMD ROCm CDI `amdgpu.yaml`, `HSA_OVERRIDE_GFX_VERSION`, Jan Flatpak override) |
+| [`files/rocm/`](files/rocm/) | AMD ROCm/HIP compute overlays (CDI `amdgpu.yaml`, `HSA_OVERRIDE_GFX_VERSION`, Jan Flatpak override) |
 | [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
 | [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 2h) and registry cleanup |

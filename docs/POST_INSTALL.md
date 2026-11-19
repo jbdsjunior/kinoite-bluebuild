@@ -238,7 +238,7 @@ A imagem não depende mais de endereços PCI estáticos: os vínculos gráficos 
 | Elemento | Mecanismo dinâmico | Arquivo |
 | :--- | :--- | :--- |
 | Symlink `primary-render` | Regra `udev` por `DRIVERS=="amdgpu"` | [`files/base/usr/lib/udev/rules.d/70-peripherals.rules`](../files/base/usr/lib/udev/rules.d/70-peripherals.rules) |
-| CDI AMD (ROCm/HIP) | Mapeia `/dev/dri/renderD128`, `/dev/dri/card0` e `/dev/kfd` (CDI não aceita symlink `hostPath`) | [`files/ai/etc/cdi/amdgpu.yaml`](../files/ai/etc/cdi/amdgpu.yaml) |
+| CDI AMD (ROCm/HIP) | Mapeia `/dev/dri/renderD128`, `/dev/dri/card0` e `/dev/kfd` (CDI não aceita symlink `hostPath`) | [`files/rocm/etc/cdi/amdgpu.yaml`](../files/rocm/etc/cdi/amdgpu.yaml) |
 | Auditoria (Pilar 4) | Varre `/sys/class/drm/renderD*/device/driver` para `amdgpu` e `nvidia` | [`files/base/usr/bin/kinoite-optimize`](../files/base/usr/bin/kinoite-optimize) |
 
 Caso seja necessário forçar um nó específico durante uma auditoria manual, sobrescreva com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`.

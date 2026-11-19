@@ -10,7 +10,7 @@ platforms:
   - linux/amd64
 
 modules:
-  # Domain-layered configuration overlays (base, desktop, rclone, virt, ai)
+  # Domain-layered configuration overlays (base, desktop, rclone, virt, rocm)
   - type: files
     files:
       - source: base
@@ -21,7 +21,7 @@ modules:
         destination: /
       - source: virt
         destination: /
-      - source: ai
+      - source: rocm
         destination: /
 
   # Debloat, modular RPM package layers (DNF) and fonts
