@@ -1,5 +1,0 @@
-[Context]
-filesystems=xdg-config/gtk-3.0:ro;xdg-config/gtk-4.0:ro;xdg-config/fontconfig:ro;xdg-config/kdeglobals:ro;
-
-[Environment]
-FREETYPE_PROPERTIES=cff:no-stem-darkening=0 autofitter:no-stem-darkening=0

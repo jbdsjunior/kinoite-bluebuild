@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+# Baseline canônico de argumentos de kernel para imagens Fedora Kinoite
+# Gerenciado via bootc (/usr/lib/bootc/kargs.d/).
+modules:
+  - type: kargs
+    kargs:
+      # Prevenção de conflito de framebuffer primitivo com Mesa/DRM no early boot
+      - initcall_blacklist=simpledrm_platform_driver_init

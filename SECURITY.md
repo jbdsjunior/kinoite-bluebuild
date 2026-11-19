@@ -2,7 +2,7 @@
 
 ## Supported Images and Releases
 
-This project builds customized Fedora Kinoite container images using BlueBuild. Security updates are tracked and applied automatically through upstream base image updates and automated rebuilds.
+This project builds customized Fedora Kinoite container images using BlueBuild. Security updates are tracked and applied automatically through upstream base image updates and daily package builds.
 
 | Variant                    | Reference Target                              |     Supported      |
 | :------------------------- | :-------------------------------------------- | :----------------: |
@@ -27,7 +27,6 @@ To protect both user workstation privacy and project infrastructure integrity:
 
   | Workflow | `contents` | `packages` | `actions` |
   | :--- | :---: | :---: | :---: |
-  | `validate.yml` | read | – | – |
   | `build.yml` | read | write | – |
   | `check-updates.yml` | read | – | write |
   | `cleanup.yml` | read | write | write |

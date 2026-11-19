@@ -1,0 +1,7 @@
+[Context]
+filesystems=xdg-config/gtk-3.0:ro;xdg-config/gtk-4.0:ro;xdg-config/fontconfig:ro;xdg-config/kdeglobals:ro;
+
+[Environment]
+ELECTRON_OZONE_PLATFORM_HINT=auto
+FREETYPE_PROPERTIES=cff:no-stem-darkening=0 autofitter:no-stem-darkening=0
+LIBVA_DRIVER_NAME=radeonsi

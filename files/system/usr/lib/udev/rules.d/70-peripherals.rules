@@ -1,0 +1,21 @@
+# Peripheral access: VXE Mouse / Compx receivers
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: MCHOSE X9 headset
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3837", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: BY Tech gaming keyboard
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: ITE RGB motherboard and LED controller
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", MODE="0660", TAG+="uaccess"
+
+# Android ADB, Fastboot, Recovery & Bootloader USB access (Google, OnePlus, Samsung, Motorola, Xiaomi, Qualcomm, MediaTek)
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1|2a70|04e8|22b8|2717|05c6|0e8d", MODE="0660", TAG+="uaccess"
+
+# AMD Radeon RX 6600 XT compute & render nodes: dynamic seat ACLs for local AI (ROCm/Vulkan) & primary render symlink
+SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"
+SUBSYSTEM=="drm", KERNEL=="renderD*", DRIVERS=="amdgpu", TAG+="uaccess", SYMLINK+="dri/primary-render"
+
+# NVMe Gen4 I/O tuning: none scheduler, 256 KiB readahead, no entropy overhead, and same-core completion affinity
+ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="nvme[0-9]*n[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="none", ATTR{queue/read_ahead_kb}="256", ATTR{queue/add_random}="0", ATTR{queue/rq_affinity}="2"

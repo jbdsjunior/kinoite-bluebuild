@@ -1,0 +1,11 @@
+[Unit]
+Description=Sincroniza flags do Chromium para Flatpaks Brave e Chrome
+ConditionUser=!@system
+ConditionPathExists=/usr/share/chromium/chromium-flags.conf
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sh -c 'mkdir -p "%h/.var/app/com.brave.Browser/config" "%h/.var/app/com.google.Chrome/config" && install -m 0644 /usr/share/chromium/chromium-flags.conf "%h/.var/app/com.brave.Browser/config/brave-flags.conf" && install -m 0644 /usr/share/chromium/chromium-flags.conf "%h/.var/app/com.google.Chrome/config/chrome-flags.conf"'
+
+[Install]
+WantedBy=default.target
