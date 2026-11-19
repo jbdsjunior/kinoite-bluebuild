@@ -80,8 +80,13 @@ fi
 
 # Optional recovery key generation (idempotent: never accumulates orphan keys)
 has_recovery_key() {
-    cryptsetup luksDump --dump-json-metadata "$DEVICE" 2>/dev/null | grep -q '"systemd-recovery"' ||
-        cryptsetup luksDump "$DEVICE" 2>/dev/null | grep -q 'systemd-recovery'
+    local dump_json dump_text
+    dump_json="$(cryptsetup luksDump --dump-json-metadata "$DEVICE" 2>/dev/null || true)"
+    if grep -q '"systemd-recovery"' <<<"$dump_json"; then
+        return 0
+    fi
+    dump_text="$(cryptsetup luksDump "$DEVICE" 2>/dev/null || true)"
+    grep -q 'systemd-recovery' <<<"$dump_text"
 }
 
 if [ "$SKIP_RECOVERY" -eq 0 ]; then
@@ -142,8 +147,9 @@ fi
 # Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
 LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
 if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
-    if grep -q "$LUKS_UUID" /etc/crypttab; then
-        if ! grep "$LUKS_UUID" /etc/crypttab | grep -q "tpm2-device=auto"; then
+    uuid_line="$(grep -F "$LUKS_UUID" /etc/crypttab || true)"
+    if [ -n "$uuid_line" ]; then
+        if ! grep -q "tpm2-device=auto" <<<"$uuid_line"; then
             local_tmp="$(mktemp /etc/crypttab.XXXXXX)"
             trap 'rm -f "$local_tmp"' EXIT
             awk -v uuid="$LUKS_UUID" '

@@ -372,16 +372,13 @@ phase_container_hygiene() {
     fi
 
     if command -v podman >/dev/null 2>&1; then
-        local target
-        for target in container volume image; do
-            if [[ "$USER_SCOPE" -eq 1 ]]; then
-                as_user podman "$target" prune -f >/dev/null 2>&1 || true
-            fi
-            if [[ "$CAN_SUDO" -eq 1 ]]; then
-                "${ROOT_CMD[@]}" podman "$target" prune -f >/dev/null 2>&1 || true
-            fi
-        done
-        echo "[OK] Stopped containers, dangling volumes, and orphan images pruned."
+        if [[ "$USER_SCOPE" -eq 1 ]]; then
+            as_user podman image prune -f >/dev/null 2>&1 || true
+        fi
+        if [[ "$CAN_SUDO" -eq 1 ]]; then
+            "${ROOT_CMD[@]}" podman image prune -f >/dev/null 2>&1 || true
+        fi
+        echo "[OK] Orphan Podman images pruned (stopped containers and volumes preserved)."
     fi
 }
 
@@ -429,7 +426,7 @@ phase_kargs() {
     if is_nvidia_headless_image; then
         for prefix in "modprobe.blacklist" "rd.driver.blacklist"; do
             for mod in "nouveau" "nvidia-drm"; do
-                if ! echo "$current_kargs" | grep -qwF "${prefix}=${mod}"; then
+                if ! grep -qwF "${prefix}=${mod}" <<<"$current_kargs"; then
                     kargs_to_add+=("--append-if-missing=${prefix}=${mod}")
                 fi
             done
@@ -437,7 +434,7 @@ phase_kargs() {
     fi
 
     for karg in "${unwanted_kargs[@]}"; do
-        if echo "$current_kargs" | grep -qwF "$karg"; then
+        if grep -qwF "$karg" <<<"$current_kargs"; then
             kargs_to_remove+=("--delete-if-present=$karg")
         fi
     done
@@ -458,7 +455,9 @@ phase_kargs() {
 # ---------------------------------------------------------------------------
 is_dual_gpu() {
     command -v lspci >/dev/null 2>&1 || return 1
-    lspci 2>/dev/null | grep -qi "VGA.*AMD" && lspci 2>/dev/null | grep -qi "NVIDIA"
+    local lspci_out
+    lspci_out="$(lspci 2>/dev/null || true)"
+    grep -qi "VGA.*AMD" <<<"$lspci_out" && grep -qi "NVIDIA" <<<"$lspci_out"
 }
 
 # True when the running image ships the headless-NVIDIA overlay (flavor cuda).

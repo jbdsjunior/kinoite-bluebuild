@@ -14,6 +14,7 @@ ExecStart=/usr/bin/flatpak --system update -y --noninteractive
 ExecStart=/usr/bin/flatpak --system uninstall --unused -y --noninteractive
 
 ProtectSystem=full
+ReadWritePaths=/var/lib/flatpak /var/tmp /run/flatpak
 ProtectHome=true
 PrivateTmp=true
 
