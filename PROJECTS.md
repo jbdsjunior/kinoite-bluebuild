@@ -31,13 +31,13 @@
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-cuda.yml`: compila a imagem `kinoite-cuda` para estações AMD + NVIDIA headless (CUDA/compute).
 - `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
-- `recipes/modules/common-dnf-debloat.yml`: remove bloatware RPM da imagem base (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`) via módulo `dnf` com `auto-remove: true`.
-- `recipes/modules/common-dnf-kde.yml`: realiza a troca `ocl-icd` (`OpenCL-ICD-Loader`) e instala localização (`langpacks-pt_BR`), integração KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), `lm_sensors` e tipografia (`rsms-inter-vf-fonts`).
-- `recipes/modules/common-dnf-multimedia.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala codecs e aceleração de hardware (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer).
-- `recipes/modules/common-dnf-virtualization.yml`: instala a pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`).
-- `recipes/modules/common-dnf-infra.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync e diagnóstico GPU (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`).
-- `recipes/modules/cuda-akmods-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
-- `recipes/modules/common-default-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
+- `recipes/modules/common-debloat.yml`: remove bloatware RPM da imagem base (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`) via módulo `dnf` com `auto-remove: true`.
+- `recipes/modules/common-core.yml`: realiza a troca `ocl-icd` (`OpenCL-ICD-Loader`) e instala localização (`langpacks-pt_BR`), integração KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), `lm_sensors` e tipografia (`rsms-inter-vf-fonts`).
+- `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala codecs e aceleração de hardware (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer).
+- `recipes/modules/common-kvm.yml`: instala a pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`).
+- `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync e diagnóstico GPU (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`).
+- `recipes/modules/cuda-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
+- `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
 - `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `thermald.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `ModemManager.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`).
 
@@ -168,6 +168,6 @@
 - É proibido codificar endereços PCI estáticos (`pci-0000:..`) em regras `udev`, specs CDI ou scripts quando houver detecção por driver.
 - É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `security/limits.d`, `ssh/sshd_config.d`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`, `NetworkManager/dispatcher.d`).
 - É proibido fazer downgrade de pacotes base ou usar `type: script` nas receitas quando houver solução declarativa.
-- Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-default-flatpaks.yml` (exceção: `gnome-boxes` RPM para integração direta com libvirt/virgl/SPICE).
+- Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-flatpaks.yml` (exceção: `gnome-boxes` RPM para integração direta com libvirt/virgl/SPICE).
 - Linguagens, SDKs e CLIs de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
 - Configurações de usuário devem ser aplicadas via `user-tmpfiles.d` usando templates em `/usr/share/`.

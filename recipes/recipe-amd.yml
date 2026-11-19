@@ -17,16 +17,16 @@ modules:
         destination: /
 
   # Debloat, modular RPM package layers (DNF) and fonts
-  - from-file: modules/common-dnf-debloat.yml
-  - from-file: modules/common-dnf-kde.yml
-  - from-file: modules/common-dnf-multimedia.yml
-  - from-file: modules/common-dnf-virtualization.yml
-  - from-file: modules/common-dnf-infra.yml
+  - from-file: modules/common-debloat.yml
+  - from-file: modules/common-core.yml
+  - from-file: modules/common-drivers.yml
+  - from-file: modules/common-kvm.yml
+  - from-file: modules/common-tools.yml
   - from-file: modules/common-fonts.yml
 
   # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml
-  - from-file: modules/common-default-flatpaks.yml
+  - from-file: modules/common-flatpaks.yml
 
   # Kernel arguments must come after every module that writes a kargs file
   - from-file: modules/common-kargs.yml
