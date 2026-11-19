@@ -12,3 +12,7 @@ modules:
         # Conflicting System Package Managers (replaced by bootc / topgrade)
         - plasma-discover-notifier
         - plasma-discover-rpm-ostree
+
+        # Intel-only Power & Thermal Daemons (AMD Ryzen workstation)
+        - intel-lpmd
+        - thermald

@@ -4,11 +4,8 @@ modules:
   - type: systemd
     system:
       masked:
-        # Redundant or hardware-incompatible daemons (AMD desktop)
-        - intel_lpmd.service
+        # Redundant hardware sensor daemon (lm_sensors CLI works without persistent service)
         - lm_sensors.service
-        - ModemManager.service
-        - thermald.service
 
         # Boot-blocking or unnecessary ostree/bootc units
         - dnf-makecache.timer
@@ -39,7 +36,8 @@ modules:
         # (virtqemud/virtnetworkd/virtstoraged/virtnodedevd/virtproxyd/
         # virtsecretd/virtnwfilterd) are preset-enabled by Fedora upstream
         # (90-default.preset) and applied at build time; re-declaring them
-        # is redundant and avoided.
+        # is redundant and avoided. ModemManager stays unmasked so
+        # NetworkManager-bluetooth avoids D-Bus activation errors.
 
     user:
       masked:

@@ -31,7 +31,7 @@
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-cuda.yml`: compila a imagem `kinoite-cuda` para estações AMD + NVIDIA headless (CUDA/compute).
 - `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`) e tipografia do sistema RPM (`rsms-inter-vf-fonts`).
-- `recipes/modules/common-debloat.yml`: remove bloatware RPM da imagem base (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`) via módulo `dnf` com `auto-remove: true`.
+- `recipes/modules/common-debloat.yml`: remove bloatware e daemons incompatíveis RPM da imagem base (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`, `intel-lpmd`, `thermald`) via módulo `dnf` com `auto-remove: true`.
 - `recipes/modules/common-core.yml`: instala pacotes essenciais de localização (`langpacks-pt_BR`), integração KDE Plasma (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), sensores (`lm_sensors`) e registro RAS/MCE (`rasdaemon`).
 - `recipes/modules/common-multimedia.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala a pilha multimídia completa e codecs proprietários (`ffmpeg`, `libheif-freeworld`, GStreamer plugins extras, freeworld e ugly).
 - `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`), realiza a mitigação OpenCL (`ocl-icd` substituindo `OpenCL-ICD-Loader`), instala aceleração gráfica/computacional (`mesa-va-drivers-freeworld`, `mesa-libOpenCL`) e utilitários de diagnóstico de GPU (`libva-utils`, `clinfo`, `vulkan-tools`).
@@ -40,7 +40,7 @@
 - `recipes/modules/cuda-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
-- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário e mascara unidades desnecessárias (`systemd-remount-fs.service`, `intel_lpmd.service`, `thermald.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `ModemManager.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`).
+- `recipes/modules/common-systemd.yml`: habilita timers/serviços de sistema e usuário (incluindo `rasdaemon.service`) e mascara unidades desnecessárias (`systemd-remount-fs.service`, `lm_sensors.service`, `NetworkManager-wait-online.service`, `raid-check.timer`, `dnf-makecache.timer`, `drkonqi-coredump-pickup.service`), mantendo `ModemManager.service` desmascarado para evitar erros D-Bus.
 
 ## Kernel Arguments e Isolamento NVIDIA
 
@@ -51,7 +51,7 @@
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` para carregar módulos NVIDIA sob demanda no userspace.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia-headless.conf`: omite `nvidia_drm` e `nvidia-drm` do initramfs.
 - `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true` e ativa Resizable BAR na RTX 3080 Ti.
-- `files/nvidia/usr/lib/environment.d/60-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` para impedir que aplicações host capturem EGL/GLX da NVIDIA.
+- `files/nvidia/usr/lib/environment.d/60-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES`, `__GLX_VENDOR_LIBRARY_NAME=mesa` e `VK_DRIVER_FILES` (RADV) para impedir que aplicações host capturem EGL/GLX/Vulkan da NVIDIA.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
 
@@ -98,13 +98,11 @@
 - `files/system/usr/lib/systemd/user/podman-restart.service.d/override.conf`: impede execução de `podman-restart.service` para contas `@system` como `plasmalogin`.
 - `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.service`: executa `btrfs scrub start -B /var/home` em prioridade idle somente em alimentação AC.
 - `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.timer`: agenda o scrub mensal de `/var/home`.
-- `files/system/usr/lib/systemd/system/kinoite-maintenance.service`: limpa contêineres/volumes/imagens Podman de sistema e limita journald a 200 MB / 14 dias.
+- `files/system/usr/lib/systemd/system/kinoite-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de sistema e limita journald a 200 MB / 14 dias.
 - `files/system/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
-- `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa Podman de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
+- `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/kinoite-user-maintenance.timer`: agenda limpeza semanal de usuário (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) e aplica o perfil `kinoite-performance` do `tuned` no primeiro boot.
-- `files/system/usr/lib/tuned/profiles/kinoite-performance/tuned.conf`: herda `throughput-performance` preservando `readahead=256` em NVMe e parâmetros de memória (`dirty_bytes=10%`, `dirty_background_bytes=3%`, `vm.swappiness=150`).
-- `files/system/usr/lib/systemd/system/user-.slice.d/60-kinoite-oomd.conf`: habilita `ManagedOOMMemoryPressure=kill` (70%) e `ManagedOOMSwap=kill` nas sessões de usuário.
+- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) no primeiro boot.
 - `files/system/etc/NetworkManager/dispatcher.d/04-iscsi`: sobrescreve o dispatcher upstream do `iscsi-initiator-utils` para recarregar `iscsi.service` apenas quando ativo.
 - `files/system/usr/share/smartmontools/smartd.conf`: monitora discos compatíveis com SMART sem sondagem ATA `-n standby` em pontes USB.
 - `files/system/usr/lib/systemd/system/smartd.service.d/override.conf`: aponta `smartd.service` para `/usr/share/smartmontools/smartd.conf` mantendo `$smartd_opts`.
@@ -145,7 +143,7 @@
 - `files/system/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
 - `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
 - `files/system/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
-- `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, dispositivos Android ADB/Fastboot e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
+- `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
 - `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/system/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
 - `files/system/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão gráfica (`graphical-session.target`) após `default.target` para acesso imediato no GNOME Boxes sem ciclo em `basic.target` (`ConditionUser=!@system`).

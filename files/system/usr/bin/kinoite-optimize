@@ -481,8 +481,11 @@ audit_pillars() {
 
     echo "--- [Pillar 1/6] Supply Chain, Keys & Signing ---"
     if command -v mokutil >/dev/null 2>&1; then
-        if mokutil --sb-state 2>/dev/null | grep -qi "enabled"; then
-            if mokutil --list-enrolled 2>/dev/null | grep -qi "ublue"; then
+        local sb_state enrolled
+        sb_state="$(mokutil --sb-state 2>/dev/null || true)"
+        if grep -qi "enabled" <<<"$sb_state"; then
+            enrolled="$(mokutil --list-enrolled 2>/dev/null || true)"
+            if grep -qi "ublue" <<<"$enrolled"; then
                 echo "[OK] Secure Boot enabled with the enrolled ublue MOK certificate."
             else
                 echo "[OK] Secure Boot enabled (factory/standard key set)."
@@ -556,11 +559,7 @@ audit_pillars() {
         if [[ "$ra_val" == "256" ]]; then
             echo "[OK] NVMe read_ahead_kb=${ra_val} (${nvme_ra_file%/queue/read_ahead_kb})."
         elif [[ -n "$ra_val" ]]; then
-            if [[ -d /usr/lib/tuned/profiles/kinoite-performance ]]; then
-                audit_warn "NVMe read_ahead_kb drift on ${nvme_ra_file}: ${ra_val} (target 256)."
-            else
-                echo "[INFO] NVMe read_ahead_kb=${ra_val} (${nvme_ra_file%/queue/read_ahead_kb}); target 256 applies after kinoite-performance deploy."
-            fi
+            audit_warn "NVMe read_ahead_kb drift on ${nvme_ra_file}: ${ra_val} (target 256)."
         fi
     done
 
