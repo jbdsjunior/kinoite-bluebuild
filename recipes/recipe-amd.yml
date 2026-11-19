@@ -19,6 +19,7 @@ modules:
   # Debloat, modular RPM package layers (DNF) and fonts
   - from-file: modules/common-debloat.yml
   - from-file: modules/common-core.yml
+  - from-file: modules/common-multimedia.yml
   - from-file: modules/common-drivers.yml
   - from-file: modules/common-kvm.yml
   - from-file: modules/common-tools.yml

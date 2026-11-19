@@ -17,18 +17,11 @@ modules:
     install:
       allow-erasing: true
       packages:
-        # Hardware Acceleration & Multimedia Codecs (RPM Fusion)
-        - ffmpeg
-        - gstreamer1-plugins-bad-free-extras
-        - gstreamer1-plugins-bad-freeworld
-        - gstreamer1-plugins-ugly
-        - libheif-freeworld
+        # Hardware Video Acceleration & GPU Compute (AMD Radeon / Mesa)
         - mesa-va-drivers-freeworld
-
-        # OpenCL Compute & Acceleration Stack
         - mesa-libOpenCL
 
-        # GPU & Acceleration Diagnostics
+        # GPU & Driver Acceleration Diagnostics
         - clinfo
         - libva-utils
         - vulkan-tools
