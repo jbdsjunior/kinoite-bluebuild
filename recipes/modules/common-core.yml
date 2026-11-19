@@ -5,10 +5,14 @@ modules:
     install:
       allow-erasing: true
       packages:
-        # Localization, KDE Plasma Integration & Sensors
+        # Localization
+        - langpacks-pt_BR
+
+        # KDE Plasma Integration & Security
         - kio-admin
         - ksshaskpass
-        - langpacks-pt_BR
-        - lm_sensors
         - plasma-firewall
         - qt6-qtimageformats
+
+        # Hardware Sensors
+        - lm_sensors

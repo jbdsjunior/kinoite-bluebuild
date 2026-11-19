@@ -4,14 +4,17 @@ modules:
   - type: systemd
     system:
       masked:
-        - systemd-remount-fs.service
+        # Redundant or hardware-incompatible daemons (AMD desktop)
         - intel_lpmd.service
-        - thermald.service
         - lm_sensors.service
-        - NetworkManager-wait-online.service
         - ModemManager.service
-        - raid-check.timer
+        - thermald.service
+
+        # Boot-blocking or unnecessary ostree/bootc units
         - dnf-makecache.timer
+        - NetworkManager-wait-online.service
+        - raid-check.timer
+        - systemd-remount-fs.service
       enabled:
         # Native first-boot initialization (GRUB auto-hide)
         - kinoite-boot-init.service
@@ -39,9 +42,14 @@ modules:
       masked:
         - drkonqi-coredump-pickup.service
       enabled:
-        - flatpak-user-update.timer
+        # Desktop session & browser configuration
         - kinoite-browser-flags.service
+
+        # User updates, maintenance & containers
+        - flatpak-user-update.timer
         - kinoite-user-maintenance.timer
         - podman-auto-update.timer
         - podman-restart.service
+
+        # User virtualization session
         - virtqemud-session.service

@@ -11,12 +11,18 @@ modules:
     install:
       allow-erasing: true
       packages:
-        # Infrastructure, Cloud Sync, Containers & Terminal Tools
+        # Containers & Development
         - distrobox
-        - fastfetch
         - git
-        - nvtop
-        - rclone
+
+        # Terminal, Shell & System Info
+        - fastfetch
         - starship
-        - tailscale
+
+        # System Monitoring & Maintenance
+        - nvtop
         - topgrade
+
+        # Networking, VPN & Cloud Sync
+        - rclone
+        - tailscale

@@ -5,7 +5,10 @@ modules:
     remove:
       auto-remove: true
       packages:
+        # Redundant Base GUI Apps (replaced by Flatpaks)
         - firefox
         - kwrite
-        - plasma-discover-rpm-ostree
+
+        # Conflicting System Package Managers (replaced by bootc / topgrade)
         - plasma-discover-notifier
+        - plasma-discover-rpm-ostree

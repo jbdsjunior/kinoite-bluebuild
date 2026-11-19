@@ -18,10 +18,10 @@ modules:
       allow-erasing: true
       packages:
         # Hardware Video Acceleration & GPU Compute (AMD Radeon / Mesa)
-        - mesa-va-drivers-freeworld
         - mesa-libOpenCL
+        - mesa-va-drivers-freeworld
 
-        # GPU & Driver Acceleration Diagnostics
+        # GPU & Acceleration Diagnostics (OpenCL, VA-API, Vulkan)
         - clinfo
         - libva-utils
         - vulkan-tools

@@ -9,9 +9,13 @@ modules:
     install:
       allow-erasing: true
       packages:
-        # Full Multimedia Framework & Codecs (RPM Fusion)
+        # Core Audio/Video Framework (RPM Fusion)
         - ffmpeg
+
+        # GStreamer Streaming & Codec Plugins
         - gstreamer1-plugins-bad-free-extras
         - gstreamer1-plugins-bad-freeworld
         - gstreamer1-plugins-ugly
+
+        # Image Format Codecs (HEIF/AVIF)
         - libheif-freeworld

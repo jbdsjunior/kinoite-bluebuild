@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
 
 modules:
+  # Monospace & Terminal Icon Fonts (Nerd Fonts)
   - type: fonts
     fonts:
       nerd-fonts:
@@ -8,9 +9,9 @@ modules:
         - JetBrainsMono
         - NerdFontsSymbolsOnly
 
+  # System UI Typography (RPM)
   - type: dnf
     install:
       allow-erasing: true
       packages:
-        # System Typography (RPM)
         - rsms-inter-vf-fonts
