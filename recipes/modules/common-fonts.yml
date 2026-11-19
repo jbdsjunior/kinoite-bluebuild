@@ -7,3 +7,10 @@ modules:
         - FiraCode
         - JetBrainsMono
         - NerdFontsSymbolsOnly
+
+  - type: dnf
+    install:
+      allow-erasing: true
+      packages:
+        # System Typography (RPM)
+        - rsms-inter-vf-fonts

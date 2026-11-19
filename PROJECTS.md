@@ -30,12 +30,12 @@
 
 - `recipes/recipe-amd.yml`: compila a imagem limpa `kinoite-amd` para sistemas exclusivos AMD.
 - `recipes/recipe-cuda.yml`: compila a imagem `kinoite-cuda` para estações AMD + NVIDIA headless (CUDA/compute).
-- `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`).
+- `recipes/modules/common-fonts.yml`: instala Nerd Fonts (`FiraCode`, `JetBrainsMono`, `NerdFontsSymbolsOnly`) e tipografia do sistema RPM (`rsms-inter-vf-fonts`).
 - `recipes/modules/common-debloat.yml`: remove bloatware RPM da imagem base (`firefox`, `kwrite`, `plasma-discover-rpm-ostree`, `plasma-discover-notifier`) via módulo `dnf` com `auto-remove: true`.
-- `recipes/modules/common-core.yml`: realiza a troca `ocl-icd` (`OpenCL-ICD-Loader`) e instala localização (`langpacks-pt_BR`), integração KDE (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`), `lm_sensors` e tipografia (`rsms-inter-vf-fonts`).
-- `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala codecs e aceleração de hardware (`mesa-va-drivers-freeworld`, `ffmpeg`, `libva-utils`, `libheif-freeworld`, GStreamer).
+- `recipes/modules/common-core.yml`: instala pacotes essenciais de localização (`langpacks-pt_BR`), integração KDE Plasma (`plasma-firewall`, `kio-admin`, `ksshaskpass`, `qt6-qtimageformats`) e suporte a sensores (`lm_sensors`).
+- `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`), realiza a mitigação OpenCL (`ocl-icd` substituindo `OpenCL-ICD-Loader`), instala aceleração gráfica/computacional (`mesa-va-drivers-freeworld`, `mesa-libOpenCL`), codecs (`ffmpeg`, `libheif-freeworld`, GStreamer) e utilitários de diagnóstico de GPU (`libva-utils`, `clinfo`, `vulkan-tools`).
 - `recipes/modules/common-kvm.yml`: instala a pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`).
-- `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync e diagnóstico GPU (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `mesa-libOpenCL`, `clinfo`, `vulkan-tools`, `nvtop`).
+- `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync, rede e monitoramento (`topgrade`, `starship`, `fastfetch`, `tailscale`, `git`, `rclone`, `distrobox`, `nvtop`).
 - `recipes/modules/cuda-drivers-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 24 aplicativos Flatpak de sistema via módulo `default-flatpaks` v2 (incluindo `org.kde.okular`).
 - `recipes/modules/common-kargs.yml`: define a baseline compartilhada de kargs com `initcall_blacklist=simpledrm_platform_driver_init`.
