@@ -10,14 +10,14 @@ platforms:
   - linux/amd64
 
 modules:
-  # Domain-layered configuration overlays (base, desktop, cloud, virt, ai)
+  # Domain-layered configuration overlays (base, desktop, rclone, virt, ai)
   - type: files
     files:
       - source: base
         destination: /
       - source: desktop
         destination: /
-      - source: cloud
+      - source: rclone
         destination: /
       - source: virt
         destination: /

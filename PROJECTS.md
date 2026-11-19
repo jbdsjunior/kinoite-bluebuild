@@ -17,7 +17,7 @@
 - `recipes/` reúne os manifestos principais (`recipe-*.yml`) e `recipes/modules/` reúne os módulos compartilhados (`common-*.yml`).
 - `files/base/` contém as configurações fundamentais do sistema (kernel, ZRAM, rede, segurança, udev, manutenção e utilitários).
 - `files/desktop/` contém as configurações de ambiente desktop KDE Plasma, fontes, terminais, navegadores e Flatpaks.
-- `files/cloud/` contém as definições de montagem automática em nuvem via Rclone.
+- `files/rclone/` contém as definições de montagem automática em nuvem via Rclone.
 - `files/virt/` contém as configurações de sessão e autorização da pilha de virtualização KVM/Libvirt.
 - `files/ai/` contém as configurações de IA local e aceleração AMD ROCm/CDI/Jan.
 - `files/nvidia/` contém exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
@@ -152,10 +152,10 @@
 - `files/base/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
 - `files/virt/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/virt/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão gráfica (`graphical-session.target`) após `default.target` para acesso imediato no GNOME Boxes sem ciclo em `basic.target` (`ConditionUser=!@system`).
-- `files/cloud/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
-- `files/cloud/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
-- `files/cloud/usr/share/rclone/env/OneDrive.env`: configura rate limits (5 TPS), Delta API e chunks de 50M para Microsoft Graph.
-- `files/cloud/usr/share/user-tmpfiles.d/70-rclone-env.conf`: cria `~/.config/rclone/env/` e `/run/user/%U/cloud` e copia os perfis padrão no login.
+- `files/rclone/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
+- `files/rclone/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
+- `files/rclone/usr/share/rclone/env/OneDrive.env`: configura rate limits (5 TPS), Delta API e chunks de 50M para Microsoft Graph.
+- `files/rclone/usr/share/user-tmpfiles.d/70-rclone-env.conf`: cria `~/.config/rclone/env/` e `/run/user/%U/cloud` e copia os perfis padrão no login.
 
 ## CI/CD e Assinatura
 

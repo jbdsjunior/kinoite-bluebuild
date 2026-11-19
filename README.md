@@ -93,7 +93,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-cuda.yml`, `modules/common-*.yml`) |
 | [`files/base/`](files/base/) | Core system overlays (sysctl, tmpfiles, systemd, udev, ZRAM, security) and utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
 | [`files/desktop/`](files/desktop/) | Desktop overlays (KDE Plasma, fonts, Konsole, Starship, Fastfetch, Chromium, Flatpaks) |
-| [`files/cloud/`](files/cloud/) | Cloud storage overlays (Rclone user service and Google Drive / OneDrive profiles) |
+| [`files/rclone/`](files/rclone/) | Cloud storage overlays (Rclone user service and Google Drive / OneDrive profiles) |
 | [`files/virt/`](files/virt/) | Virtualization overlays (KVM/libvirt polkit rule and `virtqemud-session.service`) |
 | [`files/ai/`](files/ai/) | Local AI overlays (AMD ROCm CDI `amdgpu.yaml`, `HSA_OVERRIDE_GFX_VERSION`, Jan Flatpak override) |
 | [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
