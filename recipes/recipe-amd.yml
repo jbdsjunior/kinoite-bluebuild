@@ -26,7 +26,7 @@ modules:
 
   # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml
-  - from-file: modules/common-flatpaks.yml
+  - from-file: modules/common-default-flatpaks.yml
 
   # Kernel arguments must come after every module that writes a kargs file
   - from-file: modules/common-kargs.yml

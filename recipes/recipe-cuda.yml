@@ -25,11 +25,11 @@ modules:
   - from-file: modules/common-fonts.yml
 
   # NVIDIA/akmods layer: must precede initramfs and follow the AMD drivers
-  - from-file: modules/cuda-drivers-nvidia.yml
+  - from-file: modules/cuda-akmods-nvidia.yml
 
   # Systemd units and Flatpaks
   - from-file: modules/common-systemd.yml
-  - from-file: modules/common-flatpaks.yml
+  - from-file: modules/common-default-flatpaks.yml
 
   # Kernel arguments must come after every module that writes a kargs file
   - from-file: modules/common-kargs.yml
