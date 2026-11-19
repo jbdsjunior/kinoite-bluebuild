@@ -14,5 +14,6 @@ modules:
         - plasma-firewall
         - qt6-qtimageformats
 
-        # Hardware Sensors
+        # Hardware Sensors & RAS Error Logging
         - lm_sensors
+        - rasdaemon
