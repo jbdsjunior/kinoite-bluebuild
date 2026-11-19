@@ -1,6 +1,0 @@
-[Effect-blur]
-BlurStrength=10
-NoiseStrength=2
-
-[Plugins]
-kinoite-window-centerEnabled=true

@@ -10,22 +10,23 @@ platforms:
   - linux/amd64
 
 modules:
-  # System-wide configuration overlays (sysctl, tmpfiles, systemd, udev, polkit)
+  # Domain-layered system, desktop, and cloud overlays
   - type: files
     files:
-      - source: system
+      - source: base
+        destination: /
+      - source: desktop
+        destination: /
+      - source: cloud
         destination: /
 
-  # Consolidated RPM package set, fonts, multimedia codecs and virtualization
-  - from-file: modules/common-packages.yml
-  - from-file: modules/common-fonts.yml
+  # Consolidated RPM package set, fonts, multimedia codecs, and lean virtualization
+  - from-file: modules/base-packages.yml
+  - from-file: modules/desktop-fonts.yml
 
   # Systemd units and Flatpaks
-  - from-file: modules/common-systemd.yml
-  - from-file: modules/common-flatpaks.yml
-
-  # Kernel arguments must come after every module that writes a kargs file
-  - from-file: modules/common-kargs.yml
+  - from-file: modules/base-systemd.yml
+  - from-file: modules/desktop-flatpaks.yml
 
   - type: initramfs
     env:

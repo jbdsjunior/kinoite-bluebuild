@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: default-flatpaks
+    configurations:
+      - notify: false
+        scope: system
+        install:
+          # Application & Package Management
+          - com.github.tchx84.Flatseal
+          - it.mijorus.gearlever
+
+          # Audio & Media
+          - com.github.wwmm.easyeffects
+          - com.stremio.Stremio
+          - org.kde.elisa
+          - org.kde.gwenview
+          - org.kde.haruna
+          - org.qbittorrent.qBittorrent
+
+          # Browsers & Web
+          - com.brave.Browser
+          - com.google.Chrome
+          - org.mozilla.firefox
+
+          # Security & Password Management
+          - com.bitwarden.desktop
+
+          # Development & Containers
+          - com.visualstudio.code
+          - io.github.DenysMb.Kontainer
+          - io.github.mfat.sshpilot
+          - org.kde.kate
+
+          # Artificial Intelligence & Local LLMs
+          - ai.jan.Jan
+
+          # Productivity, Knowledge & Office
+          - md.obsidian.Obsidian
+          - io.anytype.anytype
+          - io.github.alainm23.planify
+          - org.kde.okular
+          - org.onlyoffice.desktopeditors
+
+          # Backup & Resilience
+          - org.gnome.World.PikaBackup
+
+          # System Monitoring
+          - io.missioncenter.MissionCenter
+
+          # Networking & VPN
+          - org.fkoehler.KTailctl
