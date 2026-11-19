@@ -175,7 +175,7 @@ O Fedora Kinoite utiliza o mecanismo **GRUB Menu Auto-Hide** com transição *fl
 
 ### 7.1 Provisionamento 100% Nativo na Imagem
 
-Como o Fedora Kinoite (`bootc`/`rpm-ostree`) mantém permanentemente múltiplos deployments (sistema ativo + rollback), o GRUB é configurado em modo forçado (`menu_auto_hide=2` + `user.cfg`) através da unidade systemd [`kinoite-boot-init.service`](../files/system/usr/lib/systemd/system/kinoite-boot-init.service):
+Como o Fedora Kinoite (`bootc`/`rpm-ostree`) mantém permanentemente múltiplos deployments (sistema ativo + rollback), o GRUB é configurado em modo forçado (`menu_auto_hide=2` + `user.cfg`) através da unidade systemd [`kinoite-boot-init.service`](../files/base/usr/lib/systemd/system/kinoite-boot-init.service):
 
 - Grava `menu_auto_hide=2`, `boot_success=1` e `boot_indeterminate=0`.
 - Grava `set timeout=0` e `set timeout_style=hidden` em `/boot/grub2/user.cfg`.
@@ -237,8 +237,8 @@ A imagem não depende mais de endereços PCI estáticos: os vínculos gráficos 
 
 | Elemento | Mecanismo dinâmico | Arquivo |
 | :--- | :--- | :--- |
-| Symlink `primary-render` | Regra `udev` por `DRIVERS=="amdgpu"` | [`files/system/usr/lib/udev/rules.d/70-peripherals.rules`](../files/system/usr/lib/udev/rules.d/70-peripherals.rules) |
-| CDI AMD (ROCm/HIP) | Mapeia `/dev/dri/primary-render` → `/dev/dri/renderD128` e `/dev/kfd` | [`files/system/etc/cdi/amdgpu.yaml`](../files/system/etc/cdi/amdgpu.yaml) |
-| Auditoria (Pilar 4) | Varre `/sys/class/drm/renderD*/device/driver` para `amdgpu` e `nvidia` | [`files/system/usr/bin/kinoite-optimize`](../files/system/usr/bin/kinoite-optimize) |
+| Symlink `primary-render` | Regra `udev` por `DRIVERS=="amdgpu"` | [`files/base/usr/lib/udev/rules.d/70-peripherals.rules`](../files/base/usr/lib/udev/rules.d/70-peripherals.rules) |
+| CDI AMD (ROCm/HIP) | Mapeia `/dev/dri/primary-render` → `/dev/dri/renderD128` e `/dev/kfd` | [`files/ai/etc/cdi/amdgpu.yaml`](../files/ai/etc/cdi/amdgpu.yaml) |
+| Auditoria (Pilar 4) | Varre `/sys/class/drm/renderD*/device/driver` para `amdgpu` e `nvidia` | [`files/base/usr/bin/kinoite-optimize`](../files/base/usr/bin/kinoite-optimize) |
 
 Caso seja necessário forçar um nó específico durante uma auditoria manual, sobrescreva com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`.

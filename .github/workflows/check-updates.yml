@@ -84,7 +84,7 @@ jobs:
           CURRENT_DIGEST="$(jq -r '.Labels["org.opencontainers.image.base.digest"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
           IMAGE_CREATED="$(jq -r '.Labels["org.opencontainers.image.created"] // empty' <<<"$IMAGE_META" 2>/dev/null || true)"
 
-          REPO_PATHS=("$RECIPE" "recipes/modules/common-*.yml" "files/system" "files/dnf" "cosign.pub")
+          REPO_PATHS=("$RECIPE" "recipes/modules/common-*.yml" "files/base" "files/desktop" "files/cloud" "files/virt" "files/ai" "files/dnf" "cosign.pub")
           if [[ "$FLAVOR" == "cuda" ]]; then
             REPO_PATHS+=("recipes/modules/cuda-*.yml" "files/nvidia")
           fi

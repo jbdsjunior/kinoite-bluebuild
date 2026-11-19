@@ -91,8 +91,11 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`SECURITY.md`](SECURITY.md) | Cosign signature verification policy, workflow permissions and vulnerability reporting |
 | [`cosign.pub`](cosign.pub) | Public Cosign verification key (the signing key lives in `SIGNING_SECRET`) |
 | [`recipes/`](recipes/) | Declarative BlueBuild OCI recipes (`recipe-amd.yml`, `recipe-cuda.yml`, `modules/common-*.yml`) |
-| [`files/system/`](files/system/) | Host configuration overlays (sysctl, tmpfiles, systemd, udev, polkit) |
-| [`files/system/usr/bin/`](files/system/usr/bin/) | In-image utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
+| [`files/base/`](files/base/) | Core system overlays (sysctl, tmpfiles, systemd, udev, ZRAM, security) and utilities (`kinoite-optimize`, `kinoite-setup-tpm`) |
+| [`files/desktop/`](files/desktop/) | Desktop overlays (KDE Plasma, fonts, Konsole, Starship, Fastfetch, Chromium, Flatpaks) |
+| [`files/cloud/`](files/cloud/) | Cloud storage overlays (Rclone user service and Google Drive / OneDrive profiles) |
+| [`files/virt/`](files/virt/) | Virtualization overlays (KVM/libvirt polkit rule and `virtqemud-session.service`) |
+| [`files/ai/`](files/ai/) | Local AI overlays (AMD ROCm CDI `amdgpu.yaml`, `HSA_OVERRIDE_GFX_VERSION`, Jan Flatpak override) |
 | [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
 | [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 2h) and registry cleanup |

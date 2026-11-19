@@ -10,12 +10,16 @@
 - A GPU primária é a AMD Radeon RX 6600 XT (`amdgpu`), dedicada a display Wayland, KDE Plasma, Vulkan/VA-API e VMs.
 - A GPU secundária é a NVIDIA RTX 3080 Ti (`nvidia`), isolada em modo headless exclusivamente para CUDA, PyTorch e LLMs locais.
 - O armazenamento usa NVMe PCIe Gen4 de 1 TB em Btrfs e discos auxiliares de 1 TB; a rede usa Intel I211 GbE e Intel Wi-Fi 6E AX210.
-- Os periféricos USB homologados são receptores VXE/Compx (`3554`), headset MCHOSE X9 (`3837`), teclado BY Tech (`258a`), LED ITE (`048d`) e dispositivos Android ADB/Fastboot (`18d1`, `2a70`, `04e8`, `22b8`, `2717`, `05c6`, `0e8d`).
+- Os periféricos USB homologados são receptores VXE/Compx (`3554`), headset MCHOSE X9 (`3837`), teclado BY Tech (`258a`), LED ITE (`048d`) e dispositivos Android ADB/Fastboot (`18d1`, `2a70`, `22d9`, `04e8`, `22b8`, `2717`, `05c6`, `0e8d`).
 
 ## Estrutura do Repositório e Documentação
 
 - `recipes/` reúne os manifestos principais (`recipe-*.yml`) e `recipes/modules/` reúne os módulos compartilhados (`common-*.yml`).
-- `files/system/` contém as configurações comuns a todas as imagens.
+- `files/base/` contém as configurações fundamentais do sistema (kernel, ZRAM, rede, segurança, udev, manutenção e utilitários).
+- `files/desktop/` contém as configurações de ambiente desktop KDE Plasma, fontes, terminais, navegadores e Flatpaks.
+- `files/cloud/` contém as definições de montagem automática em nuvem via Rclone.
+- `files/virt/` contém as configurações de sessão e autorização da pilha de virtualização KVM/Libvirt.
+- `files/ai/` contém as configurações de IA local e aceleração AMD ROCm/CDI/Jan.
 - `files/nvidia/` contém exclusivamente os arquivos de suporte e isolamento da GPU NVIDIA.
 - `files/dnf/` contém as definições de repositórios externos RPM.
 - `AGENTS.md` define processo, Git, validações pré-commit e categorias de consulta para agentes de IA.
@@ -57,99 +61,101 @@
 
 ## Armazenamento, ZRAM, Memória e Segurança
 
-- `files/system/usr/lib/tmpfiles.d/60-io-tuning-system.conf`: aplica Btrfs NoCOW (`+C`) em `/var/lib/libvirt/images` e `/var/lib/containers/storage`.
-- `files/system/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`: aplica Btrfs NoCOW (`+C`) em imagens de VMs, contêineres rootless e cache do rclone.
-- `files/system/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`: configura swap ZRAM zstd em 50% da RAM até 32 GB.
-- `files/system/usr/lib/sysctl.d/90-memory-fs-tuning.conf`: ajusta ZRAM (`swappiness=150`, `page-cluster=0`), watchers inotify e `dirty_ratio` para NVMe.
-- `files/system/etc/security/limits.d/60-kinoite-limits.conf`: libera `memlock unlimited` em sessões PAM/SSH.
-- `files/system/usr/lib/systemd/system.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de sistema.
-- `files/system/usr/lib/systemd/user.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de usuário.
-- `files/system/usr/lib/sysctl.d/90-kernel-tuning.conf`: ativa `sysrq=1` (REISUB), `kptr_restrict=1`, `panic=20` e `panic_sys_info=tasks`.
-- `files/system/usr/lib/tmpfiles.d/60-sysctl-protection.conf`: protege os sysctls do projeto via symlinks em `/etc/sysctl.d/` contra sobrescrita do TuneD.
-- `files/system/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia e ativa modo ativo no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
-- `files/system/usr/lib/modprobe.d/60-security-blacklist.conf`: bloqueia protocolos/filesystems obsoletos (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`).
-- `files/system/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
-- `files/system/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s e aplica retenção contínua (`SystemMaxUse=200M`, `MaxRetentionSec=14day`).
-- `files/system/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf`: define `ShowStatus=error` para boot silencioso exibindo apenas falhas.
-- `files/system/usr/lib/dracut/dracut.conf.d/60-kinoite-initrd.conf`: inclui `/etc/nsswitch.conf`, `/usr/lib/{group,passwd}` e `60-kinoite-boot-quiet.conf` no initramfs não-hostonly para resolver grupos via `nss-altfiles` em `udevd`/`tmpfiles`.
-- `files/system/usr/lib/modules-load.d/60-bbr.conf`: carrega `sch_fq` e `tcp_bbr` no boot.
-- `files/system/usr/lib/sysctl.d/90-network-tuning.conf`: ativa TCP BBR/FQ, buffers até 32 MB, TCP Fast Open e bloqueio de redirects ICMP.
-- `files/system/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`: aplica DNS-over-TLS estrito com Control D (`p2`), fallback Cloudflare e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
-- `files/system/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
+- `files/base/usr/lib/tmpfiles.d/60-io-tuning-system.conf`: aplica Btrfs NoCOW (`+C`) em `/var/lib/libvirt/images` e `/var/lib/containers/storage`.
+- `files/base/usr/share/user-tmpfiles.d/60-io-tuning-user.conf`: aplica Btrfs NoCOW (`+C`) em imagens de VMs, contêineres rootless e cache do rclone.
+- `files/base/usr/lib/systemd/zram-generator.conf.d/60-zram-policy.conf`: configura swap ZRAM zstd em 50% da RAM até 32 GB.
+- `files/base/usr/lib/sysctl.d/90-memory-fs-tuning.conf`: ajusta ZRAM (`swappiness=150`, `page-cluster=0`), watchers inotify e `dirty_ratio` para NVMe.
+- `files/base/etc/security/limits.d/60-kinoite-limits.conf`: libera `memlock unlimited` em sessões PAM/SSH.
+- `files/base/usr/lib/systemd/system.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de sistema.
+- `files/base/usr/lib/systemd/user.conf.d/60-kinoite-limits.conf`: define `DefaultLimitMEMLOCK=infinity` no systemd de usuário.
+- `files/base/usr/lib/sysctl.d/90-kernel-tuning.conf`: ativa `sysrq=1` (REISUB), `kptr_restrict=1`, `panic=20` e `panic_sys_info=tasks`.
+- `files/base/usr/lib/tmpfiles.d/60-sysctl-protection.conf`: protege os sysctls do projeto via symlinks em `/etc/sysctl.d/` contra sobrescrita do TuneD.
+- `files/base/usr/lib/modprobe.d/60-hardware-tuning.conf`: desativa economia de energia e ativa modo ativo no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
+- `files/base/usr/lib/modprobe.d/60-security-blacklist.conf`: bloqueia protocolos/filesystems obsoletos (`sctp`, `tipc`, `jffs2`, `hfs`, `hfsplus`, `firewire-core`).
+- `files/base/etc/ssh/sshd_config.d/50-kinoite-hardening.conf`: endurece SSH exigindo autenticação por chave, sem root e sem X11.
+- `files/base/usr/lib/systemd/journald.conf.d/60-journald-resilience.conf`: reduz `SyncIntervalSec` do journald para 30s e aplica retenção contínua (`SystemMaxUse=200M`, `MaxRetentionSec=14day`).
+- `files/base/usr/lib/systemd/system.conf.d/60-kinoite-boot-quiet.conf`: define `ShowStatus=error` para boot silencioso exibindo apenas falhas.
+- `files/base/usr/lib/dracut/dracut.conf.d/60-kinoite-initrd.conf`: inclui `/etc/nsswitch.conf`, `/usr/lib/{group,passwd}` e `60-kinoite-boot-quiet.conf` no initramfs não-hostonly para resolver grupos via `nss-altfiles` em `udevd`/`tmpfiles`.
+- `files/base/usr/lib/modules-load.d/60-bbr.conf`: carrega `sch_fq` e `tcp_bbr` no boot.
+- `files/base/usr/lib/sysctl.d/90-network-tuning.conf`: ativa TCP BBR/FQ, buffers até 32 MB, TCP Fast Open e bloqueio de redirects ICMP.
+- `files/base/usr/lib/systemd/resolved.conf.d/60-dns-overrides.conf`: aplica DNS-over-TLS estrito com Control D (`p2`), fallback Cloudflare e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
+- `files/base/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
 - `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs.
 
 ## Serviços, Timers e Manutenção
 
 - Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) apenas na tomada com jitter de `2m` e `ExecCondition=/usr/bin/nm-online -q -t 45` para pular sem erro quando o modem/rede estiver offline; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
-- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` (`Type=exec`, `Restart=on-failure` até 3x e guarda `nm-online`) em prioridade ociosa na tomada.
-- `files/system/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 5m do boot e a cada 15m.
-- `files/system/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos.
-- `files/system/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 5m do boot e a cada 15m.
-- `files/system/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 5m do login e a cada 15m (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/drkonqi-coredump-cleanup.timer.d/override.conf`: corrige o ciclo de ordenação upstream do KDE Plasma com `timers.target` (`DefaultDependencies=no`).
-- `files/system/usr/lib/systemd/user/plasma-startupsound.service.d/override.conf`: ordena o som de login após `pipewire-pulse`/`wireplumber` com retentativa tolerante a negociação Bluetooth.
-- `files/system/usr/share/wireplumber/wireplumber.conf.d/51-bluez-keepalive.conf`: desativa `session.suspend-timeout-seconds` em nós `bluez_output.*` para evitar `AVDTP START: Bad State (49)`.
-- `files/system/usr/lib/systemd/system/podman-auto-update.service.d/override.conf`: restringe auto-update Podman de sistema à tomada em prioridade ociosa.
-- `files/system/usr/lib/systemd/system/podman-auto-update.timer.d/override.conf`: verifica updates Podman de sistema após 5m do boot e a cada 45m.
-- `files/system/usr/lib/systemd/user/podman-auto-update.service.d/override.conf`: executa auto-update Podman de usuário em prioridade ociosa na tomada (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/podman-auto-update.timer.d/override.conf`: verifica updates Podman de usuário após 5m do login e a cada 45m (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/podman-restart.service.d/override.conf`: impede execução de `podman-restart.service` para contas `@system` como `plasmalogin`.
-- `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.service`: executa `btrfs scrub start -B /var/home` em prioridade idle somente em alimentação AC.
-- `files/system/usr/lib/systemd/system/kinoite-btrfs-scrub.timer`: agenda o scrub mensal de `/var/home`.
-- `files/system/usr/lib/systemd/system/kinoite-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de sistema e limita journald a 200 MB / 14 dias.
-- `files/system/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
-- `files/system/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/kinoite-user-maintenance.timer`: agenda limpeza semanal de usuário (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) no primeiro boot.
-- `files/system/etc/NetworkManager/dispatcher.d/04-iscsi`: sobrescreve o dispatcher upstream do `iscsi-initiator-utils` para recarregar `iscsi.service` apenas quando ativo.
-- `files/system/usr/share/smartmontools/smartd.conf`: monitora discos compatíveis com SMART sem sondagem ATA `-n standby` em pontes USB.
-- `files/system/usr/lib/systemd/system/smartd.service.d/override.conf`: aponta `smartd.service` para `/usr/share/smartmontools/smartd.conf` mantendo `$smartd_opts`.
-- `files/system/usr/bin/kinoite-optimize`: executa manutenção local em 8 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
-- `files/system/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
+- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc update --quiet` (`Type=exec`, `Restart=on-failure` até 3x e guarda `nm-online`) em prioridade ociosa na tomada.
+- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 5m do boot e a cada 15m.
+- `files/desktop/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos.
+- `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 5m do boot e a cada 15m.
+- `files/desktop/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso (`ConditionUser=!@system`).
+- `files/desktop/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 5m do login e a cada 15m (`ConditionUser=!@system`).
+- `files/desktop/usr/lib/systemd/user/drkonqi-coredump-cleanup.timer.d/override.conf`: corrige o ciclo de ordenação upstream do KDE Plasma com `timers.target` (`DefaultDependencies=no`).
+- `files/desktop/usr/lib/systemd/user/plasma-startupsound.service.d/override.conf`: ordena o som de login após `pipewire-pulse`/`wireplumber` com retentativa tolerante a negociação Bluetooth.
+- `files/base/usr/share/wireplumber/wireplumber.conf.d/51-bluez-keepalive.conf`: desativa `session.suspend-timeout-seconds` em nós `bluez_output.*` para evitar `AVDTP START: Bad State (49)`.
+- `files/base/usr/lib/systemd/system/podman-auto-update.service.d/override.conf`: restringe auto-update Podman de sistema à tomada em prioridade ociosa.
+- `files/base/usr/lib/systemd/system/podman-auto-update.timer.d/override.conf`: verifica updates Podman de sistema após 5m do boot e a cada 45m.
+- `files/base/usr/lib/systemd/user/podman-auto-update.service.d/override.conf`: executa auto-update Podman de usuário em prioridade ociosa na tomada (`ConditionUser=!@system`).
+- `files/base/usr/lib/systemd/user/podman-auto-update.timer.d/override.conf`: verifica updates Podman de usuário após 5m do login e a cada 45m (`ConditionUser=!@system`).
+- `files/base/usr/lib/systemd/user/podman-restart.service.d/override.conf`: impede execução de `podman-restart.service` para contas `@system` como `plasmalogin`.
+- `files/base/usr/lib/systemd/system/kinoite-btrfs-scrub.service`: executa `btrfs scrub start -B /var/home` em prioridade idle somente em alimentação AC.
+- `files/base/usr/lib/systemd/system/kinoite-btrfs-scrub.timer`: agenda o scrub mensal de `/var/home`.
+- `files/base/usr/lib/systemd/system/kinoite-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de sistema e limita journald a 200 MB / 14 dias.
+- `files/base/usr/lib/systemd/system/kinoite-maintenance.timer`: agenda limpeza semanal de sistema.
+- `files/base/usr/lib/systemd/user/kinoite-user-maintenance.service`: limpa imagens Podman órfãs (`image prune`) de usuário, limita journald a 100 MB / 14 dias e remove thumbnails > 30 dias (`ConditionUser=!@system`).
+- `files/base/usr/lib/systemd/user/kinoite-user-maintenance.timer`: agenda limpeza semanal de usuário (`ConditionUser=!@system`).
+- `files/base/usr/lib/systemd/system/kinoite-boot-init.service`: oculta o menu GRUB (preservando acesso via tecla Shift) no primeiro boot.
+- `files/base/etc/NetworkManager/dispatcher.d/04-iscsi`: sobrescreve o dispatcher upstream do `iscsi-initiator-utils` para recarregar `iscsi.service` apenas quando ativo.
+- `files/base/usr/share/smartmontools/smartd.conf`: monitora discos compatíveis com SMART sem sondagem ATA `-n standby` em pontes USB.
+- `files/base/usr/lib/systemd/system/smartd.service.d/override.conf`: aponta `smartd.service` para `/usr/share/smartmontools/smartd.conf` mantendo `$smartd_opts`.
+- `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 8 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
+- `files/base/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
 ## Desktop KDE, Navegadores e Terminal
 
-- `files/system/usr/share/chromium/chromium-flags.conf`: ativa Wayland automático, GPU AMD, VA-API decode e desativa telemetria em Chromium (preservando Cast e evitando conflitos em WebRTC e teclado `us-alt-intl`).
-- `files/system/usr/lib/systemd/user/kinoite-browser-flags.service`: sincroniza `chromium-flags.conf` para Brave e Chrome no login sem erro de permissão em `systemd-tmpfiles` (`ConditionUser=!@system`).
-- `files/system/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Jan, Brave, Chrome, Firefox e VS Code).
-- `files/system/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
-- `files/system/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo e socket Podman (`ro`) no VS Code Flatpak.
-- `files/system/usr/share/flatpak/overrides/global`: aplica leitura de `gtk-3.0`/`gtk-4.0`/`fontconfig`/`kdeglobals`, Wayland nativo em Electron, FreeType e `LIBVA_DRIVER_NAME=radeonsi` para todos os Flatpaks.
-- `files/system/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de Brave, Chrome e Firefox com KDE Plasma.
-- `files/system/etc/fonts/conf.d/64-font-rendering.conf`: define aliases de fontes (`Inter Variable`, `JetBrainsMono Nerd Font`, `FiraCode Nerd Font`) preservando preferências de renderização do usuário no KDE.
-- `files/system/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
-- `files/system/etc/xdg/dolphinrc`: desativa restauração de abas e oculta barra de menus no Dolphin preservando thumbnailers nativos do KF6.
-- `files/system/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
-- `files/system/etc/xdg/kdeglobals`: aplica Breeze Dark (`ColorScheme=BreezeDark`, ícones `breeze-dark`), destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
-- `files/system/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) e ativa o script `kinoite-window-center` sem sobrescrever preferências de tela do usuário.
-- `files/system/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
-- `files/system/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
-- `files/system/usr/share/kwin/scripts/kinoite-window-center/metadata.json`: manifesto KPackage (`KWin/Script`) do script genérico de centralização de janelas em Wayland.
-- `files/system/usr/share/kwin/scripts/kinoite-window-center/contents/code/main.js`: centraliza automaticamente janelas normais novas na `PlacementArea` do monitor ativo sem precisar listar aplicativos específicos.
-- `files/system/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
-- `files/system/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
-- `files/system/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
-- `files/system/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs).
-- `files/system/usr/share/user-tmpfiles.d/70-fastfetch.conf`: sincroniza `config.jsonc` do Fastfetch em `~/.config/fastfetch/` no login.
-- `files/system/etc/profile.d/50-kinoite-env.sh`: inicializa Starship e exibe Fastfetch uma vez por sessão interativa fora de terminais embutidos de IDE.
-- `files/system/etc/profile.d/60-kinoite-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`) e atalhos de diagnóstico/manutenção.
-- `files/system/usr/share/topgrade/10-kinoite.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) no Topgrade.
-- `files/system/usr/share/user-tmpfiles.d/70-topgrade.conf`: copia o drop-in do Topgrade para `~/.config/topgrade.d/` no login.
+- `files/desktop/usr/share/chromium/chromium-flags.conf`: ativa Wayland automático, GPU AMD, VA-API decode e desativa telemetria em Chromium (preservando Cast e evitando conflitos em WebRTC e teclado `us-alt-intl`).
+- `files/desktop/usr/lib/systemd/user/kinoite-browser-flags.service`: sincroniza `chromium-flags.conf` para Brave e Chrome no login sem erro de permissão em `systemd-tmpfiles` (`ConditionUser=!@system`).
+- `files/desktop/usr/lib/tmpfiles.d/60-flatpak-overrides.conf`: aplica overrides Flatpak declarativos (`global`, Brave, Chrome, Firefox e VS Code).
+- `files/desktop/usr/share/flatpak/overrides/com.visualstudio.code`: libera Wayland nativo e socket Podman (`ro`) no VS Code Flatpak.
+- `files/desktop/usr/share/flatpak/overrides/global`: aplica leitura de `gtk-3.0`/`gtk-4.0`/`fontconfig`/`kdeglobals`, Wayland nativo em Electron, FreeType e `LIBVA_DRIVER_NAME=radeonsi` para todos os Flatpaks.
+- `files/desktop/usr/share/flatpak/overrides/plasma-browser-integration.override`: libera permissão D-Bus para integração de Brave, Chrome e Firefox com KDE Plasma.
+- `files/desktop/etc/fonts/conf.d/64-font-rendering.conf`: define aliases de fontes (`Inter Variable`, `JetBrainsMono Nerd Font`, `FiraCode Nerd Font`) preservando preferências de renderização do usuário no KDE.
+- `files/desktop/etc/xdg/baloofilerc`: exclui cache do rclone e montagens `/run/user` da indexação do KDE Baloo.
+- `files/desktop/etc/xdg/dolphinrc`: desativa restauração de abas e oculta barra de menus no Dolphin preservando thumbnailers nativos do KF6.
+- `files/desktop/etc/xdg/breezerc`: remove bordas de janela e gradiente de fundo do Breeze para estética limpa no Plasma 6.
+- `files/desktop/etc/xdg/kdeglobals`: aplica Breeze Dark (`ColorScheme=BreezeDark`, ícones `breeze-dark`), destaque azul, animações 0.5x, clique simples e desativa miniaturas remotas (preservando fontes nativas do Plasma 6).
+- `files/desktop/etc/xdg/kwinrc`: ajusta o efeito Blur do KWin (`BlurStrength=10`, `NoiseStrength=2`) e ativa o script `kinoite-window-center` sem sobrescrever preferências de tela do usuário.
+- `files/desktop/etc/xdg/kiorc`: exige confirmação ao excluir permanentemente ou esvaziar a lixeira.
+- `files/desktop/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
+- `files/desktop/usr/share/kwin/scripts/kinoite-window-center/metadata.json`: manifesto KPackage (`KWin/Script`) do script genérico de centralização de janelas em Wayland.
+- `files/desktop/usr/share/kwin/scripts/kinoite-window-center/contents/code/main.js`: centraliza automaticamente janelas normais novas na `PlacementArea` do monitor ativo sem precisar listar aplicativos específicos.
+- `files/desktop/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
+- `files/desktop/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
+- `files/desktop/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
+- `files/desktop/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs).
+- `files/desktop/usr/share/user-tmpfiles.d/70-fastfetch.conf`: sincroniza `config.jsonc` do Fastfetch em `~/.config/fastfetch/` no login.
+- `files/desktop/etc/profile.d/50-kinoite-env.sh`: inicializa Starship e exibe Fastfetch uma vez por sessão interativa fora de terminais embutidos de IDE.
+- `files/desktop/etc/profile.d/60-kinoite-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`) e atalhos de diagnóstico/manutenção.
+- `files/desktop/usr/share/topgrade/10-kinoite.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) no Topgrade.
+- `files/desktop/usr/share/user-tmpfiles.d/70-topgrade.conf`: copia o drop-in do Topgrade para `~/.config/topgrade.d/` no login.
 
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
-- `files/system/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
-- `files/system/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0`, `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
-- `files/system/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
-- `files/system/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
-- `files/system/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
-- `files/system/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
-- `files/system/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão gráfica (`graphical-session.target`) após `default.target` para acesso imediato no GNOME Boxes sem ciclo em `basic.target` (`ConditionUser=!@system`).
-- `files/system/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
-- `files/system/usr/share/rclone/env/OneDrive.env`: configura rate limits (5 TPS), Delta API e chunks de 50M para Microsoft Graph.
-- `files/system/usr/share/user-tmpfiles.d/70-rclone-env.conf`: cria `~/.config/rclone/env/` e `/run/user/%U/cloud` e copia os perfis padrão no login.
+- `files/ai/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
+- `files/ai/usr/lib/environment.d/60-ai-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`).
+- `files/ai/usr/lib/tmpfiles.d/60-ai-flatpak-overrides.conf`: aplica o override Flatpak declarativo de IA local (`ai.jan.Jan`).
+- `files/ai/usr/share/flatpak/overrides/ai.jan.Jan`: expõe dispositivos GPU/KFD (`devices=all`) e `HSA_OVERRIDE_GFX_VERSION=10.3.0` para LLMs locais no Jan.
+- `files/desktop/usr/lib/environment.d/60-kinoite-environment.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi`, `VK_DRIVER_FILES` (RADV), `FREETYPE_PROPERTIES` e `ELECTRON_OZONE_PLATFORM_HINT=auto`.
+- `files/base/usr/lib/tmpfiles.d/60-kinoite-mm.conf`: define `transparent_hugepage/defrag=defer+madvise` no boot para desfragmentação assíncrona via `kcompactd`.
+- `files/base/usr/lib/udev/rules.d/70-peripherals.rules`: aplica `uaccess` aos periféricos USB, interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e `/dev/kfd`, cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e ajusta fila NVMe (`scheduler=none`, `read_ahead_kb=256`, `add_random=0`, `rq_affinity=2`).
+- `files/virt/usr/share/polkit-1/rules.d/60-kinoite-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
+- `files/virt/usr/lib/systemd/user/virtqemud-session.service`: mantém `virtqemud` ativo na sessão gráfica (`graphical-session.target`) após `default.target` para acesso imediato no GNOME Boxes sem ciclo em `basic.target` (`ConditionUser=!@system`).
+- `files/cloud/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo e limites de I/O (`ConditionUser=!@system`).
+- `files/cloud/usr/share/rclone/env/GoogleDrive.env`: configura rate limits (12 TPS), chunks de 64M, lixeira e ocultação de Google Docs.
+- `files/cloud/usr/share/rclone/env/OneDrive.env`: configura rate limits (5 TPS), Delta API e chunks de 50M para Microsoft Graph.
+- `files/cloud/usr/share/user-tmpfiles.d/70-rclone-env.conf`: cria `~/.config/rclone/env/` e `/run/user/%U/cloud` e copia os perfis padrão no login.
 
 ## CI/CD e Assinatura
 
