@@ -105,6 +105,9 @@
 - `files/desktop/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
 - `files/desktop/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
 - `files/desktop/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
+- `files/desktop/usr/share/kinoite/browsers/chrome-flags.conf`: define flags padrão do Google Chrome Flatpak para Wayland nativo, rasterização GPU, zero-copy e `AcceleratedVideoEncoder`.
+- `files/desktop/usr/share/kinoite/browsers/brave-flags.conf`: define flags padrão do Brave Flatpak para Wayland nativo, rasterização GPU, zero-copy e `AcceleratedVideoEncoder`.
+- `files/desktop/usr/share/user-tmpfiles.d/60-browser-flags.conf`: provisiona e sobrescreve sempre (`C+`) `chrome-flags.conf` e `brave-flags.conf` em `$HOME/.var/app/`.
 - `files/shell/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
 - `files/shell/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs), carregado diretamente por `50-shell-prompt.sh` quando o usuário não tiver configuração própria.
 - `files/shell/etc/profile.d/50-shell-prompt.sh`: inicializa Starship (`/usr/share/starship/starship.toml`) e exibe Fastfetch (`/usr/share/fastfetch/config.jsonc`) uma vez por sessão interativa fora de terminais embutidos de IDE, sem copiar arquivos para `$HOME`.
@@ -142,4 +145,4 @@
 - É proibido fazer downgrade de pacotes base ou usar `type: script` nas receitas quando houver solução declarativa.
 - Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-flatpaks.yml` (exceção: `gnome-boxes` RPM para integração direta com libvirt/virgl/SPICE).
 - Linguagens, SDKs e CLIs de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.
-- Configurações padrão devem ser herdadas diretamente de `/usr/share/` e `/etc/xdg/` sem copiar arquivos para `$HOME`, reservando `user-tmpfiles.d` apenas para preparação de diretórios NoCOW.
+- Configurações padrão devem ser herdadas de `/usr/share/` e `/etc/xdg/` sempre que possível; quando um sandbox (como Flatpak) exigir arquivo em `$HOME`, o projeto provisiona e sobrescreve sempre as configurações locais de forma determinística via `user-tmpfiles.d` (`C+`).
