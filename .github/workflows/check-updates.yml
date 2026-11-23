@@ -1,0 +1,199 @@
+name: check-updates
+
+# Scheduled freshness check (every 1 hour, off-peak minute :23), stateless by design:
+#
+#   upstream digest = linux/amd64 digest of the base image declared by the recipe
+#   current digest  = `org.opencontainers.image.base.digest` label of the image
+#                     already published to GHCR (written by the build)
+#
+# A build is dispatched only when a published image is missing, was built from
+# another base, or is behind the upstream digest. Transient registry errors abort
+# the check without triggering false rebuilds.
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: check-updates
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check upstream base images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout recipes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            recipes
+          sparse-checkout-cone-mode: true
+          persist-credentials: false
+
+      - name: Ensure skopeo is installed
+        run: |
+          set -euo pipefail
+          if ! command -v skopeo >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends skopeo
+          fi
+
+      - name: Compare upstream bases with published images
+        id: compare
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+
+          TARGETS=(
+            "amd:recipes/recipe-amd.yml:kinoite-amd"
+            "cuda:recipes/recipe-cuda.yml:kinoite-cuda"
+          )
+
+          declare -A UPSTREAM_CACHE=()
+          STALE_FLAVORS=()
+          ERR_FILE="$(mktemp)"
+          trap 'rm -f "$ERR_FILE"' EXIT
+
+          {
+            echo "### Upstream Base Image Check"
+            echo ""
+            echo "| Flavor | Base | Upstream Digest | Published Base Digest | Status |"
+            echo "| :--- | :--- | :--- | :--- | :--- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for entry in "${TARGETS[@]}"; do
+            IFS=: read -r flavor recipe image <<<"$entry"
+
+            BASE_IMAGE="$(yq -r '.["base-image"] // ""' "$recipe")"
+            IMAGE_VERSION="$(yq -r '.["image-version"] // ""' "$recipe")"
+            if [[ -z "$BASE_IMAGE" || -z "$IMAGE_VERSION" ]]; then
+              echo "ERROR: could not read base-image/image-version from $recipe" >&2
+              exit 1
+            fi
+            BASE_REF="${BASE_IMAGE}:${IMAGE_VERSION}"
+
+            if [[ -z "${UPSTREAM_CACHE[$BASE_REF]:-}" ]]; then
+              UPSTREAM_DIGEST="$(skopeo inspect --override-os linux --override-arch amd64 --retry-times 3 --format '{{.Digest}}' "docker://${BASE_REF}")"
+              if [[ -z "$UPSTREAM_DIGEST" ]]; then
+                echo "ERROR: could not resolve the digest of ${BASE_REF}" >&2
+                exit 1
+              fi
+              UPSTREAM_CACHE[$BASE_REF]="$UPSTREAM_DIGEST"
+            else
+              UPSTREAM_DIGEST="${UPSTREAM_CACHE[$BASE_REF]}"
+            fi
+
+            PUBLISHED="ghcr.io/${REPO_OWNER,,}/${image}:latest"
+            CURRENT_NAME=""
+            CURRENT_DIGEST=""
+            MISSING_PUBLISHED=0
+
+            if IMAGE_META="$(skopeo inspect --override-os linux --override-arch amd64 --retry-times 3 "docker://${PUBLISHED}" 2>"$ERR_FILE")"; then
+              IFS=$'\t' read -r CURRENT_NAME CURRENT_DIGEST < <(
+                jq -r '[.Labels["org.opencontainers.image.base.name"] // "", .Labels["org.opencontainers.image.base.digest"] // ""] | @tsv' <<<"$IMAGE_META" 2>/dev/null || true
+              )
+            else
+              ERR_MSG="$(cat "$ERR_FILE")"
+              if grep -qiE 'manifest unknown|name unknown|not found' <<<"$ERR_MSG"; then
+                MISSING_PUBLISHED=1
+              else
+                echo "ERROR: failed to inspect ${PUBLISHED}: ${ERR_MSG}" >&2
+                exit 1
+              fi
+            fi
+
+            echo "=== ${flavor} (${image}) ==="
+            echo "Recipe base : ${BASE_REF}@${UPSTREAM_DIGEST}"
+            echo "Published   : ${PUBLISHED}"
+            echo "Image base  : ${CURRENT_NAME:-<none>}@${CURRENT_DIGEST:-<none>}"
+
+            if [[ "$MISSING_PUBLISHED" -eq 0 && "$CURRENT_NAME" == "$BASE_REF" && "$CURRENT_DIGEST" == "$UPSTREAM_DIGEST" ]]; then
+              STATUS="up to date"
+            else
+              if [[ "$MISSING_PUBLISHED" -eq 1 ]]; then
+                STATUS="stale (missing)"
+              else
+                STATUS="stale"
+              fi
+              STALE_FLAVORS+=("$flavor")
+            fi
+
+            echo "Status      : ${STATUS}"
+            echo "| \`${flavor}\` | \`${BASE_REF}\` | \`${UPSTREAM_DIGEST:0:19}…\` | \`${CURRENT_DIGEST:+${CURRENT_DIGEST:0:19}…}\` | ${STATUS} |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          echo "stale_flavors=${STALE_FLAVORS[*]:-}" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch build if stale
+        if: steps.compare.outputs.stale_flavors != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REPO_REF: ${{ github.ref_name }}
+          STALE_FLAVORS: ${{ steps.compare.outputs.stale_flavors }}
+          # After a failed build, wait this many hours before retrying a flavor.
+          BACKOFF_HOURS: "2"
+        run: |
+          set -euo pipefail
+
+          RUNS="$(gh run list --repo "$REPO" --workflow=build.yml --limit 50 \
+            --json status,conclusion,createdAt,displayTitle)"
+
+          DISPATCH_FLAVORS=()
+
+          for flavor in $STALE_FLAVORS; do
+            RUNNING="$(jq -r --arg f "$flavor" '
+              first(
+                .[]
+                | select(.status == "queued" or .status == "in_progress")
+                | select((.displayTitle | endswith("(" + $f + ")")) or (.displayTitle | endswith("(all)")))
+                | .status
+              ) // empty' <<<"$RUNS")"
+
+            if [[ -n "$RUNNING" ]]; then
+              echo "build.yml is already ${RUNNING} for ${flavor}; skipping."
+              echo "- \`${flavor}\`: skipped (build already \`${RUNNING}\`)" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+
+            RECENT_FAILURE="$(jq -r --arg f "$flavor" --argjson hours "$BACKOFF_HOURS" '
+              (now - ($hours * 3600)) as $cutoff
+              | first(
+                  .[]
+                  | select(.conclusion == "failure")
+                  | select((.displayTitle | endswith("(" + $f + ")")) or (.displayTitle | endswith("(all)")))
+                  | select((.createdAt | fromdateiso8601) > $cutoff)
+                  | .createdAt
+                ) // empty' <<<"$RUNS")"
+
+            if [[ -n "$RECENT_FAILURE" ]]; then
+              echo "A ${flavor} build failed at ${RECENT_FAILURE}; backing off ${BACKOFF_HOURS}h."
+              echo "- \`${flavor}\`: skipped (backoff ${BACKOFF_HOURS}h after failure at \`${RECENT_FAILURE}\`)" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+
+            DISPATCH_FLAVORS+=("$flavor")
+          done
+
+          if [[ "${#DISPATCH_FLAVORS[@]}" -eq 0 ]]; then
+            echo "No flavors eligible for dispatch."
+            exit 0
+          elif [[ "${#DISPATCH_FLAVORS[@]}" -eq 2 ]]; then
+            TARGET_FLAVOR="all"
+          else
+            TARGET_FLAVOR="${DISPATCH_FLAVORS[0]}"
+          fi
+
+          echo "Dispatching build.yml with flavor=${TARGET_FLAVOR}..."
+          gh workflow run build.yml --repo "$REPO" --ref "$REPO_REF" -f flavor="$TARGET_FLAVOR"
+          echo "- Dispatched \`build.yml\` with \`flavor=${TARGET_FLAVOR}\`." >> "$GITHUB_STEP_SUMMARY"

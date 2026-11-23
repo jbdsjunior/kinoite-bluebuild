@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    remove:
+      auto-remove: true
+      packages:
+        # Redundant Base GUI Apps (replaced by Flatpaks)
+        - firefox
+
+        # Conflicting System Package Managers (replaced by bootc / topgrade)
+        - plasma-discover-notifier
+        - plasma-discover-rpm-ostree

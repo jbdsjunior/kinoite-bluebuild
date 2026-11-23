@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: akmods
+    env:
+      MULTILIB: "0"
+    install: []
+    nvidia-driver: nvidia-open
+
+  - type: files
+    files:
+      - source: nvidia
+        destination: /
+
+  - type: systemd
+    system:
+      masked:
+        - nvidia-powerd.service
+      enabled:
+        - nvidia-persistenced.service

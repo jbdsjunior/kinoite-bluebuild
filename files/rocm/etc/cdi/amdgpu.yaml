@@ -1,0 +1,32 @@
+---
+cdiVersion: "0.6.0"
+kind: "amd.com/gpu"
+devices:
+  - name: "0"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/kfd"
+          hostPath: "/dev/kfd"
+          permissions: "mrw"
+        - path: "/dev/dri/renderD128"
+          hostPath: "/dev/dri/renderD128"
+          permissions: "mrw"
+        - path: "/dev/dri/card0"
+          hostPath: "/dev/dri/card0"
+          permissions: "mrw"
+      env:
+        - "HSA_OVERRIDE_GFX_VERSION=10.3.0"
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/kfd"
+          hostPath: "/dev/kfd"
+          permissions: "mrw"
+        - path: "/dev/dri/renderD128"
+          hostPath: "/dev/dri/renderD128"
+          permissions: "mrw"
+        - path: "/dev/dri/card0"
+          hostPath: "/dev/dri/card0"
+          permissions: "mrw"
+      env:
+        - "HSA_OVERRIDE_GFX_VERSION=10.3.0"

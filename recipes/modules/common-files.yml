@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+# Domain-layered configuration overlays shared by all image flavors
+modules:
+  - type: files
+    files:
+      - source: base
+        destination: /
+      - source: desktop
+        destination: /
+      - source: shell
+        destination: /
+      - source: rclone
+        destination: /
+      - source: virt
+        destination: /
+      - source: rocm
+        destination: /
+      - source: tailscale
+        destination: /

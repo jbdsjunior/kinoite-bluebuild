@@ -1,0 +1,18 @@
+# Peripheral access: VXE Mouse / Compx receivers
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: MCHOSE X9 headset
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3837", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: BY Tech gaming keyboard
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", MODE="0660", TAG+="uaccess"
+
+# Peripheral access: ITE RGB motherboard and LED controller
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", MODE="0660", TAG+="uaccess"
+
+# Android ADB and Fastboot USB interfaces only (Google, OnePlus/OPPO, Samsung, Motorola, Xiaomi, Qualcomm, MediaTek)
+# Interface class filter prevents granting raw USB uaccess to unrelated mass-storage devices (e.g., Samsung external HDDs)
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1|2a70|22d9|04e8|22b8|2717|05c6|0e8d", ENV{ID_USB_INTERFACES}=="*:ff4201:*|*:ff4203:*", MODE="0660", TAG+="uaccess"
+
+# AMD Radeon RX 6600 XT render node: dynamic seat ACLs for local Vulkan/Wayland & primary render symlink
+SUBSYSTEM=="drm", KERNEL=="renderD*", DRIVERS=="amdgpu", TAG+="uaccess", SYMLINK+="dri/primary-render"

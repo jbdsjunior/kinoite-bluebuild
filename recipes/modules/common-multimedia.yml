@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+
+    install:
+      allow-erasing: true
+      packages:
+        # Core Audio/Video Framework (RPM Fusion)
+        - ffmpeg
+
+        # GStreamer Streaming & Codec Plugins
+        - gstreamer1-plugins-bad-free-extras
+        - gstreamer1-plugins-bad-freeworld
+        - gstreamer1-plugins-ugly
+
+        # Image Format Codecs (HEIF/AVIF)
+        - libheif-freeworld

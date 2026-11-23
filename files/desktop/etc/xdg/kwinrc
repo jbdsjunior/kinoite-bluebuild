@@ -1,0 +1,5 @@
+[Plugins]
+kinoite-window-centerEnabled=true
+
+[Windows]
+Placement=Centered

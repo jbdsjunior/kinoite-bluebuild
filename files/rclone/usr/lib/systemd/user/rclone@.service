@@ -1,0 +1,92 @@
+[Unit]
+Description=Rclone mount for KDE Plasma - %i
+Documentation=https://rclone.org/commands/rclone_mount/
+ConditionUser=!@system
+ConditionPathExists=%h/.config/rclone/rclone.conf
+StartLimitIntervalSec=10min
+StartLimitBurst=20
+
+[Service]
+Type=notify
+TimeoutStartSec=90s
+Environment=RCLONE_REMOTE=%i:
+Environment=RCLONE_MOUNT=/run/user/%U/cloud/%i
+Environment=RCLONE_CACHE=%h/.cache/rclone/%i
+Environment=RCLONE_BWLIMIT=0
+Environment=RCLONE_BUFFER_SIZE=32M
+Environment=RCLONE_TRANSFERS=4
+Environment=RCLONE_CHECKERS=8
+Environment=RCLONE_TPSLIMIT=12
+Environment=RCLONE_TPSLIMIT_BURST=20
+Environment=RCLONE_VFS_READ_AHEAD=64M
+Environment=RCLONE_VFS_READ_CHUNK_SIZE=8M
+Environment=RCLONE_VFS_READ_CHUNK_SIZE_LIMIT=512M
+Environment=RCLONE_VFS_READ_CHUNK_STREAMS=4
+Environment=RCLONE_VFS_CACHE_MAX_SIZE=15G
+Environment=RCLONE_VFS_CACHE_MAX_AGE=24h
+Environment=RCLONE_VFS_CACHE_MIN_FREE_SPACE=15G
+Environment=RCLONE_VFS_CACHE_POLL_INTERVAL=1m
+Environment=RCLONE_VFS_WRITE_BACK=10s
+Environment=RCLONE_DIR_CACHE_TIME=24h
+Environment=RCLONE_ATTR_TIMEOUT=1h
+Environment=RCLONE_POLL_INTERVAL=1m
+Environment=RCLONE_FLAGS=
+EnvironmentFile=-/usr/share/rclone/env/%i.env
+EnvironmentFile=-%h/.config/rclone/env/%i.local.env
+
+ExecStartPre=-/usr/bin/fusermount3 -uzq ${RCLONE_MOUNT}
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_MOUNT}
+ExecStartPre=/usr/bin/mkdir -p ${RCLONE_CACHE}
+
+ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${RCLONE_MOUNT} \
+  --config %h/.config/rclone/rclone.conf \
+  --cache-dir ${RCLONE_CACHE} \
+  --vfs-cache-mode full \
+  --vfs-cache-max-size ${RCLONE_VFS_CACHE_MAX_SIZE} \
+  --vfs-cache-max-age ${RCLONE_VFS_CACHE_MAX_AGE} \
+  --vfs-cache-min-free-space ${RCLONE_VFS_CACHE_MIN_FREE_SPACE} \
+  --vfs-cache-poll-interval ${RCLONE_VFS_CACHE_POLL_INTERVAL} \
+  --vfs-fast-fingerprint \
+  --vfs-read-chunk-size ${RCLONE_VFS_READ_CHUNK_SIZE} \
+  --vfs-read-chunk-size-limit ${RCLONE_VFS_READ_CHUNK_SIZE_LIMIT} \
+  --vfs-read-chunk-streams ${RCLONE_VFS_READ_CHUNK_STREAMS} \
+  --vfs-read-ahead ${RCLONE_VFS_READ_AHEAD} \
+  --vfs-write-back ${RCLONE_VFS_WRITE_BACK} \
+  --vfs-read-wait 5ms \
+  --exclude ".Trash-**" \
+  --exclude ".Trash/**" \
+  --dir-cache-time ${RCLONE_DIR_CACHE_TIME} \
+  --attr-timeout ${RCLONE_ATTR_TIMEOUT} \
+  --poll-interval ${RCLONE_POLL_INTERVAL} \
+  --buffer-size ${RCLONE_BUFFER_SIZE} \
+  --transfers ${RCLONE_TRANSFERS} \
+  --checkers ${RCLONE_CHECKERS} \
+  --tpslimit ${RCLONE_TPSLIMIT} \
+  --tpslimit-burst ${RCLONE_TPSLIMIT_BURST} \
+  --bwlimit ${RCLONE_BWLIMIT} \
+  --timeout 2m \
+  --contimeout 20s \
+  --low-level-retries 10 \
+  --retries 10 \
+  --umask 0022 \
+  --log-level NOTICE \
+  --log-systemd \
+  $RCLONE_FLAGS
+
+ExecStop=-/usr/bin/fusermount3 -uz ${RCLONE_MOUNT}
+ExecStopPost=-/usr/bin/rmdir --ignore-fail-on-non-empty ${RCLONE_MOUNT}
+Restart=on-failure
+RestartSec=10s
+KillMode=mixed
+TimeoutStopSec=180s
+SuccessExitStatus=143
+
+
+LimitNOFILE=1048576
+MemoryMax=4G
+CPUQuota=200%
+IOSchedulingClass=best-effort
+IOSchedulingPriority=4
+
+[Install]
+WantedBy=default.target

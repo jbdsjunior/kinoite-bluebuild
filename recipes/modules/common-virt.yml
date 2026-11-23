@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    install:
+      allow-erasing: true
+      exclude:
+        - virt-viewer
+      packages:
+        # Hypervisor & Libvirt Stack
+        - "@virtualization"
+
+        # Virtual Machine Manager GUI
+        - gnome-boxes
