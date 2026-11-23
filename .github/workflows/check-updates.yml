@@ -28,6 +28,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      packages: read
       actions: write
     steps:
       - name: Checkout recipes
@@ -51,6 +52,8 @@ jobs:
         id: compare
         env:
           REPO_OWNER: ${{ github.repository_owner }}
+          GHCR_ACTOR: ${{ github.actor }}
+          GHCR_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
@@ -98,7 +101,7 @@ jobs:
             CURRENT_DIGEST=""
             MISSING_PUBLISHED=0
 
-            if IMAGE_META="$(skopeo inspect --override-os linux --override-arch amd64 --retry-times 3 "docker://${PUBLISHED}" 2>"$ERR_FILE")"; then
+            if IMAGE_META="$(skopeo inspect --creds "${GHCR_ACTOR}:${GHCR_TOKEN}" --override-os linux --override-arch amd64 --retry-times 3 "docker://${PUBLISHED}" 2>"$ERR_FILE")"; then
               IFS=$'\t' read -r CURRENT_NAME CURRENT_DIGEST < <(
                 jq -r '[.Labels["org.opencontainers.image.base.name"] // "", .Labels["org.opencontainers.image.base.digest"] // ""] | @tsv' <<<"$IMAGE_META" 2>/dev/null || true
               )

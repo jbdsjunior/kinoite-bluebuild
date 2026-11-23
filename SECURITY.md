@@ -28,7 +28,7 @@ To protect both user workstation privacy and project infrastructure integrity:
   | Workflow | `contents` | `packages` | `actions` |
   | :--- | :---: | :---: | :---: |
   | `build.yml` | read | write | – |
-  | `check-updates.yml` | read | – | write |
+  | `check-updates.yml` | read | read | write |
   | `cleanup.yml` | read | write | write |
 
   `packages: write` is required exclusively to push signed images to GHCR and `actions: write` to dispatch/delete workflow runs. The Cosign private key is accessed securely via repository secret (`SIGNING_SECRET`).
