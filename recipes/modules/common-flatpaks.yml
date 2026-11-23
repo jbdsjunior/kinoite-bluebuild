@@ -7,8 +7,6 @@ modules:
         scope: system
         install:
           # Application & Package Management
-          - com.github.tchx84.Flatseal
-          - io.github.flattool.Warehouse
           - it.mijorus.gearlever
 
           # Desktop Theme Integration
