@@ -105,7 +105,7 @@
 - `files/desktop/etc/xdg/konsolerc`: define `Kinoite.profile` como padrão, oculta a barra de menus e exibe a barra de abas apenas quando necessária.
 - `files/desktop/usr/share/konsole/Kinoite.profile`: configura fonte JetBrainsMono Nerd Font 10.5, espaçamento de linha, margem de 12px, cursor barra vertical estático e barra de rolagem oculta.
 - `files/desktop/usr/share/konsole/Kinoite.colorscheme`: define paleta escura Tokyo Night com vidro fosco (`Opacity=0.92`, `Blur=true`).
-- `files/desktop/usr/share/kinoite/browsers/chromium-flags.conf`: define as flags compartilhadas de Chrome e Brave Flatpak (Wayland nativo, rasterização GPU, zero-copy e `AcceleratedVideoEncoder`).
+- `files/desktop/usr/share/kinoite/browsers/chromium-flags.conf`: define as flags compartilhadas de Chrome e Brave Flatpak (Wayland nativo, rasterização GPU, zero-copy, `AcceleratedVideoEncoder` e redução de telemetria).
 - `files/desktop/usr/share/user-tmpfiles.d/60-browser-flags.conf`: copia e sobrescreve sempre (`C+`) `chromium-flags.conf` para `chrome-flags.conf` e `brave-flags.conf` em `$HOME/.var/app/`.
 - `files/shell/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
 - `files/shell/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs), carregado diretamente por `50-shell-prompt.sh` quando o usuário não tiver configuração própria.
