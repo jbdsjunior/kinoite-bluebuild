@@ -20,6 +20,7 @@ modules:
         - starship
 
         # System Monitoring & Maintenance
+        - lm_sensors
         - topgrade
 
         # Networking, VPN & Cloud Sync
