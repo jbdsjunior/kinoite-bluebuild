@@ -192,7 +192,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | :--- | :--- | :--- |
 | DNS | `systemd-resolved` com Control D P2 (bloqueio de malware/ads) + `DNSOverTLS=opportunistic` (compatível com Tailscale MagicDNS), DNSSEC desativado de propósito | `/etc/systemd/resolved.conf.d/60-dns.conf` + `sudo systemctl restart systemd-resolved` |
 | Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
-| Atualizações | `bootc update` e Flatpak (sistema e usuário) a cada 30 minutos (1 min após o boot/login), aguardando rede online (`nm-online`) | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
+| Atualizações | `bootc update` e Flatpak (sistema e usuário) a cada 6 horas (`10m`–`15m` após boot/login, com jitter), aguardando rede online (`nm-online`) | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
 | KDE | Centralização de novas janelas (`Placement=Centered` + script `kinoite-window-center` em `kwinrc`) e Konsole translúcido (`Kinoite.profile`) | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 
 ### 8.1 Detecção Dinâmica de GPUs (Agnóstica a Slot PCI)
@@ -207,6 +207,9 @@ A imagem não depende mais de endereços PCI estáticos: os vínculos gráficos 
 
 Caso seja necessário forçar um nó específico durante uma auditoria manual, sobrescreva com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`.
 
-### 8.2 Estabilidade UEFI/BIOS (AMD X570 + Ryzen 9 5950X)
+### 8.2 Estabilidade UEFI/BIOS e Energia (AMD X570 + Ryzen 9 5950X + RTX 3080 Ti)
 
-Em plataformas AM4 X570 com processadores Zen 3 (`Ryzen 9 5950X`), recomenda-se configurar na UEFI/BIOS (*Advanced → AMD CBS → CPU Common Options*) **`Power Supply Idle Control` = `Typical Current Idle`** para evitar quedas de tensão em estados C6 de baixa corrente no Linux (sem perda de *single-core boost*). Caso utilize PBO / Curve Optimizer, evite *offsets* negativos agressivos nos núcleos principais.
+- **UEFI/BIOS (`Power Supply Idle Control`):** em plataformas AM4 X570 com processadores Zen 3 (`Ryzen 9 5950X`), configure na UEFI/BIOS (*Advanced → AMD CBS → CPU Common Options*) **`Power Supply Idle Control` = `Typical Current Idle`** para evitar quedas de tensão em estados C6 de baixa corrente no Linux (sem perda de *single-core boost*). Caso utilize PBO / Curve Optimizer, evite *offsets* negativos agressivos nos núcleos principais.
+- **Consumo ocioso da RTX 3080 Ti (`P8 ~16 W`):** placas-mãe desktop X570 não expõem método ACPI `_PR3` para D3cold no slot PCIe nem S0ix; manter `NVreg_DynamicPowerManagement=0x00` com `nvidia-persistenced` preserva estado `P8` estável (~16 W) sem riscos de travamento por D3/PME.
+- **Perfil de energia no KDE:** no uso diário, prefira o perfil **Equilibrado (`balanced`)** em vez de *Desempenho* (`throughput-performance`), evitando `dirty_bytes=40%` em cache Btrfs e `min_perf_pct=100` constantes.
+- **Hosts já instalados (`pcie_port_pm=off`):** caso `/proc/cmdline` ainda não inclua `pcie_port_pm=off` após `bootc upgrade`, aplique localmente com `sudo rpm-ostree kargs --append-if-missing=pcie_port_pm=off`.

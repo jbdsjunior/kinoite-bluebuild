@@ -56,7 +56,7 @@
 - `rd.driver.blacklist=nvidia-drm` e `modprobe.blacklist=nvidia-drm` impedem nó gráfico DRM na NVIDIA preservando nós CUDA (`/dev/nvidia*`).
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1`, aplicando `initcall_blacklist=simpledrm_platform_driver_init` e blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` e omite `nvidia_drm`/`nvidia-drm` do initramfs para carregar módulos NVIDIA sob demanda no userspace.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti e desativa S0ix/D3 dinâmico em desktop (`NVreg_EnableS0ixPowerManagement=0`, `NVreg_DynamicPowerManagement=0x00`).
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti e desativa RTD3 dinâmico em desktop (`NVreg_DynamicPowerManagement=0x00`).
 - `files/nvidia/usr/lib/udev/rules.d/65-nvidia-headless-pm.rules`: mantém GPU NVIDIA (`0x10de`) e seu áudio HDMI fora de runtime suspend e D3cold (`power/control=on`, `d3cold_allowed=0`), sobrescrevendo `60-nvidia.rules`.
 - `files/nvidia/usr/lib/environment.d/65-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` (complementando `VK_DRIVER_FILES` de `60-desktop.conf`) para impedir que aplicações host capturem EGL/GLX da NVIDIA.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
@@ -66,13 +66,14 @@
 
 - `files/base/usr/lib/bootc/kargs.d/10-pcie-pm.toml`: aplica `pcie_port_pm=off` nas imagens base evitando suspensão runtime D3 em portas e switches PCIe de desktop.
 - `files/base/usr/lib/modprobe.d/60-snd-hda-intel.conf`: desativa `power_save` e `power_save_controller` em `snd_hda_intel` prevenindo travamentos D3/PME no controlador de áudio AMD X570 (`1022:1487`).
+- `files/base/usr/lib/tmpfiles.d/60-btrfs-reclaim.conf`: ativa reclaim dinâmico e periódico de chunks Btrfs (`dynamic_reclaim=1`, `periodic_reclaim=1`) evitando `ENOSPC` falso.
 - `files/base/usr/lib/systemd/zram-generator.conf.d/60-zram.conf`: configura swap ZRAM zstd em 50% da RAM até 32 GB.
 - `files/base/usr/lib/sysctl.d/90-memory.conf`: ajusta ZRAM (`swappiness=150`, `page-cluster=0`) e `fs.inotify.max_user_instances=8192`.
 - `files/base/usr/lib/sysctl.d/90-kernel.conf`: ativa `sysrq=1` (REISUB) e `kernel.printk` (mantendo `kptr_restrict=1` ao padrão nativo do Fedora 45).
 - `files/base/usr/lib/tmpfiles.d/60-sysctl-runtime.conf`: registra symlinks efêmeros dos sysctls em `/run/sysctl.d/` para prevalecer sobre o TuneD (`reapply_sysctl=1`) sem poluir `/etc/sysctl.d/`.
 - `files/base/usr/lib/modprobe.d/60-iwlwifi.conf`: desativa economia de energia e ativa modo ativo no Wi-Fi 6E Intel AX210 (`iwlwifi`/`iwlmvm`).
 - `files/base/usr/lib/modules-load.d/60-tcp-bbr.conf`: carrega `sch_fq` e `tcp_bbr` no boot.
-- `files/base/usr/lib/sysctl.d/90-network.conf`: ativa TCP BBR/FQ, TCP Fast Open (`tcp_fastopen=3`) e bloqueio de redirects ICMP.
+- `files/base/usr/lib/sysctl.d/90-network.conf`: ativa TCP BBR/FQ, TCP MTU probing (`tcp_mtu_probing=1`) e bloqueio de redirects ICMP.
 - `files/base/usr/lib/systemd/resolved.conf.d/60-dns.conf`: aplica DNS-over-TLS oportunista (`DNSOverTLS=opportunistic`) com Control D (`p2`), fallback Cloudflare, compatibilidade com MagicDNS da Tailscale e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
 - `files/tailscale/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
@@ -81,17 +82,17 @@
 
 ## Serviços, Timers e Manutenção
 
-- Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) com jitter de `30s` e `ExecCondition=/usr/bin/nm-online -q -t 15`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
-- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc upgrade --quiet` (`Type=exec`, `Restart=on-failure` até 3x, `nm-online`) em prioridade ociosa.
-- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 1m do boot e a cada 30m.
+- Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) com jitter de `10m`–`15m` e `ExecCondition=/usr/bin/nm-online -q -t 15`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
+- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc upgrade --quiet` (`Type=oneshot`, `nm-online`) em prioridade ociosa.
+- `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 15m do boot e a cada 6h (`Persistent=true`).
 - `files/base/usr/lib/systemd/system/bootc-update-ca-trust.service`: regenera `/etc/pki/ca-trust` no boot após *three-way merge* de atualizações Bootc.
 - `files/base/usr/lib/systemd/system/bootc-update-crypto-policies.service`: regenera os backends de `crypto-policies` no boot após atualizações Bootc.
-- `files/base/usr/lib/systemd/system/flatpak-nuke-fedora.service`: remove remotes Flatpak residuais `fedora`/`fedora-testing` mantendo apenas Flathub.
+- `files/base/usr/lib/systemd/system/flatpak-nuke-fedora.service`: remove remotes Flatpak residuais `fedora`/`fedora-testing` na primeira inicialização (`ConditionPathExists=!/var/lib/flatpak/.fedora-initialized`) mantendo apenas Flathub.
 - `files/base/usr/lib/systemd/system/fstrim.service.d/workaround-no-root-trim.conf`: direciona `fstrim.service` para `--listed-in /proc/self/mountinfo` garantindo TRIM em subvolumes Btrfs no Bootc.
 - `files/desktop/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos apenas com rede online.
-- `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 1m do boot e a cada 30m.
+- `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 10m do boot e a cada 6h (`Persistent=true`).
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso apenas com rede online (`ConditionUser=!@system`).
-- `files/desktop/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 1m do login e a cada 30m (`ConditionUser=!@system`).
+- `files/desktop/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 12m do login e a cada 6h (`ConditionUser=!@system`, `Persistent=true`).
 - `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 6 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
 - `files/base/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
@@ -114,9 +115,8 @@
 
 - `files/rocm/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
 - `files/rocm/usr/lib/environment.d/60-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`) e ativa `RUSTICL_ENABLE=radeonsi` para OpenCL no host.
-- `files/rocm/usr/lib/udev/rules.d/70-rocm-kfd.rules`: aplica `uaccess` ao nó de computação AMD ROCm/HIP (`/dev/kfd`).
 - `files/desktop/usr/lib/environment.d/60-desktop.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi` e `VK_DRIVER_FILES` (RADV).
-- `files/base/usr/lib/udev/rules.d/70-hardware.rules`: aplica `uaccess` aos periféricos USB e interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`), cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e mantém controladores `snd_hda_intel` fora de runtime suspend/D3cold.
+- `files/base/usr/lib/udev/rules.d/70-hardware.rules`: aplica `uaccess` aos periféricos USB e interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`), cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e desativa `d3cold_allowed` em controladores `snd_hda_intel`.
 - `files/virt/usr/share/user-tmpfiles.d/60-virt-btrfs-nocow.conf`: aplica Btrfs NoCOW (`+C`) em imagens de VMs de usuário (`libvirt` e `gnome-boxes`).
 - `files/virt/usr/share/polkit-1/rules.d/60-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/rclone/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo, limites de I/O e `EnvironmentFile` herdado diretamente de `/usr/share/rclone/env/%i.env` com override opcional em `~/.config/rclone/env/%i.local.env` (`ConditionUser=!@system`).

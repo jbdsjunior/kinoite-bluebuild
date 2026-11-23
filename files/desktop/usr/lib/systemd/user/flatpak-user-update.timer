@@ -4,11 +4,11 @@ Documentation=man:flatpak-update(1) man:systemd.timer(5)
 ConditionUser=!@system
 
 [Timer]
-RandomizedDelaySec=30s
-Persistent=false
-OnStartupSec=1m
-OnUnitActiveSec=30m
-AccuracySec=2m
+RandomizedDelaySec=10m
+Persistent=true
+OnStartupSec=12m
+OnUnitInactiveSec=6h
+AccuracySec=5m
 
 [Install]
 WantedBy=timers.target

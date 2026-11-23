@@ -1,5 +1,6 @@
 [Unit]
 Description=Remove Fedora flatpak repositories
+ConditionPathExists=!/var/lib/flatpak/.fedora-initialized
 Before=flatpak-system-helper.service
 Before=flatpak-add-fedora-repos.service
 

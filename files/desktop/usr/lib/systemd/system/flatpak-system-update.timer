@@ -3,11 +3,11 @@ Description=Flatpak System Updates Timer
 Documentation=man:flatpak-update(1) man:systemd.timer(5)
 
 [Timer]
-RandomizedDelaySec=30s
-Persistent=false
-OnBootSec=1m
-OnUnitActiveSec=30m
-AccuracySec=2m
+RandomizedDelaySec=10m
+Persistent=true
+OnBootSec=10m
+OnUnitInactiveSec=6h
+AccuracySec=5m
 
 [Install]
 WantedBy=timers.target
