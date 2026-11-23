@@ -1,0 +1,81 @@
+name: validate
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["**"]
+
+permissions: {}
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate scripts, configs and documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate shell scripts
+        run: |
+          set -euo pipefail
+          mapfile -t scripts < <(find files -type f \( -name "*.sh" -o -path "files/base/usr/bin/*" \) | sort)
+          for script in "${scripts[@]}"; do
+            bash -n "$script"
+          done
+          echo "Validated ${#scripts[@]} shell script(s)."
+
+      - name: Validate YAML files
+        run: |
+          set -euo pipefail
+          mapfile -t yamls < <(find . -type f \( -name "*.yml" -o -name "*.yaml" \) -not -path "./.git/*" | sort)
+          for f in "${yamls[@]}"; do
+            yq '.' "$f" >/dev/null
+          done
+          echo "Validated ${#yamls[@]} YAML file(s)."
+
+      - name: Validate TOML, XML, JSON, systemd units and PROJECTS.md coverage
+        run: |
+          python3 - <<'PY'
+          import configparser
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import tomllib
+          import xml.etree.ElementTree as ET
+
+          root = pathlib.Path(".")
+
+          for p in sorted(root.rglob("*.toml")):
+              tomllib.loads(p.read_text(encoding="utf-8"))
+
+          for p in sorted(root.rglob("*.xml")):
+              ET.fromstring(p.read_text(encoding="utf-8"))
+
+          for p in sorted(list(root.rglob("*.json")) + list(root.rglob("*.jsonc"))):
+              raw = p.read_text(encoding="utf-8")
+              cleaned = re.sub(r"(?m)^\s*//.*$", "", raw)
+              json.loads(cleaned)
+
+          for p in sorted(list(root.glob("files/**/systemd/**/*.service")) + list(root.glob("files/**/systemd/**/*.timer")) + list(root.glob("files/**/systemd/**/*.conf"))):
+              cp = configparser.ConfigParser(interpolation=None, strict=False)
+              cp.read_string(p.read_text(encoding="utf-8"))
+
+          tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+          projects_text = (root / "PROJECTS.md").read_text(encoding="utf-8")
+          missing = [f for f in tracked if f not in projects_text]
+          if missing:
+              raise SystemExit(f"Files missing from PROJECTS.md: {missing}")
+
+          print(f"All syntax checks and PROJECTS.md coverage ({len(tracked)} files) passed.")
+          PY

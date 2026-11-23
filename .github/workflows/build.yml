@@ -19,9 +19,7 @@ on:
           - cuda
         default: all
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 concurrency:
   group: build-${{ github.ref }}-${{ inputs.flavor }}
@@ -31,6 +29,7 @@ jobs:
   setup:
     name: Setup build matrix
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -53,6 +52,9 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}

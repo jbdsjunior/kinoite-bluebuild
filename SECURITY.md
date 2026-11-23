@@ -25,11 +25,13 @@ To protect both user workstation privacy and project infrastructure integrity:
 - **Zero Credentials in Code:** Secrets, OAuth tokens, SSH keys, and WireGuard/OpenVPN profiles are strictly excluded via `.gitignore` and enforced before commits.
 - **Least-Privilege Workflow Tokens:** each workflow declares the minimum scope it needs and third-party actions are pinned to commit SHAs:
 
-  | Workflow | `contents` | `packages` | `actions` |
-  | :--- | :---: | :---: | :---: |
-  | `build.yml` | read | write | – |
-  | `check-updates.yml` | read | read | write |
-  | `cleanup.yml` | read | write | write |
+  | Workflow | `contents` | `packages` | `actions` | `security-events` |
+  | :--- | :---: | :---: | :---: | :---: |
+  | `build.yml` | read | write | – | – |
+  | `check-updates.yml` | read | read | write | – |
+  | `cleanup.yml` | read | write | write | – |
+  | `validate.yml` | read | – | – | – |
+  | `zizmor.yml` | read | – | – | write |
 
   `packages: write` is required exclusively to push signed images to GHCR and `actions: write` to dispatch/delete workflow runs. The Cosign private key is accessed securely via repository secret (`SIGNING_SECRET`).
 - **Public Key Only:** Only the public verification key (`cosign.pub`) is tracked in the repository. Signing keys remain secured within GitHub Actions Secrets (`SIGNING_SECRET`).

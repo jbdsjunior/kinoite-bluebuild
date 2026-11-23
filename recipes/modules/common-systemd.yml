@@ -7,11 +7,22 @@ modules:
         # OS staged update automation (upstream preset is disabled on Kinoite)
         - bootc-fetch-apply-updates.timer
 
+        # Regenerate /etc trust and crypto backends after bootc upgrades
+        - bootc-update-ca-trust.service
+        - bootc-update-crypto-policies.service
+
+        # Remove residual Fedora Flatpak remotes in favor of Flathub
+        - flatpak-nuke-fedora.service
+
         # Flatpak system update automation (no upstream preset)
         - flatpak-system-update.timer
 
         # Mesh VPN (tailscale package ships no systemd preset)
         - tailscaled.service
+
+    masked:
+      # Prevent Fedora Flatpak remote from being re-added on boot
+      - flatpak-add-fedora-repos.service
 
     user:
       enabled:

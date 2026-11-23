@@ -1,0 +1,15 @@
+[Unit]
+Description=Remove Fedora flatpak repositories
+Before=flatpak-system-helper.service
+Before=flatpak-add-fedora-repos.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/flatpak remote-delete --system fedora
+ExecStart=/usr/bin/flatpak remote-delete --system fedora-testing
+ExecStart=/usr/bin/touch /var/lib/flatpak/.fedora-initialized
+SuccessExitStatus=1
+
+[Install]
+WantedBy=multi-user.target

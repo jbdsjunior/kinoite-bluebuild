@@ -44,10 +44,10 @@
 - `recipes/modules/common-multimedia.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala a pilha multimídia completa e codecs proprietários (`ffmpeg`, `libheif-freeworld`, GStreamer plugins extras, freeworld e ugly).
 - `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala aceleração gráfica/computacional AMD (`mesa-va-drivers-freeworld`, `mesa-libOpenCL`).
 - `recipes/modules/common-virt.yml`: instala a pilha KVM/libvirt (`@virtualization`, `gnome-boxes`, excluindo `virt-viewer`).
-- `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync e rede (`topgrade`, `starship`, `fastfetch`, `tailscale`, `rclone`, `distrobox`).
+- `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, containers, sync, credenciais e rede (`topgrade`, `starship`, `fastfetch`, `tailscale`, `rclone`, `distrobox`, `git-credential-libsecret`).
 - `recipes/modules/cuda-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 13 aplicativos Flatpak de sistema ativos via módulo `default-flatpaks` v2 (incluindo `org.kde.okular` e `io.missioncenter.MissionCenter`).
-- `recipes/modules/common-systemd.yml`: habilita `bootc-fetch-apply-updates.timer`, `flatpak-system-update.timer`, `tailscaled.service` no sistema e `flatpak-user-update.timer`, `podman.socket`, `podman-auto-update.timer` e `podman-restart.service` no usuário (deixando `systemd-resolved`, `firewalld`, `fstrim.timer`, `smartd.service`, `systemd-oomd.service` e sockets modulares do `libvirt` aos presets upstream e mantendo `ModemManager.service` desmascarado para evitar erros D-Bus).
+- `recipes/modules/common-systemd.yml`: habilita `bootc-fetch-apply-updates.timer`, `bootc-update-ca-trust.service`, `bootc-update-crypto-policies.service`, `flatpak-nuke-fedora.service`, `flatpak-system-update.timer` e `tailscaled.service` no sistema, mascara `flatpak-add-fedora-repos.service`, e habilita `flatpak-user-update.timer`, `podman.socket`, `podman-auto-update.timer` e `podman-restart.service` no usuário (deixando `systemd-resolved`, `firewalld`, `fstrim.timer`, `smartd.service`, `systemd-oomd.service` e sockets modulares do `libvirt` aos presets upstream e mantendo `ModemManager.service` desmascarado para evitar erros D-Bus).
 
 ## Kernel Arguments e Isolamento NVIDIA
 
@@ -73,13 +73,18 @@
 - `files/base/usr/lib/systemd/resolved.conf.d/60-dns.conf`: aplica DNS-over-TLS oportunista (`DNSOverTLS=opportunistic`) com Control D (`p2`), fallback Cloudflare, compatibilidade com MagicDNS da Tailscale e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
 - `files/tailscale/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
-- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs.
+- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs com `baseurl` direto e `repo_gpgcheck=1`.
+- `files/base/usr/lib/bootc/install/20-kinoite.toml`: define `root-fs-type = "btrfs"` e `enforce-container-sigpolicy = true` para instalações Bootc.
 
 ## Serviços, Timers e Manutenção
 
 - Os timers de atualização rodam em prioridade ociosa (`Nice=19`, `CPUSchedulingPolicy=idle`, `IOSchedulingClass=idle`) com jitter de `30s` e `ExecCondition=/usr/bin/nm-online -q -t 15`; units de usuário incluem `ConditionUser=!@system` para ignorar o greeter `plasmalogin`.
 - `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.service.d/override.conf`: executa `bootc upgrade --quiet` (`Type=exec`, `Restart=on-failure` até 3x, `nm-online`) em prioridade ociosa.
 - `files/base/usr/lib/systemd/system/bootc-fetch-apply-updates.timer.d/override.conf`: agenda busca de updates do SO após 1m do boot e a cada 30m.
+- `files/base/usr/lib/systemd/system/bootc-update-ca-trust.service`: regenera `/etc/pki/ca-trust` no boot após *three-way merge* de atualizações Bootc.
+- `files/base/usr/lib/systemd/system/bootc-update-crypto-policies.service`: regenera os backends de `crypto-policies` no boot após atualizações Bootc.
+- `files/base/usr/lib/systemd/system/flatpak-nuke-fedora.service`: remove remotes Flatpak residuais `fedora`/`fedora-testing` mantendo apenas Flathub.
+- `files/base/usr/lib/systemd/system/fstrim.service.d/workaround-no-root-trim.conf`: direciona `fstrim.service` para `--listed-in /proc/self/mountinfo` garantindo TRIM em subvolumes Btrfs no Bootc.
 - `files/desktop/usr/lib/systemd/system/flatpak-system-update.service`: atualiza Flatpaks de sistema e remove runtimes órfãos apenas com rede online.
 - `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 1m do boot e a cada 30m.
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso apenas com rede online (`ConditionUser=!@system`).
@@ -121,6 +126,8 @@
 - `.github/workflows/build.yml`: compila `amd`, `cuda` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
 - `.github/workflows/check-updates.yml`: verifica a cada 1 hora se o nome ou digest da imagem base upstream mudou em relação ao GHCR (sem verificar o repositório local) e dispara build apenas se necessário.
 - `.github/workflows/cleanup.yml`: remove versões antigas das imagens mantendo 15 e limpa históricos de runs diariamente.
+- `.github/workflows/validate.yml`: valida sintaxe de scripts, configs (YAML/TOML/XML/JSON) e cobertura de 100% em `PROJECTS.md` em push/PR.
+- `.github/workflows/zizmor.yml`: executa análise estática de segurança nos workflows do GitHub Actions com `zizmor`.
 - `.github/dependabot.yml`: verifica semanalmente atualizações das GitHub Actions.
 - `cosign.pub`: chave pública embutida para verificação criptográfica das imagens via Bootc.
 

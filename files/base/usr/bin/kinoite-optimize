@@ -462,10 +462,46 @@ audit_pillars() {
     if [[ -f /etc/containers/policy.json ]] && grep -q "sigstoreSigned" /etc/containers/policy.json; then
         echo "[OK] Cosign sigstore policy configured in /etc/containers/policy.json."
     fi
+    if [[ -f /usr/lib/bootc/install/20-kinoite.toml ]]; then
+        if grep -qE '^\s*enforce-container-sigpolicy\s*=\s*true' /usr/lib/bootc/install/20-kinoite.toml; then
+            echo "[OK] Bootc install policy enforces container signature verification (20-kinoite.toml)."
+        else
+            audit_warn "20-kinoite.toml present without enforce-container-sigpolicy = true."
+        fi
+    fi
 
     echo "--- [Pillar 2/6] Package Resilience & Zero Downgrade ---"
     fedora_version="$(rpm -E %fedora 2>/dev/null || echo "upstream")"
     echo "[INFO] Fedora baseline: ${fedora_version} (native bootc/rpm-ostree)."
+    local repo_dir repo_file
+    for repo_dir in /etc/yum.repos.d /usr/share/dnf5/repos.d; do
+        [[ -d "$repo_dir" ]] || continue
+        for repo_file in "${repo_dir}/terra.repo" "${repo_dir}/tailscale.repo" "${repo_dir}"/rpmfusion-*.repo; do
+            [[ -f "$repo_file" ]] || continue
+            if grep -qE '^\s*enabled\s*=\s*1' "$repo_file"; then
+                audit_warn "Transient third-party repo enabled on host: ${repo_file}"
+            fi
+        done
+    done
+    if command -v rpm >/dev/null 2>&1; then
+        local unwanted_pkg
+        for unwanted_pkg in firefox plasma-discover-rpm-ostree plasma-discover-notifier; do
+            if rpm -q "$unwanted_pkg" >/dev/null 2>&1; then
+                audit_warn "Debloated RPM package present on host: ${unwanted_pkg}"
+            fi
+        done
+        local kde_ver kwin_ver kscreen_ver
+        kde_ver="$(rpm -q --qf '%{VERSION}' plasma-desktop 2>/dev/null || true)"
+        kwin_ver="$(rpm -q --qf '%{VERSION}' kwin 2>/dev/null || true)"
+        kscreen_ver="$(rpm -q --qf '%{VERSION}' kscreen 2>/dev/null || true)"
+        if [[ -n "$kde_ver" && -n "$kwin_ver" && -n "$kscreen_ver" ]]; then
+            if [[ "$kde_ver" == "$kwin_ver" && "$kde_ver" == "$kscreen_ver" ]]; then
+                echo "[OK] KDE Plasma versions aligned (${kde_ver})."
+            else
+                audit_warn "KDE version mismatch: plasma-desktop=${kde_ver}, kwin=${kwin_ver}, kscreen=${kscreen_ver}."
+            fi
+        fi
+    fi
 
     echo "--- [Pillar 3/6] Btrfs NoCOW Storage & ZRAM ---"
     if command -v zramctl >/dev/null 2>&1; then
@@ -638,6 +674,15 @@ audit_pillars() {
 
     if [[ -d /var/home ]]; then
         echo "[STATUS] Free space on /var/home: $(df -h /var/home | awk 'NR==2 {print $4}')"
+    fi
+    if command -v flatpak >/dev/null 2>&1; then
+        local system_remotes
+        system_remotes="$(flatpak remotes --system --columns=name 2>/dev/null || true)"
+        if grep -qxE 'fedora|fedora-testing' <<<"$system_remotes"; then
+            audit_warn "Residual Fedora Flatpak remote detected; only Flathub should be active."
+        elif [[ -n "$system_remotes" ]]; then
+            echo "[OK] System Flatpak remotes clean (no Fedora remote active)."
+        fi
     fi
 }
 
