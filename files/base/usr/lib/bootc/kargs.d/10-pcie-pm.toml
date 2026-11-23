@@ -1,0 +1,4 @@
+# Prevent PCIe root/switch ports from entering runtime D3 states on desktop
+kargs = [
+  "pcie_port_pm=off",
+]

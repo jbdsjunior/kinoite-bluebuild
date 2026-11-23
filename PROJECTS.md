@@ -56,13 +56,16 @@
 - `rd.driver.blacklist=nvidia-drm` e `modprobe.blacklist=nvidia-drm` impedem nó gráfico DRM na NVIDIA preservando nós CUDA (`/dev/nvidia*`).
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1`, aplicando `initcall_blacklist=simpledrm_platform_driver_init` e blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` e omite `nvidia_drm`/`nvidia-drm` do initramfs para carregar módulos NVIDIA sob demanda no userspace.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true` e ativa Resizable BAR na RTX 3080 Ti.
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti e desativa S0ix/D3 dinâmico em desktop (`NVreg_EnableS0ixPowerManagement=0`, `NVreg_DynamicPowerManagement=0x00`).
+- `files/nvidia/usr/lib/udev/rules.d/65-nvidia-headless-pm.rules`: mantém GPU NVIDIA (`0x10de`) e seu áudio HDMI fora de runtime suspend e D3cold (`power/control=on`, `d3cold_allowed=0`), sobrescrevendo `60-nvidia.rules`.
 - `files/nvidia/usr/lib/environment.d/65-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` (complementando `VK_DRIVER_FILES` de `60-desktop.conf`) para impedir que aplicações host capturem EGL/GLX da NVIDIA.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
 
 ## Armazenamento, ZRAM, Memória e Segurança
 
+- `files/base/usr/lib/bootc/kargs.d/10-pcie-pm.toml`: aplica `pcie_port_pm=off` nas imagens base evitando suspensão runtime D3 em portas e switches PCIe de desktop.
+- `files/base/usr/lib/modprobe.d/60-snd-hda-intel.conf`: desativa `power_save` e `power_save_controller` em `snd_hda_intel` prevenindo travamentos D3/PME no controlador de áudio AMD X570 (`1022:1487`).
 - `files/base/usr/lib/systemd/zram-generator.conf.d/60-zram.conf`: configura swap ZRAM zstd em 50% da RAM até 32 GB.
 - `files/base/usr/lib/sysctl.d/90-memory.conf`: ajusta ZRAM (`swappiness=150`, `page-cluster=0`) e `fs.inotify.max_user_instances=8192`.
 - `files/base/usr/lib/sysctl.d/90-kernel.conf`: ativa `sysrq=1` (REISUB) e `kernel.printk` (mantendo `kptr_restrict=1` ao padrão nativo do Fedora 45).
@@ -113,7 +116,7 @@
 - `files/rocm/usr/lib/environment.d/60-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`) e ativa `RUSTICL_ENABLE=radeonsi` para OpenCL no host.
 - `files/rocm/usr/lib/udev/rules.d/70-rocm-kfd.rules`: aplica `uaccess` ao nó de computação AMD ROCm/HIP (`/dev/kfd`).
 - `files/desktop/usr/lib/environment.d/60-desktop.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi` e `VK_DRIVER_FILES` (RADV).
-- `files/base/usr/lib/udev/rules.d/70-hardware.rules`: aplica `uaccess` aos periféricos USB e interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"`.
+- `files/base/usr/lib/udev/rules.d/70-hardware.rules`: aplica `uaccess` aos periféricos USB e interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`), cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"` e mantém controladores `snd_hda_intel` fora de runtime suspend/D3cold.
 - `files/virt/usr/share/user-tmpfiles.d/60-virt-btrfs-nocow.conf`: aplica Btrfs NoCOW (`+C`) em imagens de VMs de usuário (`libvirt` e `gnome-boxes`).
 - `files/virt/usr/share/polkit-1/rules.d/60-libvirt.rules`: permite ao grupo `wheel` gerenciar libvirt/KVM localmente sem prompt de senha.
 - `files/rclone/usr/lib/systemd/user/rclone@.service`: monta remotos Rclone em `/run/user/%U/cloud/%i` com cache VFS completo, limites de I/O e `EnvironmentFile` herdado diretamente de `/usr/share/rclone/env/%i.env` com override opcional em `~/.config/rclone/env/%i.local.env` (`ConditionUser=!@system`).

@@ -1,0 +1,3 @@
+# Keep headless NVIDIA compute GPU and its HDMI audio function out of runtime D3/D3cold on desktop
+ACTION=="add|bind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000|0x030200|0x040300", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="add|bind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000|0x030200|0x040300", TEST=="d3cold_allowed", ATTR{d3cold_allowed}="0"

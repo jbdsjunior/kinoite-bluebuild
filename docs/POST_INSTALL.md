@@ -206,3 +206,7 @@ A imagem não depende mais de endereços PCI estáticos: os vínculos gráficos 
 | Auditoria (Pilar 4) | Varre `/sys/class/drm/renderD*/device/driver` para `amdgpu` e `nvidia` | [`files/base/usr/bin/kinoite-optimize`](../files/base/usr/bin/kinoite-optimize) |
 
 Caso seja necessário forçar um nó específico durante uma auditoria manual, sobrescreva com `AMD_RENDER_PATH=... NVIDIA_RENDER_PATH=... kinoite-optimize --audit`.
+
+### 8.2 Estabilidade UEFI/BIOS (AMD X570 + Ryzen 9 5950X)
+
+Em plataformas AM4 X570 com processadores Zen 3 (`Ryzen 9 5950X`), recomenda-se configurar na UEFI/BIOS (*Advanced → AMD CBS → CPU Common Options*) **`Power Supply Idle Control` = `Typical Current Idle`** para evitar quedas de tensão em estados C6 de baixa corrente no Linux (sem perda de *single-core boost*). Caso utilize PBO / Curve Optimizer, evite *offsets* negativos agressivos nos núcleos principais.

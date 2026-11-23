@@ -16,3 +16,7 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="18d1|2a70|22d9|04e8|22b8|2717|05c6|0e8d", ENV
 
 # AMD Radeon RX 6600 XT render node: dynamic seat ACLs for local Vulkan/Wayland & primary render symlink
 SUBSYSTEM=="drm", KERNEL=="renderD*", DRIVERS=="amdgpu", TAG+="uaccess", SYMLINK+="dri/primary-render"
+
+# Keep HDA audio controllers out of runtime D3/D3cold (prevents X570 1022:1487 PME/wake lockups)
+ACTION=="add|bind", SUBSYSTEM=="pci", DRIVERS=="snd_hda_intel", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="add|bind", SUBSYSTEM=="pci", DRIVERS=="snd_hda_intel", TEST=="d3cold_allowed", ATTR{d3cold_allowed}="0"
