@@ -1,0 +1,56 @@
+# Secrets, credentials, and signing material
+cosign.key
+*.pem
+*.key
+*.p12
+*.pfx
+*.priv
+*.gpg
+!cosign.pub
+*.crt
+*.cer
+*.p7b
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+rclone.conf
+*.token
+*.secret
+*.kdbx
+*.ovpn
+credentials*
+auth.json
+
+# Local environment and override files
+.env
+.env.*
+*.env.local
+*.local.env
+
+# BlueBuild temporary files
+/.bluebuild-scripts_*
+/Containerfile
+
+# Local development/runtime artifacts
+*.log
+*.logs
+*.tmp
+*.cache
+*.bak
+*.orig
+*~
+*.swp
+*.swo
+
+# IDE and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Agent local overrides and runtime caches (Security & Cleanliness)
+.agents/local/
+.agents/**/*.tmp
+.agents/**/*.log
+*.local.md
