@@ -1,4 +1,4 @@
-# Diretrizes Lineares do Projeto (kinoite)
+# Diretrizes Lineares do Projeto (kinoite-bluebuild)
 
 ## Arquitetura Geral e Hardware
 

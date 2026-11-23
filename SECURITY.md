@@ -39,7 +39,7 @@ To protect both user workstation privacy and project infrastructure integrity:
 If you discover a security vulnerability or misconfiguration within this repository:
 
 1. **Do not open a public issue.**
-2. Please submit a private advisory through GitHub's [Security Advisories](https://github.com/jbdsjunior/kinoite/security/advisories/new) or contact the maintainer directly.
+2. Please submit a private advisory through GitHub's [Security Advisories](https://github.com/jbdsjunior/kinoite-bluebuild/security/advisories/new) or contact the maintainer directly.
 3. Include detailed steps to reproduce the issue and any potential impact.
 
 Security reports will be reviewed promptly, and fixes will be rolled out via automated rebuilds and signed image deployments.

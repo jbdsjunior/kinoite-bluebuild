@@ -1,7 +1,7 @@
 <div align="center">
 
-![Status-Updates](https://github.com/jbdsjunior/kinoite/actions/workflows/check-updates.yml/badge.svg)
-![Status-Build](https://github.com/jbdsjunior/kinoite/actions/workflows/build.yml/badge.svg)
+![Status-Updates](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/check-updates.yml/badge.svg)
+![Status-Build](https://github.com/jbdsjunior/kinoite-bluebuild/actions/workflows/build.yml/badge.svg)
 
 # Fedora Kinoite Custom (BlueBuild)
 
