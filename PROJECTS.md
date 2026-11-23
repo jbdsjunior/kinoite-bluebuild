@@ -105,7 +105,7 @@
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
 - `files/rocm/etc/cdi/amdgpu.yaml`: expõe `/dev/kfd`, `/dev/dri/renderD128` e `/dev/dri/card0` com `HSA_OVERRIDE_GFX_VERSION=10.3.0` via CDI `amd.com/gpu`.
-- `files/rocm/usr/lib/environment.d/60-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`).
+- `files/rocm/usr/lib/environment.d/60-rocm.conf`: exporta `HSA_OVERRIDE_GFX_VERSION=10.3.0` para compatibilidade AMD ROCm/HIP na RX 6600 XT (`gfx1032` → `gfx1030`) e ativa `RUSTICL_ENABLE=radeonsi` para OpenCL no host.
 - `files/rocm/usr/lib/udev/rules.d/70-rocm-kfd.rules`: aplica `uaccess` ao nó de computação AMD ROCm/HIP (`/dev/kfd`).
 - `files/desktop/usr/lib/environment.d/60-desktop.conf`: exporta `LIBVA_DRIVER_NAME=radeonsi` e `VK_DRIVER_FILES` (RADV).
 - `files/base/usr/lib/udev/rules.d/70-hardware.rules`: aplica `uaccess` aos periféricos USB e interfaces Android ADB/Fastboot (`ff4201`/`ff4203`, incluindo OPPO `22d9`) e cria `/dev/dri/primary-render` por `DRIVERS=="amdgpu"`.
