@@ -19,27 +19,16 @@ modules:
           - com.google.Chrome
           - org.mozilla.firefox
 
-          # Security & Password Management
-          # - com.bitwarden.desktop
-
           # Development & Containers
           - com.visualstudio.code
           - io.github.DenysMb.Kontainer
-          # - io.github.mfat.sshpilot
+          - io.github.mfat.sshpilot
           - org.kde.kate
 
-          # Artificial Intelligence & Local LLMs
-          # - ai.jan.Jan
-
-          # Productivity, Knowledge & Office
-          # - md.obsidian.Obsidian
-          # - io.anytype.anytype
-          # - io.github.alainm23.planify
+          # Productivity & KDE Utilities
+          - org.kde.kcalc
+          - org.kde.kclock
           - org.kde.okular
-          # - org.onlyoffice.desktopeditors
-
-          # Backup & Resilience
-          # - org.gnome.World.PikaBackup
 
           # System Monitoring
           - io.missioncenter.MissionCenter
@@ -48,8 +37,17 @@ modules:
           - org.fkoehler.KTailctl
 
           # Media & Streaming
-          # - com.stremio.Stremio
+          - com.stremio.Stremio
           - org.kde.elisa
           - org.kde.gwenview
           - org.kde.haruna
           - org.qbittorrent.qBittorrent
+
+          # Optional Apps (uncomment as needed)
+          # - ai.jan.Jan
+          # - com.bitwarden.desktop
+          # - io.anytype.anytype
+          # - io.github.alainm23.planify
+          # - md.obsidian.Obsidian
+          # - org.gnome.World.PikaBackup
+          # - org.onlyoffice.desktopeditors
