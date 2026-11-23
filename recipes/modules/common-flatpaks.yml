@@ -8,7 +8,11 @@ modules:
         install:
           # Application & Package Management
           - com.github.tchx84.Flatseal
+          - io.github.flattool.Warehouse
           - it.mijorus.gearlever
+
+          # Desktop Theme Integration
+          - org.gtk.Gtk3theme.Breeze
 
           # Browsers & Web
           - com.brave.Browser
@@ -20,7 +24,7 @@ modules:
 
           # Development & Containers
           - com.visualstudio.code
-          # - io.github.DenysMb.Kontainer
+          - io.github.DenysMb.Kontainer
           # - io.github.mfat.sshpilot
           - org.kde.kate
 
@@ -41,7 +45,7 @@ modules:
           - io.missioncenter.MissionCenter
 
           # Networking & VPN
-          # - org.fkoehler.KTailctl
+          - org.fkoehler.KTailctl
 
           # Media & Streaming
           # - com.stremio.Stremio

@@ -9,6 +9,7 @@ modules:
       packages:
         # Hypervisor & Libvirt Stack
         - "@virtualization"
+        - libvirt-nss
 
         # Virtual Machine Manager GUI
         - gnome-boxes
