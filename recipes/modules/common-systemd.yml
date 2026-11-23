@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: systemd
+    system:
+      enabled:
+        # OS staged update automation (upstream preset is disabled on Kinoite)
+        - bootc-fetch-apply-updates.timer
+
+        # Flatpak system update automation (no upstream preset)
+        - flatpak-system-update.timer
+
+        # Mesh VPN (tailscale package ships no systemd preset)
+        - tailscaled.service
+
+    user:
+      enabled:
+        # User Flatpak update automation
+        - flatpak-user-update.timer
+
+        # Rootless Podman API socket, auto-update and restart policy support
+        - podman.socket
+        - podman-auto-update.timer
+        - podman-restart.service

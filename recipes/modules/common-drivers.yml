@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+
+    install:
+      allow-erasing: true
+      packages:
+        # Hardware Video Acceleration & GPU Compute (AMD Radeon / Mesa)
+        - mesa-libOpenCL
+        - mesa-va-drivers-freeworld

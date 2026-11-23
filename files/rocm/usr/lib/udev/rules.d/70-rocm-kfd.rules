@@ -1,0 +1,2 @@
+# AMD Radeon compute node (/dev/kfd): dynamic seat ACLs for local AI (ROCm/HIP)
+SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"

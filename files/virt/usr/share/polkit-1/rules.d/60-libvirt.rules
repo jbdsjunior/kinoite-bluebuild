@@ -1,0 +1,9 @@
+// Polkit rule: allow active local sessions of wheel group full libvirt management without authentication
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.libvirt.unix.manage" &&
+        subject.isInGroup("wheel") &&
+        subject.local &&
+        subject.active) {
+        return polkit.Result.YES;
+    }
+});

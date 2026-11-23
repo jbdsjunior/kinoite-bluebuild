@@ -1,0 +1,6 @@
+# Declarative baseline overrides for Topgrade on Fedora Kinoite
+# Passed via --config in /etc/profile.d/60-shell-aliases.sh when ~/.config/topgrade.toml is absent
+
+[misc]
+# Disable steps that conflict with immutable OS package management or Distrobox containers
+disable = ["toolbx", "tailscale"]

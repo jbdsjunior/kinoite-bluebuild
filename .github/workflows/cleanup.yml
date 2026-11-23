@@ -1,0 +1,50 @@
+name: cleanup
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: cleanup
+  cancel-in-progress: true
+
+jobs:
+  delete-old-images:
+    name: Delete Old Container Images (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - "kinoite-amd"
+          - "kinoite-cuda"
+    steps:
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@4dbb860504f6d0cde296a192842138c03915746a # v5.1.0
+        continue-on-error: true
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: "container"
+          min-versions-to-keep: 15
+          delete-only-untagged-versions: "false"
+
+  delete-old-runs:
+    name: Delete Old Workflow Runs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@b3018382ca039b53d238908238bd35d1fb14f8ee # v2.1.0
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 3
+          keep_minimum_runs: 3
+

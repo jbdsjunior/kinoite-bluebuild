@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Critical flow: verify root privileges
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: kinoite-setup-tpm must be run as root (use 'sudo kinoite-setup-tpm [device] [--pin | --no-pin] [--skip-recovery-key]')." >&2
+    exit 1
+fi
+
+DEVICE=""
+SKIP_RECOVERY=0
+PIN_MODE="auto"
+
+# Parse arguments flexibly
+for arg in "$@"; do
+    case "$arg" in
+        --skip-recovery-key)
+            SKIP_RECOVERY=1
+            ;;
+        --pin)
+            PIN_MODE="yes"
+            ;;
+        --no-pin)
+            PIN_MODE="no"
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$arg'" >&2
+            echo "Usage: kinoite-setup-tpm [luks-block-device] [--pin | --no-pin] [--skip-recovery-key]" >&2
+            exit 1
+            ;;
+        *)
+            if [ -z "$DEVICE" ]; then
+                DEVICE="$arg"
+            else
+                echo "ERROR: Unexpected extra argument '$arg'" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+detect_luks_device() {
+    local mount_point src dm_name c_dev
+    command -v cryptsetup >/dev/null 2>&1 || return 1
+    for mount_point in / /var/home; do
+        src="$(findmnt -n -o SOURCE "$mount_point" 2>/dev/null || true)"
+        [[ "$src" =~ ^/dev/mapper/ ]] || continue
+        dm_name="$(basename "$src")"
+        c_dev="$(cryptsetup status "$dm_name" 2>/dev/null | awk '/^\s*device:/ {print $2}' || true)"
+        if [ -n "$c_dev" ] && [ -e "$c_dev" ]; then
+            echo "[INFO] Auto-detected LUKS partition from ${mount_point}: ${c_dev}" >&2
+            printf '%s\n' "$c_dev"
+            return 0
+        fi
+    done
+    return 1
+}
+
+if [ -z "$DEVICE" ]; then
+    echo "Scanning active system mounts to detect root LUKS partition..."
+    DEVICE="$(detect_luks_device || true)"
+fi
+
+if [ -z "$DEVICE" ]; then
+    echo "Usage: kinoite-setup-tpm [luks-block-device] [--pin | --no-pin] [--skip-recovery-key]"
+    echo "Example: kinoite-setup-tpm /dev/nvme0n1p3 --pin"
+    exit 1
+fi
+
+if [ ! -b "$DEVICE" ]; then
+    echo "ERROR: Block device '$DEVICE' not found." >&2
+    exit 1
+fi
+
+echo "=== [1/4] Checking LUKS2 Header on $DEVICE ==="
+if ! cryptsetup isLuks "$DEVICE"; then
+    echo "ERROR: $DEVICE is not a valid LUKS partition." >&2
+    exit 1
+fi
+
+# Optional recovery key generation (idempotent: never accumulates orphan keys)
+has_recovery_key() {
+    local dump_json dump_text
+    dump_json="$(cryptsetup luksDump --dump-json-metadata "$DEVICE" 2>/dev/null || true)"
+    if grep -q '"systemd-recovery"' <<<"$dump_json"; then
+        return 0
+    fi
+    dump_text="$(cryptsetup luksDump "$DEVICE" 2>/dev/null || true)"
+    grep -q 'systemd-recovery' <<<"$dump_text"
+}
+
+if [ "$SKIP_RECOVERY" -eq 0 ]; then
+    echo "=== [2/4] Generating Offline Recovery Key ==="
+    if has_recovery_key; then
+        echo "[SKIP] A systemd-recovery key is already enrolled; keeping the existing one."
+        echo "       (Delete it first if it was lost, or re-run with --skip-recovery-key.)"
+    else
+        echo "Notice: Save the printed recovery key in a secure offline location."
+        if ! systemd-cryptenroll --recovery-key "$DEVICE"; then
+            echo "[WARN] Recovery key enrollment failed; continuing with TPM 2.0 enrollment only." >&2
+        fi
+    fi
+else
+    echo "=== [2/4] Skipping Recovery Key Generation (--skip-recovery-key) ==="
+fi
+
+# Determine PIN policy (Apple Secure Enclave / FileVault model)
+if [ "$PIN_MODE" = "auto" ]; then
+    if [ -t 0 ] && [ -t 1 ]; then
+        echo ""
+        echo "=== TPM 2.0 PIN policy (Apple Secure Enclave / FileVault model) ==="
+        echo "With a PIN, the TPM only unseals the disk key when the PIN is typed at boot,"
+        echo "preventing third parties with physical access from unlocking the system."
+        if read -r -t 30 -p "Protect TPM 2.0 unlock with a security PIN? [Y/n]: " REPLY; then
+            if [[ ! "$REPLY" =~ ^[Nn]$ ]]; then
+                PIN_MODE="yes"
+            else
+                PIN_MODE="no"
+            fi
+        else
+            echo ""
+            echo "[INFO] Timeout or non-interactive terminal; continuing without a PIN..."
+            PIN_MODE="no"
+        fi
+    else
+        PIN_MODE="no"
+    fi
+fi
+
+# --wipe-slot=tpm2 combined with --tpm2-device=auto enrolls first and only then
+# wipes older TPM2 enrollments (excluding the new one), so a failed enrollment
+# can never leave the volume without TPM unlock.
+ENROLL_ARGS=("--tpm2-device=auto" "--tpm2-pcrs=7+14" "--wipe-slot=tpm2")
+if [ "$PIN_MODE" = "yes" ]; then
+    ENROLL_ARGS+=("--tpm2-with-pin=yes")
+    echo "[INFO] Enabling two-factor authentication: TPM 2.0 + PIN (--tpm2-with-pin=yes)..."
+fi
+
+echo "=== [3/4] Enrolling AMD fTPM 2.0 bound to PCR 7 + 14 ==="
+# Idempotent re-enrollment (e.g. after a UEFI firmware update): the enrollment is
+# completed before any previous TPM2 slot is wiped.
+if ! systemd-cryptenroll "${ENROLL_ARGS[@]}" "$DEVICE"; then
+    echo "ERROR: TPM 2.0 enrollment failed. Existing LUKS unlock methods were left untouched." >&2
+    exit 1
+fi
+
+# Ensure tpm2-device=auto is configured in /etc/crypttab if matching UUID is found
+LUKS_UUID="$(cryptsetup luksUUID "$DEVICE" 2>/dev/null || true)"
+if [ -n "$LUKS_UUID" ] && [ -f /etc/crypttab ]; then
+    uuid_line="$(grep -F "$LUKS_UUID" /etc/crypttab || true)"
+    if [ -n "$uuid_line" ]; then
+        if ! grep -q "tpm2-device=" <<<"$uuid_line"; then
+            local_tmp="$(mktemp /etc/crypttab.XXXXXX)"
+            trap 'rm -f "$local_tmp"' EXIT
+            awk -v uuid="$LUKS_UUID" '
+                $0 !~ /^[[:space:]]*#/ && index($0, uuid) > 0 {
+                    if (NF >= 4 && $4 != "" && $4 != "-") {
+                        $4 = $4 ",tpm2-device=auto"
+                    } else if (NF == 3) {
+                        $4 = "tpm2-device=auto"
+                    } else if (NF == 2) {
+                        $3 = "none"
+                        $4 = "tpm2-device=auto"
+                    }
+                }
+                { print }
+            ' /etc/crypttab >"$local_tmp" && mv "$local_tmp" /etc/crypttab
+            trap - EXIT
+            chmod 0600 /etc/crypttab 2>/dev/null || true
+            if command -v restorecon >/dev/null 2>&1; then
+                restorecon /etc/crypttab 2>/dev/null || true
+            fi
+            echo "[OK] Appended tpm2-device=auto to /etc/crypttab entry."
+        fi
+    fi
+fi
+
+echo "=== [4/4] Validating Initramfs & Bootloader Integration ==="
+KERNEL_VER="$(uname -r)"
+INITRAMFS_TARGET="/boot/initramfs-${KERNEL_VER}.img"
+
+if command -v bootc >/dev/null 2>&1; then
+    echo "[OK] Declarative Bootc image detected. Native TPM2/LUKS2 support is pre-built in the base image."
+    echo "[OK] TPM2 keys bound directly to the LUKS2 header on disk."
+elif command -v dracut >/dev/null 2>&1; then
+    echo "Running dracut with TMPDIR=/var/tmp for kernel $KERNEL_VER..."
+    TMPDIR=/var/tmp dracut --kver "$KERNEL_VER" --force --reproducible "$INITRAMFS_TARGET"
+    echo "[OK] Initramfs regenerated successfully at $INITRAMFS_TARGET."
+fi
+
+echo "=== TPM 2.0 Auto-Unlock Configuration Completed Successfully ==="
