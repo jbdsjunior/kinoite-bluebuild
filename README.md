@@ -96,7 +96,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/tailscale/`](files/tailscale/) | Tailscale mesh VPN overlays (`firewalld` trusted zone for `tailscale0`) |
 | [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
-| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 1h), validation, `zizmor` security audit, and registry cleanup |
+| [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 1h) and registry cleanup |
 
 ## Builds
 

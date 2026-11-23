@@ -126,8 +126,6 @@
 - `.github/workflows/build.yml`: compila `amd`, `cuda` ou `all` via BlueBuild (`chunkah: true`) e assina com Cosign.
 - `.github/workflows/check-updates.yml`: verifica a cada 1 hora se o nome ou digest da imagem base upstream mudou em relação ao GHCR (sem verificar o repositório local) e dispara build apenas se necessário.
 - `.github/workflows/cleanup.yml`: remove versões antigas das imagens mantendo 15 e limpa históricos de runs diariamente.
-- `.github/workflows/validate.yml`: valida sintaxe de scripts, configs (YAML/TOML/XML/JSON) e cobertura de 100% em `PROJECTS.md` em push/PR.
-- `.github/workflows/zizmor.yml`: executa análise estática de segurança nos workflows do GitHub Actions com `zizmor`.
 - `.github/dependabot.yml`: verifica semanalmente atualizações das GitHub Actions.
 - `cosign.pub`: chave pública embutida para verificação criptográfica das imagens via Bootc.
 
