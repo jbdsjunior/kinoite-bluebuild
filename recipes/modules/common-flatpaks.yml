@@ -31,9 +31,6 @@ modules:
           # System Monitoring
           - io.missioncenter.MissionCenter
 
-          # Networking & VPN
-          - org.fkoehler.KTailctl
-
           # Media & Streaming
           - com.stremio.Stremio
           - org.kde.elisa
