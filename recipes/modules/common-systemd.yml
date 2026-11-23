@@ -20,9 +20,9 @@ modules:
         # Mesh VPN (tailscale package ships no systemd preset)
         - tailscaled.service
 
-    masked:
-      # Prevent Fedora Flatpak remote from being re-added on boot
-      - flatpak-add-fedora-repos.service
+      masked:
+        # Prevent Fedora Flatpak remote from being re-added on boot
+        - flatpak-add-fedora-repos.service
 
     user:
       enabled:
