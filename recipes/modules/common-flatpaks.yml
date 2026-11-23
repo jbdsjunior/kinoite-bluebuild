@@ -14,13 +14,14 @@ modules:
 
           # Browsers & Web
           - com.brave.Browser
-          - com.google.Chrome
-          - org.mozilla.firefox
+          # - com.google.Chrome
+          # - org.mozilla.firefox
 
           # Development & Containers
           - com.visualstudio.code
           - io.github.DenysMb.Kontainer
           - io.github.mfat.sshpilot
+
           - org.kde.kate
 
           # Productivity & KDE Utilities
