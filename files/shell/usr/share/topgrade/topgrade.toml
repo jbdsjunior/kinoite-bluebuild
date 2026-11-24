@@ -1,6 +1,9 @@
-# Declarative baseline overrides for Topgrade on Fedora Kinoite
-# Passed via --config in /etc/profile.d/60-shell-aliases.sh when ~/.config/topgrade.toml is absent
+# Declarative baseline overrides for Topgrade on Fedora Kinoite (always enforced via 60-shell-aliases.sh)
 
 [misc]
 # Disable steps that conflict with immutable OS package management or Distrobox containers
 disable = ["toolbx", "tailscale"]
+
+[linux]
+# Use bootc upgrade instead of legacy rpm-ostree upgrade on bootc-managed images
+bootc = true

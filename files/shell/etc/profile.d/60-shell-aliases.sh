@@ -18,9 +18,9 @@ alias rm='rm -i'
 
 alias reload-profile='exec $SHELL'
 
-# Run Topgrade with image defaults from /usr/share/topgrade/ when user has no custom ~/.config/topgrade.toml
+# Always enforce image Topgrade defaults from /usr/share/topgrade/ over local ~/.config/topgrade.toml
 _kinoite_topgrade() {
-    if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/topgrade.toml" ] && [ -f "/usr/share/topgrade/topgrade.toml" ]; then
+    if [ -f "/usr/share/topgrade/topgrade.toml" ]; then
         command topgrade --config /usr/share/topgrade/topgrade.toml "$@"
     else
         command topgrade "$@"

@@ -110,8 +110,8 @@
 - `files/shell/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
 - `files/shell/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs), carregado diretamente por `50-shell-prompt.sh` quando o usuário não tiver configuração própria.
 - `files/shell/etc/profile.d/50-shell-prompt.sh`: inicializa Starship (`/usr/share/starship/starship.toml`) e exibe Fastfetch (`/usr/share/fastfetch/config.jsonc`) uma vez por sessão interativa fora de terminais embutidos de IDE, sem copiar arquivos para `$HOME`.
-- `files/shell/etc/profile.d/60-shell-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`), wrapper `_kinoite_topgrade` e atalhos de diagnóstico/manutenção.
-- `files/shell/usr/share/topgrade/topgrade.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) no Topgrade, passado via `--config` por `60-shell-aliases.sh` quando `~/.config/topgrade.toml` não existir, sem copiar arquivos para `$HOME`.
+- `files/shell/etc/profile.d/60-shell-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`), wrapper `_kinoite_topgrade` (priorizando sempre `/usr/share/topgrade/topgrade.toml`) e atalhos de diagnóstico/manutenção.
+- `files/shell/usr/share/topgrade/topgrade.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`) e ativa `bootc = true` no Topgrade, passado sempre via `--config` por `60-shell-aliases.sh`.
 
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
