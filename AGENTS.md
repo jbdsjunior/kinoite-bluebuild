@@ -4,6 +4,7 @@
 
 - `AGENTS.md` governa exclusivamente processo, Git, validações e índice de consulta.
 - `PROJECTS.md` governa exclusivamente arquitetura, hardware, arquivos e invariantes do sistema.
+- `PROMPT.md` (arquivo local ignorado pelo `.gitignore`) atua exclusivamente como fonte local de intenção e requisitos do autor, não substituindo `AGENTS.md` nem `PROJECTS.md`.
 - Documentos externos (`README.md`, `SECURITY.md`, `docs/POST_INSTALL.md`) são derivados de `PROJECTS.md` e devem permanecer sincronizados.
 - As diretrizes devem usar frases curtas, lineares e agrupadas por categorias temáticas sem numeração, tabelas ou diagramas.
 
