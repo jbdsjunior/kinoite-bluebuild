@@ -10,7 +10,7 @@ modules:
           - it.mijorus.gearlever
 
           # Desktop Theme Integration
-          - org.gtk.Gtk3theme.Breeze
+          # - org.gtk.Gtk3theme.Breeze
 
           # Browsers & Web
           - com.brave.Browser
