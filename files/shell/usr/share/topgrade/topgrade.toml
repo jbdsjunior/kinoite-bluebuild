@@ -9,7 +9,6 @@ assume_yes = true
 cleanup = true
 ask_retry = false
 auto_retry = 2
-pre_sudo = true
 
 [linux]
 # Use bootc upgrade instead of legacy rpm-ostree upgrade on bootc-managed images
