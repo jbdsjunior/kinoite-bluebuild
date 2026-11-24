@@ -7,6 +7,9 @@ modules:
         # OS staged update automation (upstream preset is disabled on Kinoite)
         - bootc-fetch-apply-updates.timer
 
+        # Bluetooth stack daemon (BlueZ)
+        - bluetooth.service
+
         # Regenerate /etc trust and crypto backends after bootc upgrades
         - bootc-fstab-daemon-reload.service
         - bootc-update-ca-trust.service
@@ -27,6 +30,11 @@ modules:
 
     user:
       enabled:
+        # Audio routing stack (explicitly enabled; isolated from greeter via ConditionUser=!@system)
+        - pipewire.service
+        - pipewire-pulse.service
+        - wireplumber.service
+
         # User Flatpak update automation
         - flatpak-user-update.timer
 
