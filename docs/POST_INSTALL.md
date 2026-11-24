@@ -193,6 +193,7 @@ Estes padrões são aplicados pela própria imagem e não exigem ação no pós-
 | DNS | `systemd-resolved` com Control D P2 (bloqueio de malware/ads) + `DNSOverTLS=opportunistic` (compatível com Tailscale MagicDNS), DNSSEC desativado de propósito | `/etc/systemd/resolved.conf.d/60-dns.conf` + `sudo systemctl restart systemd-resolved` |
 | Firewall | Zona `tailscale` (target `ACCEPT`) para a interface `tailscale0` | `sudo firewall-cmd --permanent --delete-zone=tailscale` |
 | Atualizações | `bootc update` e Flatpak (sistema e usuário) a cada 6 horas (`10m`–`15m` após boot/login, com jitter), aguardando rede online (`nm-online`) | `sudo systemctl edit bootc-fetch-apply-updates.timer` |
+| `fstab` / `bootc` | `bootc-fstab-daemon-reload.service` executa `systemctl daemon-reload` após `bootc-fstab-edit.service` quando `/etc/fstab` é regravado no boot | `sudo systemctl disable --now bootc-fstab-daemon-reload.service` |
 | KDE | Centralização de novas janelas (`Placement=Centered` + script `kinoite-window-center` em `kwinrc`) e Konsole translúcido (`Kinoite.profile`) | Preferências do sistema (configuração de usuário prevalece sobre `/etc/xdg`) |
 
 ### 8.1 Detecção Dinâmica de GPUs (Agnóstica a Slot PCI)

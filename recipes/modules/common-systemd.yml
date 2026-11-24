@@ -8,6 +8,7 @@ modules:
         - bootc-fetch-apply-updates.timer
 
         # Regenerate /etc trust and crypto backends after bootc upgrades
+        - bootc-fstab-daemon-reload.service
         - bootc-update-ca-trust.service
         - bootc-update-crypto-policies.service
 

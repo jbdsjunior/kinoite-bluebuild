@@ -1,0 +1,13 @@
+[Unit]
+Description=Reload systemd manager when bootc-fstab-edit updates /etc/fstab
+ConditionPathExists=/run/ostree-booted
+After=bootc-fstab-edit.service local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecCondition=/usr/bin/test /etc/fstab -nt /run/systemd/generator
+ExecStart=/usr/bin/systemctl daemon-reload
+
+[Install]
+WantedBy=multi-user.target
