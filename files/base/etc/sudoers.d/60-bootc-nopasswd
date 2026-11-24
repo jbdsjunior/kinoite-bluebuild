@@ -1,0 +1,2 @@
+# Allow wheel group to run bootc upgrade/status without password (topgrade / sysup)
+%wheel ALL=(root) NOPASSWD: /usr/bin/bootc upgrade, /usr/bin/bootc upgrade --quiet, /usr/bin/bootc status

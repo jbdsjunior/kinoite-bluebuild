@@ -79,6 +79,8 @@
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
 - `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs com `baseurl` direto e `repo_gpgcheck=1`.
 - `files/base/usr/lib/bootc/install/20-kinoite.toml`: define `root-fs-type = "btrfs"` e `enforce-container-sigpolicy = true` para instalações Bootc.
+- `files/base/etc/sudoers.d/60-bootc-nopasswd`: libera ao grupo `%wheel` com `NOPASSWD` exclusivamente `/usr/bin/bootc upgrade`, `/usr/bin/bootc upgrade --quiet` e `/usr/bin/bootc status`.
+- `files/base/usr/lib/tmpfiles.d/60-bootc-sudoers.conf`: garante permissão `0440 root:root` exigida pelo `sudo` em `/etc/sudoers.d/60-bootc-nopasswd`.
 
 ## Serviços, Timers e Manutenção
 
@@ -111,7 +113,7 @@
 - `files/shell/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs), carregado diretamente por `50-shell-prompt.sh` quando o usuário não tiver configuração própria.
 - `files/shell/etc/profile.d/50-shell-prompt.sh`: inicializa Starship (`/usr/share/starship/starship.toml`) e exibe Fastfetch (`/usr/share/fastfetch/config.jsonc`) uma vez por sessão interativa fora de terminais embutidos de IDE, sem copiar arquivos para `$HOME`.
 - `files/shell/etc/profile.d/60-shell-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`), wrapper `_kinoite_topgrade` (priorizando sempre `/usr/share/topgrade/topgrade.toml`) e atalhos de diagnóstico/manutenção.
-- `files/shell/usr/share/topgrade/topgrade.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`), usa `rpm_ostree = true` (`bootc = false`) via Polkit sem `sudo` e execução não interativa (`assume_yes`, `cleanup`, `auto_retry`) no Topgrade, passado sempre via `--config` por `60-shell-aliases.sh`.
+- `files/shell/usr/share/topgrade/topgrade.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`), usa `bootc = true` (`rpm_ostree = false`, sem senha via `60-bootc-nopasswd`) e execução não interativa (`assume_yes`, `cleanup`, `auto_retry`) no Topgrade, passado sempre via `--config` por `60-shell-aliases.sh`.
 
 ## IA, CDI, Periféricos, Virtualização e Nuvem
 
@@ -140,7 +142,7 @@
 - É proibido desativar `sulogin` em modos de resgate ou emergência.
 - É proibido adicionar kargs obsoletos ou redundantes (`preempt=full`, `nowatchdog`, `tsc=reliable`, `amd_iommu=on`, `iommu=pt`, `amd_pstate=active`).
 - É proibido codificar endereços PCI estáticos (`pci-0000:..`) em regras `udev`, specs CDI ou scripts quando houver detecção por driver.
-- É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`).
+- É proibido colocar configurações em `/etc/` quando o subsistema suportar `/usr/lib/` ou `/usr/share/` (exceções válidas: `profile.d`, `fonts/conf.d`, `xdg`, `cdi`, `pki/akmods/certs`, `sudoers.d`).
 - É proibido fazer downgrade de pacotes base ou usar `type: script` nas receitas quando houver solução declarativa.
 - Aplicativos GUI devem ser instalados exclusivamente via Flatpak em `recipes/modules/common-flatpaks.yml` (exceção: `gnome-boxes` RPM para integração direta com libvirt/virgl/SPICE).
 - Linguagens, SDKs e CLIs de desenvolvimento devem rodar isolados em contêineres Distrobox ou Podman.

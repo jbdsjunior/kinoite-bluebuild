@@ -11,7 +11,6 @@ ask_retry = false
 auto_retry = 2
 
 [linux]
-# Use passwordless rpm-ostree (via Polkit) instead of sudo bootc upgrade in interactive topgrade
-# (bootc-fetch-apply-updates.timer and alias 'sysup' still handle native bootc upgrades/kargs.d)
-bootc = false
-rpm_ostree = true
+# Use native bootc upgrade (passwordless via /etc/sudoers.d/60-bootc-nopasswd) instead of legacy rpm-ostree
+bootc = true
+rpm_ostree = false
