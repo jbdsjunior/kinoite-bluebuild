@@ -77,7 +77,7 @@
 - `files/base/usr/lib/systemd/resolved.conf.d/60-dns.conf`: aplica DNS-over-TLS oportunista (`DNSOverTLS=opportunistic`) com Control D (`p2`), fallback Cloudflare, compatibilidade com MagicDNS da Tailscale e `MulticastDNS=no` (delegando mDNS ao `avahi-daemon`).
 - `files/tailscale/usr/lib/firewalld/zones/tailscale.xml`: declara zona confiável do firewall para a interface `tailscale0`.
 - `files/dnf/tailscale.repo`: configura o repositório oficial da Tailscale.
-- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs com `baseurl` direto e `repo_gpgcheck=1`.
+- `files/dnf/terra.repo`: configura o repositório Terra da Fyra Labs com `baseurl` direto, `gpgcheck=1` e `repo_gpgcheck=0` (evitando falhas transitórias de CDN em `repomd.xml.asc`).
 - `files/base/usr/lib/bootc/install/20-kinoite.toml`: define `root-fs-type = "btrfs"` e `enforce-container-sigpolicy = true` para instalações Bootc.
 - `files/base/etc/sudoers.d/60-bootc-nopasswd`: libera ao grupo `%wheel` com `NOPASSWD` exclusivamente `/usr/bin/bootc upgrade`, `/usr/bin/bootc upgrade --quiet` e `/usr/bin/bootc status`.
 - `files/base/usr/lib/tmpfiles.d/60-bootc-sudoers.conf`: garante permissão `0440 root:root` exigida pelo `sudo` em `/etc/sudoers.d/60-bootc-nopasswd`.
