@@ -19,6 +19,3 @@ SUBSYSTEM=="drm", KERNEL=="renderD*", DRIVERS=="amdgpu", TAG+="uaccess", SYMLINK
 
 # Keep HDA audio controllers out of D3cold (paired with 60-snd-hda-intel.conf power_save=0)
 ACTION=="add|bind", SUBSYSTEM=="pci", DRIVERS=="snd_hda_intel", TEST=="d3cold_allowed", ATTR{d3cold_allowed}="0"
-
-# Intel AX210 Bluetooth USB controller: prevent runtime autosuspend causing missing A2DP/HFP sinks on cold boot
-ACTION=="add|bind", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0032", TEST=="power/control", ATTR{power/control}="on"
