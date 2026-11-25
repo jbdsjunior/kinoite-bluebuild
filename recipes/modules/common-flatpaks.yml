@@ -34,9 +34,9 @@ modules:
 
           # Media & Streaming
           - com.stremio.Stremio
-          - org.kde.elisa
+          - org.gnome.Decibels
+          - org.gnome.Showtime
           - org.kde.gwenview
-          - org.kde.haruna
           - org.qbittorrent.qBittorrent
 
           # Optional Apps (uncomment as needed)
