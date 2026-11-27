@@ -56,10 +56,10 @@
 - `rd.driver.blacklist=nvidia-drm` e `modprobe.blacklist=nvidia-drm` impedem nó gráfico DRM na NVIDIA preservando nós CUDA (`/dev/nvidia*`).
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1`, aplicando `initcall_blacklist=simpledrm_platform_driver_init` e blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` e omite `nvidia_drm`/`nvidia-drm` do initramfs para carregar módulos NVIDIA sob demanda no userspace.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti e desativa RTD3 dinâmico em desktop (`NVreg_DynamicPowerManagement=0x00`).
-- `files/nvidia/usr/lib/udev/rules.d/65-nvidia-headless-pm.rules`: mantém GPU NVIDIA (`0x10de`) e seu áudio HDMI fora de runtime suspend e D3cold (`power/control=on`, `d3cold_allowed=0`), sobrescrevendo `60-nvidia.rules`.
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti, desativa S0ix e RTD3 dinâmico em desktop (`NVreg_EnableS0ixPowerManagement=0`, `NVreg_DynamicPowerManagement=0x00`) e direciona `NVreg_TemporaryFilePath` para `/var/tmp/nvidia-pm`.
+- `files/nvidia/usr/lib/udev/rules.d/65-nvidia-headless-pm.rules`: mantém GPU NVIDIA (`0x10de`, classes `0x030000|0x030200`) fora de runtime suspend (`power/control=on`) e todas as funções NVIDIA (incluindo áudio HDMI `0x040300`) fora de D3cold (`d3cold_allowed=0`), sobrescrevendo `60-nvidia.rules`.
 - `files/nvidia/usr/lib/environment.d/65-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` (complementando `VK_DRIVER_FILES` de `60-desktop.conf`) para impedir que aplicações host capturem EGL/GLX da NVIDIA.
-- `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI.
+- `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI, e cria `/var/tmp/nvidia-pm` com NoCOW (`+C`) para preservação de VRAM no S3.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
 
 ## Armazenamento, ZRAM, Memória e Segurança
@@ -96,7 +96,7 @@
 - `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 10m do boot e a cada 6h (`Persistent=true`).
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso apenas com rede online (`ConditionUser=!@system`).
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 12m do login e a cada 6h (`ConditionUser=!@system`, `Persistent=true`).
-- `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 6 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`).
+- `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 6 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`), parâmetros/PM NVIDIA, kargs obrigatórios (`pcie_port_pm=off`) e estado de energia (`amd-pstate-epp`/TuneD).
 - `files/base/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
 ## Desktop KDE, Navegadores e Terminal

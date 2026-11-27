@@ -428,6 +428,105 @@ is_nvidia_headless_image() {
     [[ -f "$NVIDIA_HEADLESS_MARKER" ]]
 }
 
+# Audit NVIDIA headless parameters, PCI runtime PM and systemd services.
+audit_nvidia_headless() {
+    if [[ -r /proc/driver/nvidia/params ]]; then
+        local params key expected actual
+        params="$(cat /proc/driver/nvidia/params 2>/dev/null || true)"
+        for pair in \
+            "DynamicPowerManagement:0" \
+            "EnableS0ixPowerManagement:0" \
+            "EnableResizableBar:1"; do
+            key="${pair%%:*}"
+            expected="${pair##*:}"
+            actual="$(awk -F': ' -v k="$key" '$1 == k {print $2; exit}' <<<"$params")"
+            if [[ -n "$actual" ]]; then
+                if [[ "$actual" == "$expected" ]]; then
+                    echo "[OK] NVIDIA param ${key}=${actual}."
+                else
+                    audit_warn "NVIDIA param drift: ${key}=${actual} (expected ${expected})."
+                fi
+            fi
+        done
+    else
+        echo "[SKIP] /proc/driver/nvidia/params unavailable; skipping NVIDIA module parameter check."
+    fi
+
+    local pci_dev vendor class ctrl d3cold found_nv_pci=0
+    for pci_dev in /sys/bus/pci/devices/*; do
+        [[ -e "$pci_dev" ]] || continue
+        vendor="$(cat "${pci_dev}/vendor" 2>/dev/null || true)"
+        class="$(cat "${pci_dev}/class" 2>/dev/null || true)"
+        [[ "$vendor" == "0x10de" && "$class" =~ ^0x030[02]00$ ]] || continue
+        found_nv_pci=1
+        ctrl="$(cat "${pci_dev}/power/control" 2>/dev/null || echo "N/A")"
+        d3cold="$(cat "${pci_dev}/d3cold_allowed" 2>/dev/null || echo "N/A")"
+        if [[ "$ctrl" == "on" && ( "$d3cold" == "0" || "$d3cold" == "N/A" ) ]]; then
+            echo "[OK] NVIDIA PCI PM (${pci_dev##*/}): power/control=${ctrl}, d3cold_allowed=${d3cold}."
+        else
+            audit_warn "NVIDIA PCI PM drift (${pci_dev##*/}): power/control=${ctrl} (expected on), d3cold_allowed=${d3cold} (expected 0)."
+        fi
+    done
+    if [[ "$found_nv_pci" -eq 0 ]]; then
+        echo "[SKIP] No NVIDIA GPU PCI device detected in /sys/bus/pci/devices."
+    fi
+
+    local persistenced_state powerd_state
+    if persistenced_state="$(systemctl is-active nvidia-persistenced.service 2>/dev/null)"; then
+        echo "[OK] nvidia-persistenced.service is ${persistenced_state}."
+    elif systemctl list-unit-files nvidia-persistenced.service >/dev/null 2>&1; then
+        audit_warn "nvidia-persistenced.service is ${persistenced_state:-inactive} (expected active)."
+    fi
+    if powerd_state="$(systemctl is-active nvidia-powerd.service 2>/dev/null)"; then
+        audit_warn "nvidia-powerd.service is ${powerd_state} (expected masked/inactive on desktop)."
+    elif systemctl list-unit-files nvidia-powerd.service >/dev/null 2>&1; then
+        echo "[OK] nvidia-powerd.service is inactive/masked."
+    fi
+}
+
+# Audit required kernel arguments and CPU/TuneD power state.
+audit_required_kargs_and_power() {
+    local cmdline="$1"
+    local -a required_kargs=("pcie_port_pm=off")
+    if is_nvidia_headless_image; then
+        required_kargs+=(
+            "initcall_blacklist=simpledrm_platform_driver_init"
+            "rd.driver.blacklist=nvidia-drm"
+            "modprobe.blacklist=nvidia-drm"
+            "rd.driver.blacklist=nouveau"
+            "modprobe.blacklist=nouveau"
+        )
+    fi
+
+    local req missing_kargs=0
+    for req in "${required_kargs[@]}"; do
+        if ! grep -qwF "$req" <<<"$cmdline"; then
+            audit_warn "Missing required karg on boot line: $req"
+            missing_kargs=1
+        fi
+    done
+    if [[ "$missing_kargs" -eq 0 ]]; then
+        echo "[OK] Required power/isolation kargs present (${required_kargs[*]})."
+    fi
+
+    local pstate_driver epp
+    pstate_driver="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver 2>/dev/null || true)"
+    epp="$(cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference 2>/dev/null || true)"
+    if [[ -n "$pstate_driver" ]]; then
+        echo "[OK] CPU power scaling: driver=${pstate_driver}, epp=${epp:-N/A}."
+    fi
+
+    if command -v tuned-adm >/dev/null 2>&1; then
+        local tuned_profile
+        tuned_profile="$(tuned-adm active 2>/dev/null | sed -n 's/^Current active profile: //p' | head -n 1 || true)"
+        if [[ "$tuned_profile" == "throughput-performance" ]]; then
+            audit_warn "TuneD profile 'throughput-performance' active (prefer 'balanced' on Btrfs/desktop)."
+        elif [[ -n "$tuned_profile" ]]; then
+            echo "[OK] TuneD active profile: ${tuned_profile}."
+        fi
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Audit: six engineering pillars
 # ---------------------------------------------------------------------------
@@ -575,6 +674,9 @@ audit_pillars() {
     else
         echo "[OK] Clean graphics isolation: the AMD GPU exclusively owns DRM render nodes."
     fi
+    if is_nvidia_headless_image; then
+        audit_nvidia_headless
+    fi
 
     echo "--- [Pillar 5/6] Boot Resilience, SysRq REISUB & Sulogin ---"
     local sysrq
@@ -598,6 +700,7 @@ audit_pillars() {
     if [[ "$detected" -eq 0 ]]; then
         echo "[OK] Clean boot line (zero redundant kargs detected)."
     fi
+    audit_required_kargs_and_power "$cmdline"
 
     # Sulogin: root authentication on emergency/rescue consoles (AGENTS §7).
     local root_state
