@@ -1,0 +1,13 @@
+[Unit]
+Description=Apply declarative NVIDIA headless power and VF tuning profile
+After=nvidia-persistenced.service
+Wants=nvidia-persistenced.service
+ConditionPathExists=/usr/bin/kinoite-nvidia-tune
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/kinoite-nvidia-tune apply
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

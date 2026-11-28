@@ -151,6 +151,32 @@ get_nocow_user_dirs() {
         "${REAL_HOME}/.local/share/libvirt/images" \
         "${REAL_HOME}/.local/share/gnome-boxes/images" \
         "${REAL_HOME}/.cache/rclone"
+    if is_nvidia_headless_image; then
+        printf '%s\n' "${REAL_HOME}/.nv/ComputeCache"
+    fi
+}
+
+check_nocow_dir() {
+    local path="$1"
+    local use_sudo="${2:-0}"
+    local attrs
+
+    [[ -d "$path" ]] || return 0
+    command -v lsattr >/dev/null 2>&1 || return 0
+
+    if [[ "$use_sudo" -eq 1 && "$CAN_SUDO" -eq 1 ]]; then
+        attrs="$("${ROOT_CMD[@]}" lsattr -d "$path" 2>/dev/null | awk '{print $1}' || true)"
+    else
+        attrs="$(lsattr -d "$path" 2>/dev/null | awk '{print $1}' || true)"
+    fi
+
+    if echo "$attrs" | grep -q "C"; then
+        echo "[OK] NoCOW (+C) attribute verified on: $path"
+    elif [[ -n "$attrs" ]]; then
+        audit_warn "Directory without NoCOW (+C): $path"
+    else
+        echo "[SKIP] Insufficient permissions to inspect NoCOW (+C) on: $path (requires sudo)."
+    fi
 }
 
 phase_tmpfiles_and_nocow() {
@@ -160,6 +186,9 @@ phase_tmpfiles_and_nocow() {
     echo "=== [1/6] Systemd Tmpfiles & Declarative NoCOW Alignment ==="
     if [[ "$CAN_SUDO" -eq 1 ]]; then
         "${ROOT_CMD[@]}" systemd-tmpfiles --create >/dev/null 2>&1 || true
+        if is_nvidia_headless_image; then
+            apply_nocow_dir "/var/tmp/nvidia-pm" root
+        fi
         echo "[OK] System tmpfiles synchronized."
     fi
 
@@ -428,7 +457,7 @@ is_nvidia_headless_image() {
     [[ -f "$NVIDIA_HEADLESS_MARKER" ]]
 }
 
-# Audit NVIDIA headless parameters, PCI runtime PM and systemd services.
+# Audit NVIDIA headless parameters, PCI runtime PM, BAR1 aperture and systemd services.
 audit_nvidia_headless() {
     if [[ -r /proc/driver/nvidia/params ]]; then
         local params key expected actual
@@ -436,9 +465,14 @@ audit_nvidia_headless() {
         for pair in \
             "DynamicPowerManagement:0" \
             "EnableS0ixPowerManagement:0" \
-            "EnableResizableBar:1"; do
+            "EnableResizableBar:1" \
+            "PreserveVideoMemoryAllocations:1" \
+            "UseKernelSuspendNotifiers:1" \
+            "EnablePCIERelaxedOrderingMode:1" \
+            "EnableStreamMemOPs:1" \
+            'TemporaryFilePath:"/var/tmp/nvidia-pm"'; do
             key="${pair%%:*}"
-            expected="${pair##*:}"
+            expected="${pair#*:}"
             actual="$(awk -F': ' -v k="$key" '$1 == k {print $2; exit}' <<<"$params")"
             if [[ -n "$actual" ]]; then
                 if [[ "$actual" == "$expected" ]]; then
@@ -450,6 +484,14 @@ audit_nvidia_headless() {
         done
     else
         echo "[SKIP] /proc/driver/nvidia/params unavailable; skipping NVIDIA module parameter check."
+    fi
+
+    if [[ -r /proc/modules ]]; then
+        if grep -qE '^nvidia_drm\b' /proc/modules 2>/dev/null; then
+            audit_warn "nvidia_drm kernel module is loaded on a headless-NVIDIA image."
+        else
+            echo "[OK] nvidia_drm kernel module is not loaded."
+        fi
     fi
 
     local pci_dev vendor class ctrl d3cold found_nv_pci=0
@@ -466,21 +508,61 @@ audit_nvidia_headless() {
         else
             audit_warn "NVIDIA PCI PM drift (${pci_dev##*/}): power/control=${ctrl} (expected on), d3cold_allowed=${d3cold} (expected 0)."
         fi
+
+        if [[ -r "${pci_dev}/resource" ]]; then
+            local bar_bytes=0 r_start r_end _rest sz bar_gib bar_mib
+            while read -r r_start r_end _rest; do
+                [[ "$r_start" == 0x* && "$r_end" == 0x* ]] || continue
+                if ((r_end > r_start)); then
+                    sz=$((r_end - r_start + 1))
+                    ((sz > bar_bytes)) && bar_bytes="$sz"
+                fi
+            done <"${pci_dev}/resource"
+            if ((bar_bytes >= 4294967296)); then
+                bar_gib=$((bar_bytes / 1073741824))
+                echo "[OK] NVIDIA BAR1 aperture (${pci_dev##*/}): ${bar_gib} GiB (Resizable BAR active in UEFI)."
+            elif ((bar_bytes > 0)); then
+                bar_mib=$((bar_bytes / 1048576))
+                audit_warn "NVIDIA BAR1 aperture (${pci_dev##*/}) is ${bar_mib} MiB (enable Above 4G Decoding & Re-Size BAR in UEFI)."
+            fi
+        fi
+
+        if [[ -r "${pci_dev}/current_link_speed" && -r "${pci_dev}/max_link_speed" ]]; then
+            local cur_spd max_spd cur_wid max_wid
+            cur_spd="$(cat "${pci_dev}/current_link_speed" 2>/dev/null || echo "?")"
+            max_spd="$(cat "${pci_dev}/max_link_speed" 2>/dev/null || echo "?")"
+            cur_wid="$(cat "${pci_dev}/current_link_width" 2>/dev/null || echo "?")"
+            max_wid="$(cat "${pci_dev}/max_link_width" 2>/dev/null || echo "?")"
+            echo "[INFO] NVIDIA PCIe link (${pci_dev##*/}): ${cur_spd} x${cur_wid} (max ${max_spd} x${max_wid})."
+        fi
     done
     if [[ "$found_nv_pci" -eq 0 ]]; then
         echo "[SKIP] No NVIDIA GPU PCI device detected in /sys/bus/pci/devices."
     fi
 
-    local persistenced_state powerd_state
-    if persistenced_state="$(systemctl is-active nvidia-persistenced.service 2>/dev/null)"; then
-        echo "[OK] nvidia-persistenced.service is ${persistenced_state}."
-    elif systemctl list-unit-files nvidia-persistenced.service >/dev/null 2>&1; then
-        audit_warn "nvidia-persistenced.service is ${persistenced_state:-inactive} (expected active)."
+    if command -v systemctl >/dev/null 2>&1; then
+        local persistenced_state powerd_state tune_state
+        if persistenced_state="$(systemctl is-active nvidia-persistenced.service 2>/dev/null)"; then
+            echo "[OK] nvidia-persistenced.service is ${persistenced_state}."
+        elif systemctl list-unit-files nvidia-persistenced.service >/dev/null 2>&1; then
+            audit_warn "nvidia-persistenced.service is ${persistenced_state:-inactive} (expected active)."
+        fi
+        if powerd_state="$(systemctl is-active nvidia-powerd.service 2>/dev/null)"; then
+            audit_warn "nvidia-powerd.service is ${powerd_state} (expected masked/inactive on desktop)."
+        elif systemctl list-unit-files nvidia-powerd.service >/dev/null 2>&1; then
+            echo "[OK] nvidia-powerd.service is inactive/masked."
+        fi
+        if [[ -x /usr/bin/kinoite-nvidia-tune ]]; then
+            if tune_state="$(systemctl is-active nvidia-tune.service 2>/dev/null)"; then
+                echo "[OK] nvidia-tune.service is ${tune_state}."
+            elif systemctl list-unit-files nvidia-tune.service >/dev/null 2>&1; then
+                audit_warn "nvidia-tune.service is ${tune_state:-inactive} (expected active)."
+            fi
+        fi
     fi
-    if powerd_state="$(systemctl is-active nvidia-powerd.service 2>/dev/null)"; then
-        audit_warn "nvidia-powerd.service is ${powerd_state} (expected masked/inactive on desktop)."
-    elif systemctl list-unit-files nvidia-powerd.service >/dev/null 2>&1; then
-        echo "[OK] nvidia-powerd.service is inactive/masked."
+
+    if command -v kinoite-nvidia-tune >/dev/null 2>&1; then
+        kinoite-nvidia-tune status 2>/dev/null | sed 's/^/[INFO] /' || true
     fi
 }
 
@@ -622,23 +704,13 @@ audit_pillars() {
 
     local -a nocow_paths=()
     mapfile -t nocow_paths < <(get_nocow_user_dirs)
-    local path attrs
+    local path
     for path in "${nocow_paths[@]}"; do
-        [[ -d "$path" ]] || continue
-        command -v lsattr >/dev/null 2>&1 || continue
-        if [[ "$CAN_SUDO" -eq 1 ]]; then
-            attrs="$("${ROOT_CMD[@]}" lsattr -d "$path" 2>/dev/null | awk '{print $1}' || true)"
-        else
-            attrs="$(lsattr -d "$path" 2>/dev/null | awk '{print $1}' || true)"
-        fi
-        if echo "$attrs" | grep -q "C"; then
-            echo "[OK] NoCOW (+C) attribute verified on: $path"
-        elif [[ -n "$attrs" ]]; then
-            audit_warn "Directory without NoCOW (+C): $path"
-        else
-            echo "[SKIP] Insufficient permissions to inspect NoCOW (+C) on: $path (requires sudo)."
-        fi
+        check_nocow_dir "$path" 1
     done
+    if is_nvidia_headless_image; then
+        check_nocow_dir "/var/tmp/nvidia-pm" 1
+    fi
 
     echo "--- [Pillar 4/6] GPU Acceleration, Vulkan & Wayland ---"
     if [[ -f /etc/cdi/amdgpu.yaml ]]; then

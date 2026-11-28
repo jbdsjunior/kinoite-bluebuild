@@ -1,0 +1,486 @@
+#!/usr/bin/env python3
+"""Declarative NVIDIA headless GPU tuning and telemetry via NVML (ctypes).
+
+Applies power limits, idle-preserving clock caps (e.g. 210..MAX MHz keeping P8),
+and P0/P2 V/F curve offsets directly through libnvidia-ml.so.1 with no external
+Python dependencies.
+"""
+
+from __future__ import annotations
+
+import argparse
+import ctypes
+import os
+import sys
+from pathlib import Path
+from typing import Any
+
+SYSTEM_CONF_PATH = Path("/usr/share/kinoite/nvidia-tune.conf")
+LOCAL_CONF_PATH = Path("/etc/kinoite/nvidia-tune.conf")
+
+NVML_SUCCESS = 0
+NVML_ERROR_NOT_SUPPORTED = 3
+NVML_ERROR_NO_PERMISSION = 4
+NVML_ERROR_INSUFFICIENT_SIZE = 7
+NVML_TEMPERATURE_GPU = 0
+NVML_CLOCK_GRAPHICS = 0
+NVML_CLOCK_MEM = 2
+NVML_PSTATE_0 = 0
+NVML_PSTATE_2 = 2
+NVML_FEATURE_ENABLED = 1
+
+PROFILES: dict[str, dict[str, Any]] = {
+    "efficiency": {
+        "power_limit_w": "285",
+        "gpu_min_clock_mhz": 210,
+        "gpu_max_clock_mhz": 1830,
+        "gpu_clock_offset_mhz": 100,
+        "mem_clock_offset_mhz": 500,
+    },
+    "balanced-safe": {
+        "power_limit_w": "290",
+        "gpu_min_clock_mhz": 210,
+        "gpu_max_clock_mhz": 1860,
+        "gpu_clock_offset_mhz": 0,
+        "mem_clock_offset_mhz": 0,
+    },
+    "performance": {
+        "power_limit_w": "max",
+        "gpu_min_clock_mhz": 210,
+        "gpu_max_clock_mhz": 0,
+        "gpu_clock_offset_mhz": 100,
+        "mem_clock_offset_mhz": 1000,
+    },
+    "stock": {
+        "power_limit_w": "default",
+        "gpu_min_clock_mhz": 0,
+        "gpu_max_clock_mhz": 0,
+        "gpu_clock_offset_mhz": 0,
+        "mem_clock_offset_mhz": 0,
+    },
+}
+
+
+class NvmlClockOffset(ctypes.Structure):
+    """NVML v1 clock offset struct (24 bytes on 64-bit Linux)."""
+
+    _fields_ = [
+        ("version", ctypes.c_uint),
+        ("type", ctypes.c_uint),
+        ("pstate", ctypes.c_uint),
+        ("clockOffsetMHz", ctypes.c_int),
+        ("minClockOffsetMHz", ctypes.c_int),
+        ("maxClockOffsetMHz", ctypes.c_int),
+    ]
+
+
+class NvmlPciInfo(ctypes.Structure):
+    """Minimal NVML PCI info prefix needed to query busId."""
+
+    _fields_ = [
+        ("busIdLegacy", ctypes.c_char * 16),
+        ("domain", ctypes.c_uint),
+        ("bus", ctypes.c_uint),
+        ("device", ctypes.c_uint),
+        ("pciDeviceId", ctypes.c_uint),
+        ("pciSubSystemId", ctypes.c_uint),
+        ("busId", ctypes.c_char * 32),
+    ]
+
+
+NVML_CLOCK_OFFSET_V1 = ctypes.sizeof(NvmlClockOffset) | (1 << 24)
+
+
+class NvmlClient:
+    """Thin ctypes wrapper around libnvidia-ml.so.1."""
+
+    def __init__(self) -> None:
+        self.lib = ctypes.CDLL("libnvidia-ml.so.1")
+        rc = self.lib.nvmlInit_v2()
+        if rc != NVML_SUCCESS:
+            raise RuntimeError(f"nvmlInit_v2 failed with error code {rc}")
+        self._initialized = True
+
+    def close(self) -> None:
+        if self._initialized:
+            self.lib.nvmlShutdown()
+            self._initialized = False
+
+    def __enter__(self) -> "NvmlClient":
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def error_string(self, rc: int) -> str:
+        fn = self.lib.nvmlErrorString
+        fn.restype = ctypes.c_char_p
+        fn.argtypes = [ctypes.c_int]
+        msg = fn(rc)
+        return msg.decode("utf-8", errors="replace") if msg else f"error {rc}"
+
+    def device_count(self) -> int:
+        count = ctypes.c_uint()
+        rc = self.lib.nvmlDeviceGetCount_v2(ctypes.byref(count))
+        if rc != NVML_SUCCESS:
+            raise RuntimeError(f"nvmlDeviceGetCount_v2 failed: {self.error_string(rc)}")
+        return count.value
+
+    def handle(self, index: int) -> ctypes.c_void_p:
+        dev = ctypes.c_void_p()
+        rc = self.lib.nvmlDeviceGetHandleByIndex_v2(index, ctypes.byref(dev))
+        if rc != NVML_SUCCESS:
+            raise RuntimeError(f"nvmlDeviceGetHandleByIndex_v2({index}) failed: {self.error_string(rc)}")
+        return dev
+
+    def driver_version(self) -> str:
+        buf = ctypes.create_string_buffer(80)
+        rc = self.lib.nvmlSystemGetDriverVersion(buf, len(buf))
+        return buf.value.decode("utf-8", errors="replace") if rc == NVML_SUCCESS else "unknown"
+
+    def device_name(self, dev: ctypes.c_void_p) -> str:
+        buf = ctypes.create_string_buffer(96)
+        rc = self.lib.nvmlDeviceGetName(dev, buf, len(buf))
+        return buf.value.decode("utf-8", errors="replace") if rc == NVML_SUCCESS else "NVIDIA GPU"
+
+    def pci_bus_id(self, dev: ctypes.c_void_p) -> str:
+        info = NvmlPciInfo()
+        rc = self.lib.nvmlDeviceGetPciInfo_v3(dev, ctypes.byref(info))
+        if rc != NVML_SUCCESS:
+            return "unknown"
+        return info.busId.decode("utf-8", errors="replace") or info.busIdLegacy.decode("utf-8", errors="replace")
+
+    def get_uint(self, func_name: str, dev: ctypes.c_void_p, *extra_args: Any) -> int | None:
+        fn = getattr(self.lib, func_name, None)
+        if fn is None:
+            return None
+        val = ctypes.c_uint()
+        rc = fn(dev, *extra_args, ctypes.byref(val))
+        return val.value if rc == NVML_SUCCESS else None
+
+    def power_constraints_mw(self, dev: ctypes.c_void_p) -> tuple[int, int] | None:
+        min_mw = ctypes.c_uint()
+        max_mw = ctypes.c_uint()
+        rc = self.lib.nvmlDeviceGetPowerManagementLimitConstraints(
+            dev, ctypes.byref(min_mw), ctypes.byref(max_mw)
+        )
+        if rc != NVML_SUCCESS:
+            return None
+        return min_mw.value, max_mw.value
+
+    def get_clock_offset(self, dev: ctypes.c_void_p, clk_type: int, pstate: int) -> NvmlClockOffset | None:
+        fn = getattr(self.lib, "nvmlDeviceGetClockOffsets", None)
+        if fn is None:
+            return None
+        st = NvmlClockOffset(version=NVML_CLOCK_OFFSET_V1, type=clk_type, pstate=pstate)
+        rc = fn(dev, ctypes.byref(st))
+        return st if rc == NVML_SUCCESS else None
+
+    def set_clock_offset(self, dev: ctypes.c_void_p, clk_type: int, pstate: int, target_mhz: int) -> tuple[bool, int]:
+        fn = getattr(self.lib, "nvmlDeviceSetClockOffsets", None)
+        if fn is not None:
+            current = self.get_clock_offset(dev, clk_type, pstate)
+            clamped = target_mhz
+            if current is not None:
+                clamped = max(current.minClockOffsetMHz, min(current.maxClockOffsetMHz, target_mhz))
+                if current.clockOffsetMHz == clamped:
+                    return True, clamped
+            st = NvmlClockOffset(
+                version=NVML_CLOCK_OFFSET_V1,
+                type=clk_type,
+                pstate=pstate,
+                clockOffsetMHz=clamped,
+            )
+            rc = fn(dev, ctypes.byref(st))
+            if rc == NVML_SUCCESS:
+                return True, clamped
+            if rc not in (NVML_ERROR_NOT_SUPPORTED,):
+                raise RuntimeError(
+                    f"nvmlDeviceSetClockOffsets(type={clk_type}, P{pstate}, {clamped}) failed: {self.error_string(rc)}"
+                )
+
+        # Fallback to legacy VF offset APIs (P0-scoped) on older drivers.
+        if pstate == NVML_PSTATE_0:
+            legacy_name = "nvmlDeviceSetGpcClkVfOffset" if clk_type == NVML_CLOCK_GRAPHICS else "nvmlDeviceSetMemClkVfOffset"
+            legacy_fn = getattr(self.lib, legacy_name, None)
+            if legacy_fn is not None:
+                rc = legacy_fn(dev, ctypes.c_int(target_mhz))
+                if rc == NVML_SUCCESS:
+                    return True, target_mhz
+        return False, target_mhz
+
+    def lowest_supported_graphics_clock(self, dev: ctypes.c_void_p) -> int | None:
+        """Query the lowest supported graphics clock via supported memory/graphics clocks."""
+        mem_count = ctypes.c_uint(0)
+        rc = self.lib.nvmlDeviceGetSupportedMemoryClocks(dev, ctypes.byref(mem_count), None)
+        if rc != NVML_ERROR_INSUFFICIENT_SIZE or mem_count.value == 0:
+            return None
+        mem_clks = (ctypes.c_uint * mem_count.value)()
+        rc = self.lib.nvmlDeviceGetSupportedMemoryClocks(dev, ctypes.byref(mem_count), mem_clks)
+        if rc != NVML_SUCCESS:
+            return None
+
+        lowest: int | None = None
+        for mclk in mem_clks:
+            g_count = ctypes.c_uint(0)
+            rc = self.lib.nvmlDeviceGetSupportedGraphicsClocks(dev, mclk, ctypes.byref(g_count), None)
+            if rc != NVML_ERROR_INSUFFICIENT_SIZE or g_count.value == 0:
+                continue
+            g_clks = (ctypes.c_uint * g_count.value)()
+            if self.lib.nvmlDeviceGetSupportedGraphicsClocks(dev, mclk, ctypes.byref(g_count), g_clks) == NVML_SUCCESS:
+                candidate = min(g_clks)
+                if lowest is None or candidate < lowest:
+                    lowest = candidate
+        return lowest
+
+
+def parse_env_file(path: Path) -> dict[str, str]:
+    """Parse KEY=VALUE configuration lines, ignoring comments and blanks."""
+    values: dict[str, str] = {}
+    if not path.is_file():
+        return values
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, val = line.split("=", 1)
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key:
+            values[key] = val
+    return values
+
+
+def load_effective_settings(profile_override: str | None) -> tuple[str, dict[str, Any]]:
+    """Resolve effective tuning parameters from system defaults, local overrides, and CLI."""
+    merged: dict[str, str] = {}
+    if profile_override is None:
+        merged.update(parse_env_file(SYSTEM_CONF_PATH))
+        merged.update(parse_env_file(LOCAL_CONF_PATH))
+        profile_name = merged.get("NVIDIA_TUNE_PROFILE", "efficiency").lower()
+    else:
+        profile_name = profile_override.lower()
+
+    if profile_name not in PROFILES:
+        valid = ", ".join(sorted(PROFILES))
+        raise ValueError(f"Unknown profile '{profile_name}' (valid: {valid})")
+
+    cfg = dict(PROFILES[profile_name])
+    if profile_override is None:
+        if "NVIDIA_POWER_LIMIT_W" in merged:
+            cfg["power_limit_w"] = merged["NVIDIA_POWER_LIMIT_W"]
+        for env_key, cfg_key in (
+            ("NVIDIA_GPU_MIN_CLOCK_MHZ", "gpu_min_clock_mhz"),
+            ("NVIDIA_GPU_MAX_CLOCK_MHZ", "gpu_max_clock_mhz"),
+            ("NVIDIA_GPU_CLOCK_OFFSET_MHZ", "gpu_clock_offset_mhz"),
+            ("NVIDIA_MEM_CLOCK_OFFSET_MHZ", "mem_clock_offset_mhz"),
+        ):
+            if env_key in merged:
+                cfg[cfg_key] = int(merged[env_key])
+
+    return profile_name, cfg
+
+
+def apply_power_limit(nvml: NvmlClient, dev: ctypes.c_void_p, spec: str) -> str:
+    """Apply power limit ('default', 'max', '0', or integer Watts) clamped to VBIOS bounds."""
+    normalized = str(spec).strip().lower()
+    if normalized in ("", "0", "keep"):
+        return "unchanged"
+
+    constraints = nvml.power_constraints_mw(dev)
+    current_mw = nvml.get_uint("nvmlDeviceGetPowerManagementLimit", dev)
+    default_mw = nvml.get_uint("nvmlDeviceGetPowerManagementDefaultLimit", dev)
+
+    if normalized == "default":
+        if default_mw is None:
+            return "unchanged (default unknown)"
+        target_mw = default_mw
+    elif normalized == "max":
+        if constraints is None:
+            return "unchanged (constraints unknown)"
+        target_mw = constraints[1]
+    else:
+        target_mw = int(float(normalized) * 1000)
+        if constraints is not None:
+            target_mw = max(constraints[0], min(constraints[1], target_mw))
+
+    if current_mw == target_mw:
+        return f"{target_mw // 1000}W (already set)"
+
+    rc = nvml.lib.nvmlDeviceSetPowerManagementLimit(dev, ctypes.c_uint(target_mw))
+    if rc != NVML_SUCCESS:
+        raise RuntimeError(f"nvmlDeviceSetPowerManagementLimit({target_mw}mW) failed: {nvml.error_string(rc)}")
+    return f"{target_mw // 1000}W"
+
+
+def apply_clock_cap(nvml: NvmlClient, dev: ctypes.c_void_p, min_mhz: int, max_mhz: int) -> str:
+    """Cap max GPU boost clock while keeping P8 idle floor (or reset if max_mhz <= 0)."""
+    if max_mhz <= 0:
+        rc = nvml.lib.nvmlDeviceResetGpuLockedClocks(dev)
+        if rc not in (NVML_SUCCESS, NVML_ERROR_NOT_SUPPORTED):
+            raise RuntimeError(f"nvmlDeviceResetGpuLockedClocks failed: {nvml.error_string(rc)}")
+        return "unlocked"
+
+    floor_mhz = max(0, min_mhz)
+    if floor_mhz > max_mhz:
+        floor_mhz = max_mhz
+
+    rc = nvml.lib.nvmlDeviceSetGpuLockedClocks(dev, ctypes.c_uint(floor_mhz), ctypes.c_uint(max_mhz))
+    if rc != NVML_SUCCESS:
+        lowest = nvml.lowest_supported_graphics_clock(dev)
+        if lowest is not None and lowest != floor_mhz:
+            floor_mhz = min(lowest, max_mhz)
+            rc = nvml.lib.nvmlDeviceSetGpuLockedClocks(dev, ctypes.c_uint(floor_mhz), ctypes.c_uint(max_mhz))
+        if rc != NVML_SUCCESS:
+            raise RuntimeError(
+                f"nvmlDeviceSetGpuLockedClocks({floor_mhz}, {max_mhz}) failed: {nvml.error_string(rc)}"
+            )
+    return f"{floor_mhz}..{max_mhz} MHz"
+
+
+def apply_profile(profile_override: str | None) -> int:
+    profile_name, cfg = load_effective_settings(profile_override)
+    with NvmlClient() as nvml:
+        count = nvml.device_count()
+        if count == 0:
+            print("[SKIP] No NVIDIA GPU detected.")
+            return 0
+
+        for idx in range(count):
+            dev = nvml.handle(idx)
+            name = nvml.device_name(dev)
+            bus_id = nvml.pci_bus_id(dev)
+
+            # Ensure persistence mode is active (best effort; nvidia-persistenced owns daemon mode).
+            pm = nvml.get_uint("nvmlDeviceGetPersistenceMode", dev)
+            if pm == 0:
+                nvml.lib.nvmlDeviceSetPersistenceMode(dev, ctypes.c_uint(NVML_FEATURE_ENABLED))
+
+            pl_desc = apply_power_limit(nvml, dev, str(cfg["power_limit_w"]))
+            clk_desc = apply_clock_cap(
+                nvml, dev, int(cfg["gpu_min_clock_mhz"]), int(cfg["gpu_max_clock_mhz"])
+            )
+
+            gr_off = int(cfg["gpu_clock_offset_mhz"])
+            mem_off = int(cfg["mem_clock_offset_mhz"])
+            applied_gr: list[str] = []
+            applied_mem: list[str] = []
+            for ps in (NVML_PSTATE_0, NVML_PSTATE_2):
+                ok_g, val_g = nvml.set_clock_offset(dev, NVML_CLOCK_GRAPHICS, ps, gr_off)
+                if ok_g:
+                    applied_gr.append(f"P{ps}:{val_g:+d}")
+                ok_m, val_m = nvml.set_clock_offset(dev, NVML_CLOCK_MEM, ps, mem_off)
+                if ok_m:
+                    applied_mem.append(f"P{ps}:{val_m:+d}")
+
+            print(
+                f"[OK] GPU {idx} ({name}, {bus_id}) profile={profile_name} "
+                f"power={pl_desc} cap={clk_desc} "
+                f"gr_offset=[{','.join(applied_gr) or 'n/a'}] "
+                f"mem_offset=[{','.join(applied_mem) or 'n/a'}]"
+            )
+    return 0
+
+
+def reset_all() -> int:
+    return apply_profile("stock")
+
+
+def show_status() -> int:
+    with NvmlClient() as nvml:
+        count = nvml.device_count()
+        if count == 0:
+            print("[SKIP] No NVIDIA GPU detected.")
+            return 0
+
+        drv = nvml.driver_version()
+        try:
+            eff_profile, eff_cfg = load_effective_settings(None)
+            cfg_desc = f"{eff_profile} (pl={eff_cfg['power_limit_w']}W, cap={eff_cfg['gpu_min_clock_mhz']}..{eff_cfg['gpu_max_clock_mhz']}MHz)"
+        except ValueError as exc:
+            cfg_desc = f"invalid ({exc})"
+
+        print(f"NVIDIA Driver: {drv} | Configured Profile: {cfg_desc}")
+        for idx in range(count):
+            dev = nvml.handle(idx)
+            name = nvml.device_name(dev)
+            bus_id = nvml.pci_bus_id(dev)
+            pstate = nvml.get_uint("nvmlDeviceGetPerformanceState", dev)
+            pm = nvml.get_uint("nvmlDeviceGetPersistenceMode", dev)
+            temp = nvml.get_uint("nvmlDeviceGetTemperature", dev, NVML_TEMPERATURE_GPU)
+            power_mw = nvml.get_uint("nvmlDeviceGetPowerUsage", dev)
+            limit_mw = nvml.get_uint("nvmlDeviceGetPowerManagementLimit", dev)
+            default_mw = nvml.get_uint("nvmlDeviceGetPowerManagementDefaultLimit", dev)
+            constraints = nvml.power_constraints_mw(dev)
+            gr_clk = nvml.get_uint("nvmlDeviceGetClockInfo", dev, NVML_CLOCK_GRAPHICS)
+            mem_clk = nvml.get_uint("nvmlDeviceGetClockInfo", dev, NVML_CLOCK_MEM)
+            gr_max = nvml.get_uint("nvmlDeviceGetMaxClockInfo", dev, NVML_CLOCK_GRAPHICS)
+            mem_max = nvml.get_uint("nvmlDeviceGetMaxClockInfo", dev, NVML_CLOCK_MEM)
+            pcie_gen = nvml.get_uint("nvmlDeviceGetCurrPcieLinkGeneration", dev)
+            pcie_width = nvml.get_uint("nvmlDeviceGetCurrPcieLinkWidth", dev)
+
+            offsets = []
+            for label, ctype in (("GR", NVML_CLOCK_GRAPHICS), ("MEM", NVML_CLOCK_MEM)):
+                for ps in (NVML_PSTATE_0, NVML_PSTATE_2):
+                    st = nvml.get_clock_offset(dev, ctype, ps)
+                    if st is not None:
+                        offsets.append(f"{label}-P{ps}:{st.clockOffsetMHz:+d}MHz")
+
+            bounds = f"{constraints[0]//1000}..{constraints[1]//1000}W" if constraints else "n/a"
+            print(
+                f"  GPU {idx}: {name} [{bus_id}] | P-State=P{pstate if pstate is not None else '?'} | "
+                f"Persist={bool(pm)} | Temp={temp}C | PCIe=Gen{pcie_gen}x{pcie_width}"
+            )
+            print(
+                f"    Power: {power_mw/1000:.1f}W / Limit {limit_mw/1000:.0f}W "
+                f"(Default {default_mw/1000:.0f}W, Bounds {bounds})"
+            )
+            print(
+                f"    Clocks: Graphics {gr_clk}/{gr_max} MHz | Memory {mem_clk}/{mem_max} MHz"
+            )
+            if offsets:
+                print(f"    VF Offsets: {' | '.join(offsets)}")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="kinoite-nvidia-tune",
+        description="Declarative NVML power limit, clock cap and VF curve tuning for headless NVIDIA GPUs.",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_apply = sub.add_parser("apply", help="Apply configured (or --profile) tuning settings.")
+    p_apply.add_argument(
+        "--profile",
+        choices=sorted(PROFILES),
+        default=None,
+        help="Override configured profile without editing /etc/kinoite/nvidia-tune.conf.",
+    )
+
+    sub.add_parser("reset", help="Reset power limit, clock caps and VF offsets to stock defaults.")
+    sub.add_parser("status", help="Display live NVML power, clocks, P-state and VF offset telemetry.")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        if args.command == "status":
+            return show_status()
+        if args.command == "reset":
+            return reset_all()
+        if args.command == "apply":
+            return apply_profile(args.profile)
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        if os.geteuid() != 0 and args.command in ("apply", "reset"):
+            print("[HINT] Root privileges are required to modify GPU limits and clocks (use sudo).", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

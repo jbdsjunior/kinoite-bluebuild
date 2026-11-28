@@ -45,7 +45,7 @@
 - `recipes/modules/common-drivers.yml`: habilita `rpmfusion` (com `cleanup: true`) e instala aceleração gráfica/computacional AMD (`mesa-va-drivers-freeworld`, `mesa-libOpenCL`).
 - `recipes/modules/common-virt.yml`: instala a pilha KVM/libvirt (`@virtualization`, `libvirt-nss`, `gnome-boxes`, excluindo `virt-viewer`).
 - `recipes/modules/common-tools.yml`: habilita `tailscale.repo` e `terra.repo` (com `cleanup: true`) e instala ferramentas CLI, monitoramento, containers, sync, credenciais e rede (`lm_sensors`, `topgrade`, `starship`, `fastfetch`, `tailscale`, `rclone`, `distrobox`, `git-credential-libsecret`).
-- `recipes/modules/cuda-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e mascara `nvidia-powerd.service`.
+- `recipes/modules/cuda-nvidia.yml`: compila `nvidia-open` via akmods (`MULTILIB=0`), aplica os arquivos de `files/nvidia/`, habilita `nvidia-persistenced.service` e `nvidia-tune.service` e mascara `nvidia-powerd.service`.
 - `recipes/modules/common-flatpaks.yml`: declara os 21 aplicativos Flatpak de sistema ativos via módulo `default-flatpaks` v2 (incluindo `Warehouse`, `Kontainer`, `sshpilot`, `KTailctl`, `Gtk3theme.Breeze`, `kcalc`, `kclock`, `okular`, `Stremio` e `MissionCenter`).
 - `recipes/modules/common-systemd.yml`: habilita `bootc-fetch-apply-updates.timer`, `bootc-fstab-daemon-reload.service`, `bootc-update-ca-trust.service`, `bootc-update-crypto-policies.service`, `flatpak-nuke-fedora.service`, `flatpak-system-update.timer` e `tailscaled.service` no sistema, mascara `flatpak-add-fedora-repos.service`, e habilita `flatpak-user-update.timer`, `podman.socket`, `podman-auto-update.timer` e `podman-restart.service` no usuário (deixando `systemd-resolved`, `firewalld`, `fstrim.timer`, `smartd.service`, `systemd-oomd.service` e sockets modulares do `libvirt` aos presets upstream e mantendo `ModemManager.service` desmascarado para evitar erros D-Bus).
 
@@ -56,10 +56,15 @@
 - `rd.driver.blacklist=nvidia-drm` e `modprobe.blacklist=nvidia-drm` impedem nó gráfico DRM na NVIDIA preservando nós CUDA (`/dev/nvidia*`).
 - `files/nvidia/usr/lib/bootc/kargs.d/00-bluebuild-nvidia-kargs.toml`: sobrescreve os kargs do akmods eliminando `nvidia-drm.modeset=1`, aplicando `initcall_blacklist=simpledrm_platform_driver_init` e blacklist de `nouveau` e `nvidia-drm`.
 - `files/nvidia/usr/lib/dracut/dracut.conf.d/99-nvidia.conf`: mantém apenas `amdgpu` em `force_drivers` e omite `nvidia_drm`/`nvidia-drm` do initramfs para carregar módulos NVIDIA sob demanda no userspace.
-- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR na RTX 3080 Ti, desativa S0ix e RTD3 dinâmico em desktop (`NVreg_EnableS0ixPowerManagement=0`, `NVreg_DynamicPowerManagement=0x00`) e direciona `NVreg_TemporaryFilePath` para `/var/tmp/nvidia-pm`.
+- `files/nvidia/usr/lib/modprobe.d/60-nvidia-headless.conf`: bloqueia `nvidia-drm`/`nvidia_drm` redirecionando para `/usr/bin/true`, ativa Resizable BAR, `NVreg_EnablePCIERelaxedOrderingMode=1` e `NVreg_EnableStreamMemOPs=1`, desativa S0ix e RTD3 dinâmico em desktop (`NVreg_EnableS0ixPowerManagement=0`, `NVreg_DynamicPowerManagement=0x00`) e direciona `NVreg_TemporaryFilePath` para `/var/tmp/nvidia-pm`.
 - `files/nvidia/usr/lib/udev/rules.d/65-nvidia-headless-pm.rules`: mantém GPU NVIDIA (`0x10de`, classes `0x030000|0x030200`) fora de runtime suspend (`power/control=on`) e todas as funções NVIDIA (incluindo áudio HDMI `0x040300`) fora de D3cold (`d3cold_allowed=0`), sobrescrevendo `60-nvidia.rules`.
-- `files/nvidia/usr/lib/environment.d/65-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` (complementando `VK_DRIVER_FILES` de `60-desktop.conf`) para impedir que aplicações host capturem EGL/GLX da NVIDIA.
+- `files/nvidia/usr/lib/environment.d/65-nvidia-headless.conf`: força `__EGL_VENDOR_LIBRARY_FILENAMES` e `__GLX_VENDOR_LIBRARY_NAME=mesa` (complementando `VK_DRIVER_FILES` de `60-desktop.conf`), fixa `CUDA_DEVICE_ORDER=PCI_BUS_ID` e amplia `CUDA_CACHE_MAXSIZE` para 2 GiB mantendo a RTX 3080 Ti reservada para CUDA/CDI.
 - `files/nvidia/usr/lib/tmpfiles.d/60-nvidia-headless.conf`: prioriza Mesa EGL via symlink `/etc/glvnd/egl_vendor.d/00_mesa.json` para daemons com ambiente limpo (`virtqemud`/`qemu`) preservando `10_nvidia.json` para CDI, e cria `/var/tmp/nvidia-pm` com NoCOW (`+C`) para preservação de VRAM no S3.
+- `files/nvidia/usr/share/user-tmpfiles.d/60-nvidia-cuda-nocow.conf`: aplica Btrfs NoCOW (`+C`) no cache JIT CUDA de usuário (`~/.nv/ComputeCache`).
+- `files/nvidia/usr/share/kinoite/nvidia-tune.conf`: declara o perfil padrão (`efficiency`) e overrides opcionais (sobreposto localmente por `/etc/kinoite/nvidia-tune.conf`) para energia, teto de clock com piso P8 e offsets V/F da GPU NVIDIA.
+- `files/nvidia/usr/bin/kinoite-nvidia-tune`: aplica limites de energia (`-pl`), teto de clock preservando idle P8 (`210..MAX`), offsets da curva V/F (core e memória GDDR6X em P0/P2 via `libnvidia-ml.so.1`) e exibe telemetria via NVML (`apply`, `reset`, `status`).
+- `files/nvidia/usr/lib/systemd/system/nvidia-tune.service`: aplica o perfil declarativo de `kinoite-nvidia-tune` no boot após `nvidia-persistenced.service`.
+- `files/nvidia/usr/lib/systemd/system-sleep/nvidia-tune-resume`: reaplica o perfil de `kinoite-nvidia-tune` após retorno de suspensão S3/hibernação.
 - `files/nvidia/etc/pki/akmods/certs/akmods-ublue.der`: fornece o certificado público MOK para validação dos módulos akmods no Secure Boot.
 
 ## Armazenamento, ZRAM, Memória e Segurança
@@ -96,7 +101,7 @@
 - `files/desktop/usr/lib/systemd/system/flatpak-system-update.timer`: dispara atualização de Flatpaks de sistema após 10m do boot e a cada 6h (`Persistent=true`).
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.service`: atualiza Flatpaks de usuário e limpa runtimes sem uso apenas com rede online (`ConditionUser=!@system`).
 - `files/desktop/usr/lib/systemd/user/flatpak-user-update.timer`: dispara atualização de Flatpaks de usuário após 12m do login e a cada 6h (`ConditionUser=!@system`, `Persistent=true`).
-- `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 6 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`), parâmetros/PM NVIDIA, kargs obrigatórios (`pcie_port_pm=off`) e estado de energia (`amd-pstate-epp`/TuneD).
+- `files/base/usr/bin/kinoite-optimize`: executa manutenção local em 6 fases e auditoria somente leitura `--audit` dos 6 pilares com detecção dinâmica de nós DRM por driver (`amdgpu`/`nvidia`), parâmetros/PM/BAR1/serviços NVIDIA, NoCOW (`+C`) incluindo caches CUDA, kargs obrigatórios (`pcie_port_pm=off`) e estado de energia (`amd-pstate-epp`/TuneD).
 - `files/base/usr/bin/kinoite-setup-tpm`: vincula partição LUKS2 ao fTPM 2.0 (PCRs 7+14) com suporte a PIN, chave de recuperação e atualização segura de `/etc/crypttab`.
 
 ## Desktop KDE, Navegadores e Terminal
@@ -113,7 +118,7 @@
 - `files/shell/usr/share/starship/starship.toml`: configura prompt Starship em duas linhas estilo minimalista com `right_format`, status de erro, duração e linguagens sob demanda.
 - `files/shell/usr/share/fastfetch/config.jsonc`: define layout compacto com logo pequeno, ícones Nerd Font e telemetria de hardware (CPU, Dual-GPU, ZRAM, Btrfs), carregado diretamente por `50-shell-prompt.sh` quando o usuário não tiver configuração própria.
 - `files/shell/etc/profile.d/50-shell-prompt.sh`: inicializa Starship (`/usr/share/starship/starship.toml`) e exibe Fastfetch (`/usr/share/fastfetch/config.jsonc`) uma vez por sessão interativa fora de terminais embutidos de IDE, sem copiar arquivos para `$HOME`.
-- `files/shell/etc/profile.d/60-shell-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`), wrapper `_kinoite_topgrade` (priorizando sempre `/usr/share/topgrade/topgrade.toml`) e atalhos de diagnóstico/manutenção.
+- `files/shell/etc/profile.d/60-shell-aliases.sh`: define aliases de terminal, proteção interativa (`cp -i`, `mv -i`, `rm -i`), wrapper `_kinoite_topgrade` (priorizando sempre `/usr/share/topgrade/topgrade.toml`) e atalhos de diagnóstico/manutenção (incluindo `gpu-status` e `gpu-watch`).
 - `files/shell/usr/share/topgrade/topgrade.toml`: desabilita passos conflitantes (`toolbx`, `tailscale`), usa `bootc = true` (`rpm_ostree = false`, sem senha via `60-bootc-nopasswd`) e execução não interativa (`assume_yes`, `cleanup`, `auto_retry`) no Topgrade, passado sempre via `--config` por `60-shell-aliases.sh`.
 
 ## IA, CDI, Periféricos, Virtualização e Nuvem

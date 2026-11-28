@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Re-apply declarative NVIDIA headless tuning profile after S3 suspend/hibernate resume.
+set -euo pipefail
+
+if [[ "${1:-}" == "post" ]] && [[ -x /usr/bin/kinoite-nvidia-tune ]]; then
+    /usr/bin/kinoite-nvidia-tune apply >/dev/null 2>&1 || true
+fi

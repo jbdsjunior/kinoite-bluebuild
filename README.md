@@ -94,7 +94,7 @@ sudo bootc switch quay.io/fedora/fedora-kinoite:latest
 | [`files/virt/`](files/virt/) | Virtualization overlays (KVM/libvirt polkit rule and user VM Btrfs NoCOW) |
 | [`files/rocm/`](files/rocm/) | AMD ROCm/HIP compute overlays (CDI `amdgpu.yaml`, `HSA_OVERRIDE_GFX_VERSION`, `/dev/kfd` udev rule) |
 | [`files/tailscale/`](files/tailscale/) | Tailscale mesh VPN overlays (`firewalld` trusted zone for `tailscale0`) |
-| [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards) |
+| [`files/nvidia/`](files/nvidia/) | CUDA-flavor NVIDIA overlays (MOK certificate, headless compute isolation guards, declarative NVML power/VF tuning, and CUDA NoCOW cache) |
 | [`files/dnf/`](files/dnf/) | External repository definitions (Tailscale, Terra) |
 | [`.github/workflows/`](.github/workflows/) | Image build (manual/upstream-triggered), scheduled freshness check (every 1h) and registry cleanup |
 

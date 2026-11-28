@@ -18,3 +18,4 @@ modules:
         - nvidia-powerd.service
       enabled:
         - nvidia-persistenced.service
+        - nvidia-tune.service

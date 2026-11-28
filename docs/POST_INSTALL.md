@@ -111,19 +111,31 @@ Atalhos adicionais no terminal (`60-shell-aliases.sh`):
 
 ---
 
-## 4. IA Local e Contêineres ROCm (CDI)
+## 4. IA Local e Contêineres ROCm / CUDA (CDI)
 
-A estação suporta aceleração total na **RX 6600 XT** através de duas camadas já integradas:
+A estação suporta aceleração na **RX 6600 XT** (variante `kinoite-amd` e base desktop da `kinoite-cuda`) e computação dedicada na **RTX 3080 Ti** (variante `kinoite-cuda`):
 
-1. **Host (`llamafile`, `llama.cpp`, GGUF) via Vulkan 1.4 (`radv`):**
+1. **Host (`llamafile`, `llama.cpp`, GGUF) via Vulkan 1.4 (`radv` na RX 6600 XT):**
    ```bash
    ./seu-modelo.llamafile --gpu vulkan -ngl 99
    ```
    *(SELinux já está configurado para execução local sem ajustes manuais)*.
 
-2. **Contêineres ROCm/HIP (Ollama, PyTorch) via CDI (`/etc/cdi/amdgpu.yaml`):**
+2. **Contêineres AMD ROCm/HIP (Ollama, PyTorch) via CDI (`/etc/cdi/amdgpu.yaml`):**
    ```bash
    podman run -d --device amd.com/gpu=all --ipc=host -v ollama:/root/.ollama:Z -p 11434:11434 --name ollama docker.io/ollama/ollama:rocm
+   ```
+
+3. **Contêineres NVIDIA CUDA na RTX 3080 Ti (`kinoite-cuda`) via CDI (`nvidia.com/gpu=all`):**
+   ```bash
+   # Ollama em GPU dedicada NVIDIA (preservando Wayland/KDE 100% na AMD):
+   podman run -d --device nvidia.com/gpu=all --security-opt=label=disable \
+     -v ollama:/root/.ollama -p 11434:11434 --name ollama-cuda docker.io/ollama/ollama:latest
+
+   # PyTorch / vLLM com alocação fragment-free e cache JIT ampliado (2 GiB NoCOW):
+   podman run --rm -it --device nvidia.com/gpu=all --security-opt=label=disable \
+     -e PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+     nvcr.io/nvidia/pytorch:25.02-py3
    ```
 
 ---
@@ -210,7 +222,24 @@ Caso seja necessário forçar um nó específico durante uma auditoria manual, s
 
 ### 8.2 Estabilidade UEFI/BIOS e Energia (AMD X570 + Ryzen 9 5950X + RTX 3080 Ti)
 
-- **UEFI/BIOS (`Power Supply Idle Control`):** em plataformas AM4 X570 com processadores Zen 3 (`Ryzen 9 5950X`), configure na UEFI/BIOS (*Advanced → AMD CBS → CPU Common Options*) **`Power Supply Idle Control` = `Typical Current Idle`** para evitar quedas de tensão em estados C6 de baixa corrente no Linux (sem perda de *single-core boost*). Caso utilize PBO / Curve Optimizer, evite *offsets* negativos agressivos nos núcleos principais.
-- **Consumo ocioso da RTX 3080 Ti (`P8 ~16 W`) e S3:** placas-mãe desktop X570 não expõem método ACPI `_PR3` para D3cold no slot PCIe nem S0ix; manter `NVreg_EnableS0ixPowerManagement=0` e `NVreg_DynamicPowerManagement=0x00` com `nvidia-persistenced` preserva estado `P8` estável (~16 W) sem riscos de travamento por D3/PME. No `nvidia-open` moderno (`UseKernelSuspendNotifiers=1`), a preservação de VRAM no S3 ocorre nativamente no kernel usando `/var/tmp/nvidia-pm` com Btrfs NoCOW (`+C`), sem habilitar os serviços legados `nvidia-suspend`/`nvidia-hibernate`/`nvidia-resume`.
+- **Checklist UEFI/BIOS recomendado (X570 + Zen 3 + Dual-GPU):**
+  - `Power Supply Idle Control` = **`Typical Current Idle`** (*Advanced → AMD CBS → CPU Common Options*), evitando quedas de tensão em estados C6 de baixa corrente no Linux sem penalizar o *single-core boost*. Caso utilize PBO / Curve Optimizer, evite *offsets* negativos agressivos nos núcleos principais.
+  - `Above 4G Decoding` = **`Enabled`** e `Re-Size BAR Support` = **`Auto`/`Enabled`**, garantindo abertura BAR1 completa de 16 GiB na RTX 3080 Ti (validado em `kinoite-optimize --audit`).
+  - `Global C-state Control` = **`Enabled`**, `CPPC` = **`Enabled`** e `CPPC Preferred Cores` = **`Enabled`**, permitindo o escalonamento fino via `amd-pstate-epp`.
+- **Consumo ocioso da RTX 3080 Ti (`P8 ~16 W`) e S3:** placas-mãe desktop X570 não expõem método ACPI `_PR3` para D3cold no slot PCIe nem S0ix; manter `NVreg_EnableS0ixPowerManagement=0` e `NVreg_DynamicPowerManagement=0x00` com `nvidia-persistenced` preserva estado `P8` estável (~16 W) sem riscos de travamento por D3/PME. Os parâmetros `NVreg_EnablePCIERelaxedOrderingMode=1` e `NVreg_EnableStreamMemOPs=1` otimizam DMA em bifurcação PCIe 4.0 x8 e kernels assíncronos CUDA, enquanto a preservação de VRAM no S3 ocorre nativamente no `nvidia-open` (`UseKernelSuspendNotifiers=1`) usando `/var/tmp/nvidia-pm` (`+C` NoCOW).
+- **Otimização de Desempenho e Eficiência NVIDIA (`kinoite-nvidia-tune`):** o serviço `nvidia-tune.service` (e o hook pós-S3 `nvidia-tune-resume`) aplica no boot o perfil padrão **`efficiency`** (`285 W` de limite de potência, teto de clock `210..1830 MHz` preservando o estado ocioso `P8`, curva V/F `+100 MHz` no core e `+500 MHz` na memória em P0/P2 para compensar a redução do *CUDA Force P2 State*). Para testar outros perfis ou sobrescrever permanentemente:
+  ```bash
+  # Consultar telemetria, P-state, consumo e offsets atuais (ou alias gpu-status)
+  kinoite-nvidia-tune status
+
+  # Alternar perfil em runtime para benchmark (efficiency | balanced-safe | performance | stock)
+  sudo kinoite-nvidia-tune apply --profile performance
+  sudo kinoite-nvidia-tune reset
+
+  # Customização persistente sem alterar a imagem (opcional)
+  sudo mkdir -p /etc/kinoite
+  printf 'NVIDIA_TUNE_PROFILE=balanced-safe\n' | sudo tee /etc/kinoite/nvidia-tune.conf
+  sudo systemctl restart nvidia-tune.service
+  ```
 - **Perfil de energia no KDE:** no uso diário, prefira o perfil **Equilibrado (`balanced`)** em vez de *Desempenho* (`throughput-performance`), evitando `dirty_bytes=40%` em cache Btrfs e `min_perf_pct=100` constantes.
-- **Auditoria automatizada (`kinoite-optimize --audit`):** verifica `pcie_port_pm=off`, isolamento headless (`nvidia-drm` bloqueado), parâmetros `nvidia` em `/proc/driver/nvidia/params`, PM PCI (`power/control=on`, `d3cold_allowed=0`) e perfil TuneD/CPU (`amd-pstate-epp`). Em hosts antigos sem `pcie_port_pm=off`, aplique localmente com `sudo rpm-ostree kargs --append-if-missing=pcie_port_pm=off`.
+- **Auditoria automatizada (`kinoite-optimize --audit`):** verifica `pcie_port_pm=off`, isolamento headless (`nvidia-drm` bloqueado), parâmetros `nvidia` em `/proc/driver/nvidia/params`, abertura BAR1 (ReBAR) em hardware, PM PCI (`power/control=on`, `d3cold_allowed=0`), `nvidia-tune.service` e perfil TuneD/CPU (`amd-pstate-epp`). Em hosts antigos sem `pcie_port_pm=off`, aplique localmente com `sudo rpm-ostree kargs --append-if-missing=pcie_port_pm=off`.
