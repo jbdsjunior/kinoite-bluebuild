@@ -32,21 +32,21 @@ NVML_FEATURE_ENABLED = 1
 PROFILES: dict[str, dict[str, Any]] = {
     "efficiency": {
         "power_limit_w": "285",
-        "gpu_min_clock_mhz": 210,
-        "gpu_max_clock_mhz": 1830,
+        "gpu_min_clock_mhz": 0,
+        "gpu_max_clock_mhz": 0,
         "gpu_clock_offset_mhz": 100,
         "mem_clock_offset_mhz": 500,
     },
     "balanced-safe": {
         "power_limit_w": "290",
-        "gpu_min_clock_mhz": 210,
-        "gpu_max_clock_mhz": 1860,
+        "gpu_min_clock_mhz": 0,
+        "gpu_max_clock_mhz": 0,
         "gpu_clock_offset_mhz": 0,
         "mem_clock_offset_mhz": 0,
     },
     "performance": {
         "power_limit_w": "max",
-        "gpu_min_clock_mhz": 210,
+        "gpu_min_clock_mhz": 0,
         "gpu_max_clock_mhz": 0,
         "gpu_clock_offset_mhz": 100,
         "mem_clock_offset_mhz": 1000,
@@ -396,7 +396,12 @@ def show_status() -> int:
         drv = nvml.driver_version()
         try:
             eff_profile, eff_cfg = load_effective_settings(None)
-            cfg_desc = f"{eff_profile} (pl={eff_cfg['power_limit_w']}W, cap={eff_cfg['gpu_min_clock_mhz']}..{eff_cfg['gpu_max_clock_mhz']}MHz)"
+            cap_desc = (
+                f"{eff_cfg['gpu_min_clock_mhz']}..{eff_cfg['gpu_max_clock_mhz']}MHz"
+                if eff_cfg["gpu_max_clock_mhz"] > 0
+                else "unlocked"
+            )
+            cfg_desc = f"{eff_profile} (pl={eff_cfg['power_limit_w']}W, cap={cap_desc})"
         except ValueError as exc:
             cfg_desc = f"invalid ({exc})"
 

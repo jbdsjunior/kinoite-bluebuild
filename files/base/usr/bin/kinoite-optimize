@@ -30,7 +30,7 @@ find_drm_render_node() {
 
 AMD_RENDER_PATH="${AMD_RENDER_PATH:-$(find_drm_render_node amdgpu || true)}"
 NVIDIA_RENDER_PATH="${NVIDIA_RENDER_PATH:-$(find_drm_render_node nvidia || true)}"
-NVIDIA_HEADLESS_MARKER="/usr/lib/modprobe.d/60-nvidia-headless.conf"
+NVIDIA_HEADLESS_MARKER="/usr/lib/modprobe.d/zz-nvidia-headless.conf"
 
 usage() {
     cat <<EOF
@@ -454,7 +454,7 @@ is_dual_gpu() {
 
 # True when the running image ships the headless-NVIDIA overlay (flavor cuda).
 is_nvidia_headless_image() {
-    [[ -f "$NVIDIA_HEADLESS_MARKER" ]]
+    [[ -f "$NVIDIA_HEADLESS_MARKER" || -f "/usr/lib/modprobe.d/60-nvidia-headless.conf" ]]
 }
 
 # Audit NVIDIA headless parameters, PCI runtime PM, BAR1 aperture and systemd services.
